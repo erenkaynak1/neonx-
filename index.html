@@ -13834,8 +13834,42 @@ document.addEventListener("click", function (event) {
 </style>
 
 
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+import {
+  getAuth,
+  onAuthStateChanged,
+  signInAnonymously
+} from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+import {
+  getDatabase,
+  get,
+  onDisconnect,
+  onValue,
+  ref,
+  remove,
+  runTransaction,
+  serverTimestamp,
+  update
+} from "https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
+
 (() => {
+  "use strict";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBLpXHGGTHXykKrnu8_Hv1i71oc3tpTNvY",
+    authDomain: "neonxi.firebaseapp.com",
+    databaseURL: "https://neonxi-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "neonxi",
+    storageBucket: "neonxi.firebasestorage.app",
+    messagingSenderId: "667191549799",
+    appId: "1:667191549799:web:1e40feacbee09ed7f3d9c2"
+  };
+
+  const firebaseApp = initializeApp(firebaseConfig);
+  const auth = getAuth(firebaseApp);
+  const database = getDatabase(firebaseApp);
+
   const bootScreen = document.getElementById("bootScreen");
   const bootHome = document.getElementById("bootHome");
   const bootOnline = document.getElementById("bootOnline");
@@ -13858,126 +13892,473 @@ document.addEventListener("click", function (event) {
   const lobbyTeamB = document.getElementById("lobbyTeamB");
   const lobbyStatusText = document.getElementById("lobbyStatusText");
 
-  const appRoot =
-    document.querySelector(".appShell") ||
-    document.querySelector(".app") ||
-    document.querySelector("main") ||
-    document.body;
+  let currentUser = null;
+  let roomUnsubscribe = null;
+  let disconnectRegistration = null;
+  let operationInProgress = false;
 
   window.KADRO_ONLINE = {
     mode: null,
     teamName: "",
     roomCode: "",
     side: null,
-    isHost: false
+    isHost: false,
+    uid: "",
+    connected: false,
+    room: null
   };
 
   function setBootView(view) {
-    [bootHome, bootOnline, bootLobby].forEach(v => v.classList.remove("active"));
-    view.classList.add("active");
+    [bootHome, bootOnline, bootLobby].forEach(element => {
+      element?.classList.remove("active");
+    });
+
+    view?.classList.add("active");
+  }
+
+  function setOnlineStatus(message, isError = false) {
+    if (!onlineBootStatus) return;
+
+    onlineBootStatus.textContent = message;
+    onlineBootStatus.style.color = isError
+      ? "#ff8b98"
+      : "rgba(221,255,236,.82)";
+  }
+
+  function setLobbyStatus(message, isError = false) {
+    if (!lobbyStatusText) return;
+
+    lobbyStatusText.textContent = message;
+    lobbyStatusText.style.color = isError
+      ? "#ff8b98"
+      : "rgba(221,255,236,.82)";
+  }
+
+  function setBusy(isBusy) {
+    operationInProgress = isBusy;
+
+    [createRoomBtn, joinRoomBtn, backBootBtn].forEach(button => {
+      if (button) button.disabled = isBusy;
+    });
   }
 
   function sanitizeTeamName(name) {
     return String(name || "")
       .replace(/[<>]/g, "")
+      .replace(/\s+/g, " ")
       .trim()
       .slice(0, 20);
   }
 
+  function sanitizeRoomCode(value) {
+    return String(value || "")
+      .toUpperCase()
+      .replace(/[^A-HJ-NP-Z2-9]/g, "")
+      .slice(0, 6);
+  }
+
   function generateRoomCode() {
-    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    const characters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     let code = "";
-    for (let i = 0; i < 6; i++) {
-      code += chars[Math.floor(Math.random() * chars.length)];
+
+    for (let index = 0; index < 6; index++) {
+      code += characters[
+        Math.floor(Math.random() * characters.length)
+      ];
     }
+
     return code;
+  }
+
+  function readableFirebaseError(error) {
+    const code = error?.code || "";
+
+    if (code.includes("auth/operation-not-allowed")) {
+      return "Firebase Anonymous Authentication henüz etkin değil.";
+    }
+
+    if (code.includes("auth/unauthorized-domain")) {
+      return "Bu GitHub Pages alanı Firebase Authentication içinde yetkilendirilmemiş.";
+    }
+
+    if (code.includes("permission-denied")) {
+      return "Firebase Database Rules bu işleme izin vermedi.";
+    }
+
+    if (code.includes("network-request-failed")) {
+      return "Firebase bağlantısı kurulamadı. İnternet bağlantını kontrol et.";
+    }
+
+    return error?.message || "Beklenmeyen bir Firebase hatası oluştu.";
+  }
+
+  async function ensureAnonymousUser() {
+    if (currentUser) return currentUser;
+
+    if (auth.currentUser) {
+      currentUser = auth.currentUser;
+      window.KADRO_ONLINE.uid = currentUser.uid;
+      return currentUser;
+    }
+
+    const credentials = await signInAnonymously(auth);
+    currentUser = credentials.user;
+    window.KADRO_ONLINE.uid = currentUser.uid;
+    return currentUser;
   }
 
   function startSingleMode() {
     window.KADRO_ONLINE.mode = "single";
-    bootScreen.classList.add("hidden");
-
-    /*
-      Burada mevcut oyunun ilk ekranı/draft akışı
-      normal şekilde devam edecek.
-    */
+    bootScreen?.classList.add("hidden");
 
     if (typeof window.showStage === "function") {
       window.showStage("draft");
     }
   }
 
-  function goOnlineForm() {
+  async function goOnlineForm() {
     setBootView(bootOnline);
-    onlineBootStatus.textContent = "Takım adını girip oda oluşturabilir veya mevcut bir odaya katılabilirsin.";
+    setOnlineStatus("Firebase bağlantısı hazırlanıyor...");
+
+    try {
+      await ensureAnonymousUser();
+      window.KADRO_ONLINE.connected = true;
+      setOnlineStatus(
+        "Bağlantı hazır. Takım adını girip oda oluşturabilir veya mevcut bir odaya katılabilirsin."
+      );
+    } catch (error) {
+      window.KADRO_ONLINE.connected = false;
+      setOnlineStatus(readableFirebaseError(error), true);
+      console.error("Firebase anonim giriş hatası:", error);
+    }
   }
 
-  function createRoom() {
-    const teamName = sanitizeTeamName(onlineTeamName.value);
+  async function reserveRoomCode(teamName) {
+    for (let attempt = 0; attempt < 12; attempt++) {
+      const roomCode = generateRoomCode();
+      const roomReference = ref(database, `rooms/${roomCode}`);
+
+      const result = await runTransaction(
+        roomReference,
+        currentRoom => {
+          if (currentRoom !== null) {
+            return;
+          }
+
+          return {
+            version: "1.15-online-alpha",
+            status: "waiting",
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+            hostUid: currentUser.uid,
+            players: {
+              A: {
+                uid: currentUser.uid,
+                name: teamName,
+                connected: true,
+                joinedAt: serverTimestamp()
+              }
+            }
+          };
+        },
+        { applyLocally: false }
+      );
+
+      if (result.committed) {
+        return roomCode;
+      }
+    }
+
+    throw new Error("Benzersiz oda kodu üretilemedi. Lütfen tekrar dene.");
+  }
+
+  async function registerDisconnect(roomCode, side) {
+    if (disconnectRegistration) {
+      try {
+        await disconnectRegistration.cancel();
+      } catch (error) {}
+    }
+
+    const connectedReference = ref(
+      database,
+      `rooms/${roomCode}/players/${side}/connected`
+    );
+
+    disconnectRegistration = onDisconnect(connectedReference);
+    await disconnectRegistration.set(false);
+  }
+
+  function stopRoomListener() {
+    if (typeof roomUnsubscribe === "function") {
+      roomUnsubscribe();
+    }
+
+    roomUnsubscribe = null;
+  }
+
+  function watchRoom(roomCode) {
+    stopRoomListener();
+
+    const roomReference = ref(database, `rooms/${roomCode}`);
+
+    roomUnsubscribe = onValue(
+      roomReference,
+      snapshot => {
+        if (!snapshot.exists()) {
+          setLobbyStatus(
+            "Oda kapatıldı veya artık mevcut değil.",
+            true
+          );
+          return;
+        }
+
+        const room = snapshot.val();
+        const playerA = room.players?.A || null;
+        const playerB = room.players?.B || null;
+
+        window.KADRO_ONLINE.room = room;
+
+        lobbyRoomCode.textContent = roomCode;
+        lobbyTeamA.textContent = playerA?.name || "Bekleniyor...";
+        lobbyTeamB.textContent = playerB?.name || "Rakip bekleniyor...";
+
+        const bothPresent = Boolean(playerA && playerB);
+        const bothConnected = Boolean(
+          playerA?.connected && playerB?.connected
+        );
+
+        if (bothPresent && bothConnected) {
+          setLobbyStatus(
+            "İki oyuncu da bağlandı. Gerçek zamanlı lobi çalışıyor."
+          );
+
+          if (
+            window.KADRO_ONLINE.isHost &&
+            room.status !== "ready"
+          ) {
+            update(roomReference, {
+              status: "ready",
+              updatedAt: serverTimestamp()
+            }).catch(error => {
+              console.error("Oda durumu güncellenemedi:", error);
+            });
+          }
+        } else if (bothPresent) {
+          setLobbyStatus(
+            "Rakip odada ancak bağlantısı şu anda çevrim dışı görünüyor."
+          );
+        } else if (window.KADRO_ONLINE.isHost) {
+          setLobbyStatus(
+            "Rakip oyuncu bu oda kodu ile katılabilir."
+          );
+        } else {
+          setLobbyStatus("Ev sahibi bağlantısı bekleniyor...");
+        }
+      },
+      error => {
+        setLobbyStatus(readableFirebaseError(error), true);
+        console.error("Oda dinleme hatası:", error);
+      }
+    );
+  }
+
+  async function createRoom() {
+    if (operationInProgress) return;
+
+    const teamName = sanitizeTeamName(onlineTeamName?.value);
 
     if (!teamName) {
-      onlineBootStatus.textContent = "Lütfen önce takım adını gir.";
+      setOnlineStatus("Lütfen önce takım adını gir.", true);
       return;
     }
 
-    const roomCode = generateRoomCode();
+    setBusy(true);
+    setOnlineStatus("Oda oluşturuluyor...");
 
-    window.KADRO_ONLINE.mode = "online";
-    window.KADRO_ONLINE.teamName = teamName;
-    window.KADRO_ONLINE.roomCode = roomCode;
-    window.KADRO_ONLINE.side = "A";
-    window.KADRO_ONLINE.isHost = true;
+    try {
+      await ensureAnonymousUser();
+      const roomCode = await reserveRoomCode(teamName);
 
-    lobbyRoomCode.textContent = roomCode;
-    lobbyTeamA.textContent = teamName;
-    lobbyTeamB.textContent = "Rakip bekleniyor...";
-    lobbyStatusText.textContent = "Rakip oyuncu bu oda kodu ile katılabilir.";
+      Object.assign(window.KADRO_ONLINE, {
+        mode: "online",
+        teamName,
+        roomCode,
+        side: "A",
+        isHost: true,
+        uid: currentUser.uid,
+        connected: true
+      });
 
-    setBootView(bootLobby);
+      await registerDisconnect(roomCode, "A");
 
-    /*
-      Sonraki adımda burada gerçek PeerJS / WebRTC
-      oda oluşturma kodunu bağlayacağız.
-    */
+      lobbyRoomCode.textContent = roomCode;
+      lobbyTeamA.textContent = teamName;
+      lobbyTeamB.textContent = "Rakip bekleniyor...";
+      setLobbyStatus("Rakip oyuncu bu oda kodu ile katılabilir.");
+      setBootView(bootLobby);
+      watchRoom(roomCode);
+    } catch (error) {
+      setOnlineStatus(readableFirebaseError(error), true);
+      console.error("Oda oluşturma hatası:", error);
+    } finally {
+      setBusy(false);
+    }
   }
 
-  function joinRoom() {
-    const teamName = sanitizeTeamName(onlineTeamName.value);
-    const roomCode = String(joinRoomCode.value || "").trim().toUpperCase();
+  async function joinRoom() {
+    if (operationInProgress) return;
+
+    const teamName = sanitizeTeamName(onlineTeamName?.value);
+    const roomCode = sanitizeRoomCode(joinRoomCode?.value);
 
     if (!teamName) {
-      onlineBootStatus.textContent = "Lütfen takım adını gir.";
+      setOnlineStatus("Lütfen önce takım adını gir.", true);
       return;
     }
 
-    if (!roomCode) {
-      onlineBootStatus.textContent = "Lütfen oda kodunu gir.";
+    if (roomCode.length !== 6) {
+      setOnlineStatus("Lütfen altı karakterli geçerli oda kodunu gir.", true);
       return;
     }
 
-    window.KADRO_ONLINE.mode = "online";
-    window.KADRO_ONLINE.teamName = teamName;
-    window.KADRO_ONLINE.roomCode = roomCode;
-    window.KADRO_ONLINE.side = "B";
-    window.KADRO_ONLINE.isHost = false;
+    setBusy(true);
+    setOnlineStatus("Odaya bağlanılıyor...");
 
-    lobbyRoomCode.textContent = roomCode;
-    lobbyTeamA.textContent = "Ev sahibi bekleniyor...";
-    lobbyTeamB.textContent = teamName;
-    lobbyStatusText.textContent = "Odaya bağlanılıyor...";
+    try {
+      await ensureAnonymousUser();
 
-    setBootView(bootLobby);
+      const roomReference = ref(database, `rooms/${roomCode}`);
+      const initialSnapshot = await get(roomReference);
 
-    /*
-      Sonraki adımda burada gerçek PeerJS / WebRTC
-      odaya katılma kodunu bağlayacağız.
-    */
+      if (!initialSnapshot.exists()) {
+        throw new Error("Bu oda koduyla eşleşen aktif bir oda bulunamadı.");
+      }
+
+      const result = await runTransaction(
+        roomReference,
+        room => {
+          if (!room) return;
+
+          const existingGuest = room.players?.B;
+
+          if (
+            existingGuest?.uid &&
+            existingGuest.uid !== currentUser.uid
+          ) {
+            return;
+          }
+
+          room.players = room.players || {};
+          room.players.B = {
+            uid: currentUser.uid,
+            name: teamName,
+            connected: true,
+            joinedAt:
+              existingGuest?.joinedAt || serverTimestamp()
+          };
+          room.status = "ready";
+          room.updatedAt = serverTimestamp();
+
+          return room;
+        },
+        { applyLocally: false }
+      );
+
+      if (!result.committed) {
+        throw new Error("Bu oda dolu veya artık kullanılamıyor.");
+      }
+
+      Object.assign(window.KADRO_ONLINE, {
+        mode: "online",
+        teamName,
+        roomCode,
+        side: "B",
+        isHost: false,
+        uid: currentUser.uid,
+        connected: true
+      });
+
+      await registerDisconnect(roomCode, "B");
+
+      lobbyRoomCode.textContent = roomCode;
+      lobbyTeamA.textContent = "Ev sahibi okunuyor...";
+      lobbyTeamB.textContent = teamName;
+      setLobbyStatus("Odaya bağlanıldı. Lobi güncelleniyor...");
+      setBootView(bootLobby);
+      watchRoom(roomCode);
+    } catch (error) {
+      setOnlineStatus(readableFirebaseError(error), true);
+      console.error("Odaya katılma hatası:", error);
+    } finally {
+      setBusy(false);
+    }
   }
 
-  function leaveLobby() {
-    lobbyStatusText.textContent = "Lobiden çıkıldı.";
+  async function leaveLobby() {
+    const {
+      roomCode,
+      side,
+      isHost
+    } = window.KADRO_ONLINE;
+
+    stopRoomListener();
+
+    if (disconnectRegistration) {
+      try {
+        await disconnectRegistration.cancel();
+      } catch (error) {}
+      disconnectRegistration = null;
+    }
+
+    try {
+      if (roomCode && currentUser) {
+        if (isHost) {
+          await remove(ref(database, `rooms/${roomCode}`));
+        } else if (side === "B") {
+          await remove(
+            ref(database, `rooms/${roomCode}/players/B`)
+          );
+
+          await update(ref(database, `rooms/${roomCode}`), {
+            status: "waiting",
+            updatedAt: serverTimestamp()
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Lobiden çıkış hatası:", error);
+    }
+
+    Object.assign(window.KADRO_ONLINE, {
+      mode: null,
+      teamName: "",
+      roomCode: "",
+      side: null,
+      isHost: false,
+      room: null
+    });
+
+    setOnlineStatus(
+      "Lobiden çıkıldı. Yeni bir oda oluşturabilir veya başka bir odaya katılabilirsin."
+    );
     setBootView(bootOnline);
   }
+
+  joinRoomCode?.addEventListener("input", () => {
+    joinRoomCode.value = sanitizeRoomCode(joinRoomCode.value);
+  });
+
+  onlineTeamName?.addEventListener("keydown", event => {
+    if (event.key === "Enter") {
+      createRoom();
+    }
+  });
+
+  joinRoomCode?.addEventListener("keydown", event => {
+    if (event.key === "Enter") {
+      joinRoom();
+    }
+  });
 
   singleModeBtn?.addEventListener("click", startSingleMode);
   onlineModeBtn?.addEventListener("click", goOnlineForm);
@@ -13986,11 +14367,18 @@ document.addEventListener("click", function (event) {
   joinRoomBtn?.addEventListener("click", joinRoom);
   leaveLobbyBtn?.addEventListener("click", leaveLobby);
 
-  /*
-    İlk açılışta oyun arka planda kalsın,
-    açılış ekranı önde görünsün.
-  */
-  bootScreen.classList.remove("hidden");
+  onAuthStateChanged(auth, user => {
+    currentUser = user;
+    window.KADRO_ONLINE.uid = user?.uid || "";
+    window.KADRO_ONLINE.connected = Boolean(user);
+  });
+
+  signInAnonymously(auth).catch(error => {
+    setOnlineStatus(readableFirebaseError(error), true);
+    console.error("İlk Firebase bağlantısı kurulamadı:", error);
+  });
+
+  bootScreen?.classList.remove("hidden");
 })();
 </script>
 </body>
