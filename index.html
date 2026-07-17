@@ -13839,14 +13839,31 @@ document.addEventListener("click", function (event) {
 (() => {
   "use strict";
 
-  /* KADRO çevrim içi draft köprüsü */
+  /* KADRO v1.17 — çevrim içi oturum, taktik ve maç köprüsü */
 
   const originalDraftPlayer = draftPlayer;
   const originalCanDraft = canDraft;
   const originalRenderDraftStatus = renderDraftStatus;
+  const originalRenderTeam = renderTeam;
   const originalShowTactics = showTactics;
+  const originalRenderTactics = renderTactics;
+  const originalTacticReady = tacticReady;
 
   let lastAppliedPickCount = -1;
+  let lastDraftSignature = "";
+  let currentOnlinePhase = "";
+  let namingRefreshQueued = false;
+  let namingRefreshRunning = false;
+  let matchPublishTimer = null;
+  let lastMatchSnapshotSignature = "";
+  let matchObserver = null;
+  let activeRoomCode = "";
+
+  document.title = "KADRO — Online Draft, Taktik ve Maç v1.17";
+  const brandVersion = document.querySelector(".brandText span");
+  if (brandVersion) {
+    brandVersion.textContent = "Online draft + taktik + ortak maç · v1.17";
+  }
 
   function onlineSession() {
     return Boolean(
@@ -13859,6 +13876,154 @@ document.addEventListener("click", function (event) {
   function localSide() {
     return window.KADRO_ONLINE?.side || null;
   }
+
+  function otherSide(side) {
+    return side === "A" ? "B" : "A";
+  }
+
+  function roomPlayer(side) {
+    return window.KADRO_ONLINE?.room?.players?.[side] || null;
+  }
+
+  function teamName(side) {
+    if (!onlineSession()) return `Takım ${side}`;
+
+    return roomPlayer(side)?.name ||
+      (side === localSide() ? window.KADRO_ONLINE?.teamName : "") ||
+      `Takım ${side}`;
+  }
+
+  window.KADRO_TEAM_NAME = teamName;
+
+  function cloneData(value) {
+    return value == null
+      ? value
+      : JSON.parse(JSON.stringify(value));
+  }
+
+  function turkishGenitive(name) {
+    const text = String(name || "").trim();
+    if (!text) return text;
+
+    const normalized = text
+      .toLocaleLowerCase("tr-TR")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+
+    const vowels = normalized.match(/[aeiouıöü]/g);
+    const lastVowel = vowels?.at(-1) || "i";
+    const harmony = /[aı]/.test(lastVowel)
+      ? "ın"
+      : /[ou]/.test(lastVowel)
+        ? "un"
+        : /[öü]/.test(lastVowel)
+          ? "ün"
+          : "in";
+    const endsWithVowel = /[aeiouıöü]$/.test(normalized);
+
+    return `${text}'${endsWithVowel ? "n" : ""}${harmony}`;
+  }
+
+  function replaceTeamTokens(text) {
+    if (!onlineSession() || typeof text !== "string") return text;
+
+    const nameA = teamName("A");
+    const nameB = teamName("B");
+
+    return text
+      .replace(/Takım A'nın/g, turkishGenitive(nameA))
+      .replace(/Takım B'nin/g, turkishGenitive(nameB))
+      .replace(/Takım A/g, nameA)
+      .replace(/Takım B/g, nameB);
+  }
+
+  function replaceTextNodes(root) {
+    if (!root || !onlineSession()) return;
+
+    const walker = document.createTreeWalker(
+      root,
+      NodeFilter.SHOW_TEXT,
+      {
+        acceptNode(node) {
+          const parent = node.parentElement;
+          if (!parent) return NodeFilter.FILTER_REJECT;
+          if (["SCRIPT", "STYLE", "TEXTAREA"].includes(parent.tagName)) {
+            return NodeFilter.FILTER_REJECT;
+          }
+          return /Takım [AB]/.test(node.nodeValue || "")
+            ? NodeFilter.FILTER_ACCEPT
+            : NodeFilter.FILTER_REJECT;
+        }
+      }
+    );
+
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+
+    nodes.forEach(node => {
+      const next = replaceTeamTokens(node.nodeValue || "");
+      if (next !== node.nodeValue) node.nodeValue = next;
+    });
+  }
+
+  function refreshTeamNames() {
+    if (!onlineSession() || namingRefreshRunning) return;
+
+    namingRefreshRunning = true;
+
+    try {
+      const cardA = document.querySelector("#teamCardA .teamHead h2");
+      const cardB = document.querySelector("#teamCardB .teamHead h2");
+      if (cardA) cardA.textContent = teamName("A");
+      if (cardB) cardB.textContent = teamName("B");
+
+      const tacticTitle = document.getElementById("tacticTeamTitle");
+      if (tacticTitle && state?.tacticTeam) {
+        tacticTitle.textContent = teamName(state.tacticTeam);
+      }
+
+      const tacticReadyButton = document.getElementById("tacticReadyBtn");
+      if (tacticReadyButton && state?.tacticTeam) {
+        tacticReadyButton.textContent = state.tacticReady?.[state.tacticTeam]
+          ? `${teamName(state.tacticTeam)} hazır`
+          : `${teamName(state.tacticTeam)} Hazır`;
+      }
+
+      const matchNameA = document.querySelector(".matchTeam.teamA strong");
+      const matchNameB = document.querySelector(".matchTeam.teamB strong");
+      if (matchNameA) matchNameA.textContent = teamName("A");
+      if (matchNameB) matchNameB.textContent = teamName("B");
+
+      [
+        document.getElementById("draftScreen"),
+        document.getElementById("tacticsScreen"),
+        document.getElementById("powerCompare"),
+        document.getElementById("complete"),
+        document.getElementById("matchSimulation"),
+        document.getElementById("kadroPresentationScene"),
+        document.getElementById("kadroRatingBoard")
+      ].forEach(replaceTextNodes);
+    } finally {
+      namingRefreshRunning = false;
+    }
+  }
+
+  function queueTeamNameRefresh() {
+    if (namingRefreshQueued) return;
+    namingRefreshQueued = true;
+
+    requestAnimationFrame(() => {
+      namingRefreshQueued = false;
+      refreshTeamNames();
+    });
+  }
+
+  const namingObserver = new MutationObserver(queueTeamNameRefresh);
+  namingObserver.observe(document.body, {
+    childList: true,
+    subtree: true,
+    characterData: true
+  });
 
   function slotDisplayPosition(slot) {
     const helper = window.KADRO_POSITION_SYSTEM?.slotPosition;
@@ -13928,13 +14093,10 @@ document.addEventListener("click", function (event) {
       return;
     }
 
-    if (title) {
-      title.textContent = `${footballer.name} için mevki seç`;
-    }
-
+    if (title) title.textContent = `${footballer.name} için mevki seç`;
     if (description) {
       description.textContent =
-        `Takım ${team} kadrosunda oyuncunun oynayacağı boş bölgeyi seç.`;
+        `${teamName(team)} kadrosunda oyuncunun oynayacağı boş bölgeyi seç.`;
     }
 
     grid.innerHTML = slots.map(slot => {
@@ -13975,10 +14137,7 @@ document.addEventListener("click", function (event) {
 
   function restorePlayerPositions() {
     PLAYERS.forEach(footballer => {
-      if (footballer.primaryPos) {
-        footballer.pos = footballer.primaryPos;
-      }
-
+      if (footballer.primaryPos) footballer.pos = footballer.primaryPos;
       delete footballer.deployedPos;
       delete footballer.draftTeam;
     });
@@ -14023,6 +14182,10 @@ document.addEventListener("click", function (event) {
     return true;
   }
 
+  function teamHasPicked(team) {
+    return countFilled(team) > 0;
+  }
+
   function lockOnlineControls() {
     if (!onlineSession()) return;
 
@@ -14032,10 +14195,13 @@ document.addEventListener("click", function (event) {
 
     document.querySelectorAll(".formationSelect").forEach(select => {
       const team = select.dataset.team;
-      select.disabled = state.pickIndex > 0 || team !== side;
+      const lockedByPick = teamHasPicked(team);
+      select.disabled = team !== side || lockedByPick;
       select.title = team !== side
         ? "Rakibin formasyonunu değiştiremezsin."
-        : "";
+        : lockedByPick
+          ? "Kendi ilk seçimini yaptıktan sonra formasyon değiştirilemez."
+          : "İlk oyuncunu seçene kadar formasyonunu değiştirebilirsin.";
     });
 
     const autoFillButton = document.getElementById("autoFillBtn");
@@ -14049,30 +14215,33 @@ document.addEventListener("click", function (event) {
 
     if (turn && turnText) {
       turnText.textContent = myTurn
-        ? `Sıra sende · Takım ${side}`
-        : `Rakip seçiyor · Takım ${turn}`;
+        ? `Sıra sende · ${teamName(side)}`
+        : `${teamName(turn)} seçiyor`;
     }
 
     if (turn && turnSub) {
-      turnSub.textContent += myTurn
-        ? " · Oyuncunu seç"
-        : " · Seçim bekleniyor";
+      turnSub.textContent = turnSub.textContent
+        .replace(/ · Oyuncunu seç$/, "")
+        .replace(/ · Seçim bekleniyor$/, "") +
+        (myTurn ? " · Oyuncunu seç" : " · Seçim bekleniyor");
     }
 
     document.body.classList.toggle(
       "online-draft-waiting",
       Boolean(turn && !myTurn)
     );
+
+    queueTeamNameRefresh();
   }
 
-  canDraft = function (footballer) {
-    if (
-      onlineSession() &&
-      currentTeam() !== localSide()
-    ) {
-      return false;
-    }
+  renderTeam = function (team) {
+    originalRenderTeam(team);
+    const heading = document.querySelector(`#teamCard${team} .teamHead h2`);
+    if (heading && onlineSession()) heading.textContent = teamName(team);
+  };
 
+  canDraft = function (footballer) {
+    if (onlineSession() && currentTeam() !== localSide()) return false;
     return originalCanDraft(footballer);
   };
 
@@ -14141,9 +14310,9 @@ document.addEventListener("click", function (event) {
         return;
       }
 
-      if (state.pickIndex > 0) {
+      if (teamHasPicked(team)) {
         select.value = state.teams[team].formation;
-        toast("İlk seçimden sonra formasyon değiştirilemez.");
+        toast("Kendi ilk oyuncunu seçtikten sonra formasyon değiştirilemez.");
         return;
       }
 
@@ -14164,36 +14333,153 @@ document.addEventListener("click", function (event) {
     true
   );
 
-  showTactics = function () {
-    originalShowTactics();
+  function prepareOwnTacticsScreen() {
+    const side = localSide();
+    if (!side) return;
 
+    state.tacticTeam = side;
+    state.tacticSection = state.tacticSection || "roles";
+    state.selectedSlot = formation(side).slots
+      .find(slot => slot.pos !== "GK")?.id ||
+      formation(side).slots[0]?.id ||
+      null;
+
+    document.getElementById("backDraftBtn")?.classList.add("hidden");
+    const handoverButton = document.getElementById("handoverBtn");
+    if (handoverButton) handoverButton.style.display = "none";
+    document.getElementById("handover")?.classList.add("hidden");
+  }
+
+  showTactics = function () {
+    if (!onlineSession()) return originalShowTactics();
+
+    originalShowTactics();
+    prepareOwnTacticsScreen();
+    originalRenderTactics();
+    refreshTeamNames();
+  };
+
+  renderTactics = function () {
     if (onlineSession()) {
       state.tacticTeam = localSide();
-      state.tacticSection = "roles";
-      state.selectedSlot = formation(localSide()).slots
-        .find(slot => slot.pos !== "GK")?.id || null;
-      renderTactics();
+    }
+
+    originalRenderTactics();
+
+    if (onlineSession()) {
+      prepareOwnTacticsScreen();
+      const side = localSide();
+      const ready = Boolean(state.tacticReady?.[side]);
+      const readyButton = document.getElementById("tacticReadyBtn");
+
+      if (readyButton) {
+        readyButton.disabled = ready;
+        readyButton.textContent = ready
+          ? `${teamName(side)} hazır`
+          : `${teamName(side)} Hazır`;
+      }
+
+      refreshTeamNames();
     }
   };
+
+  function showTacticWaiting() {
+    const side = localSide();
+    const handover = document.getElementById("handover");
+    const title = document.getElementById("handoverTitle");
+    const text = document.getElementById("handoverText");
+    const button = document.getElementById("handoverBtn");
+
+    if (title) title.textContent = `${teamName(side)} hazır`;
+    if (text) {
+      text.textContent =
+        "Taktiklerin kaydedildi. Rakibin de hazır vermesi bekleniyor.";
+    }
+    if (button) button.style.display = "none";
+    handover?.classList.remove("hidden");
+  }
+
+  function hideTacticWaiting() {
+    document.getElementById("handover")?.classList.add("hidden");
+  }
+
+  tacticReady = function () {
+    if (!onlineSession()) return originalTacticReady();
+
+    const side = localSide();
+    if (!side || state.tacticReady?.[side]) return;
+
+    state.tacticReady[side] = true;
+    const readyButton = document.getElementById("tacticReadyBtn");
+    if (readyButton) readyButton.disabled = true;
+    showTacticWaiting();
+
+    window.dispatchEvent(new CustomEvent(
+      "kadro-online-tactic-ready",
+      {
+        detail: {
+          side,
+          tactics: cloneData(state.tactics[side])
+        }
+      }
+    ));
+  };
+
+  const tacticReadyButton = document.getElementById("tacticReadyBtn");
+  if (tacticReadyButton) tacticReadyButton.onclick = tacticReady;
+
+  const originalHandoverClick = document.getElementById("handoverBtn")?.onclick;
+  const handoverButton = document.getElementById("handoverBtn");
+  if (handoverButton) {
+    handoverButton.onclick = event => {
+      if (onlineSession()) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        return;
+      }
+      originalHandoverClick?.call(handoverButton, event);
+    };
+  }
+
+  window.addEventListener("kadro-online-tactic-ready-failed", event => {
+    if (!onlineSession()) return;
+    const side = localSide();
+    state.tacticReady[side] = false;
+    hideTacticWaiting();
+    const readyButton = document.getElementById("tacticReadyBtn");
+    if (readyButton) readyButton.disabled = false;
+    toast(event.detail?.message || "Taktikler kaydedilemedi.");
+  });
 
   function initialGameState() {
     return {
       phase: "draft",
-      version: 1,
+      version: 2,
       formations: {
         A: "433",
         B: "433"
       },
       pickIndex: 0,
       picks: {},
+      tactics: {},
+      tacticReady: {
+        A: false,
+        B: false
+      },
       startedAt: Date.now(),
       updatedAt: Date.now()
     };
   }
 
-  function applyGameState(game) {
-    if (!game || game.phase !== "draft") return;
+  function draftSignature(game) {
+    return JSON.stringify({
+      formations: game?.formations || {},
+      picks: game?.picks || {},
+      pickIndex: Number(game?.pickIndex || 0)
+    });
+  }
 
+  function rebuildDraftState(game) {
     const previousCount = Math.max(0, lastAppliedPickCount);
     const preserved = {
       filter: state.filter,
@@ -14225,7 +14511,10 @@ document.addEventListener("click", function (event) {
       A: baseTactics(),
       B: baseTactics()
     };
-    state.tacticReady = { A: false, B: false };
+    state.tacticReady = {
+      A: false,
+      B: false
+    };
     state.filter = preserved.filter;
     state.search = preserved.search;
     state.selectedPlayer = preserved.selectedPlayer;
@@ -14234,15 +14523,14 @@ document.addEventListener("click", function (event) {
       .sort((first, second) => Number(first[0]) - Number(second[0]))
       .forEach(([, pick]) => applyPickToState(pick));
 
+    ["A", "B"].forEach(side => {
+      if (game.tactics?.[side]) {
+        state.tactics[side] = cloneData(game.tactics[side]);
+      }
+      state.tacticReady[side] = Boolean(game.tacticReady?.[side]);
+    });
+
     document.body.classList.remove("draft-animating");
-    document.getElementById("bootScreen")?.classList.add("hidden");
-    document.getElementById("draftScreen")?.classList.remove("hidden");
-    document.getElementById("tacticsScreen")?.classList.add("hidden");
-    document.getElementById("tacticFooter")?.classList.add("hidden");
-
-    const stageLabel = document.getElementById("stageLabel");
-    if (stageLabel) stageLabel.textContent = "Online Draft";
-
     render();
     lockOnlineControls();
 
@@ -14255,7 +14543,7 @@ document.addEventListener("click", function (event) {
 
       if (selected) {
         toast(
-          `${selected.name}, Takım ${latestPick.team} tarafından seçildi.`
+          `${selected.name}, ${teamName(latestPick.team)} tarafından seçildi.`
         );
       }
     }
@@ -14263,14 +14551,343 @@ document.addEventListener("click", function (event) {
     lastAppliedPickCount = newCount;
   }
 
+  function applyStoredTactics(game) {
+    ["A", "B"].forEach(side => {
+      if (game.tactics?.[side] && game.tacticReady?.[side]) {
+        state.tactics[side] = cloneData(game.tactics[side]);
+      }
+      state.tacticReady[side] = Boolean(game.tacticReady?.[side]);
+    });
+  }
+
+  function showOnlineDraft() {
+    document.getElementById("bootScreen")?.classList.add("hidden");
+    document.getElementById("draftScreen")?.classList.remove("hidden");
+    document.getElementById("tacticsScreen")?.classList.add("hidden");
+    document.getElementById("tacticFooter")?.classList.add("hidden");
+    document.getElementById("complete")?.classList.add("hidden");
+    hideTacticWaiting();
+
+    const stageLabel = document.getElementById("stageLabel");
+    if (stageLabel) stageLabel.textContent = "Online Draft";
+
+    state.screen = "draft";
+    render();
+    lockOnlineControls();
+  }
+
+  function showOnlineTactics(game) {
+    document.getElementById("bootScreen")?.classList.add("hidden");
+    applyStoredTactics(game);
+    showTactics();
+
+    const side = localSide();
+    if (game.tacticReady?.[side]) {
+      showTacticWaiting();
+    } else {
+      hideTacticWaiting();
+    }
+  }
+
+  function setOnlineMatchControls(snapshot = null) {
+    if (!onlineSession()) return;
+
+    const isHost = Boolean(window.KADRO_ONLINE?.isHost);
+    const startButton = document.getElementById("matchStartPause");
+    const restartButton = document.getElementById("matchRestart");
+    const closeButton = document.getElementById("matchClose");
+    const speedButtons = document.querySelectorAll("[data-match-speed]");
+
+    if (startButton) {
+      startButton.disabled = !isHost || Boolean(snapshot?.finished);
+      if (!isHost) {
+        startButton.textContent = snapshot?.finished
+          ? "Maç Tamamlandı"
+          : snapshot?.running
+            ? "Maç oynanıyor"
+            : Number(snapshot?.minute || 0) > 0
+              ? "Ev sahibi maçı duraklattı"
+              : "Ev sahibi maçı başlatacak";
+      }
+    }
+
+    if (restartButton) {
+      restartButton.disabled = true;
+      restartButton.style.display = "none";
+    }
+
+    if (closeButton) {
+      closeButton.disabled = true;
+      closeButton.style.display = "none";
+    }
+
+    speedButtons.forEach(button => {
+      button.disabled = !isHost;
+      button.title = isHost
+        ? "Maç hızını ev sahibi yönetir."
+        : "Maç hızını ev sahibi yönetiyor.";
+    });
+  }
+
+  function collectMatchSnapshot() {
+    if (!onlineSession() || !window.KADRO_ONLINE?.isHost) return null;
+
+    refreshTeamNames();
+
+    const game = window.KADRO_MATCH_PRESENTATION || {};
+    const readText = id => document.getElementById(id)?.textContent || "";
+    const readHTML = id => document.getElementById(id)?.innerHTML || "";
+    const readClass = id => document.getElementById(id)?.className || "";
+
+    return {
+      sequence: Date.now(),
+      minute: Number(game.minute || 0),
+      running: Boolean(game.running),
+      finished: Boolean(game.finished),
+      score: cloneData(game.score || { A: 0, B: 0 }),
+      clock: readText("matchClock"),
+      scoreA: readText("matchScoreA"),
+      scoreB: readText("matchScoreB"),
+      phaseText: readText("matchPhase"),
+      timelineWidth:
+        document.getElementById("matchTimelineFill")?.style.width || "0%",
+      momentum: readText("matchMomentum"),
+      tacticA: readText("matchTacticA"),
+      tacticB: readText("matchTacticB"),
+      commentaryHTML: readHTML("commentaryFeed"),
+      statsHTML: readHTML("matchStatsBody"),
+      reasonMain: readText("matchReasonMain"),
+      reasonSub: readText("matchReasonSub"),
+      resultHTML: readHTML("matchResult"),
+      resultClass: readClass("matchResult"),
+      overlayClass: readClass("matchSimulation"),
+      sceneClass: readClass("kadroPresentationScene"),
+      sceneMinute: readText("kpSceneMinute"),
+      sceneTitle: readText("kpSceneTitle"),
+      sceneSub: readText("kpSceneSub"),
+      playHTML: readHTML("kpPlay"),
+      boardClass: readClass("kadroRatingBoard"),
+      boardHTML: readHTML("kadroRatingBoard")
+    };
+  }
+
+  function publishMatchSnapshotSoon() {
+    if (!onlineSession() || !window.KADRO_ONLINE?.isHost) return;
+    if (currentOnlinePhase !== "match") return;
+    if (matchPublishTimer) clearTimeout(matchPublishTimer);
+
+    matchPublishTimer = setTimeout(() => {
+      matchPublishTimer = null;
+      const snapshot = collectMatchSnapshot();
+      if (!snapshot) return;
+
+      const signature = JSON.stringify({
+        ...snapshot,
+        sequence: 0
+      });
+
+      if (signature === lastMatchSnapshotSignature) return;
+      lastMatchSnapshotSignature = signature;
+
+      window.dispatchEvent(new CustomEvent(
+        "kadro-online-match-snapshot",
+        { detail: snapshot }
+      ));
+    }, 130);
+  }
+
+  function ensureMatchObserver() {
+    if (matchObserver) return;
+
+    matchObserver = new MutationObserver(() => {
+      queueTeamNameRefresh();
+      publishMatchSnapshotSoon();
+    });
+
+    [
+      document.getElementById("matchSimulation"),
+      document.getElementById("kadroPresentationScene"),
+      document.getElementById("kadroRatingBoard")
+    ].filter(Boolean).forEach(element => {
+      matchObserver.observe(element, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+        attributes: true,
+        attributeFilter: ["class", "style"]
+      });
+    });
+  }
+
+  function applyMatchSnapshot(snapshot) {
+    if (!snapshot || window.KADRO_ONLINE?.isHost) return;
+
+    const setText = (id, value) => {
+      const element = document.getElementById(id);
+      if (element && value != null) element.textContent = value;
+    };
+    const setHTML = (id, value) => {
+      const element = document.getElementById(id);
+      if (element && value != null) element.innerHTML = value;
+    };
+
+    setText("matchClock", snapshot.clock);
+    setText("matchScoreA", snapshot.scoreA);
+    setText("matchScoreB", snapshot.scoreB);
+    setText("matchPhase", snapshot.phaseText);
+    setText("matchMomentum", snapshot.momentum);
+    setText("matchTacticA", snapshot.tacticA);
+    setText("matchTacticB", snapshot.tacticB);
+    setHTML("commentaryFeed", snapshot.commentaryHTML);
+    setHTML("matchStatsBody", snapshot.statsHTML);
+    setText("matchReasonMain", snapshot.reasonMain);
+    setText("matchReasonSub", snapshot.reasonSub);
+    setHTML("matchResult", snapshot.resultHTML);
+
+    const timeline = document.getElementById("matchTimelineFill");
+    if (timeline) timeline.style.width = snapshot.timelineWidth || "0%";
+
+    const result = document.getElementById("matchResult");
+    if (result && snapshot.resultClass) result.className = snapshot.resultClass;
+
+    const overlay = document.getElementById("matchSimulation");
+    if (overlay && snapshot.overlayClass) {
+      overlay.className = snapshot.overlayClass.replace(/\bhidden\b/g, "").trim();
+    }
+
+    const scene = document.getElementById("kadroPresentationScene");
+    if (scene && snapshot.sceneClass) scene.className = snapshot.sceneClass;
+    setText("kpSceneMinute", snapshot.sceneMinute);
+    setText("kpSceneTitle", snapshot.sceneTitle);
+    setText("kpSceneSub", snapshot.sceneSub);
+    setHTML("kpPlay", snapshot.playHTML);
+
+    const board = document.getElementById("kadroRatingBoard");
+    if (board) {
+      if (snapshot.boardClass) board.className = snapshot.boardClass;
+      if (snapshot.boardHTML != null) board.innerHTML = snapshot.boardHTML;
+      board.style.pointerEvents = "none";
+    }
+
+    const feed = document.getElementById("commentaryFeed");
+    if (feed) feed.scrollTop = feed.scrollHeight;
+
+    setOnlineMatchControls(snapshot);
+    refreshTeamNames();
+  }
+
+  function enterOnlineMatch(game) {
+    applyStoredTactics(game);
+    hideTacticWaiting();
+    document.getElementById("complete")?.classList.add("hidden");
+    document.getElementById("tacticsScreen")?.classList.add("hidden");
+    document.getElementById("tacticFooter")?.classList.add("hidden");
+
+    const overlay = document.getElementById("matchSimulation");
+    const wasHidden = overlay?.classList.contains("hidden");
+    overlay?.classList.remove("hidden");
+
+    const stageLabel = document.getElementById("stageLabel");
+    if (stageLabel) stageLabel.textContent = "Maç";
+
+    window.scrollTo(0, 0);
+    ensureMatchObserver();
+
+    setTimeout(() => {
+      refreshTeamNames();
+      setOnlineMatchControls(game.match?.snapshot || null);
+
+      if (window.KADRO_ONLINE?.isHost) {
+        publishMatchSnapshotSoon();
+      } else if (game.match?.snapshot) {
+        applyMatchSnapshot(game.match.snapshot);
+      }
+    }, wasHidden ? 220 : 30);
+  }
+
+  document.addEventListener(
+    "click",
+    event => {
+      if (!onlineSession() || currentOnlinePhase !== "match") return;
+
+      const control = event.target.closest?.(
+        "#matchStartPause, #matchRestart, #matchClose, [data-match-speed]"
+      );
+      if (!control) return;
+
+      const isHost = Boolean(window.KADRO_ONLINE?.isHost);
+      const blockedForEveryone = ["matchRestart", "matchClose"].includes(control.id);
+
+      if (!isHost || blockedForEveryone) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        if (!isHost) toast("Maçı ev sahibi kontrol ediyor.");
+        return;
+      }
+
+      setTimeout(publishMatchSnapshotSoon, 20);
+    },
+    true
+  );
+
+  function applyGameState(game, room = null) {
+    if (!game) return;
+
+    if (room) window.KADRO_ONLINE.room = room;
+
+    const roomCode = window.KADRO_ONLINE?.roomCode || "";
+    if (roomCode !== activeRoomCode) {
+      activeRoomCode = roomCode;
+      lastDraftSignature = "";
+      lastAppliedPickCount = -1;
+      lastMatchSnapshotSignature = "";
+      currentOnlinePhase = "";
+    }
+
+    const signature = draftSignature(game);
+    if (signature !== lastDraftSignature) {
+      rebuildDraftState(game);
+      lastDraftSignature = signature;
+    } else {
+      applyStoredTactics(game);
+    }
+
+    const phase = game.phase || "draft";
+
+    if (phase === "draft") {
+      if (currentOnlinePhase !== "draft") showOnlineDraft();
+      else lockOnlineControls();
+    } else if (phase === "tactics") {
+      if (currentOnlinePhase !== "tactics") showOnlineTactics(game);
+      else {
+        const side = localSide();
+        if (game.tacticReady?.[side]) showTacticWaiting();
+        else hideTacticWaiting();
+      }
+    } else if (phase === "match") {
+      enterOnlineMatch(game);
+      if (!window.KADRO_ONLINE?.isHost && game.match?.snapshot) {
+        applyMatchSnapshot(game.match.snapshot);
+      }
+    }
+
+    currentOnlinePhase = phase;
+    window.KADRO_ONLINE.phase = phase;
+    refreshTeamNames();
+  }
+
   window.KADRO_DRAFT_BRIDGE = {
     initialGameState,
     applyGameState,
     lockOnlineControls,
+    refreshTeamNames,
+    applyMatchSnapshot,
     notify(message) {
       toast(message);
     }
   };
+
+  queueTeamNameRefresh();
 })();
 </script>
 
@@ -14338,6 +14955,8 @@ import {
   let disconnectRegistration = null;
   let operationInProgress = false;
   let draftStartInProgress = false;
+  let matchSnapshotWriteInProgress = false;
+  let pendingMatchSnapshot = null;
 
   window.KADRO_ONLINE = {
     mode: null,
@@ -14347,20 +14966,19 @@ import {
     isHost: false,
     uid: "",
     connected: false,
-    room: null
+    room: null,
+    phase: null
   };
 
   function setBootView(view) {
     [bootHome, bootOnline, bootLobby].forEach(element => {
       element?.classList.remove("active");
     });
-
     view?.classList.add("active");
   }
 
   function setOnlineStatus(message, isError = false) {
     if (!onlineBootStatus) return;
-
     onlineBootStatus.textContent = message;
     onlineBootStatus.style.color = isError
       ? "#ff8b98"
@@ -14369,7 +14987,6 @@ import {
 
   function setLobbyStatus(message, isError = false) {
     if (!lobbyStatusText) return;
-
     lobbyStatusText.textContent = message;
     lobbyStatusText.style.color = isError
       ? "#ff8b98"
@@ -14378,7 +14995,6 @@ import {
 
   function setBusy(isBusy) {
     operationInProgress = isBusy;
-
     [createRoomBtn, joinRoomBtn, backBootBtn].forEach(button => {
       if (button) button.disabled = isBusy;
     });
@@ -14402,47 +15018,36 @@ import {
   function generateRoomCode() {
     const characters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     let code = "";
-
     for (let index = 0; index < 6; index++) {
-      code += characters[
-        Math.floor(Math.random() * characters.length)
-      ];
+      code += characters[Math.floor(Math.random() * characters.length)];
     }
-
     return code;
   }
 
   function readableFirebaseError(error) {
     const code = error?.code || "";
-
     if (code.includes("auth/operation-not-allowed")) {
       return "Firebase Anonymous Authentication henüz etkin değil.";
     }
-
     if (code.includes("auth/unauthorized-domain")) {
       return "Bu GitHub Pages alanı Firebase Authentication içinde yetkilendirilmemiş.";
     }
-
     if (code.includes("permission-denied")) {
       return "Firebase Database Rules bu işleme izin vermedi.";
     }
-
     if (code.includes("network-request-failed")) {
       return "Firebase bağlantısı kurulamadı. İnternet bağlantını kontrol et.";
     }
-
     return error?.message || "Beklenmeyen bir Firebase hatası oluştu.";
   }
 
   async function ensureAnonymousUser() {
     if (currentUser) return currentUser;
-
     if (auth.currentUser) {
       currentUser = auth.currentUser;
       window.KADRO_ONLINE.uid = currentUser.uid;
       return currentUser;
     }
-
     const credentials = await signInAnonymously(auth);
     currentUser = credentials.user;
     window.KADRO_ONLINE.uid = currentUser.uid;
@@ -14452,16 +15057,12 @@ import {
   function startSingleMode() {
     window.KADRO_ONLINE.mode = "single";
     bootScreen?.classList.add("hidden");
-
-    if (typeof window.showStage === "function") {
-      window.showStage("draft");
-    }
+    if (typeof window.showStage === "function") window.showStage("draft");
   }
 
   async function goOnlineForm() {
     setBootView(bootOnline);
     setOnlineStatus("Firebase bağlantısı hazırlanıyor...");
-
     try {
       await ensureAnonymousUser();
       window.KADRO_ONLINE.connected = true;
@@ -14479,16 +15080,12 @@ import {
     for (let attempt = 0; attempt < 12; attempt++) {
       const roomCode = generateRoomCode();
       const roomReference = ref(database, `rooms/${roomCode}`);
-
       const result = await runTransaction(
         roomReference,
         currentRoom => {
-          if (currentRoom !== null) {
-            return;
-          }
-
+          if (currentRoom !== null) return;
           return {
-            version: "1.16-online-draft",
+            version: "1.17-online-session",
             status: "waiting",
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp(),
@@ -14505,62 +15102,39 @@ import {
         },
         { applyLocally: false }
       );
-
-      if (result.committed) {
-        return roomCode;
-      }
+      if (result.committed) return roomCode;
     }
-
     throw new Error("Benzersiz oda kodu üretilemedi. Lütfen tekrar dene.");
   }
 
   async function registerDisconnect(roomCode, side) {
     if (disconnectRegistration) {
-      try {
-        await disconnectRegistration.cancel();
-      } catch (error) {}
+      try { await disconnectRegistration.cancel(); } catch (error) {}
     }
-
     const connectedReference = ref(
       database,
       `rooms/${roomCode}/players/${side}/connected`
     );
-
     disconnectRegistration = onDisconnect(connectedReference);
     await disconnectRegistration.set(false);
   }
 
   function stopRoomListener() {
-    if (typeof roomUnsubscribe === "function") {
-      roomUnsubscribe();
-    }
-
+    if (typeof roomUnsubscribe === "function") roomUnsubscribe();
     roomUnsubscribe = null;
   }
 
   async function initializeOnlineDraft(roomCode, roomReference) {
-    if (
-      !window.KADRO_ONLINE.isHost ||
-      draftStartInProgress
-    ) {
-      return;
-    }
-
+    if (!window.KADRO_ONLINE.isHost || draftStartInProgress) return;
     draftStartInProgress = true;
-
     try {
-      const gameReference = ref(
-        database,
-        `rooms/${roomCode}/game`
-      );
-
+      const gameReference = ref(database, `rooms/${roomCode}/game`);
       await runTransaction(
         gameReference,
         currentGame => currentGame ||
           window.KADRO_DRAFT_BRIDGE.initialGameState(),
         { applyLocally: false }
       );
-
       await update(roomReference, {
         status: "draft",
         updatedAt: serverTimestamp()
@@ -14575,56 +15149,51 @@ import {
 
   function watchRoom(roomCode) {
     stopRoomListener();
-
     const roomReference = ref(database, `rooms/${roomCode}`);
 
     roomUnsubscribe = onValue(
       roomReference,
       snapshot => {
         if (!snapshot.exists()) {
-          setLobbyStatus(
-            "Oda kapatıldı veya artık mevcut değil.",
-            true
-          );
+          setLobbyStatus("Oda kapatıldı veya artık mevcut değil.", true);
           return;
         }
 
         const room = snapshot.val();
         const playerA = room.players?.A || null;
         const playerB = room.players?.B || null;
+        const bothPresent = Boolean(playerA && playerB);
+        const bothConnected = Boolean(playerA?.connected && playerB?.connected);
 
         window.KADRO_ONLINE.room = room;
-
         lobbyRoomCode.textContent = roomCode;
         lobbyTeamA.textContent = playerA?.name || "Bekleniyor...";
         lobbyTeamB.textContent = playerB?.name || "Rakip bekleniyor...";
 
-        const bothPresent = Boolean(playerA && playerB);
-        const bothConnected = Boolean(
-          playerA?.connected && playerB?.connected
-        );
-
-        if (room.status === "draft" && room.game) {
-          setLobbyStatus("Draft başladı. Seçimler iki ekranda eşzamanlanıyor.");
+        if (room.game) {
           bootScreen?.classList.add("hidden");
-          window.KADRO_DRAFT_BRIDGE.applyGameState(room.game);
+          window.KADRO_DRAFT_BRIDGE.applyGameState(room.game, room);
+
+          const phase = room.game.phase || "draft";
+          if (phase === "draft") {
+            setLobbyStatus("Draft başladı. Seçimler iki ekranda eşzamanlanıyor.");
+          } else if (phase === "tactics") {
+            setLobbyStatus("Draft tamamlandı. Her oyuncu yalnızca kendi taktiğini hazırlıyor.");
+          } else if (phase === "match") {
+            setLobbyStatus("İki oyuncu hazır. Maçı ev sahibi başlatacak.");
+          }
           return;
         }
 
         if (bothPresent && bothConnected) {
           setLobbyStatus("İki oyuncu bağlandı. Draft hazırlanıyor...");
-
           if (window.KADRO_ONLINE.isHost) {
             initializeOnlineDraft(roomCode, roomReference);
           }
         } else if (bothPresent) {
-          setLobbyStatus(
-            "Rakip odada ancak bağlantısı şu anda çevrim dışı görünüyor."
-          );
+          setLobbyStatus("Rakip odada ancak bağlantısı şu anda çevrim dışı görünüyor.");
         } else if (window.KADRO_ONLINE.isHost) {
-          setLobbyStatus(
-            "Rakip oyuncu bu oda kodu ile katılabilir."
-          );
+          setLobbyStatus("Rakip oyuncu bu oda kodu ile katılabilir.");
         } else {
           setLobbyStatus("Ev sahibi bağlantısı bekleniyor...");
         }
@@ -14638,9 +15207,7 @@ import {
 
   async function createRoom() {
     if (operationInProgress) return;
-
     const teamName = sanitizeTeamName(onlineTeamName?.value);
-
     if (!teamName) {
       setOnlineStatus("Lütfen önce takım adını gir.", true);
       return;
@@ -14648,11 +15215,9 @@ import {
 
     setBusy(true);
     setOnlineStatus("Oda oluşturuluyor...");
-
     try {
       await ensureAnonymousUser();
       const roomCode = await reserveRoomCode(teamName);
-
       Object.assign(window.KADRO_ONLINE, {
         mode: "online",
         teamName,
@@ -14662,9 +15227,7 @@ import {
         uid: currentUser.uid,
         connected: true
       });
-
       await registerDisconnect(roomCode, "A");
-
       lobbyRoomCode.textContent = roomCode;
       lobbyTeamA.textContent = teamName;
       lobbyTeamB.textContent = "Rakip bekleniyor...";
@@ -14681,7 +15244,6 @@ import {
 
   async function joinRoom() {
     if (operationInProgress) return;
-
     const teamName = sanitizeTeamName(onlineTeamName?.value);
     const roomCode = sanitizeRoomCode(joinRoomCode?.value);
 
@@ -14689,7 +15251,6 @@ import {
       setOnlineStatus("Lütfen önce takım adını gir.", true);
       return;
     }
-
     if (roomCode.length !== 6) {
       setOnlineStatus("Lütfen altı karakterli geçerli oda kodunu gir.", true);
       return;
@@ -14697,61 +15258,41 @@ import {
 
     setBusy(true);
     setOnlineStatus("Odaya bağlanılıyor...");
-
     try {
       await ensureAnonymousUser();
-
       const roomReference = ref(database, `rooms/${roomCode}`);
       const initialSnapshot = await get(roomReference);
-
       if (!initialSnapshot.exists()) {
         throw new Error("Bu oda koduyla eşleşen aktif bir oda bulunamadı.");
       }
 
       const initialRoom = initialSnapshot.val();
       const hostPlayer = initialRoom?.players?.A;
-
       if (!hostPlayer?.uid) {
         throw new Error("Odanın ev sahibi bulunamadı. Yeni bir oda kodu oluşturulmalı.");
       }
-
       if (hostPlayer.uid === currentUser.uid) {
         throw new Error(
           "Bu oda aynı tarayıcı oturumunda oluşturuldu. İkinci oyuncu için gizli pencere, farklı tarayıcı veya başka cihaz kullan."
         );
       }
 
-      /*
-       * İşlemi tüm oda üzerinde yapmak yerine yalnızca B oyuncusu
-       * alanında çalıştırıyoruz. Firebase transaction işlevi ilk
-       * çağrıda uzak veri mevcut olsa bile null alabilir; B alanında
-       * null yeni oyuncu eklenebileceği anlamına gelir.
-       */
-      const guestReference = ref(
-        database,
-        `rooms/${roomCode}/players/B`
-      );
-
+      const guestReference = ref(database, `rooms/${roomCode}/players/B`);
       const result = await runTransaction(
         guestReference,
         existingGuest => {
-          const occupiedByAnotherConnectedPlayer = Boolean(
+          const occupied = Boolean(
             existingGuest?.uid &&
             existingGuest.uid !== currentUser.uid &&
             existingGuest.connected !== false
           );
-
-          if (occupiedByAnotherConnectedPlayer) {
-            return;
-          }
-
+          if (occupied) return;
           return {
             uid: currentUser.uid,
             name: teamName,
             connected: true,
             joinedAt:
-              existingGuest?.uid === currentUser.uid &&
-              existingGuest?.joinedAt
+              existingGuest?.uid === currentUser.uid && existingGuest?.joinedAt
                 ? existingGuest.joinedAt
                 : serverTimestamp()
           };
@@ -14762,32 +15303,20 @@ import {
       if (!result.committed) {
         const guestSnapshot = await get(guestReference);
         const guest = guestSnapshot.val();
-
-        if (
-          guest?.uid &&
-          guest.uid !== currentUser.uid &&
-          guest.connected !== false
-        ) {
+        if (guest?.uid && guest.uid !== currentUser.uid && guest.connected !== false) {
           throw new Error(
-            `Bu oda dolu. ${guest.name || "Başka bir oyuncu"} zaten Takım B olarak bağlı.`
+            `Bu oda dolu. ${guest.name || "Başka bir oyuncu"} zaten bağlı.`
           );
         }
-
         throw new Error(
           "Odaya katılma işlemi tamamlanamadı. Oda kodunu kontrol edip tekrar dene."
         );
       }
 
-      /* İşlem sırasında ev sahibi çıkmış olabilir. */
-      const hostCheck = await get(
-        ref(database, `rooms/${roomCode}/players/A`)
-      );
-
+      const hostCheck = await get(ref(database, `rooms/${roomCode}/players/A`));
       if (!hostCheck.exists()) {
         await remove(guestReference);
-        throw new Error(
-          "Ev sahibi odadan ayrıldığı için bu oda artık kullanılamıyor."
-        );
+        throw new Error("Ev sahibi odadan ayrıldığı için bu oda artık kullanılamıyor.");
       }
 
       await update(roomReference, {
@@ -14806,7 +15335,6 @@ import {
       });
 
       await registerDisconnect(roomCode, "B");
-
       lobbyRoomCode.textContent = roomCode;
       lobbyTeamA.textContent = "Ev sahibi okunuyor...";
       lobbyTeamB.textContent = teamName;
@@ -14822,18 +15350,11 @@ import {
   }
 
   async function leaveLobby() {
-    const {
-      roomCode,
-      side,
-      isHost
-    } = window.KADRO_ONLINE;
-
+    const { roomCode, side, isHost } = window.KADRO_ONLINE;
     stopRoomListener();
 
     if (disconnectRegistration) {
-      try {
-        await disconnectRegistration.cancel();
-      } catch (error) {}
+      try { await disconnectRegistration.cancel(); } catch (error) {}
       disconnectRegistration = null;
     }
 
@@ -14842,10 +15363,7 @@ import {
         if (isHost) {
           await remove(ref(database, `rooms/${roomCode}`));
         } else if (side === "B") {
-          await remove(
-            ref(database, `rooms/${roomCode}/players/B`)
-          );
-
+          await remove(ref(database, `rooms/${roomCode}/players/B`));
           await update(ref(database, `rooms/${roomCode}`), {
             status: "waiting",
             updatedAt: serverTimestamp()
@@ -14862,7 +15380,8 @@ import {
       roomCode: "",
       side: null,
       isHost: false,
-      room: null
+      room: null,
+      phase: null
     });
 
     setOnlineStatus(
@@ -14871,158 +15390,222 @@ import {
     setBootView(bootOnline);
   }
 
-  window.addEventListener(
-    "kadro-online-draft-request",
-    async event => {
-      const session = window.KADRO_ONLINE;
-      const detail = event.detail || {};
+  window.addEventListener("kadro-online-draft-request", async event => {
+    const session = window.KADRO_ONLINE;
+    const detail = event.detail || {};
+    if (
+      session.mode !== "online" ||
+      !session.roomCode ||
+      !session.side ||
+      detail.side !== session.side
+    ) return;
 
-      if (
-        session.mode !== "online" ||
-        !session.roomCode ||
-        !session.side ||
-        detail.side !== session.side
-      ) {
-        return;
-      }
+    const gameReference = ref(database, `rooms/${session.roomCode}/game`);
+    try {
+      const result = await runTransaction(
+        gameReference,
+        game => {
+          if (!game || game.phase !== "draft") return;
+          const order = Array.from(
+            { length: 11 },
+            (_, round) => round % 2 === 0 ? ["A", "B"] : ["B", "A"]
+          ).flat();
+          const pickIndex = Number(game.pickIndex || 0);
+          const turn = order[pickIndex] || null;
+          if (!turn || turn !== session.side) return;
 
-      const gameReference = ref(
-        database,
-        `rooms/${session.roomCode}/game`
+          const picks = game.picks || {};
+          const alreadyDrafted = Object.values(picks).some(
+            pick => pick?.footballerId === detail.footballerId
+          );
+          const slotOccupied = Object.values(picks).some(
+            pick => pick?.team === session.side && pick?.slotId === detail.slotId
+          );
+          if (alreadyDrafted || slotOccupied) return;
+
+          game.picks = picks;
+          game.picks[String(pickIndex)] = {
+            team: session.side,
+            footballerId: detail.footballerId,
+            slotId: detail.slotId,
+            uid: currentUser.uid,
+            createdAt: Date.now()
+          };
+          game.pickIndex = pickIndex + 1;
+          game.updatedAt = Date.now();
+
+          if (game.pickIndex >= order.length) {
+            game.phase = "tactics";
+            game.tacticReady = { A: false, B: false };
+            game.tactics = {};
+          }
+
+          return game;
+        },
+        { applyLocally: false }
       );
 
-      try {
-        const result = await runTransaction(
-          gameReference,
-          game => {
-            if (!game || game.phase !== "draft") return;
-
-            const order = Array.from(
-              { length: 11 },
-              (_, round) => round % 2 === 0
-                ? ["A", "B"]
-                : ["B", "A"]
-            ).flat();
-
-            const pickIndex = Number(game.pickIndex || 0);
-            const turn = order[pickIndex] || null;
-
-            if (!turn || turn !== session.side) return;
-
-            const picks = game.picks || {};
-            const alreadyDrafted = Object.values(picks).some(
-              pick => pick?.footballerId === detail.footballerId
-            );
-            const slotOccupied = Object.values(picks).some(
-              pick =>
-                pick?.team === session.side &&
-                pick?.slotId === detail.slotId
-            );
-
-            if (alreadyDrafted || slotOccupied) return;
-
-            game.picks = picks;
-            game.picks[String(pickIndex)] = {
-              team: session.side,
-              footballerId: detail.footballerId,
-              slotId: detail.slotId,
-              uid: currentUser.uid,
-              createdAt: Date.now()
-            };
-            game.pickIndex = pickIndex + 1;
-            game.updatedAt = Date.now();
-            return game;
-          },
-          { applyLocally: false }
-        );
-
-        if (!result.committed) {
-          window.KADRO_DRAFT_BRIDGE.notify(
-            "Seçim kabul edilmedi. Rakip daha önce davranmış olabilir; ekran güncelleniyor."
-          );
-        }
-      } catch (error) {
+      if (!result.committed) {
         window.KADRO_DRAFT_BRIDGE.notify(
-          readableFirebaseError(error)
+          "Seçim kabul edilmedi. Rakip daha önce davranmış olabilir; ekran güncelleniyor."
         );
-        console.error("Online draft seçim hatası:", error);
+      } else if (result.snapshot.val()?.phase === "tactics") {
+        await update(ref(database, `rooms/${session.roomCode}`), {
+          status: "tactics",
+          updatedAt: serverTimestamp()
+        });
       }
+    } catch (error) {
+      window.KADRO_DRAFT_BRIDGE.notify(readableFirebaseError(error));
+      console.error("Online draft seçim hatası:", error);
     }
-  );
+  });
 
-  window.addEventListener(
-    "kadro-online-formation-request",
-    async event => {
-      const session = window.KADRO_ONLINE;
-      const detail = event.detail || {};
+  window.addEventListener("kadro-online-formation-request", async event => {
+    const session = window.KADRO_ONLINE;
+    const detail = event.detail || {};
+    if (
+      session.mode !== "online" ||
+      !session.roomCode ||
+      detail.side !== session.side ||
+      detail.team !== session.side ||
+      !detail.formationId
+    ) return;
 
-      if (
-        session.mode !== "online" ||
-        !session.roomCode ||
-        detail.side !== session.side ||
-        detail.team !== session.side
-      ) {
-        return;
-      }
+    const gameReference = ref(database, `rooms/${session.roomCode}/game`);
+    try {
+      const result = await runTransaction(
+        gameReference,
+        game => {
+          if (!game || game.phase !== "draft") return;
+          const hasOwnPick = Object.values(game.picks || {}).some(
+            pick => pick?.team === session.side
+          );
+          if (hasOwnPick) return;
 
-      if (!detail.formationId) return;
-
-      const gameReference = ref(
-        database,
-        `rooms/${session.roomCode}/game`
+          game.formations = game.formations || { A: "433", B: "433" };
+          game.formations[session.side] = detail.formationId;
+          game.updatedAt = Date.now();
+          return game;
+        },
+        { applyLocally: false }
       );
 
-      try {
-        const result = await runTransaction(
-          gameReference,
-          game => {
-            if (
-              !game ||
-              game.phase !== "draft" ||
-              Number(game.pickIndex || 0) > 0
-            ) {
-              return;
-            }
-
-            game.formations = game.formations || {
-              A: "433",
-              B: "433"
-            };
-            game.formations[session.side] = detail.formationId;
-            game.updatedAt = Date.now();
-            return game;
-          },
-          { applyLocally: false }
-        );
-
-        if (!result.committed) {
-          window.KADRO_DRAFT_BRIDGE.notify(
-            "Formasyon değişikliği kabul edilmedi. Draft başlamış olabilir."
-          );
-        }
-      } catch (error) {
+      if (!result.committed) {
         window.KADRO_DRAFT_BRIDGE.notify(
-          readableFirebaseError(error)
+          "Formasyon değişikliği kabul edilmedi. Kendi ilk seçimini yapmış olabilirsin."
         );
-        console.error("Online formasyon hatası:", error);
       }
+    } catch (error) {
+      window.KADRO_DRAFT_BRIDGE.notify(readableFirebaseError(error));
+      console.error("Online formasyon hatası:", error);
     }
-  );
+  });
+
+  window.addEventListener("kadro-online-tactic-ready", async event => {
+    const session = window.KADRO_ONLINE;
+    const detail = event.detail || {};
+    if (
+      session.mode !== "online" ||
+      !session.roomCode ||
+      detail.side !== session.side ||
+      !detail.tactics
+    ) return;
+
+    const gameReference = ref(database, `rooms/${session.roomCode}/game`);
+    try {
+      const result = await runTransaction(
+        gameReference,
+        game => {
+          if (!game || game.phase !== "tactics") return;
+
+          game.tactics = game.tactics || {};
+          game.tacticReady = game.tacticReady || { A: false, B: false };
+          game.tactics[session.side] = detail.tactics;
+          game.tacticReady[session.side] = true;
+          game.updatedAt = Date.now();
+
+          if (game.tacticReady.A && game.tacticReady.B) {
+            game.phase = "match";
+            game.match = {
+              status: "waiting",
+              snapshot: null,
+              hostUid: window.KADRO_ONLINE.room?.players?.A?.uid || null,
+              createdAt: Date.now(),
+              updatedAt: Date.now()
+            };
+          }
+
+          return game;
+        },
+        { applyLocally: false }
+      );
+
+      if (!result.committed) {
+        window.dispatchEvent(new CustomEvent(
+          "kadro-online-tactic-ready-failed",
+          { detail: { message: "Taktikler kaydedilemedi. Oda durumunu kontrol et." } }
+        ));
+      } else if (result.snapshot.val()?.phase === "match") {
+        await update(ref(database, `rooms/${session.roomCode}`), {
+          status: "match",
+          updatedAt: serverTimestamp()
+        });
+      }
+    } catch (error) {
+      window.dispatchEvent(new CustomEvent(
+        "kadro-online-tactic-ready-failed",
+        { detail: { message: readableFirebaseError(error) } }
+      ));
+      console.error("Online taktik kaydetme hatası:", error);
+    }
+  });
+
+  async function flushMatchSnapshot() {
+    if (matchSnapshotWriteInProgress || !pendingMatchSnapshot) return;
+    const session = window.KADRO_ONLINE;
+    if (!session.isHost || !session.roomCode) return;
+
+    matchSnapshotWriteInProgress = true;
+    const snapshot = pendingMatchSnapshot;
+    pendingMatchSnapshot = null;
+
+    try {
+      await update(
+        ref(database, `rooms/${session.roomCode}/game/match`),
+        {
+          snapshot,
+          status: snapshot.finished
+            ? "finished"
+            : snapshot.running
+              ? "running"
+              : "waiting",
+          updatedAt: serverTimestamp()
+        }
+      );
+    } catch (error) {
+      console.error("Online maç görüntüsü gönderilemedi:", error);
+    } finally {
+      matchSnapshotWriteInProgress = false;
+      if (pendingMatchSnapshot) flushMatchSnapshot();
+    }
+  }
+
+  window.addEventListener("kadro-online-match-snapshot", event => {
+    const session = window.KADRO_ONLINE;
+    if (!session.isHost || !session.roomCode || session.phase !== "match") return;
+    pendingMatchSnapshot = event.detail || null;
+    flushMatchSnapshot();
+  });
 
   joinRoomCode?.addEventListener("input", () => {
     joinRoomCode.value = sanitizeRoomCode(joinRoomCode.value);
   });
-
   onlineTeamName?.addEventListener("keydown", event => {
-    if (event.key === "Enter") {
-      createRoom();
-    }
+    if (event.key === "Enter") createRoom();
   });
-
   joinRoomCode?.addEventListener("keydown", event => {
-    if (event.key === "Enter") {
-      joinRoom();
-    }
+    if (event.key === "Enter") joinRoom();
   });
 
   singleModeBtn?.addEventListener("click", startSingleMode);
