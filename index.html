@@ -14234,39 +14234,92 @@ import {
         throw new Error("Bu oda koduyla eşleşen aktif bir oda bulunamadı.");
       }
 
+      const initialRoom = initialSnapshot.val();
+      const hostPlayer = initialRoom?.players?.A;
+
+      if (!hostPlayer?.uid) {
+        throw new Error("Odanın ev sahibi bulunamadı. Yeni bir oda kodu oluşturulmalı.");
+      }
+
+      if (hostPlayer.uid === currentUser.uid) {
+        throw new Error(
+          "Bu oda aynı tarayıcı oturumunda oluşturuldu. İkinci oyuncu için gizli pencere, farklı tarayıcı veya başka cihaz kullan."
+        );
+      }
+
+      /*
+       * İşlemi tüm oda üzerinde yapmak yerine yalnızca B oyuncusu
+       * alanında çalıştırıyoruz. Firebase transaction işlevi ilk
+       * çağrıda uzak veri mevcut olsa bile null alabilir; B alanında
+       * null yeni oyuncu eklenebileceği anlamına gelir.
+       */
+      const guestReference = ref(
+        database,
+        `rooms/${roomCode}/players/B`
+      );
+
       const result = await runTransaction(
-        roomReference,
-        room => {
-          if (!room) return;
-
-          const existingGuest = room.players?.B;
-
-          if (
+        guestReference,
+        existingGuest => {
+          const occupiedByAnotherConnectedPlayer = Boolean(
             existingGuest?.uid &&
-            existingGuest.uid !== currentUser.uid
-          ) {
+            existingGuest.uid !== currentUser.uid &&
+            existingGuest.connected !== false
+          );
+
+          if (occupiedByAnotherConnectedPlayer) {
             return;
           }
 
-          room.players = room.players || {};
-          room.players.B = {
+          return {
             uid: currentUser.uid,
             name: teamName,
             connected: true,
             joinedAt:
-              existingGuest?.joinedAt || serverTimestamp()
+              existingGuest?.uid === currentUser.uid &&
+              existingGuest?.joinedAt
+                ? existingGuest.joinedAt
+                : serverTimestamp()
           };
-          room.status = "ready";
-          room.updatedAt = serverTimestamp();
-
-          return room;
         },
         { applyLocally: false }
       );
 
       if (!result.committed) {
-        throw new Error("Bu oda dolu veya artık kullanılamıyor.");
+        const guestSnapshot = await get(guestReference);
+        const guest = guestSnapshot.val();
+
+        if (
+          guest?.uid &&
+          guest.uid !== currentUser.uid &&
+          guest.connected !== false
+        ) {
+          throw new Error(
+            `Bu oda dolu. ${guest.name || "Başka bir oyuncu"} zaten Takım B olarak bağlı.`
+          );
+        }
+
+        throw new Error(
+          "Odaya katılma işlemi tamamlanamadı. Oda kodunu kontrol edip tekrar dene."
+        );
       }
+
+      /* İşlem sırasında ev sahibi çıkmış olabilir. */
+      const hostCheck = await get(
+        ref(database, `rooms/${roomCode}/players/A`)
+      );
+
+      if (!hostCheck.exists()) {
+        await remove(guestReference);
+        throw new Error(
+          "Ev sahibi odadan ayrıldığı için bu oda artık kullanılamıyor."
+        );
+      }
+
+      await update(roomReference, {
+        status: "ready",
+        updatedAt: serverTimestamp()
+      });
 
       Object.assign(window.KADRO_ONLINE, {
         mode: "online",
