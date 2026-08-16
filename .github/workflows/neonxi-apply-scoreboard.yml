@@ -1,0 +1,58 @@
+name: Apply Neon XI scoreboard update
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/neonxi-apply-scoreboard.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply-scoreboard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current master
+        uses: actions/checkout@v4
+
+      - name: Merge scoreboard into current index
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          index = Path('index.html')
+          marker = '<!-- NEON XI / Premium Match Scoreboard + Goal Score Lightning v1 -->'
+          parts = [
+              Path('.neonxi_deploy_20260816/score_part_00.txt'),
+              Path('.neonxi_deploy_20260816/score_part_01.txt'),
+          ]
+          text = index.read_text(encoding='utf-8')
+          patch = ''.join(p.read_text(encoding='utf-8') for p in parts)
+
+          if marker not in text:
+              pos = text.rfind('</body>')
+              if pos < 0:
+                  raise SystemExit('index.html: </body> bulunamadı')
+              text = text[:pos] + patch + '\n' + text[pos:]
+              index.write_text(text, encoding='utf-8')
+              print('Premium scoreboard eklendi.')
+          else:
+              print('Premium scoreboard zaten mevcut; tekrar eklenmedi.')
+          PY
+
+          rm -rf .neonxi_deploy_20260816
+
+      - name: Commit updated index
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Değişiklik yok."
+            exit 0
+          fi
+          git commit -m "Add premium match scoreboard and goal animation"
+          git push
