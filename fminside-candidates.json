@@ -1540,17 +1540,6 @@
     "last_season": 2025
   },
   {
-    "name": "Nico González",
-    "sub_position": "Left Winger",
-    "age": 28,
-    "nation": "Argentina",
-    "club": "Juventus FC",
-    "competition_id": "IT1",
-    "tm_player_id": "486031",
-    "market_value": 22000000,
-    "last_season": 2025
-  },
-  {
     "name": "Miguel Gutiérrez",
     "sub_position": "Left-Back",
     "age": 25,
@@ -2669,6 +2658,17 @@
     "club": "Real Madrid",
     "competition_id": "ES1",
     "tm_player_id": "59016",
+    "market_value": 3000000,
+    "last_season": 2025
+  },
+  {
+    "name": "Anthoni",
+    "sub_position": "Goalkeeper",
+    "age": 24,
+    "nation": "Brazil",
+    "club": "Sport Club Internacional",
+    "competition_id": "BRA1",
+    "tm_player_id": "869437",
     "market_value": 3000000,
     "last_season": 2025
   }
