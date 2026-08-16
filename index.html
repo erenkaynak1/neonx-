@@ -1894,7 +1894,7 @@ const state={
  teams:{A:{formation:"433",slots:{}},B:{formation:"433",slots:{}}},
  tactics:{A:baseTactics(),B:baseTactics()},tacticTeam:"A",tacticSection:"tasks",selectedSlot:null,tacticReady:{A:false,B:false}
 };
-function baseTactics(){return{tasks:{},general:"Dengeli",attackDirection:"Dengeli",finalAction:"Dengeli",defenseDirection:"Dengeli",defenseTactic:"Dengeli Savunma",corner:"",freeKick:"",penalty:""}}
+function baseTactics(){return{tasks:{},general:"Dengeli",attackDirection:"Dengeli",finalAction:"Dengeli",transitionPlan:"Dengeli Geçiş",pressingPlan:"Orta Blok",defenseDirection:"Dengeli",defenseTactic:"Dengeli Savunma",corner:"",freeKick:"",penalty:""}}
 function player(id){return PLAYERS.find(p=>p.id===id)}
 function formation(team){return FORMATIONS[state.teams[team].formation]}
 function allFilled(team){return formation(team).slots.every(s=>state.teams[team].slots[s.id])}
@@ -7076,6 +7076,35 @@ render();
     goalkeeperPassing:["passingGK"], reflexes:["reflexes"], oneOnOnes:["oneOnOnes"], goalkeeperComposure:["composure"]
   };
 
+  /*
+   * NEON XI V5 ROLE MODEL
+   * A role is no longer a flat bonus. Every role has:
+   * 1) an attribute profile (can this footballer execute it?),
+   * 2) phase tendencies (where does it help the collective structure?),
+   * 3) contextual actions (who is likely to create, carry, finish or defend?).
+   */
+  const ROLE_MODELS = {
+    "Pasör Stoper":{attributes:{shortPassing:.28,longPassing:.22,vision:.12,decisionMaking:.20,composure:.18},tendencies:{buildup:1.45,creator:.55,cover:.45,restDefense:.70},actions:{creator:1.10,carrier:.86,shooter:.70,defender:.96}},
+    "Sigorta Stoper":{attributes:{positioning:.30,aerialDefending:.22,decisionMaking:.18,strength:.16,tackling:.14},tendencies:{cover:1.55,restDefense:1.45,aerial:1.00},actions:{creator:.74,carrier:.76,shooter:.68,defender:1.20}},
+    "Hamleci Stoper":{attributes:{tackling:.28,aggression:.22,pace:.18,pressingDiscipline:.18,decisionMaking:.14},tendencies:{press:1.35,cover:.65,restDefense:.72,aerial:.65,risk:.65},actions:{creator:.76,carrier:.80,shooter:.72,defender:1.22,fouler:1.15}},
+    "Savunmacı Bek":{attributes:{tackling:.26,positioning:.25,pace:.18,teamwork:.16,decisionMaking:.15},tendencies:{width:.35,cover:1.15,restDefense:1.20,press:.55},actions:{creator:.76,carrier:.82,shooter:.66,defender:1.18}},
+    "Dengeli Bek":{attributes:{pace:.23,tackling:.20,crossing:.20,decisionMaking:.20,teamwork:.17},tendencies:{width:.85,cover:.78,restDefense:.78,runner:.55,press:.55},actions:{creator:1.00,carrier:1.00,shooter:.78,defender:1.00}},
+    "Hücumcu Bek":{attributes:{pace:.25,crossing:.25,dribbling:.18,teamwork:.17,decisionMaking:.15},tendencies:{width:1.45,runner:1.05,creator:.65,risk:1.05,restDefense:.25},actions:{creator:1.16,carrier:1.12,shooter:.82,defender:.82}},
+    "Kesici":{attributes:{tackling:.28,positioning:.22,aggression:.18,pressingDiscipline:.20,teamwork:.12},tendencies:{press:1.45,cover:1.05,restDefense:1.05},actions:{creator:.74,carrier:.76,shooter:.62,defender:1.24,fouler:1.13}},
+    "Defansçı Orta Saha":{attributes:{positioning:.27,tackling:.24,pressingDiscipline:.20,teamwork:.16,decisionMaking:.13},tendencies:{cover:1.35,restDefense:1.30,press:.90,buildup:.45},actions:{creator:.80,carrier:.78,shooter:.62,defender:1.22}},
+    "Oyun Kurucu":{attributes:{shortPassing:.24,longPassing:.20,vision:.24,decisionMaking:.20,composure:.12},tendencies:{creator:1.55,buildup:1.25,runner:.20,cover:.25},actions:{creator:1.24,carrier:.96,shooter:.88,defender:.82,setPiece:1.12}},
+    "Box-to-Box":{attributes:{pace:.18,teamwork:.20,decisionMaking:.20,tackling:.17,shortPassing:.15,strength:.10},tendencies:{runner:1.35,press:.90,cover:.55,creator:.45},actions:{creator:1.04,carrier:1.08,shooter:1.02,defender:1.04}},
+    "Çift Yönlü":{attributes:{teamwork:.22,decisionMaking:.22,shortPassing:.18,tackling:.18,positioning:.12,pace:.08},tendencies:{runner:.80,press:.82,cover:.68,creator:.55,buildup:.55},actions:{creator:1.05,carrier:1.02,shooter:.96,defender:1.07}},
+    "Serbest":{attributes:{vision:.25,dribbling:.23,decisionMaking:.22,shortPassing:.15,finishing:.15},tendencies:{creator:1.30,runner:1.05,risk:.82,restDefense:.10},actions:{creator:1.14,carrier:1.18,shooter:1.10,defender:.76}},
+    "Hücumcu Orta Saha":{attributes:{finishing:.22,longShots:.18,vision:.20,dribbling:.22,decisionMaking:.18},tendencies:{creator:.90,runner:1.25,finisher:1.10,risk:.65},actions:{creator:1.15,carrier:1.14,shooter:1.20,defender:.78}},
+    "Çizgi Kanadı":{attributes:{crossing:.28,pace:.24,dribbling:.22,teamwork:.14,decisionMaking:.12},tendencies:{width:1.55,creator:.70,runner:.70,outlet:.85},actions:{creator:1.22,carrier:1.14,shooter:.82,defender:.92,setPiece:1.08}},
+    "Dengeli Kanat":{attributes:{crossing:.21,dribbling:.21,pace:.20,decisionMaking:.20,finishing:.10,teamwork:.08},tendencies:{width:1.00,creator:.65,runner:.85,outlet:.70},actions:{creator:1.07,carrier:1.08,shooter:1.00,defender:.94}},
+    "İçe Kat Eden":{attributes:{dribbling:.25,pace:.21,finishing:.22,composure:.17,decisionMaking:.15},tendencies:{width:.30,runner:1.25,finisher:1.05,outlet:1.00,risk:.45},actions:{creator:.94,carrier:1.18,shooter:1.16,defender:.84}},
+    "Pivot Santrfor":{attributes:{heading:.25,strength:.25,composure:.16,shortPassing:.16,decisionMaking:.18},tendencies:{aerial:1.55,outlet:1.25,creator:.45,finisher:.70},actions:{creator:.98,carrier:.82,shooter:1.08,defender:.82}},
+    "Gizli Forvet":{attributes:{pace:.24,decisionMaking:.22,finishing:.24,dribbling:.16,composure:.14},tendencies:{runner:1.55,outlet:1.25,finisher:1.10,risk:.45},actions:{creator:.86,carrier:1.08,shooter:1.20,defender:.76}},
+    "Bitirici":{attributes:{finishing:.30,composure:.25,shotPower:.15,decisionMaking:.18,positioning:.12},tendencies:{finisher:1.60,outlet:.72,runner:.55},actions:{creator:.72,carrier:.82,shooter:1.28,defender:.70}}
+  };
+
   function rng() { return game.random(); }
   function rand(min,max) { return min + (max-min) * rng(); }
   function other(team) { return team === "A" ? "B" : "A"; }
@@ -7183,7 +7212,7 @@ render();
   function initializeRating(member) {
     return {
       playerId:member.footballer.id, name:member.footballer.name, position:member.position,
-      role:member.role || "Görev yok", rating:6.5, baseRating:6.5, eventContribution:0,
+      role:member.role || "Görev yok", roleSuitability:Number(roleSuitability(member).toFixed(1)), roleEvents:{}, rating:6.5, baseRating:6.5, eventContribution:0,
       microContributions:Object.fromEntries(Object.keys(RATING_MICRO_CAPS).map(key=>[key,0])),
       microStats:{
         passesAttempted:0,passesCompleted:0,progressivePasses:0,keyPasses:0,turnovers:0,dangerousTurnovers:0,
@@ -7242,58 +7271,143 @@ render();
   }
   function activeSquad(team) { return game.squad[team].filter(member => !record(team,member)?.red); }
 
-  function initializeRoleEvent() { return null; }
-  function roleEvent() { return null; }
-  function recordRoleEvent() { return 0; }
+  function roleModel(member) { return ROLE_MODELS[String(member?.role||"")] || null; }
+  function roleSuitability(member) {
+    const model=roleModel(member);
+    if(!member||!model)return member?.footballer?.pos==="GK"?75:62;
+    let total=0,weight=0;
+    Object.entries(model.attributes||{}).forEach(([key,value])=>{
+      total+=baseStat(member,key,60)*value;
+      weight+=value;
+    });
+    const natural=total/Math.max(.001,weight);
+    const slotPos=member.position||member.slot?.displayPos||member.slot?.pos;
+    const primary=member.footballer?.primaryPos||member.footballer?.pos;
+    let familiarity=1;
+    if(slotPos!==primary){
+      if(["LB","RB"].includes(slotPos)&&["LB","RB"].includes(primary))familiarity=.97;
+      else if(slotPos==="AM"&&primary==="CM")familiarity=.94;
+      else familiarity=.90;
+    }
+    return clamp(natural*familiarity,35,99);
+  }
+  function roleExecution(member) { return clamp(.78+roleSuitability(member)*.0032,.90,1.11); }
+  function roleTendency(member,key) { return Number(roleModel(member)?.tendencies?.[key])||0; }
+  function teamStructure(team) {
+    const members=activeSquad(team).filter(member=>member.footballer.pos!=="GK");
+    const scale=10/Math.max(1,members.length);
+    const sum=key=>members.reduce((value,member)=>value+roleTendency(member,key)*roleExecution(member),0)*scale;
+    const roleFit=members.length?members.reduce((value,member)=>value+roleSuitability(member),0)/members.length:60;
+    const structure={
+      roleFit,width:sum("width"),creator:sum("creator"),runner:sum("runner"),cover:sum("cover"),
+      press:sum("press"),aerial:sum("aerial"),finisher:sum("finisher"),buildup:sum("buildup"),
+      outlet:sum("outlet"),restDefense:sum("restDefense"),risk:sum("risk"),outfieldCount:members.length
+    };
+    const creatorPenalty=Math.abs(structure.creator-2.5)*3.1;
+    const coverPenalty=Math.max(0,2.4-structure.cover)*5.2;
+    const widthPenalty=Math.max(0,1.7-structure.width)*3.6;
+    const riskPenalty=Math.max(0,structure.risk-structure.restDefense-1.2)*4.2;
+    const cfg=tactic(team);let tacticalPenalty=0;
+    if(cfg.attackDirection==="Kanatları Kullan")tacticalPenalty+=Math.max(0,3.4-structure.width)*5.0;
+    if(cfg.attackDirection==="Merkezden Oyna")tacticalPenalty+=Math.max(0,2.3-structure.creator)*4.4;
+    if(cfg.finalAction==="Ortaları Artır")tacticalPenalty+=Math.max(0,1.0-structure.aerial)*6.0+Math.max(0,3.0-structure.width)*2.5;
+    if(cfg.finalAction==="Ceza Sahasına Pasla Gir")tacticalPenalty+=Math.max(0,2.4-structure.creator)*4.0+Math.max(0,1.8-structure.runner)*2.8;
+    if(cfg.finalAction==="Kaleyi Görünce Vur")tacticalPenalty+=Math.max(0,1.0-structure.finisher)*4.6;
+    if(cfg.transitionPlan==="Hızlı Hücum")tacticalPenalty+=Math.max(0,1.1-structure.outlet)*4.2+Math.max(0,1.5-structure.restDefense)*3.0;
+    if(cfg.pressingPlan==="Önde Baskı")tacticalPenalty+=Math.max(0,1.8-structure.press)*4.5;
+    if(cfg.pressingPlan==="Alçak Blok")tacticalPenalty+=Math.max(0,2.4-structure.cover)*3.8;
+    const genericBalance=91-creatorPenalty-coverPenalty-widthPenalty-riskPenalty;
+    structure.tacticalFit=clamp(94-tacticalPenalty,38,96);
+    structure.balance=clamp(genericBalance*.58+structure.tacticalFit*.42,42,96);
+    return structure;
+  }
+  function v5GameStateAdjustment(team,side,phase) {
+    if(game.minute<58)return 0;
+    const deficit=game.score[other(team)]-game.score[team];
+    if(!deficit)return 0;
+    const urgency=game.minute>=78?5:3;
+    if(deficit>0)return side==="attack"?urgency:phase>=4?-2:-1;
+    return side==="defense"?Math.max(1,urgency-1):phase>=3?-Math.max(1,urgency-2):0;
+  }
+  function v5TacticRoleAdjustment(team,side,phase,route="",action="") {
+    const cfg=v3Config(team),s=teamStructure(team);
+    let value=clamp((s.roleFit-70)*.18,-4,4.8);
+    if(side==="attack"){
+      if(phase===1)value+=(s.buildup-1.7)*1.45;
+      if(phase===2)value+=(s.creator-2.2)*.85+(s.runner-2.0)*.45;
+      if(phase===3&&route==="wing")value+=(s.width-2.0)*1.25+(s.runner-2.0)*.35;
+      if(phase===3&&route==="center")value+=(s.creator-2.2)*1.10+(s.runner-2.0)*.55;
+      if(route==="transition")value+=(s.outlet-1.2)*1.55+(s.runner-2.0)*.55;
+      if(action==="shot")value+=(s.finisher-1.0)*1.20;
+      if(action==="cross")value+=(s.width-2.0)*.80+(s.aerial-.8)*1.10;
+      if(action==="workBall")value+=(s.creator-2.2)*1.05+(s.runner-2.0)*.45;
+      if(cfg.transitionPlan==="Hızlı Hücum")value+=route==="transition"?4.5:phase===1?-.8:0;
+      if(cfg.transitionPlan==="Topu Güvenceye Al")value+=route==="transition"?-2.4:phase<=2?2.2:0;
+    }else{
+      if(phase===1)value+=(s.press-1.5)*1.25;
+      if(phase===2)value+=(s.press-1.5)*.65+(s.cover-2.3)*.70;
+      if(phase===3)value+=(s.cover-2.3)*.95+(s.press-1.5)*.35;
+      if(phase>=4)value+=(s.restDefense-1.9)*1.10+(s.cover-2.3)*.55;
+      if(action==="cross")value+=(s.aerial-.9)*1.15;
+      if(cfg.pressingPlan==="Önde Baskı")value+=phase===1?(game.minute<72?5.0:2.0):phase>=4?-2.5:1.0;
+      if(cfg.pressingPlan==="Alçak Blok")value+=phase===1?-4.0:phase>=4?4.0:1.5;
+      if(cfg.transitionPlan==="Hızlı Hücum")value-=Math.max(0,s.risk-s.restDefense)*.85;
+    }
+    const missing=Math.max(0,10-s.outfieldCount);
+    value-=missing*(side==="attack"?3.8:4.6);
+    value+=v5GameStateAdjustment(team,side,phase);
+    return clamp(value,-12,12);
+  }
+  function v5ActionAffordance(team,defendingTeam,action,route,phase) {
+    const s=teamStructure(team),d=teamStructure(defendingTeam);
+    let attack=70,defense=70;
+    if(action==="shot"){
+      attack=average(team,[phase===3?"longShots":"finishing","composure","decisionMaking"],member=>["ST","LW","RW","CM","AM"].includes(member.position||member.footballer.pos));
+      defense=average(defendingTeam,["positioning","defending","tackling"],member=>["CB","DM","LB","RB"].includes(member.position||member.footballer.pos));
+      attack+=(s.finisher-1)*2.2;
+    }else if(action==="cross"){
+      attack=average(team,["crossing","decisionMaking"],member=>["LW","RW","LB","RB"].includes(member.position||member.footballer.pos));
+      attack+=s.aerial*2.0;
+      defense=average(defendingTeam,["aerialDefending","heading","positioning"],member=>["CB","DM","LB","RB"].includes(member.position||member.footballer.pos))+d.aerial*1.4;
+    }else{
+      attack=average(team,["shortPassing","vision","decisionMaking","dribbling"],member=>["DM","CM","AM","LW","RW","ST"].includes(member.position||member.footballer.pos));
+      attack+=(s.creator+s.runner)*.9;
+      defense=average(defendingTeam,["positioning","tackling","decisionMaking"],member=>["CB","DM","CM"].includes(member.position||member.footballer.pos))+d.cover*.8;
+    }
+    return clamp(1+(attack-defense)/180,.84,1.16);
+  }
+  function v5TransitionChance(team) {
+    const cfg=v3Config(team),s=teamStructure(team);
+    const base=cfg.transitionPlan==="Hızlı Hücum"?.27:cfg.transitionPlan==="Topu Güvenceye Al"?.10:.18;
+    return clamp(base+(s.outlet+s.runner-3.2)*.008,.08,.31);
+  }
+  function initializeRoleEvent() { return {}; }
+  function roleEvent(team,member,key) { return Number(record(team,member)?.roleEvents?.[key])||0; }
+  function recordRoleEvent(team,member,key,amount=1) {
+    const rec=record(team,member);if(!rec||!key)return 0;
+    rec.roleEvents=rec.roleEvents||{};
+    rec.roleEvents[key]=(Number(rec.roleEvents[key])||0)+(Number(amount)||0);
+    return rec.roleEvents[key];
+  }
   function roleActionMultiplier(member,type="",route="",kind="") {
-    const role=String(member?.role||"");
-    let multiplier=1;
-    const apply=value=>{multiplier*=value;};
-
-    if(type==="creator") {
-      if(role==="Oyun Kurucu")apply(1.24);
-      if(role==="Hücumcu Orta Saha")apply(route==="center"?1.20:1.08);
-      if(role==="Serbest")apply(1.12);
-      if(["Box-to-Box","Çift Yönlü"].includes(role))apply(1.07);
-      if(role==="Çizgi Kanadı")apply(route==="wing"?1.24:.90);
-      if(role==="Dengeli Kanat")apply(route==="wing"?1.10:1.02);
-      if(role==="Hücumcu Bek")apply(route==="wing"?1.18:.94);
-      if(["Defansçı Orta Saha","Kesici","Savunmacı Bek"].includes(role))apply(.82);
-    }
-
-    if(type==="carrier") {
-      if(["İçe Kat Eden","Serbest","Hücumcu Orta Saha"].includes(role))apply(1.16);
-      if(["Çizgi Kanadı","Dengeli Kanat","Hücumcu Bek"].includes(role)&&route==="wing")apply(1.14);
-      if(["Defansçı Orta Saha","Kesici","Sigorta Stoper"].includes(role))apply(.82);
-    }
-
-    if(type==="shooter") {
-      if(role==="Bitirici")apply(1.28);
-      if(role==="Gizli Forvet")apply(1.18);
-      if(role==="Hücumcu Orta Saha")apply(route==="center"?1.24:1.12);
-      if(["İçe Kat Eden","Serbest"].includes(role))apply(1.12);
-      if(role==="Pivot Santrfor"&&["wing","setPiece"].includes(route))apply(1.18);
-      if(["Defansçı Orta Saha","Kesici","Savunmacı Bek"].includes(role))apply(.72);
-      if(role==="Oyun Kurucu")apply(.92);
-    }
-
-    if(type==="defender"||type==="fouler") {
-      if(role==="Kesici")apply(1.24);
-      if(role==="Defansçı Orta Saha")apply(route==="center"?1.28:1.14);
-      if(["Sigorta Stoper","Hamleci Stoper","Savunmacı Bek"].includes(role))apply(1.14);
-      if(["Hücumcu Orta Saha","Serbest","Hücumcu Bek"].includes(role))apply(.82);
-    }
-
-    if(type==="setPiece") {
-      if(role==="Oyun Kurucu")apply(1.16);
-      if(role==="Çizgi Kanadı"&&kind==="corner")apply(1.18);
-      if(role==="Hücumcu Orta Saha"&&kind==="freeKick")apply(1.12);
-    }
-
-    return clamp(multiplier,.68,1.32);
+    const model=roleModel(member);
+    if(!model)return 1;
+    let multiplier=(Number(model.actions?.[type])||1)*roleExecution(member);
+    if(type==="creator")multiplier*=route==="wing"?clamp(.90+roleTendency(member,"width")*.13,.88,1.18):clamp(.91+roleTendency(member,"creator")*.10,.90,1.17);
+    if(type==="carrier")multiplier*=clamp(.94+roleTendency(member,"runner")*.08,.92,1.14);
+    if(type==="shooter")multiplier*=clamp(.92+roleTendency(member,"finisher")*.10+(route==="wing"?roleTendency(member,"aerial")*.04:0),.90,1.18);
+    if(type==="defender")multiplier*=clamp(.92+(roleTendency(member,"cover")+roleTendency(member,"press"))*.055,.92,1.18);
+    if(type==="setPiece"&&kind==="corner")multiplier*=clamp(.94+baseStat(member,"crossing",60)/500,.96,1.14);
+    return clamp(multiplier,.66,1.38);
   }
 
-  function calculateRoleScores() { return []; }
+  function calculateRoleScores(team) {
+    return (game.squad[team]||[]).filter(member=>member.footballer.pos!=="GK").map(member=>({
+      playerId:member.footballer.id,name:member.footballer.name,role:member.role,
+      suitability:Number(roleSuitability(member).toFixed(1)),execution:Number(roleExecution(member).toFixed(3))
+    }));
+  }
+  window.NEON_XI_ENGINE_V5={version:"5.0.0",roleModel:"attribute-role-tactic-context",roleScores:calculateRoleScores,teamStructure};
   function averageMemberNatural(member) {
     const pos = member.position || member.footballer.pos;
     const maps = {
@@ -7317,19 +7431,31 @@ render();
     const selected=tactic(team),squad=game.squad[team],basePower=teamBasePower(team);
     let chemistry=5;try{chemistry=teamChem(team);}catch(error){}
     const plan=selected.general||"Dengeli";
-    const possessionShift=plan==="Hücum Ağırlıklı"?3:plan==="Savunma Ağırlıklı"?-3:0;
+    const structure=teamStructure(team);
+    const possessionShift=(plan==="Hücum Ağırlıklı"?3:plan==="Savunma Ağırlıklı"?-3:0)+(selected.transitionPlan==="Topu Güvenceye Al"?2:selected.transitionPlan==="Hızlı Hücum"?-1:0)+(selected.pressingPlan==="Önde Baskı"?1:selected.pressingPlan==="Alçak Blok"?-2:0);
+    const discipline=average(team,["pressingDiscipline","decisionMaking"],m=>(m.position||m.footballer.pos)!=="GK");
+    const aggression=average(team,["aggression"],m=>(m.position||m.footballer.pos)!=="GK");
     return {
-      team,squad,tactic:selected,basePower,chemistry,
-      targetPossession:clamp(50+possessionShift+(basePower-80)*.20,32,68),
-      control:1,tempo:1,directness:1,attackRate:1,shotVolume:1,shotQuality:1,transition:1,
-      press:.45,blockDepth:.52,passVolume:1,passAccuracy:.80,
+      team,squad,tactic:selected,basePower,chemistry,structure,
+      targetPossession:clamp(50+possessionShift+(basePower-80)*.20+(structure.creator-2.2)*.55,32,68),
+      control:clamp(.94+(structure.balance-65)/300,.90,1.10),
+      tempo:selected.transitionPlan==="Hızlı Hücum"?1.12:selected.transitionPlan==="Topu Güvenceye Al"?.92:1,
+      directness:selected.transitionPlan==="Hızlı Hücum"?1.14:selected.transitionPlan==="Topu Güvenceye Al"?.90:1,
+      attackRate:plan==="Hücum Ağırlıklı"?1.08:plan==="Savunma Ağırlıklı"?.93:1,
+      shotVolume:selected.finalAction==="Kaleyi Görünce Vur"?1.12:1,shotQuality:1,
+      transition:selected.transitionPlan==="Hızlı Hücum"?1.18:selected.transitionPlan==="Topu Güvenceye Al"?.82:1,
+      press:selected.pressingPlan==="Önde Baskı"?.70:selected.pressingPlan==="Alçak Blok"?.24:.46,
+      blockDepth:selected.pressingPlan==="Önde Baskı"?.68:selected.pressingPlan==="Alçak Blok"?.32:.50,
+      passVolume:selected.transitionPlan==="Topu Güvenceye Al"?1.10:1,passAccuracy:.80,
       buildup:average(team,["goalkeeperPassing","shortPassing","vision","decisionMaking","composure"],m=>["GK","CB","DM","CM","AM"].includes(m.position||m.footballer.pos)),
       wing:average(team,["pace","dribbling","crossing"],m=>["LB","RB","LW","RW"].includes(m.position||m.footballer.pos)),
       center:average(team,["shortPassing","vision","decisionMaking","dribbling"],m=>["DM","CM","AM","ST"].includes(m.position||m.footballer.pos)),
       pressing:average(team,["pressingDiscipline","teamwork","pace","strength","decisionMaking"],m=>(m.position||m.footballer.pos)!=="GK"),
       aerialDefense:average(team,["aerialDefending","heading","positioning","strength"],m=>["CB","DM","LB","RB"].includes(m.position||m.footballer.pos)),
       finishing:average(team,["finishing","composure","shooting"],m=>["ST","LW","RW","CM","AM"].includes(m.position||m.footballer.pos)),
-      fatigueRisk:.05,foulRisk:.05,quality:65+(basePower-65)*1.18,
+      fatigueRisk:selected.pressingPlan==="Önde Baskı"?.12:.05,
+      foulRisk:clamp(.035+(aggression-discipline)/900+(selected.pressingPlan==="Önde Baskı"?.025:0),.02,.10),
+      quality:65+(basePower-65)*1.18,
     };
   }
 
@@ -7342,10 +7468,8 @@ render();
     return Object.fromEntries(ROUTES.map(route => [route,{ attempts:0, entries:0, dangerous:0, shots:0, xG:0, goals:0 }]));
   }
   function createPenaltyPlan() {
-    const planned = rng() < .39;
-    const count = planned ? (rng() < .04 ? 2 : 1) : 0;
-    const events = Array.from({length:count},(_,i)=>({ minute:Math.round(rand(i?55:12,i?86:72)), used:false, team:null, varCheck:rng()<.13 }));
-    return { events, count };
+    /* V5: penalties are born from a real box duel, not pre-written before kickoff. */
+    return {events:[],count:0,contextual:true};
   }
 
   function refreshTeamLabels() {
@@ -7420,10 +7544,6 @@ render();
       ballTargetId:update.ballTargetId||null,
       outcome:update.outcome??"",
       shotId:update.shotId??null,
-      statDelta:update.statDelta||null,
-      score:{A:Number(game.score?.A||0),B:Number(game.score?.B||0)},
-      possession:{A:Number(game.possession?.A||50),B:Number(game.possession?.B||50)},
-      stats:{A:{...(game.stats?.A||{})},B:{...(game.stats?.B||{})}},
       message:update.message||previous.message||"Maç yerleşimi",
       cause:update.cause||visualPublicCause(team,route,stage,action),
       eventKind:update.eventKind||"",
@@ -7488,7 +7608,7 @@ render();
     if (game.testMode) return;
     const feed = $("commentaryFeed"); if (!feed) return;
     const visibleDetail=publicLiveDetail(detail);
-    const payload={frameId:visual.id,minute:game.minute,kind,text,detail:visibleDetail,visual,score:visual?.score||null,stats:visual?.stats||null};
+    const payload={frameId:visual.id,minute:game.minute,kind,text,detail:visibleDetail};
     if(window.NEON_XI_2D_DIRECTOR?.enqueueCommentary){
       window.NEON_XI_2D_DIRECTOR.enqueueCommentary(payload);
     }else{
@@ -7608,7 +7728,10 @@ render();
     const weighted=candidates.map(member=>{
       const ability=Math.max(1,keys.reduce((s,k)=>s+stat(member,k),0)/Math.max(1,keys.length));
       const roleMultiplier=roleActionMultiplier(member,context.type||"",context.route||"",context.kind||"");
-      return {member,weight:Math.max(1,ability*roleMultiplier)};
+      const suitability=roleSuitability(member);
+      const utility=ability*.78+suitability*.22;
+      /* Softmax-like sampling: the best option is preferred, never guaranteed. */
+      return {member,weight:Math.max(.05,Math.exp((utility-60)/13)*roleMultiplier)};
     });
     const total=weighted.reduce((s,x)=>s+x.weight,0); let roll=rng()*total;
     for(const x of weighted){roll-=x.weight;if(roll<=0)return x.member;} return weighted[0]?.member;
@@ -7757,6 +7880,29 @@ render();
     else {adjustRating(attackingTeam,taker,-.30,"bigChanceMissed");addEvent("shot",`${taker.footballer.name} penaltıdan yararlanamadı.`,`${xG.toFixed(2)} xG`,outcome==="post"?"Top direkten döndü.":"Vuruş dışarı gitti.");}
   }
 
+  async function v5MaybePenalty(attackingTeam,defendingTeam,route,token) {
+    const attacker=weightedMember(attackingTeam,["ST","LW","RW","AM"],["dribbling","pace","decisionMaking","composure"],{type:"carrier",route});
+    const defender=v3ChooseDefender(defendingTeam,route);
+    if(!attacker||!defender)return false;
+    const attackSkill=stat(attacker,"dribbling")*.42+stat(attacker,"pace")*.22+stat(attacker,"decisionMaking")*.22+stat(attacker,"composure")*.14;
+    const defenseSkill=stat(defender,"tackling")*.38+stat(defender,"positioning")*.30+stat(defender,"decisionMaking")*.20+stat(defender,"pressingDiscipline")*.12;
+    const aggression=stat(defender,"aggression");
+    const plan=v3Config(defendingTeam);
+    let chance=.013+(attackSkill-defenseSkill)/2600+(aggression-70)/4200;
+    if(route==="transition")chance+=.005;
+    if(plan.pressingPlan==="Önde Baskı")chance+=.002;
+    if(plan.pressingPlan==="Alçak Blok")chance+=.001;
+    chance=clamp(chance,.006,.040);
+    if(rng()>=chance)return false;
+    const event={minute:game.minute,used:true,team:attackingTeam,varCheck:rng()<.15,attackerId:attacker.footballer.id,defenderId:defender.footballer.id,chance:Number(chance.toFixed(4))};
+    game.penaltyPlan.events.push(event);game.penaltyPlan.count++;
+    incrementRatingStat(defendingTeam,defender,"penaltyCaused");
+    adjustRating(defendingTeam,defender,-.28);
+    recordRoleEvent(defendingTeam,defender,"penaltiesCaused");
+    await simulatePenalty(attackingTeam,defendingTeam,event,token);
+    return true;
+  }
+
   async function resolvePendingPenalty(token, force=false) {
     const pending=game.penaltyPlan?.events?.find(plan=>!plan.used&&game.minute>=plan.minute&&(force||game.minute>=Math.min(84,plan.minute+6)));
     if(!pending)return false;
@@ -7771,19 +7917,46 @@ render();
 
   async function maybeDiscipline(attackingTeam,defendingTeam,route,token) {
     const a=game.profiles[attackingTeam],d=game.profiles[defendingTeam];
-    const foulChance=clamp(.035+d.foulRisk+(route==="transition"?.025:0),.025,.20);
+    const defensivePlan=v3Config(defendingTeam);
+    const foulChance=clamp(.075+d.foulRisk+(route==="transition"?.030:0)+(defensivePlan.pressingPlan==="Önde Baskı"?.018:0),.06,.24);
     if(rng()>foulChance)return {foul:false,setPiece:false};
     game.stats[defendingTeam].fouls++;
     const fouler=weightedMember(defendingTeam,["CB","DM","LB","RB","CM"],["aggression","tackling","strength"],{type:"fouler",route});
     recordRoleEvent(defendingTeam,fouler,"defensiveActions");
     recordRoleEvent(defendingTeam,fouler,"fouls");
+    const rec=record(defendingTeam,fouler),aggression=stat(fouler,"aggression"),discipline=stat(fouler,"pressingDiscipline");
+    const directRedChance=clamp(.006+(aggression-discipline)/3500+(route==="transition"?.004:0),.003,.022);
+    const yellowChance=clamp(.28+(aggression-discipline)/260+(route==="transition"?.06:0),.18,.48);
     const cardRoll=rng();
-    if(cardRoll<.05){game.stats[defendingTeam].redCards++;game.stats[defendingTeam].red++;record(defendingTeam,fouler).red=true;adjustRating(defendingTeam,fouler,-1.1);addEvent("red",`${fouler.footballer.name} doğrudan kırmızı kart gördü.`,`${game.teamNames[defendingTeam]} eksik kaldı.`,`Yüksek riskli müdahale.`);}
-    else if(cardRoll<.35){game.stats[defendingTeam].yellowCards++;game.stats[defendingTeam].yellow++;record(defendingTeam,fouler).yellow++;adjustRating(defendingTeam,fouler,-.18);addEvent("yellow",`${fouler.footballer.name} sarı kart gördü.`,"Taktik faul.","Geç müdahale kart getirdi.");}
+    if(cardRoll<directRedChance){game.stats[defendingTeam].redCards++;game.stats[defendingTeam].red++;rec.red=true;adjustRating(defendingTeam,fouler,-1.1);addEvent("red",`${fouler.footballer.name} doğrudan kırmızı kart gördü.`,`${game.teamNames[defendingTeam]} eksik kaldı.`,`Kontrolsüz ve yüksek şiddetli müdahale.`);}
+    else if(cardRoll<yellowChance){
+      if(rec.yellow>0&&rng()<.22){game.stats[defendingTeam].redCards++;game.stats[defendingTeam].red++;rec.red=true;rec.yellow++;adjustRating(defendingTeam,fouler,-.90);addEvent("red",`${fouler.footballer.name} ikinci sarı karttan oyundan atıldı.`,`${game.teamNames[defendingTeam]} eksik kaldı.`,`Tekrarlanan riskli müdahale.`);}
+      else{game.stats[defendingTeam].yellowCards++;game.stats[defendingTeam].yellow++;rec.yellow++;adjustRating(defendingTeam,fouler,-.18);addEvent("yellow",`${fouler.footballer.name} sarı kart gördü.`,"Taktik faul.","Geç müdahale kart getirdi.");}
+    }
     else addEvent("foul",`${fouler.footballer.name} faul yaptı.`,"Oyun kısa süre durdu.","Pres ve müdahale zamanlaması faul ihtimalini etkiledi.");
     const dangerousFreeKick=["center","wing","transition"].includes(route)&&rng()<.34;
     if(dangerousFreeKick){scheduleSetPiece(attackingTeam,"freeKick","Tehlikeli bölgede faul kazanıldı.",`${fouler.footballer.name} müdahalede geç kaldı.`);return {foul:true,setPiece:true};}
     return {foul:true,setPiece:false};
+  }
+
+  function v5AccrueIncidentalFoul(defendingTeam,route) {
+    const cfg=v3Config(defendingTeam),profile=game.profiles[defendingTeam];
+    const chance=clamp(.16+(profile?.foulRisk||.04)+(cfg.pressingPlan==="Önde Baskı"?.035:cfg.pressingPlan==="Alçak Blok"?-.015:0)+(route==="transition"?.025:0),.12,.27);
+    if(rng()>=chance)return false;
+    const fouler=weightedMember(defendingTeam,["DM","CM","LB","RB","CB","LW","RW"],["aggression","pressingDiscipline","tackling"],{type:"fouler",route});
+    if(!fouler)return false;
+    game.stats[defendingTeam].fouls++;
+    recordRoleEvent(defendingTeam,fouler,"fouls");
+    const rec=record(defendingTeam,fouler),aggression=stat(fouler,"aggression"),discipline=stat(fouler,"pressingDiscipline");
+    const yellowChance=clamp(.22+(aggression-discipline)/300,.13,.38);
+    const directRedChance=clamp(.004+(aggression-discipline)/5000,.002,.012);
+    const roll=rng();
+    if(roll<directRedChance){game.stats[defendingTeam].redCards++;game.stats[defendingTeam].red++;rec.red=true;adjustRating(defendingTeam,fouler,-1.05);addEvent("red",`${fouler.footballer.name} kontrolsüz müdahale sonrası kırmızı kart gördü.`,`${game.teamNames[defendingTeam]} on kişi kaldı.`,`Agresiflik ve müdahale disiplini kart kararını etkiledi.`);}
+    else if(roll<yellowChance){
+      if(rec.yellow>0&&rng()<.18){game.stats[defendingTeam].redCards++;game.stats[defendingTeam].red++;rec.red=true;rec.yellow++;adjustRating(defendingTeam,fouler,-.86);addEvent("red",`${fouler.footballer.name} ikinci sarı karttan oyundan atıldı.`,`${game.teamNames[defendingTeam]} on kişi kaldı.`,`Tekrarlanan fauller ihraç getirdi.`);}
+      else{game.stats[defendingTeam].yellowCards++;game.stats[defendingTeam].yellow++;rec.yellow++;adjustRating(defendingTeam,fouler,-.14);addEvent("yellow",`${fouler.footballer.name} orta sahadaki müdahalesi sonrası sarı kart gördü.`,"Oyun yeniden başlayacak.","Pres yoğunluğu ve müdahale disiplini değerlendirildi.");}
+    }
+    return true;
   }
 
   function chooseAttackingTeam() {
@@ -7821,7 +7994,7 @@ render();
   }
   function v3GeneralAdjustment(plan,side,phase) {
     if(![2,3,4].includes(phase)||plan==="Dengeli")return 0;
-    const magnitude=phase===2?6:18;
+    const magnitude=phase===2?4:10;
     const attacking=plan==="Hücum Ağırlıklı";
     if(side==="attack")return attacking?magnitude:-magnitude;
     return attacking?-magnitude:magnitude;
@@ -7832,6 +8005,8 @@ render();
     return 0;
   }
   function v3TaskAdjustment(team,side,phase,route="",action="") {
+    return v5TacticRoleAdjustment(team,side,phase,route,action);
+    /* Legacy sign-count implementation kept below only for save compatibility reference. */
     const cfg=v3Config(team);let total=0;
     v3Members(team).forEach(member=>{
       const role=v3Role(member);let value=0;
@@ -7863,17 +8038,17 @@ render();
   }
   function v3DefenseDirectionAdjustment(direction,route) {
     if(direction==="Dengeli")return 0;
-    if(direction==="Kanatları Kapat")return route==="wing"?12:-12;
-    if(direction==="Merkezi Kapat")return route==="center"?12:-12;
+    if(direction==="Kanatları Kapat")return route==="wing"?6:-5;
+    if(direction==="Merkezi Kapat")return route==="center"?6:-5;
     return 0;
   }
   function v3FinalAdjustment(team,side,phase,route="",action="") {
     const cfg=v3Config(team);
     let value=v3GeneralAdjustment(cfg.general,side,phase)+v3TaskAdjustment(team,side,phase,route,action);
     if(side==="defense"&&phase===3)value+=v3DefenseDirectionAdjustment(cfg.defenseDirection,route);
-    return clamp(value,-22,22);
+    return clamp(value,-16,16);
   }
-  function v3ApplyAdjustment(score,adjustment) { return score*(1+clamp(adjustment,-22,22)/100); }
+  function v3ApplyAdjustment(score,adjustment) { return score*(1+clamp(adjustment,-16,16)/100); }
   function v3PhaseProbability(attackScore,defenseScore,attackAdjustment,defenseAdjustment,phase=3) {
     const a=v3ApplyAdjustment(attackScore,attackAdjustment),d=v3ApplyAdjustment(defenseScore,defenseAdjustment);
     const baseline=phase===1?.78:phase===2?.74:phase===3?.68:.72;
@@ -7953,7 +8128,6 @@ render();
     applyMicroRating(attackingTeam,p.support,"positioning",success,probability,.018,{
       positionalActions:1,positionalWins:success?1:0,positionalErrors:success?0:1
     });
-    return p;
   }
   function v3RunPhase(attackingTeam,defendingTeam,phase,route) {
     const scores=v3PhaseScores(attackingTeam,defendingTeam,phase,route);
@@ -7961,8 +8135,8 @@ render();
     const defenseAdjustment=v3FinalAdjustment(defendingTeam,"defense",phase,route);
     const probability=v3PhaseProbability(scores.attack,scores.defense,attackAdjustment,defenseAdjustment,phase);
     const success=rng()<probability;
-    const micro=v3RecordPhaseMicro(attackingTeam,defendingTeam,phase,route,success,probability);
-    return{success,probability,scores,attackAdjustment,defenseAdjustment,micro,statDelta:null,failureReason:null};
+    v3RecordPhaseMicro(attackingTeam,defendingTeam,phase,route,success,probability);
+    return{success,probability,scores,attackAdjustment,defenseAdjustment};
   }
   function v3DirectionRoute(teamOrDirection,directionValue) {
     const hasTeam=directionValue!==undefined;
@@ -7974,12 +8148,13 @@ render();
 
     const wingCount=Number(game.routeStats[team].wing?.attempts)||0;
     const centerCount=Number(game.routeStats[team].center?.attempts)||0;
-    const nextTotal=wingCount+centerCount+1;
-    const wingError=Math.abs((wingCount+1)/nextTotal-targetWing);
-    const centerError=Math.abs(wingCount/nextTotal-targetWing);
-
-    if(Math.abs(wingError-centerError)<.0001)return rng()<targetWing?"wing":"center";
-    return wingError<centerError?"wing":"center";
+    const total=wingCount+centerCount;
+    const actualWing=total?wingCount/total:.50;
+    const structure=teamStructure(team);
+    const naturalBias=clamp((structure.width-structure.creator)*.018,-.07,.07);
+    const distributionCorrection=clamp((targetWing-actualWing)*.28,-.06,.06);
+    const contextualWing=clamp(targetWing+naturalBias+distributionCorrection,.28,.72);
+    return rng()<contextualWing?"wing":"center";
   }
   function v3DefenseMatchFactor(finalAction,defenseTactic) {
     const matrix={
@@ -7989,8 +8164,8 @@ render();
     };
     const row=matrix[finalAction];
     if(!row||defenseTactic==="Dengeli Savunma")return 1;
-    if(defenseTactic===row.correct)return 0;
-    if(defenseTactic===row.opposite)return 1.65;
+    if(defenseTactic===row.correct)return .45;
+    if(defenseTactic===row.opposite)return 1.22;
     return 1;
   }
   function v3AdjustedRate(base,tacticRate,selectedAction,requiredAction,defenseTactic) {
@@ -8020,12 +8195,14 @@ render();
     Object.keys(result).forEach(key=>{if(key!==targetKey)result[key]=otherTotal?remainder*base[key]/otherTotal:0;});
     return result;
   }
-  function v3PhaseAction(attackingTeam,defendingTeam,phase) {
+  function v3PhaseAction(attackingTeam,defendingTeam,phase,route=phase===4?"transition":"center") {
     const a=v3Config(attackingTeam),d=v3Config(defendingTeam);
     const shootBase=phase===3?10:20,shootTactic=phase===3?35:45;
     const [workBase,workTactic]=v3WorkRates(a.attackDirection,phase);
     let shoot=v3AdjustedRate(shootBase,shootTactic,a.finalAction,"Kaleyi Görünce Vur",d.defenseTactic);
     let work=v3AdjustedRate(workBase,workTactic,a.finalAction,"Ceza Sahasına Pasla Gir",d.defenseTactic);
+    shoot*=v5ActionAffordance(attackingTeam,defendingTeam,"shot",route,phase);
+    work*=v5ActionAffordance(attackingTeam,defendingTeam,"workBall",route,phase);
     const sum=shoot+work;if(sum>95){const k=95/sum;shoot*=k;work*=k;}
     return v3Choice({shot:shoot,workBall:work,standard:100-shoot-work});
   }
@@ -8035,10 +8212,14 @@ render();
     const [workBase,workTactic]=v3WorkRates(a.attackDirection,5);
     const base={shot:40,cross:crossBase,workBall:workAttempted?0:workBase,other:Math.max(0,100-40-crossBase-(workAttempted?0:workBase))};
     if(workAttempted){const total=base.shot+base.cross+base.other;Object.keys(base).forEach(k=>base[k]=total?base[k]/total*100:0);}
-    if(a.finalAction==="Kaleyi Görünce Vur")return v3Choice(v3ScaleRemainder(base,"shot",v3AdjustedRate(40,65,a.finalAction,"Kaleyi Görünce Vur",d.defenseTactic)));
-    if(a.finalAction==="Ortaları Artır")return v3Choice(v3ScaleRemainder(base,"cross",v3AdjustedRate(crossBase,crossTactic,a.finalAction,"Ortaları Artır",d.defenseTactic)));
-    if(a.finalAction==="Ceza Sahasına Pasla Gir"&&!workAttempted)return v3Choice(v3ScaleRemainder(base,"workBall",v3AdjustedRate(workBase,workTactic,a.finalAction,"Ceza Sahasına Pasla Gir",d.defenseTactic)));
-    return v3Choice(base);
+    let weights={...base};
+    if(a.finalAction==="Kaleyi Görünce Vur")weights=v3ScaleRemainder(base,"shot",v3AdjustedRate(40,65,a.finalAction,"Kaleyi Görünce Vur",d.defenseTactic));
+    else if(a.finalAction==="Ortaları Artır")weights=v3ScaleRemainder(base,"cross",v3AdjustedRate(crossBase,crossTactic,a.finalAction,"Ortaları Artır",d.defenseTactic));
+    else if(a.finalAction==="Ceza Sahasına Pasla Gir"&&!workAttempted)weights=v3ScaleRemainder(base,"workBall",v3AdjustedRate(workBase,workTactic,a.finalAction,"Ceza Sahasına Pasla Gir",d.defenseTactic));
+    weights.shot*=v5ActionAffordance(attackingTeam,defendingTeam,"shot",a.attackDirection==="Kanatları Kullan"?"wing":"center",5);
+    weights.cross*=v5ActionAffordance(attackingTeam,defendingTeam,"cross","wing",5);
+    weights.workBall*=v5ActionAffordance(attackingTeam,defendingTeam,"workBall",a.attackDirection==="Kanatları Kullan"?"wing":"center",5);
+    return v3Choice(weights);
   }
   function v3ChooseDefender(team,route="center") {
     const positions=route==="wing"?["LB","RB","CB","DM","LW","RW"]:["CB","DM","CM","LB","RB"];
@@ -8053,16 +8234,28 @@ render();
     const keeper=goalkeeper(defendingTeam);
     const attackAdj=v3FinalAdjustment(attackingTeam,"attack",5,route,"shot");
     const defenseAdj=v3FinalAdjustment(defendingTeam,"defense",5,route,"shot");
-    const shotApplication=v3ApplyAdjustment(v3ClampRating(stat(shooter,"shooting"))*.80+v3ClampRating(stat(shooter,"decisionMaking"))*.20,attackAdj);
-    const defensePressure=v3ApplyAdjustment(v3ClampRating(stat(defender,"defending"))*.55+v3ClampRating(stat(defender,"positioning"))*.25+v3ClampRating(stat(defender,"pace"))*.10+v3ClampRating(stat(defender,"strength"))*.10,defenseAdj);
-    const keeperScore=v3ClampRating(stat(keeper,"reflexes"))*.80+v3ClampRating(stat(keeper,"goalkeeperComposure"))*.20;
+    const shotBase=phase===3
+      ?v3ClampRating(stat(shooter,"longShots"))*.48+v3ClampRating(stat(shooter,"shotPower"))*.20+v3ClampRating(stat(shooter,"composure"))*.14+v3ClampRating(stat(shooter,"decisionMaking"))*.18
+      :phase===4
+        ?v3ClampRating(stat(shooter,"finishing"))*.42+v3ClampRating(stat(shooter,"composure"))*.28+v3ClampRating(stat(shooter,"pace"))*.12+v3ClampRating(stat(shooter,"decisionMaking"))*.18
+        :v3ClampRating(stat(shooter,"finishing"))*.50+v3ClampRating(stat(shooter,"composure"))*.24+v3ClampRating(stat(shooter,"shooting"))*.10+v3ClampRating(stat(shooter,"decisionMaking"))*.16;
+    const shotApplication=v3ApplyAdjustment(shotBase*roleExecution(shooter),attackAdj);
+    const defensePressure=v3ApplyAdjustment(v3ClampRating(stat(defender,"defending"))*.35+v3ClampRating(stat(defender,"positioning"))*.30+v3ClampRating(stat(defender,"tackling"))*.20+v3ClampRating(stat(defender,"pace"))*.10+v3ClampRating(stat(defender,"strength"))*.05,defenseAdj);
+    const keeperScore=phase===4
+      ?v3ClampRating(stat(keeper,"oneOnOnes"))*.48+v3ClampRating(stat(keeper,"reflexes"))*.32+v3ClampRating(stat(keeper,"goalkeeperComposure"))*.20
+      :v3ClampRating(stat(keeper,"reflexes"))*.55+v3ClampRating(stat(keeper,"oneOnOnes"))*.20+v3ClampRating(stat(keeper,"goalkeeperComposure"))*.25;
     const situation=v3ShotSituation(phase)*clamp(qualityMultiplier||1,.80,1.20);
-    const onTarget=clamp((25+(shotApplication-50)*.70+(situation-1)*35-(defensePressure-70)*.18)/100,.10,.82);
-    const conditionalGoal=clamp((30+(shotApplication-keeperScore)*.60+(situation-1)*25-(defensePressure-70)*.12)/100,.10,.68);
-    const goalProbability=clamp(onTarget*conditionalGoal,.01,.70);
-    const shot={team:attackingTeam,minute:game.minute,shooterId:shooter.footballer.id,creatorId:creator?.footballer?.id||null,route,shotType:phase===3?"outsideBox":phase===4?"transitionShot":"box",distance:phase===3?24:phase===4?15:11,angle:45,pressure:Number(clamp(defensePressure/100,.10,.95).toFixed(2)),bodyPart:"right",transition:phase===4,setPiece:false,setPieceKind:null,penalty:false,xG:Number(goalProbability.toFixed(3)),outcome:"pending"};
+    const chanceBase=phase===3?.055:phase===4?.205:.135;
+    const chanceQuality=clamp(situation*(1-(defensePressure-72)/260)*(route==="center"?1.04:1),.62,1.48);
+    const chanceXG=clamp(chanceBase*chanceQuality,.018,.52);
+    const finisherExecution=clamp(.78+(shotApplication-60)/145,.74,1.22);
+    const keeperExecution=clamp(1.08-(keeperScore-65)/230,.88,1.10);
+    const onTarget=clamp(.31+(shotApplication-60)*.0043+(situation-1)*.12-(defensePressure-70)*.0018,.20,.72);
+    const goalProbability=Math.min(onTarget*.82,clamp(chanceXG*finisherExecution*keeperExecution,.01,.62));
+    const conditionalGoal=clamp(goalProbability/Math.max(.08,onTarget),.08,.78);
+    const shot={team:attackingTeam,minute:game.minute,shooterId:shooter.footballer.id,creatorId:creator?.footballer?.id||null,route,shotType:phase===3?"outsideBox":phase===4?"transitionShot":"box",distance:phase===3?24:phase===4?15:11,angle:45,pressure:Number(clamp(defensePressure/100,.10,.95).toFixed(2)),bodyPart:"right",transition:phase===4,setPiece:false,setPieceKind:null,penalty:false,xG:Number(chanceXG.toFixed(3)),outcome:"pending"};
     registerShot(shot);incrementRatingStat(attackingTeam,shooter,"shots");recordRoleEvent(attackingTeam,shooter,"shots");recordRoleEvent(attackingTeam,shooter,"shooterSelections");if(creator){recordRoleEvent(attackingTeam,creator,"creatorSelections");recordRoleEvent(attackingTeam,creator,"chancesCreated");}
-    if(goalProbability>=.08){markDangerous(attackingTeam,attackCtx,label||"V3 şut kalitesi");if(creator&&creator!==shooter)addMicroBonus(attackingTeam,creator,"passing",clamp(.018+goalProbability*.10,.018,.065),"keyPasses");}
+    if(chanceXG>=.08){markDangerous(attackingTeam,attackCtx,label||"V5 şut kalitesi");if(creator&&creator!==shooter)addMicroBonus(attackingTeam,creator,"passing",clamp(.018+chanceXG*.10,.018,.065),"keyPasses");}
     const roll=rng();const onTargetOutcome=roll<onTarget;
     applyMicroRating(attackingTeam,shooter,"finishing",onTargetOutcome,onTarget,.105,{positionalActions:1,positionalWins:onTargetOutcome?1:0,positionalErrors:onTargetOutcome?0:1});
     if(onTargetOutcome)incrementRatingStat(attackingTeam,shooter,"onTarget");
@@ -8073,26 +8266,26 @@ render();
       applyMicroRating(defendingTeam,keeper,"goalkeeping",false,saveExpected,.18,{shotsFaced:1,goalsConceded:1});
       recordRoleEvent(attackingTeam,shooter,"onTarget");recordRoleEvent(attackingTeam,shooter,"goals");if(creator&&creator!==shooter)recordRoleEvent(attackingTeam,creator,"assists");
       await showScene("goal",[{team:attackingTeam,title:`${shooter.footballer.name} vuruyor!`,sub:`${Math.round(goalProbability*100)}% gol olasılığı`,duration:420},{team:attackingTeam,title:"GOOOL!",sub:`${game.teamNames[attackingTeam]} skoru değiştirdi.`,duration:950}],token);
-      addEvent("goal",`GOOOL! ${shooter.footballer.name} ağları buldu.`,`${goalProbability.toFixed(2)} xG`,`${label||"V3 şut"} sonucunda gol geldi.`);return;
+      addEvent("goal",`GOOOL! ${shooter.footballer.name} ağları buldu.`,`${shot.xG.toFixed(2)} xG`,`${label||"V5 şut"} sonucunda gol geldi.`);return;
     }
     if(roll<onTarget){
       shot.outcome="saved";game.stats[attackingTeam].onTarget++;game.stats[defendingTeam].saves++;incrementRatingStat(defendingTeam,keeper,"saves");
       applyMicroRating(defendingTeam,keeper,"goalkeeping",true,saveExpected,.18,{shotsFaced:1,difficultSaves:conditionalGoal>.38?1:0});
-      recordRoleEvent(attackingTeam,shooter,"onTarget");addEvent("save",`${keeper.footballer.name} şutu kurtardı.`,`${shooter.footballer.name} · ${goalProbability.toFixed(2)} xG`,"Kaleci pozisyonu kurtarışla tamamladı.");return;
+      recordRoleEvent(attackingTeam,shooter,"onTarget");addEvent("save",`${keeper.footballer.name} şutu kurtardı.`,`${shooter.footballer.name} · ${shot.xG.toFixed(2)} xG`,"Kaleci pozisyonu kurtarışla tamamladı.");return;
     }
     shot.outcome=rng()<.18?"blocked":"offTarget";
     if(shot.outcome==="blocked")addMicroBonus(defendingTeam,defender,"defending",.060,"blocks");
-    if(goalProbability>.30)adjustRating(attackingTeam,shooter,-.18,"bigChanceMissed");
-    addEvent("shot",`${shooter.footballer.name} hedefi bulamadı.`,`${goalProbability.toFixed(2)} xG`,`${label||"Şut"} sonuçsuz kaldı.`);
+    if(shot.xG>.30)adjustRating(attackingTeam,shooter,-.18,"bigChanceMissed");
+    addEvent("shot",`${shooter.footballer.name} hedefi bulamadı.`,`${shot.xG.toFixed(2)} xG`,`${label||"Şut"} sonuçsuz kaldı.`);
   }
   function v3WorkCombination(attackingTeam,defendingTeam,route) {
     const creator=chooseCreator(attackingTeam,route,{setPieceKind:null});
     const receiver=chooseShooter(attackingTeam,route==="wing"?"center":route,{setPieceKind:null});
     const defenders=v3Members(defendingTeam,route==="wing"?["LB","RB","CB","DM"]:["CB","DM","CM","LB","RB"])
-      .map(member=>({member,score:v3ClampRating(stat(member,"defending"))*.55+v3ClampRating(stat(member,"positioning"))*.30+v3ClampRating(stat(member,"pace"))*.10+v3ClampRating(stat(member,"strength"))*.05}))
+      .map(member=>({member,score:(v3ClampRating(stat(member,"defending"))*.42+v3ClampRating(stat(member,"positioning"))*.30+v3ClampRating(stat(member,"tackling"))*.16+v3ClampRating(stat(member,"pace"))*.08+v3ClampRating(stat(member,"strength"))*.04)*roleExecution(member)}))
       .sort((x,y)=>y.score-x.score);
-    const entryPass=v3ClampRating(stat(creator,"shortPassing"))*.65+v3ClampRating(stat(creator,"decisionMaking"))*.35;
-    const receiverRun=v3ClampRating(stat(receiver,"decisionMaking"))*.45+v3ClampRating(stat(receiver,"pace"))*.30+v3ClampRating(stat(receiver,"dribbling"))*.15+v3ClampRating(stat(receiver,"strength"))*.10;
+    const entryPass=(v3ClampRating(stat(creator,"shortPassing"))*.48+v3ClampRating(stat(creator,"vision"))*.24+v3ClampRating(stat(creator,"decisionMaking"))*.28)*roleExecution(creator);
+    const receiverRun=(v3ClampRating(stat(receiver,"decisionMaking"))*.38+v3ClampRating(stat(receiver,"pace"))*.27+v3ClampRating(stat(receiver,"dribbling"))*.20+v3ClampRating(stat(receiver,"strength"))*.05+v3ClampRating(stat(receiver,"composure"))*.10)*roleExecution(receiver);
     const attackAdj=v3FinalAdjustment(attackingTeam,"attack",5,route,"workBall"),defenseAdj=v3FinalAdjustment(defendingTeam,"defense",5,route,"workBall");
     const combination=v3ApplyAdjustment(entryPass*.60+receiverRun*.40,attackAdj);
     const main=defenders[0]?.score||65,support=defenders[1]?.score||main;
@@ -8113,23 +8306,8 @@ render();
       game.stats[attackingTeam].turnovers++;
       addMicroBonus(attackingTeam,result.creator,"passing",-.055,"dangerousTurnovers");
       recordRoleEvent(attackingTeam,result.creator,"turnovers");
-      const stopper=result.defenders?.[0]?.member||null;
-      const entryText=stopper
-        ?`${result.creator.footballer.name}, ${result.receiver.footballer.name}'ı aradı; ${stopper.footballer.name} pası kesti.`
-        :`${result.creator.footballer.name} ceza sahasına giriş pasını kaybetti.`;
-      const entryCause=stopper
-        ?`${stopper.footballer.name} ceza sahası girişindeki pas kanalını erken kapattı.`
-        :"Pas kanalı savunma tarafından kapatıldı.";
-      setVisualPhase("turnover",{
-        team:defendingTeam,route,phase:5,success:false,action:"interception",
-        focusIds:visualMemberIds(result.creator,result.receiver,stopper),
-        carrierId:result.creator?.footballer?.id||null,
-        defenderId:stopper?.footballer?.id||null,
-        supportId:result.receiver?.footballer?.id||null,
-        ballTargetId:stopper?.footballer?.id||null,
-        outcome:"entryInterception",message:entryText,cause:entryCause
-      });
-      addEvent("turnover",entryText,`${route==="wing"?"Kanat":"Merkez"} · ceza sahası girişi`,entryCause);
+      setVisualPhase("turnover",{team:defendingTeam,route,phase:5,success:false,action:"interception",focusIds:visualMemberIds(result.creator,result.receiver),message:`${game.teamNames[defendingTeam]} giriş pasını kesti`});
+      addEvent("turnover",`${game.teamNames[attackingTeam]} ceza sahasına giriş pasını kaybetti.`,`${Math.round(result.probability*100)}% başarı olasılığı`,"Pas kanalı savunması giriş kombinasyonunu bozdu.");
       if(rng()<.20)game.forcedAttack={team:defendingTeam,route:"transition",bonus:1};return"end";
     }
     setVisualPhase("entry",{team:attackingTeam,route,phase:5,success:false,action:"secondBall",focusIds:visualMemberIds(result.creator,result.receiver),message:`${game.teamNames[attackingTeam]} ikinci topu aldı`});
@@ -8142,10 +8320,10 @@ render();
     const defender=weightedMember(defendingTeam,["CB","DM","LB","RB"],["heading","defending","strength","positioning"],{type:"defender",route:"wing"});
     const keeper=goalkeeper(defendingTeam);
     const attackAdj=v3FinalAdjustment(attackingTeam,"attack",5,route,"cross"),defenseAdj=v3FinalAdjustment(defendingTeam,"defense",5,route,"cross");
-    const crossDelivery=v3ApplyAdjustment(v3ClampRating(stat(creator,"crossing"))*.80+v3ClampRating(stat(creator,"decisionMaking"))*.20,attackAdj);
+    const crossDelivery=v3ApplyAdjustment((v3ClampRating(stat(creator,"crossing"))*.74+v3ClampRating(stat(creator,"decisionMaking"))*.18+v3ClampRating(stat(creator,"composure"))*.08)*roleExecution(creator),attackAdj);
     const targetable=clamp(.15+crossDelivery*.0075,.15,.90);
-    const attackerAerial=v3ClampRating(stat(target,"heading"))*.65+v3ClampRating(stat(target,"strength"))*.25+v3ClampRating(stat(target,"decisionMaking"))*.10;
-    const defenderAerial=v3ApplyAdjustment(v3ClampRating(stat(defender,"heading"))*.45+v3ClampRating(stat(defender,"defending"))*.30+v3ClampRating(stat(defender,"strength"))*.20+v3ClampRating(stat(defender,"positioning"))*.05,defenseAdj);
+    const attackerAerial=(v3ClampRating(stat(target,"heading"))*.65+v3ClampRating(stat(target,"strength"))*.25+v3ClampRating(stat(target,"decisionMaking"))*.10)*roleExecution(target);
+    const defenderAerial=v3ApplyAdjustment((v3ClampRating(stat(defender,"heading"))*.45+v3ClampRating(stat(defender,"defending"))*.30+v3ClampRating(stat(defender,"strength"))*.20+v3ClampRating(stat(defender,"positioning"))*.05)*roleExecution(defender),defenseAdj);
     const duel=clamp(.50+(attackerAerial-defenderAerial)*.008,.15,.85);
     const targetableSuccess=rng()<=targetable;
     applyMicroRating(attackingTeam,creator,"passing",targetableSuccess,targetable,.085,{passesAttempted:1,passesCompleted:targetableSuccess?1:0,progressivePasses:targetableSuccess?1:0,turnovers:targetableSuccess?0:1});
@@ -8153,7 +8331,7 @@ render();
     const duelSuccess=rng()<=duel;
     applyMicroRating(attackingTeam,target,"duels",duelSuccess,duel,.065,{duelsAttempted:1,duelsWon:duelSuccess?1:0});
     applyMicroRating(defendingTeam,defender,"duels",!duelSuccess,1-duel,.070,{duelsAttempted:1,duelsWon:!duelSuccess?1:0,defensiveActions:1});
-    if(!duelSuccess){addEvent("tactical",`${defender.footballer.name}, ${target.footballer.name}'a karşı hava topunu kazandı.`,`${creator.footballer.name} ortayı yaptı.`,`${defender.footballer.name} pozisyon alma, kafa ve güç profiliyle hava düellosunda üstün geldi.`);if(rng()<.20)return v3ResolveGroundShot(attackingTeam,defendingTeam,route,5,.88,attackCtx,token,"İkinci top");return;}
+    if(!duelSuccess){addEvent("tactical",`${creator.footballer.name} ortasında savunma hava topunu kazandı.`,`${Math.round(duel*100)}% hücum hava düellosu` ,"Hava savunması üstün geldi.");if(rng()<.20)return v3ResolveGroundShot(attackingTeam,defendingTeam,route,5,.88,attackCtx,token,"İkinci top");return;}
     const margin=attackerAerial-defenderAerial;
     const duelEffect=margin<=5?-8:margin<=12?0:8;
     const positionRoll=rng(),positionEffect=positionRoll<.25?10:positionRoll<.85?0:-10,distanceEffect=positionEffect===10?5:positionEffect===-10?-5:0;
@@ -8177,102 +8355,11 @@ render();
     if(roll<onTarget){shot.outcome="saved";game.stats[attackingTeam].onTarget++;game.stats[defendingTeam].saves++;incrementRatingStat(defendingTeam,keeper,"saves");applyMicroRating(defendingTeam,keeper,"goalkeeping",true,saveExpected,.18,{shotsFaced:1,difficultSaves:conditionalGoal>.38?1:0});recordRoleEvent(attackingTeam,target,"onTarget");addEvent("save",`${keeper.footballer.name} kafa vuruşunu kurtardı.`,`${goalProbability.toFixed(2)} xG`,"Kaleci doğru pozisyon aldı.");return;}
     shot.outcome="offTarget";if(goalProbability>.30)adjustRating(attackingTeam,target,-.18,"bigChanceMissed");addEvent("shot",`${target.footballer.name} kafa vuruşunda hedefi bulamadı.`,`${goalProbability.toFixed(2)} xG`,"Kafa vuruşu sonuçsuz kaldı.");
   }
-  game.v3={version:"4.0.0-pressure-timeline-readable-2d",phaseCap:18,matchFactor:v3DefenseMatchFactor,adjustedRate:v3AdjustedRate,phaseProbability:v3PhaseProbability,directionRoute:v3DirectionRoute,workRates:v3WorkRates,crossRates:v3CrossRates};
-  function v3NarrativeIndex(key,size){
-    const text=String(key||"");let h=2166136261;
-    for(let i=0;i<text.length;i++){h^=text.charCodeAt(i);h=Math.imul(h,16777619);}
-    return (h>>>0)%Math.max(1,size||1);
-  }
-  function v3NarrativePick(list,key){return list[v3NarrativeIndex(key,list.length)]||list[0];}
-  function v3FailureNarrative(attackingTeam,defendingTeam,phase,result,route="center"){
-    const p=result?.micro||{};
-    const passer=p.primary||p.carrier||null,carrier=p.carrier||p.primary||null,defender=p.defender||null,support=p.support||null;
-    const name=(member,fallback)=>member?.footballer?.name||fallback;
-    const value=(member,key)=>{const n=Number(stat(member,key));return Number.isFinite(n)?n:50;};
-    const passerName=name(passer,game.teamNames[attackingTeam]);
-    const carrierName=name(carrier,passerName);
-    const defenderName=name(defender,game.teamNames[defendingTeam]);
-    const supportName=name(support,"takım arkadaşı");
-    const passQuality=(value(passer,"shortPassing")+value(passer,"vision")+value(passer,"decisionMaking"))/3;
-    const carryQuality=(value(carrier,"dribbling")+value(carrier,"pace")+value(carrier,"decisionMaking"))/3;
-    const defenseQuality=(value(defender,"positioning")+value(defender,"tackling")+value(defender,"defending"))/3;
-    const supportQuality=(value(support,"positioning")+value(support,"decisionMaking")+value(support,"pace"))/3;
-    const pressureEdge=(Number(result?.defenseAdjustment)||0)-(Number(result?.attackAdjustment)||0);
-    const phaseLabel=phase===1?"geriden çıkış":phase===2?"orta saha ilerleyişi":phase===3?"son bölge girişi":"geçiş hücumu";
-    const routeLabel=route==="wing"?"Kanat":route==="transition"?"Geçiş":route==="setPiece"?"Duran top":"Merkez";
-    const key=[game.minute,phase,route,passer?.footballer?.id,carrier?.footballer?.id,defender?.footballer?.id,support?.footballer?.id].join("|");
-    let reason="interception",variants=[],cause="";
-
-    if(phase>=2&&carryQuality+4<defenseQuality&&(route==="wing"||phase===4||value(carrier,"dribbling")<58)){
-      reason="heavyTouch";
-      variants=[
-        `${carrierName} topu ayağından biraz açtı, ${defenderName} araya girip topu aldı.`,
-        `${carrierName} kontrolü uzatınca ${defenderName} müdahaleyi yaptı.`,
-        `${defenderName}, ${carrierName}'ın topu önüne fazla açmasını değerlendirdi.`
-      ];
-      cause=`${carrierName}'ın top taşıma profili bu pozisyonda ${defenderName}'ın pozisyon alma ve müdahale kalitesinin gerisinde kaldı.`;
-    }else if(pressureEdge>=7){
-      reason="press";
-      variants=[
-        `${game.teamNames[defendingTeam]} baskıyı artırdı; ${passerName} acele pas yaptı ve ${defenderName} topu kazandı.`,
-        `${passerName} baskı altında pas açısını bulamadı, ${defenderName} araya girdi.`,
-        `${defenderName} öne çıkarak ${passerName}'ın baskı altında çıkardığı pası kesti.`
-      ];
-      cause=`Savunma ayarı bu fazda hücum ayarından daha güçlü etki üretti; ${defenderName} baskının kazandırdığı mesafeyi kullandı.`;
-    }else if(support&&supportQuality+5<defenseQuality&&phase>=2){
-      reason="markedReceiver";
-      variants=[
-        `${supportName} markajdan çıkamayınca ${passerName}'ın pası savunmada kaldı.`,
-        `${defenderName}, ${supportName}'a giden hattı kapattı; ${passerName} topu kaybetti.`,
-        `${passerName} ${supportName}'ı aradı ama ${defenderName} pas kanalını kapattı.`
-      ];
-      cause=`${supportName}'ın boş alan bulma desteği, ${defenderName}'ın pozisyon alma üstünlüğünü aşamadı.`;
-    }else if(passQuality+2<defenseQuality){
-      reason="interception";
-      variants=[
-        `${defenderName} pas kanalını okuyup ${passerName}'ın pasını kesti.`,
-        `${passerName} ileri pası denedi; ${defenderName} zamanlamayı doğru yapıp araya girdi.`,
-        `${defenderName}, ${passerName}'ın pas yönünü erken okuyarak topu kazandı.`
-      ];
-      cause=`${defenderName}'ın savunma okuması bu fazda ${passerName}'ın pas üretimine üstün geldi.`;
-    }else if(passQuality<60){
-      reason="shortPass";
-      variants=[
-        `${passerName} pası kısa bıraktı, ${defenderName} araya girdi.`,
-        `${passerName}'ın pasında hız eksik kaldı; ${defenderName} topu topladı.`,
-        `${passerName} bağlantı pasını yeterince sert gönderemedi, ${defenderName} hamleyi yaptı.`
-      ];
-      cause=`Bu top kaybında pas hızı ve karar kalitesi belirleyici oldu; savunma pasın yolunu kapattı.`;
-    }else{
-      reason="duel";
-      variants=[
-        `${defenderName} zamanlamayı doğru yaptı ve ${carrierName}'dan topu söktü.`,
-        `${carrierName} ilerlemek istedi ama ${defenderName} geçit vermedi.`,
-        `${defenderName} ikili mücadeleyi kazanıp hücumu bitirdi.`
-      ];
-      cause=`Faz başarı ihtimali savunmanın lehine sonuçlandı; ${defenderName} bireysel müdahaleyle pozisyonu tamamladı.`;
-    }
-    return{reason,text:v3NarrativePick(variants,key),detail:`${routeLabel} · ${phaseLabel}`,cause};
-  }
+  game.v3={version:"5.0.0-attribute-role-tactic-context",phaseCap:16,matchFactor:v3DefenseMatchFactor,adjustedRate:v3AdjustedRate,phaseProbability:v3PhaseProbability,directionRoute:v3DirectionRoute,workRates:v3WorkRates,crossRates:v3CrossRates,roleScores:calculateRoleScores,teamStructure};
   function v3PhaseFailure(attackingTeam,defendingTeam,phase,result,route="center") {
-    const narrative=v3FailureNarrative(attackingTeam,defendingTeam,phase,result,route);
-    const p=result?.micro||{};
-    result.failureReason=narrative.reason;
-    game.stats[attackingTeam].turnovers++;
-    if(phase===1)game.stats[defendingTeam].highTurnovers++;
-    setVisualPhase("turnover",{
-      team:defendingTeam,route,phase,success:false,action:"interception",
-      focusIds:visualMemberIds(p.primary,p.carrier,p.defender,p.support),
-      carrierId:p.carrier?.footballer?.id||p.primary?.footballer?.id||null,
-      defenderId:p.defender?.footballer?.id||null,
-      supportId:p.support?.footballer?.id||null,
-      ballTargetId:p.defender?.footballer?.id||null,
-      outcome:narrative.reason,
-      statDelta:result.statDelta||null,
-      message:narrative.text,
-      cause:narrative.cause
-    });
-    addEvent("turnover",narrative.text,narrative.detail,narrative.cause);
+    const label=phase===1?"geriden oyun kurma":phase===2?"orta sahada ilerleme":phase===3?"son bölgeye giriş":"geçiş oyunu";
+    setVisualPhase("turnover",{team:defendingTeam,route,phase,success:false,action:"interception",message:`${game.teamNames[defendingTeam]} ${label} aşamasını durdurdu.`});
+    addEvent("tactical",`${game.teamNames[defendingTeam]} ${label} aşamasını durdurdu.`,`${Math.round(result.probability*100)}% hücum başarı olasılığı`,`Nihai faz ayarları hücum ${result.attackAdjustment>=0?"+":""}${result.attackAdjustment}, savunma ${result.defenseAdjustment>=0?"+":""}${result.defenseAdjustment}; sınır ±18.`);
     if((phase===1&&rng()<.15)||(phase===2&&rng()<.20))game.forcedAttack={team:defendingTeam,route:"transition",bonus:1};
   }
 
@@ -8293,53 +8380,28 @@ render();
     }
     const route=forced?.route==="transition"
       ?"transition"
-      :(rng()<.18?"transition":v3DirectionRoute(attackingTeam,a.attackDirection));
+      :(rng()<v5TransitionChance(attackingTeam)?"transition":v3DirectionRoute(attackingTeam,a.attackDirection));
+    v5AccrueIncidentalFoul(defendingTeam,route);
     const routeData=game.routeStats[attackingTeam][route];routeData.attempts++;game.stats[attackingTeam].attacks++;
     beginVisualAttack(attackingTeam,route,{message:route==="transition"?`${game.teamNames[attackingTeam]} geçiş fırsatı yakaladı`:`${game.teamNames[attackingTeam]} hücumu kuruyor`});
     const attackCtx={route,dangerous:false,setPieceKind:null};
     const possessionTime=rand(14,30)*(route==="transition"?.72:1);game.possessionSeconds[attackingTeam]+=possessionTime;
     if(route!=="transition"){
       const p1=v3RunPhase(attackingTeam,defendingTeam,1,route);
-      const p1Completed=p1.success?4:Math.round(rand(1,3));
-      p1.statDelta={passesAttempted:4,passesCompleted:p1Completed,turnovers:p1.success?0:1};
-      game.stats[attackingTeam].passesAttempted+=4;game.stats[attackingTeam].passesCompleted+=p1Completed;
+      game.stats[attackingTeam].passesAttempted+=4;game.stats[attackingTeam].passesCompleted+=p1.success?4:Math.round(rand(1,3));
       if(!p1.success){v3PhaseFailure(attackingTeam,defendingTeam,1,p1,route);return;}
-      setVisualPhase("progress",{
-        team:attackingTeam,route,phase:2,success:true,action:"circulation",
-        focusIds:visualMemberIds(p1.micro?.primary,p1.micro?.carrier,p1.micro?.support),
-        carrierId:p1.micro?.carrier?.footballer?.id||p1.micro?.primary?.footballer?.id||null,
-        supportId:p1.micro?.support?.footballer?.id||null,
-        ballTargetId:p1.micro?.support?.footballer?.id||null,
-        statDelta:p1.statDelta,
-        message:`${p1.micro?.primary?.footballer?.name||game.teamNames[attackingTeam]} oyunu orta sahaya taşıdı`,
-        cause:`${p1.micro?.primary?.footballer?.name||"Pasör"} pas bağlantısını kurdu; ${p1.micro?.support?.footballer?.name||"destek oyuncusu"} yeni pas açısını oluşturdu.`
-      });
+      setVisualPhase("progress",{team:attackingTeam,route,phase:2,success:true,action:"circulation",message:`${game.teamNames[attackingTeam]} orta saha bağlantısını kurdu`});
       const p2=v3RunPhase(attackingTeam,defendingTeam,2,route);
-      const p2Completed=p2.success?5:Math.round(rand(2,4));
-      p2.statDelta={passesAttempted:5,passesCompleted:p2Completed,turnovers:p2.success?0:1};
-      game.stats[attackingTeam].passesAttempted+=5;game.stats[attackingTeam].passesCompleted+=p2Completed;
+      game.stats[attackingTeam].passesAttempted+=5;game.stats[attackingTeam].passesCompleted+=p2.success?5:Math.round(rand(2,4));
       if(!p2.success){v3PhaseFailure(attackingTeam,defendingTeam,2,p2,route);return;}
-      setVisualPhase("entry",{
-        team:attackingTeam,route,phase:3,success:true,action:"advance",
-        focusIds:visualMemberIds(p2.micro?.primary,p2.micro?.carrier,p2.micro?.support),
-        carrierId:p2.micro?.carrier?.footballer?.id||p2.micro?.primary?.footballer?.id||null,
-        supportId:p2.micro?.support?.footballer?.id||null,
-        ballTargetId:p2.micro?.support?.footballer?.id||null,
-        statDelta:p2.statDelta,
-        message:route==="wing"
-          ?`${p2.micro?.carrier?.footballer?.name||game.teamNames[attackingTeam]} topu kanat koridoruna taşıdı`
-          :`${p2.micro?.primary?.footballer?.name||game.teamNames[attackingTeam]} merkezden son bölge bağlantısını kurdu`,
-        cause:route==="wing"
-          ?`${p2.micro?.carrier?.footballer?.name||"Top taşıyıcı"} genişliği kullandı; ${p2.micro?.support?.footballer?.name||"destek oyuncusu"} ileri pas açısını açtı.`
-          :`${p2.micro?.primary?.footballer?.name||"Pasör"} ve ${p2.micro?.support?.footballer?.name||"destek oyuncusu"} merkezde hatlar arası bağlantıyı kurdu.`
-      });
+      setVisualPhase("entry",{team:attackingTeam,route,phase:3,success:true,action:"advance",message:route==="wing"?"Top kanat koridoruna taşındı":"Top merkezde son bölgeye taşındı"});
     }
     const transition=route==="transition";
     let transitionWorkAttempted=false;
     if(transition){
       setVisualPhase("transition",{team:attackingTeam,route,phase:4,action:"counter",message:`${game.teamNames[attackingTeam]} savunma yerleşmeden ilerliyor`});
       game.stats[attackingTeam].transitionAttacks++;
-      const action=v3PhaseAction(attackingTeam,defendingTeam,4);
+      const action=v3PhaseAction(attackingTeam,defendingTeam,4,"transition");
       if(action==="shot"){setVisualPhase("finish",{action:"shot",phase:4});return v3ResolveGroundShot(attackingTeam,defendingTeam,"transition",4,1,attackCtx,token,"Geçiş şutu");}
       if(action==="workBall"){
         transitionWorkAttempted=true;
@@ -8351,7 +8413,7 @@ render();
       const p4=v3RunPhase(attackingTeam,defendingTeam,4,"transition");if(!p4.success){v3PhaseFailure(attackingTeam,defendingTeam,4,p4,"transition");return;}
       game.stats[attackingTeam].boxEntries++;routeData.entries++;markDangerous(attackingTeam,attackCtx,"başarılı geçiş oyunu");
     }else{
-      const action=v3PhaseAction(attackingTeam,defendingTeam,3);
+      const action=v3PhaseAction(attackingTeam,defendingTeam,3,route);
       if(action==="shot"){setVisualPhase("finish",{action:"shot",phase:3});return v3ResolveGroundShot(attackingTeam,defendingTeam,route,3,1,attackCtx,token,"Son bölge öncesi erken şut");}
       let workAttempted=false,workMultiplier=1;
       if(action==="workBall"){
@@ -8364,7 +8426,7 @@ render();
         const p3=v3RunPhase(attackingTeam,defendingTeam,3,route);if(!p3.success){v3PhaseFailure(attackingTeam,defendingTeam,3,p3,route);return;}
         game.stats[attackingTeam].boxEntries++;routeData.entries++;
       }
-      const planned=game.penaltyPlan.events.find(p=>!p.used&&game.minute>=p.minute);if(planned&&rng()<.88){planned.used=true;planned.team=attackingTeam;await simulatePenalty(attackingTeam,defendingTeam,planned,token);return;}
+      if(await v5MaybePenalty(attackingTeam,defendingTeam,route,token))return;
       const discipline=await maybeDiscipline(attackingTeam,defendingTeam,route,token);if(discipline.setPiece)return;
       const finalAction=v3FinalAction(attackingTeam,defendingTeam,workAttempted);
       if(finalAction==="cross"){setVisualPhase("cross",{action:"cross",phase:5,message:"Kanatta orta açısı oluştu"});return v3ResolveCross(attackingTeam,defendingTeam,route,attackCtx,token);}
@@ -8378,7 +8440,7 @@ render();
       setVisualPhase("finish",{action:"shot",phase:5});
       return v3ResolveGroundShot(attackingTeam,defendingTeam,route,5,(workMultiplier||1)*(finalAction==="other"?.94:1),attackCtx,token,finalAction==="other"?"Bireysel son aksiyon":"Normal şut");
     }
-    const planned=game.penaltyPlan.events.find(p=>!p.used&&game.minute>=p.minute);if(planned&&rng()<.88){planned.used=true;planned.team=attackingTeam;await simulatePenalty(attackingTeam,defendingTeam,planned,token);return;}
+    if(await v5MaybePenalty(attackingTeam,defendingTeam,"transition",token))return;
     const finalAction=v3FinalAction(attackingTeam,defendingTeam,transitionWorkAttempted);
     if(finalAction==="cross"){setVisualPhase("cross",{action:"cross",phase:5});return v3ResolveCross(attackingTeam,defendingTeam,"transition",attackCtx,token);}
     if(finalAction==="workBall"){
@@ -8395,7 +8457,7 @@ render();
     return ({"Çizgi Kanadı":"Çizgide Oyna","Dengeli Kanat":"Dengeli","İçe Kat Eden":"İçe Kat Et"})[role]||role||"Görev yok";
   }
   function individualTaskCompatibility(team,member) {
-    const cfg=v3Config(team),role=v3Role(member);let score=0;
+    const cfg=v3Config(team),role=v3Role(member);let score=(roleSuitability(member)-70)/12;
     const add=value=>{score+=clamp(value,-1,1);};
     if(cfg.general==="Hücum Ağırlıklı")add(v3RoleSign(role,["Hücumcu Bek","Oyun Kurucu","Box-to-Box","Çift Yönlü","Serbest","Hücumcu Orta Saha","Çizgi Kanadı","İçe Kat Eden","Gizli Forvet","Bitirici"],["Sigorta Stoper","Savunmacı Bek","Kesici","Defansçı Orta Saha"]));
     if(cfg.general==="Savunma Ağırlıklı")add(v3RoleSign(role,["Sigorta Stoper","Hamleci Stoper","Savunmacı Bek","Kesici","Defansçı Orta Saha","Çift Yönlü"],["Hücumcu Bek","Hücumcu Orta Saha","Serbest","Çizgi Kanadı","İçe Kat Eden","Gizli Forvet"]));
@@ -8432,12 +8494,14 @@ render();
   function analysisTaskRows(team) {
     return activeSquad(team).filter(member=>member.footballer.pos!=="GK").map(member=>{
       const compatibility=individualTaskCompatibility(team,member);
-      return `<div class="kx-task-analysis-row"><div><strong>${member.footballer.name}</strong><small>${analysisTaskLabel(member.role)} · Maç puanı ${Number(member.rating||6.5).toFixed(2)}</small></div><span class="kx-task-status ${compatibility.className}">${compatibility.label}</span></div>`;
+      const rec=record(team,member),events=rec?.roleEvents||{};
+      const involvement=(Number(events.creatorSelections)||0)+(Number(events.shooterSelections)||0)+(Number(events.defensiveActions)||0);
+      return `<div class="kx-task-analysis-row"><div><strong>${member.footballer.name}</strong><small>${analysisTaskLabel(member.role)} · Rol uygunluğu ${Math.round(roleSuitability(member))}/100 · Rol aksiyonu ${involvement} · Maç puanı ${Number(rec?.rating||6.5).toFixed(2)}</small></div><span class="kx-task-status ${compatibility.className}">${compatibility.label}</span></div>`;
     }).join("");
   }
   function analysisHTML() {
     const winner=game.score.A===game.score.B?"Beraberlik":`${game.teamNames[game.score.A>game.score.B?"A":"B"]} kazandı`;
-    const summaries=["A","B"].map(team=>{const s=game.stats[team],shotAccuracy=analysisPercent(s.onTarget,s.shots),passAccuracy=analysisPercent(s.passesCompleted,s.passesAttempted);return `<section class="kx-analysis-card kx-team-${team.toLowerCase()}"><h3><span class="kx-team-name">${game.teamNames[team]}</span></h3><div class="kx-summary-grid"><div class="kx-summary"><b>%${Math.round(s.possession)}</b><span>Topa sahip olma</span></div><div class="kx-summary"><b>${s.shots}/${s.onTarget}</b><span>Şut / isabet</span></div><div class="kx-summary"><b>%${shotAccuracy}</b><span>Şut isabeti</span></div><div class="kx-summary"><b>${s.xG.toFixed(2)}</b><span>xG</span></div><div class="kx-summary"><b>${s.passesCompleted}/${s.passesAttempted}</b><span>Başarılı pas</span></div><div class="kx-summary"><b>%${passAccuracy}</b><span>Pas başarısı</span></div><div class="kx-summary"><b>${s.dangerousAttacks}</b><span>Tehlikeli atak</span></div><div class="kx-summary"><b>${s.boxEntries}</b><span>Ceza sahası girişi</span></div><div class="kx-summary"><b>${s.saves}</b><span>Kurtarış</span></div><div class="kx-summary"><b>${s.fouls}</b><span>Faul</span></div></div></section>`;}).join("");
+    const summaries=["A","B"].map(team=>{const s=game.stats[team],structure=teamStructure(team),shotAccuracy=analysisPercent(s.onTarget,s.shots),passAccuracy=analysisPercent(s.passesCompleted,s.passesAttempted);return `<section class="kx-analysis-card kx-team-${team.toLowerCase()}"><h3><span class="kx-team-name">${game.teamNames[team]}</span></h3><div class="kx-summary-grid"><div class="kx-summary"><b>%${Math.round(s.possession)}</b><span>Topa sahip olma</span></div><div class="kx-summary"><b>${s.shots}/${s.onTarget}</b><span>Şut / isabet</span></div><div class="kx-summary"><b>%${shotAccuracy}</b><span>Şut isabeti</span></div><div class="kx-summary"><b>${s.xG.toFixed(2)}</b><span>xG</span></div><div class="kx-summary"><b>${s.passesCompleted}/${s.passesAttempted}</b><span>Başarılı pas</span></div><div class="kx-summary"><b>%${passAccuracy}</b><span>Pas başarısı</span></div><div class="kx-summary"><b>${s.dangerousAttacks}</b><span>Tehlikeli atak</span></div><div class="kx-summary"><b>${s.boxEntries}</b><span>Ceza sahası girişi</span></div><div class="kx-summary"><b>${s.saves}</b><span>Kurtarış</span></div><div class="kx-summary"><b>${s.fouls}</b><span>Faul</span></div><div class="kx-summary"><b>${Math.round(structure.roleFit)}</b><span>Ort. rol uygunluğu</span></div><div class="kx-summary"><b>${Math.round(structure.balance)}</b><span>Yapısal denge</span></div></div></section>`;}).join("");
     const routes=["A","B"].map(team=>`<section class="kx-analysis-section kx-team-${team.toLowerCase()}"><h3><span class="kx-team-name">${game.teamNames[team]}</span><span class="kx-section-title">Hücum dağılımı</span></h3><div class="kx-analysis-note">${analysisDirectionSummary(team)}</div><div class="kx-route-table"><div class="kx-route-row kx-route-head"><span>Rota</span><span>Kullanım</span><span>Giriş</span><span class="kx-route-extra">Tehlike</span><span class="kx-route-extra">xG</span></div>${analysisRouteRows(team)}</div><div class="kx-analysis-note">Kanat ve merkez kullanım yüzdeleri yalnızca yönlendirilen açık oyun hücumları üzerinden; geçiş ve duran top yüzdeleri ise tüm ataklar üzerinden hesaplanır.</div></section>`).join("");
     const tasks=["A","B"].map(team=>`<section class="kx-analysis-section kx-team-${team.toLowerCase()}"><h3><span class="kx-team-name">${game.teamNames[team]}</span><span class="kx-section-title">Oyuncu Görevleri</span></h3><div class="kx-task-grid">${analysisTaskRows(team)}</div><div class="kx-analysis-note">Uyum sınıflandırması yalnızca maç analizinde gösterilir; maç öncesinde rakibe veya oyuncuya açıklanmaz.</div></section>`).join("");
     return `<div class="kx-analysis"><div class="kx-analysis-grid">${summaries}</div><div class="kx-analysis-grid">${routes}</div><div class="kx-analysis-grid">${tasks}</div><div style="text-align:center;color:var(--muted);font-size:9px">${winner}</div></div>`;
@@ -8864,9 +8928,11 @@ render();
   showScene = async function(kind, steps, token) {
     if (game.testMode) return;
     if(kind==="goal"){
-      /* Gol artık popup/cinema açmaz. Olay 2D akışta kalır ve skor değişimi üst tabelada canlandırılır. */
-      window.NEON_XI_EVENT_CINEMA?.cancel?.();
-      return presentationWait(40,token);
+      const cinema=window.NEON_XI_EVENT_CINEMA;
+      if(cinema?.playAndWait){
+        return cinema.playAndWait("goal",{minute:game.minute,token});
+      }
+      return presentationWait(320,token);
     }
     if(kind==="penalty"){
       const cinema=window.NEON_XI_EVENT_CINEMA;
@@ -12669,15 +12735,47 @@ body.bot-draft-waiting #selectedDetail {
     return ranked[0]?.footballer?.id || "";
   }
 
+  function botSquadProfile(team) {
+    const entries=teamFootballers(team);
+    const score=(positions,keys)=>{
+      const pool=entries.filter(({slot,footballer})=>positions.includes(slotPositionBot(slot))||positions.includes(footballer.pos));
+      const values=(pool.length?pool:entries).flatMap(({footballer})=>{const detail=details(footballer)||{};return keys.map(key=>Number(detail[key])).filter(value=>Number.isFinite(value)&&value>0);});
+      return values.length?values.reduce((sum,value)=>sum+value,0)/values.length:65;
+    };
+    return {
+      wing:score(["LW","RW","LB","RB"],["crossing","pace","dribbling","decisionMaking"]),
+      center:score(["DM","CM","AM","ST"],["shortPassing","vision","decisionMaking","dribbling"]),
+      shooting:score(["ST","LW","RW","CM","AM"],["finishing","longShots","composure","decisionMaking"]),
+      aerial:score(["ST","CB","DM"],["heading","strength","decisionMaking"]),
+      transition:score(["ST","LW","RW","CM"],["pace","dribbling","decisionMaking"]),
+      control:score(["GK","CB","DM","CM"],["shortPassing","longPassing","composure","decisionMaking"]),
+      pressing:score(["ST","LW","RW","CM","DM"],["pressingDiscipline","teamwork","pace"]),
+      block:score(["CB","DM","LB","RB"],["positioning","tackling","aerialDefending","teamwork"])
+    };
+  }
+
   function buildBotTactics(difficulty, opponentTactics) {
     const tactics=baseTactics(),skill=difficulty==="hard"?.80:difficulty==="easy"?.30:.55;
     const pick=list=>randomItem(list);
     tactics.general=pick(["Savunma Ağırlıklı","Dengeli","Hücum Ağırlıklı"]);
     tactics.attackDirection=pick(["Dengeli","Kanatları Kullan","Merkezden Oyna"]);
     tactics.finalAction=pick(["Dengeli","Kaleyi Görünce Vur","Ortaları Artır","Ceza Sahasına Pasla Gir"]);
+    tactics.transitionPlan=pick(["Dengeli Geçiş","Hızlı Hücum","Topu Güvenceye Al"]);
+    tactics.pressingPlan=pick(["Alçak Blok","Orta Blok","Önde Baskı"]);
     tactics.defenseDirection=pick(["Dengeli","Kanatları Kapat","Merkezi Kapat"]);
     tactics.defenseTactic=pick(["Dengeli Savunma","Şut Savunması","Yan Top Savunması","Pas Kanallarını Kapat"]);
     if(Math.random()<skill){
+      const own=botSquadProfile("B"),noise=()=>Math.random()*4-2;
+      tactics.attackDirection=own.wing+noise()>own.center?"Kanatları Kullan":"Merkezden Oyna";
+      const actionScores=[
+        ["Kaleyi Görünce Vur",own.shooting+noise()],
+        ["Ortaları Artır",own.wing*.58+own.aerial*.42+noise()],
+        ["Ceza Sahasına Pasla Gir",own.center*.62+own.control*.38+noise()]
+      ].sort((a,b)=>b[1]-a[1]);
+      tactics.finalAction=actionScores[0][0];
+      tactics.transitionPlan=own.transition>own.control+3?"Hızlı Hücum":own.control>own.transition+3?"Topu Güvenceye Al":"Dengeli Geçiş";
+      tactics.pressingPlan=own.pressing>own.block+3?"Önde Baskı":own.block>own.pressing+4?"Alçak Blok":"Orta Blok";
+      tactics.general=(own.shooting+own.transition)>(own.block+own.control)+7?"Hücum Ağırlıklı":(own.block+own.control)>(own.shooting+own.transition)+8?"Savunma Ağırlıklı":"Dengeli";
       const opponent=window.NEON_XI_V3?.normalizeTactic?window.NEON_XI_V3.normalizeTactic(opponentTactics||{}):opponentTactics||{};
       const correct={"Kaleyi Görünce Vur":"Şut Savunması","Ortaları Artır":"Yan Top Savunması","Ceza Sahasına Pasla Gir":"Pas Kanallarını Kapat"}[opponent.finalAction];
       if(correct)tactics.defenseTactic=correct;
@@ -14570,9 +14668,9 @@ window.KADRO_HARD_MATCH_SYNC = {
   "use strict";
   /* NEON XI V3 FINAL UI + STATE LAYER 2026-07-24 */
   const GENERAL=[
-    {name:"Savunma Ağırlıklı",desc:"2, 3 ve 4. fazlarda savunmayı güçlendirir; aynı fazlarda hücum uygulamasını azaltır.",traits:["F2 ±5","F3 ±15","F4 ±15"],risk:"Hücum faz ayarları aynı miktarda azalır."},
-    {name:"Dengeli",desc:"Fazlara ek hücum veya savunma yönelimi uygulanmaz.",traits:["Tüm fazlar 0"],risk:"Uzman plan avantajı üretmez."},
-    {name:"Hücum Ağırlıklı",desc:"2, 3 ve 4. fazlarda hücumu güçlendirir; aynı fazlarda savunma uygulamasını azaltır.",traits:["F2 ±5","F3 ±15","F4 ±15"],risk:"Savunma faz ayarları aynı miktarda azalır."}
+    {name:"Savunma Ağırlıklı",desc:"Hatlar arasını kısaltır, riskli ileri çıkışları azaltır ve top kaybı sonrası güvenliği önceler.",traits:["Daha fazla koruma","Daha düşük risk"],risk:"İleri destek ve ceza sahası koşuları azalabilir."},
+    {name:"Dengeli",desc:"Oyuncular skor, dakika, boşluk ve rollerine göre risk seviyesini bağlamsal biçimde ayarlar.",traits:["Bağlama göre denge"],risk:"Tek bir oyun fazında maksimum uzmanlık sağlamaz."},
+    {name:"Hücum Ağırlıklı",desc:"Daha fazla oyuncuyu ileri bağlantılara ve ceza sahası çevresine taşır.",traits:["Daha çok destek","Daha yüksek risk"],risk:"Top kaybında dinlenme savunması yetersiz kalabilir."}
   ];
   const ATTACK_DIRECTION=[
     {name:"Dengeli",desc:"Yönlendirilen açık oyun hücumları maç boyunca %50 kanat, %50 merkez hedefine yakın tutulur.",traits:["Kanat %50","Merkez %50"],risk:"Geçiş ve duran toplar bu dağılıma dahil değildir."},
@@ -14580,10 +14678,20 @@ window.KADRO_HARD_MATCH_SYNC = {
     {name:"Merkezden Oyna",desc:"Yönlendirilen açık oyun hücumları maç boyunca %40 kanat, %60 merkez hedefine yakın tutulur.",traits:["Kanat %40","Merkez %60"],risk:"Geçiş ve duran toplar ayrı rota olarak işlenir."}
   ];
   const FINAL_ACTION=[
-    {name:"Dengeli",desc:"Şut, orta ve ceza sahasına pas oranları temel dağılımda kalır.",traits:["Ek yönelim yok"],risk:"Belirli bir son aksiyonu zorlamaz."},
-    {name:"Kaleyi Görünce Vur",desc:"Erken ve normal şut kullanımını artırır: F3 %10→%35, F4 %20→%45, F5 %40→%65.",traits:["Şut %80","Oyun zekâsı %20"],risk:"Daha fazla hücum erken ve daha düşük kaliteli şutla bitebilir."},
-    {name:"Ortaları Artır",desc:"F5 orta tercihini Hücum Yönüne göre artırır; orta kalitesi Orta Açma özelliğiyle hesaplanır.",traits:["Orta Açma %80","Oyun zekâsı %20"],risk:"Hava üstünlüğü kurulamazsa hücum sona erebilir."},
-    {name:"Ceza Sahasına Pasla Gir",desc:"F3, F4 ve F5'te giriş veya ekstra pası daha sık dener; bir hücumda en fazla bir kez uygulanır.",traits:["Pas %65","Oyun zekâsı %35"],risk:"Başarısız denemelerin %80'i hücumu bitirir."}
+    {name:"Dengeli",desc:"Oyuncular baskı, boşluk ve destek açılarına göre şut, orta veya ekstra pası seçer.",traits:["Bağlama göre karar"],risk:"Belirli bir son aksiyonda uzmanlaşmaz."},
+    {name:"Kaleyi Görünce Vur",desc:"Uygun açı oluştuğunda şut kararının önceliğini yükseltir; karar kalitesi, soğukkanlılık ve şut özellikleri sonucu belirler.",traits:["Daha erken şut","İkinci top tehdidi"],risk:"Zayıf şutörler veya yoğun blok karşısında hücumlar erken bitebilir."},
+    {name:"Ortaları Artır",desc:"Kanat üretimini ve orta kararını artırır; ortacının kalitesi, hedefin hava gücü ve rakibin yerleşimi birlikte hesaplanır.",traits:["Genişlik","Hava hedefi"],risk:"Kaliteli servis veya ceza sahası hedefi yoksa verim düşer."},
+    {name:"Ceza Sahasına Pasla Gir",desc:"Şuttan önce bir bağlantı daha arar; pasör, koşucu ve rakip pas kanalı savunması birlikte değerlendirilir.",traits:["Üçüncü adam koşusu","Daha seçici şut"],risk:"Dar alanda karar ve teknik kalite yetersizse tehlikeli top kaybı doğurur."}
+  ];
+  const TRANSITION_PLAN=[
+    {name:"Dengeli Geçiş",desc:"Top kazanıldığında boşluk varsa hızlanır, yoksa yerleşik hücuma döner.",traits:["Bağlama göre tempo"],risk:"Tek bir geçiş davranışında uzmanlaşmaz."},
+    {name:"Hızlı Hücum",desc:"Top kazanılır kazanılmaz önde kalan koşucuları ve kanalları arar.",traits:["Daha çok kontra","Daha dik oyun"],risk:"İlk pas başarısız olursa takım açık alanda yakalanabilir."},
+    {name:"Topu Güvenceye Al",desc:"Geçiş anında riski azaltır, yakın destekle topu koruyup yerleşik hücumu kurar.",traits:["Daha fazla kontrol","Daha az kayıp"],risk:"Rakip savunma yerleşmeden hücum etme fırsatı kaçabilir."}
+  ];
+  const PRESSING_PLAN=[
+    {name:"Alçak Blok",desc:"Takım kendi yarı alanında kompakt kalır ve ceza sahası çevresini korur.",traits:["Derin kompaktlık","Kontra alanı"],risk:"Rakip rahat kurulur ve daha fazla bölge hâkimiyeti elde eder."},
+    {name:"Orta Blok",desc:"Pres, geri çekilme ve enerji kullanımı dengelenir; kötü kontrol ve geri paslar tetikleyicidir.",traits:["Kontrollü pres","Dengeli enerji"],risk:"Ne önde ne de ceza sahası önünde maksimum yoğunluk sağlar."},
+    {name:"Önde Baskı",desc:"İlk pası ve geriden kurulumu agresif biçimde hedefler.",traits:["Yüksek top kazanma","Kurulumu bozma"],risk:"Pres kırılırsa arkada alan bırakır; maç sonlarında etkinliği azalır ve faul riski artar."}
   ];
   const DEFENSE_DIRECTION=[
     {name:"Dengeli",desc:"Savunma kaynakları %50 kanat, %50 merkez dağıtılır.",traits:["Kanat %50","Merkez %50"],risk:"Belirli bir rotaya özel yoğunluk vermez."},
@@ -14591,14 +14699,16 @@ window.KADRO_HARD_MATCH_SYNC = {
     {name:"Merkezi Kapat",desc:"3. faz savunma dağılımı %40 kanat, %60 merkez olur.",traits:["Kanat −10","Merkez +10"],risk:"Kanattan gelen hücumlarda faz ayarı −10 olur."}
   ];
   const DEFENSE_TACTIC=[
-    {name:"Dengeli Savunma",desc:"Son aksiyon tercihinin ek yönelimine müdahale etmez.",traits:["Katsayı 1,00"],risk:"Doğru karşı seçimle nötrleme sağlamaz."},
-    {name:"Şut Savunması",desc:"Kaleyi Görünce Vur tercihini temel oranına döndürür; Ceza Sahasına Pasla Gir karşısında zıt tepkidir.",traits:["Şuta karşı 0,00","Pasla girişe karşı 1,50"],risk:"Pas kanallarını daha fazla açar."},
-    {name:"Yan Top Savunması",desc:"Ortaları Artır tercihini temel oranına döndürür; Kaleyi Görünce Vur karşısında zıt tepkidir.",traits:["Ortaya karşı 0,00","Şuta karşı 1,50"],risk:"Şut alanını daha fazla açar."},
-    {name:"Pas Kanallarını Kapat",desc:"Ceza Sahasına Pasla Gir tercihini temel oranına döndürür; Ortaları Artır karşısında zıt tepkidir.",traits:["Pasla girişe karşı 0,00","Ortaya karşı 1,50"],risk:"Yan top kullanımını daha fazla açar."}
+    {name:"Dengeli Savunma",desc:"Savunmacılar top, rakip ve alan arasında bağlamsal öncelik kurar.",traits:["Dengeli kaynak dağılımı"],risk:"Belirli bir son aksiyona karşı özel yoğunluk sağlamaz."},
+    {name:"Şut Savunması",desc:"Şut açılarını erken kapatır ve blok mesafesini kısaltır.",traits:["Daha fazla blok","Şut açısını daralt"],risk:"Savunmacı öne çıktığında duvar pası ve arkaya koşu alanı oluşabilir."},
+    {name:"Yan Top Savunması",desc:"Orta bölgesini, ön–arka direk koşularını ve hava eşleşmelerini önceler.",traits:["Ceza sahası yerleşimi","Hava eşleşmesi"],risk:"Ceza sahası yayı çevresinde ikinci top ve şut alanı bırakabilir."},
+    {name:"Pas Kanallarını Kapat",desc:"Ceza sahasına giriş paslarını ve üçüncü adam koşularını takip eder.",traits:["Dar koridor","Koşucu takibi"],risk:"Kanat genişliği ve dış koridor ortaları daha rahat kullanılabilir."}
   ];
   function mapGeneral(value){return ["Savunma Ağırlıklı","Dengeli","Hücum Ağırlıklı"].includes(value)?value:"Dengeli";}
   function mapAttackDirection(value){return ["Dengeli","Kanatları Kullan","Merkezden Oyna"].includes(value)?value:"Dengeli";}
   function mapFinalAction(value){return ["Dengeli","Kaleyi Görünce Vur","Ortaları Artır","Ceza Sahasına Pasla Gir"].includes(value)?value:"Dengeli";}
+  function mapTransitionPlan(value){return ["Dengeli Geçiş","Hızlı Hücum","Topu Güvenceye Al"].includes(value)?value:"Dengeli Geçiş";}
+  function mapPressingPlan(value){return ["Alçak Blok","Orta Blok","Önde Baskı"].includes(value)?value:"Orta Blok";}
   function mapDefenseDirection(value){return ["Dengeli","Kanatları Kapat","Merkezi Kapat"].includes(value)?value:"Dengeli";}
   function mapDefenseTactic(value){return ["Dengeli Savunma","Şut Savunması","Yan Top Savunması","Pas Kanallarını Kapat"].includes(value)?value:"Dengeli Savunma";}
   function normalizeTactic(raw={}){
@@ -14606,21 +14716,25 @@ window.KADRO_HARD_MATCH_SYNC = {
     raw.general=mapGeneral(raw.general);
     raw.attackDirection=mapAttackDirection(raw.attackDirection);
     raw.finalAction=mapFinalAction(raw.finalAction);
+    raw.transitionPlan=mapTransitionPlan(raw.transitionPlan);
+    raw.pressingPlan=mapPressingPlan(raw.pressingPlan);
     raw.defenseDirection=mapDefenseDirection(raw.defenseDirection);
     raw.defenseTactic=mapDefenseTactic(raw.defenseTactic);
     
     return raw;
   }
-  function matchFactor(finalAction,defenseTactic){const m={"Kaleyi Görünce Vur":["Şut Savunması","Yan Top Savunması"],"Ortaları Artır":["Yan Top Savunması","Pas Kanallarını Kapat"],"Ceza Sahasına Pasla Gir":["Pas Kanallarını Kapat","Şut Savunması"]}[finalAction];if(!m||defenseTactic==="Dengeli Savunma")return 1;if(defenseTactic===m[0])return 0;if(defenseTactic===m[1])return 1.5;return 1;}
-  window.NEON_XI_V3={version:"3.3.0",normalizeTactic,matchFactor,phaseCap:18,playersCrossingDefault:80,roleModel:"phase-and-action"};
+  function matchFactor(finalAction,defenseTactic){const m={"Kaleyi Görünce Vur":["Şut Savunması","Yan Top Savunması"],"Ortaları Artır":["Yan Top Savunması","Pas Kanallarını Kapat"],"Ceza Sahasına Pasla Gir":["Pas Kanallarını Kapat","Şut Savunması"]}[finalAction];if(!m||defenseTactic==="Dengeli Savunma")return 1;if(defenseTactic===m[0])return .45;if(defenseTactic===m[1])return 1.22;return 1;}
+  window.NEON_XI_V3={version:"5.0.0",normalizeTactic,matchFactor,phaseCap:14,playersCrossingDefault:null,roleModel:"attribute-role-tactic-context"};
 
-  if(typeof PLAYERS!=="undefined")PLAYERS.forEach(footballer=>{footballer.crossing=80;footballer.ortaAcma=80;});
-  if(typeof details==="function"){
-    const legacyDetails=details;
-    details=function(footballer){const result=legacyDetails(footballer)||{};if(footballer?.pos!=="GK")result.crossing=80;return result;};
-  }
+  /* V5: Orta Açma artık herkeste sabit 80 değildir; oyuncunun pas temeli ve doğal
+     mevki profili tarafından üretilen özgün değer korunur. */
+  if(typeof PLAYERS!=="undefined")PLAYERS.forEach(footballer=>{
+    if(footballer?.pos==="GK")return;
+    const natural=typeof details==="function"?Number(details(footballer)?.crossing):NaN;
+    if(Number.isFinite(natural)){footballer.crossing=natural;footballer.ortaAcma=natural;}
+  });
   if(typeof baseTactics==="function"){
-    baseTactics=function(){return{tasks:{},general:"Dengeli",attackDirection:"Dengeli",finalAction:"Dengeli",defenseDirection:"Dengeli",defenseTactic:"Dengeli Savunma",corner:"",freeKick:"",penalty:""};};
+    baseTactics=function(){return{tasks:{},general:"Dengeli",attackDirection:"Dengeli",finalAction:"Dengeli",transitionPlan:"Dengeli Geçiş",pressingPlan:"Orta Blok",defenseDirection:"Dengeli",defenseTactic:"Dengeli Savunma",corner:"",freeKick:"",penalty:""};};
   }
   function v3SlotPosition(slot){return window.KADRO_POSITION_SYSTEM?.slotPosition?.(slot)||slot?.displayPos||slot?.pos||"";}
   function ensureTeam(team){if(!state?.tactics)return;state.tactics[team]=normalizeTactic(state.tactics[team]||baseTactics());try{formation(team).slots.forEach(slot=>{const footballer=player(state.teams[team].slots[slot.id]),position=v3SlotPosition(slot);if(!footballer||position==="GK")return;const options=ROLE_OPTIONS[position]||[];const current=state.tactics[team].tasks[slot.id];if(!current||!options.includes(current))state.tactics[team].tasks[slot.id]=defaultRole(position);});}catch(error){}}
@@ -14629,8 +14743,8 @@ window.KADRO_HARD_MATCH_SYNC = {
 
   const TASK_DISPLAY={"Çizgi Kanadı":"Çizgide Oyna","Dengeli Kanat":"Dengeli","İçe Kat Eden":"İçe Kat Et"};
   function taskLabel(role){return TASK_DISPLAY[role]||role;}
-  const CHOICES={general:GENERAL,attackDirection:ATTACK_DIRECTION,finalAction:FINAL_ACTION,defenseDirection:DEFENSE_DIRECTION,defenseTactic:DEFENSE_TACTIC};
-  const TITLES={general:["Genel Oyun Planı","2, 3 ve 4. fazlardaki hücum-savunma dengesini belirler."],attackDirection:["Hücum Yönü","Her hücumun kanat veya merkez rotasını seçme oranını belirler."],finalAction:["Son Aksiyon Tercihi","Şut, orta veya ceza sahasına pas kullanım oranını belirler."],defenseDirection:["Savunma Yönü","3. fazda kanat ve merkez savunma dağılımını belirler."],defenseTactic:["Savunma Taktiği","Rakibin Son Aksiyon Tercihini doğru, nötr veya zıt eşleşmeyle karşılar."]};
+  const CHOICES={general:GENERAL,attackDirection:ATTACK_DIRECTION,finalAction:FINAL_ACTION,transitionPlan:TRANSITION_PLAN,pressingPlan:PRESSING_PLAN,defenseDirection:DEFENSE_DIRECTION,defenseTactic:DEFENSE_TACTIC};
+  const TITLES={general:["Genel Oyun Planı","Takımın risk iştahını ve fazlar arası dengesini belirler."],attackDirection:["Hücum Yönü","Tercih edilen koridoru belirler; oyuncular kapalı alanı körü körüne zorlamaz."],finalAction:["Son Aksiyon Tercihi","Şut, orta veya ceza sahasına pas kararının önceliğini belirler."],transitionPlan:["Geçiş Planı","Top kazanıldığı ilk saniyelerde takımın hızını ve riskini belirler."],pressingPlan:["Savunma Bloğu ve Pres","Takımın nerede kompaktlaşacağını ve hangi bölgede baskı kuracağını belirler."],defenseDirection:["Savunma Yönü","Savunma kaynaklarının kanat ve merkez arasında nasıl paylaşılacağını belirler."],defenseTactic:["Savunma Taktiği","Rakibin son aksiyon eğilimini sınırlar; hiçbir seçim rakip planını tamamen etkisiz kılmaz."]};
 
   function v3RenderControl(){
     const t=state.tacticTeam,tac=normalizeTactic(state.tactics[t]),title=document.getElementById("controlTitle"),sub=document.getElementById("controlSub"),body=document.getElementById("controlBody");if(!title||!sub||!body)return;
@@ -14647,7 +14761,7 @@ window.KADRO_HARD_MATCH_SYNC = {
     body.innerHTML=`<div class="choiceList">${choices.map(choice=>`<div class="choice ${tac[key]===choice.name?"active":""}" data-choice="${choice.name}"><strong>${choice.name}</strong><p>${choice.desc}</p><div class="choiceFoot">${choice.traits.map(value=>`<span class="trait">${value}</span>`).join("")}</div><div class="risk">Bedeli: ${choice.risk}</div></div>`).join("")}</div>`;
     body.querySelectorAll(".choice").forEach(choice=>choice.onclick=()=>{tac[key]=choice.dataset.choice;renderTactics();});
   }
-  function v3RenderAnalysis(){const t=state.tacticTeam,tac=normalizeTactic(state.tactics[t]);const el=document.getElementById("analysisStrip");if(el)el.innerHTML=[`Genel: <b>${tac.general}</b>`,`Hücum Yönü: <b>${tac.attackDirection}</b>`,`Son Aksiyon: <b>${tac.finalAction}</b>`,`Savunma Yönü: <b>${tac.defenseDirection}</b>`,`Savunma Taktiği: <b>${tac.defenseTactic}</b>`].map(value=>`<span class="analysisChip">${value}</span>`).join("");}
+  function v3RenderAnalysis(){const t=state.tacticTeam,tac=normalizeTactic(state.tactics[t]);const el=document.getElementById("analysisStrip");if(el)el.innerHTML=[`Genel: <b>${tac.general}</b>`,`Hücum Yönü: <b>${tac.attackDirection}</b>`,`Son Aksiyon: <b>${tac.finalAction}</b>`,`Geçiş: <b>${tac.transitionPlan}</b>`,`Blok: <b>${tac.pressingPlan}</b>`,`Savunma Yönü: <b>${tac.defenseDirection}</b>`,`Savunma Taktiği: <b>${tac.defenseTactic}</b>`].map(value=>`<span class="analysisChip">${value}</span>`).join("");}
 
   const previousRenderTactics=typeof renderTactics==="function"?renderTactics:null;
   renderTactics=function(){
@@ -14656,7 +14770,7 @@ window.KADRO_HARD_MATCH_SYNC = {
     const locked=document.getElementById("lockedFormation");if(locked)locked.textContent=`${formation(t).name} · Draftta kilitlendi`;
     const boost=document.getElementById("teamBoostTactic");if(boost)boost.textContent="V3 Maç Motoru";
     const ready=document.getElementById("tacticReadyBtn");if(ready&&!ready.disabled)ready.textContent=`${typeof getTeamName==="function"?getTeamName(t):`Takım ${t}`} Hazır`;
-    const nav=[["general","Genel Oyun Planı"],["tasks","Oyuncu Görevleri"],["attackDirection","Hücum Yönü"],["finalAction","Son Aksiyon Tercihi"],["defenseDirection","Savunma Yönü"],["defenseTactic","Savunma Taktiği"],["setpieces","Duran Toplar"]];
+    const nav=[["general","Genel Oyun Planı"],["tasks","Oyuncu Görevleri"],["attackDirection","Hücum Yönü"],["finalAction","Son Aksiyon Tercihi"],["transitionPlan","Geçiş Planı"],["pressingPlan","Savunma Bloğu ve Pres"],["defenseDirection","Savunma Yönü"],["defenseTactic","Savunma Taktiği"],["setpieces","Duran Toplar"]];
     const side=document.getElementById("sideNav");if(side){side.innerHTML=`<div class="navTitle">Taktik menüsü</div>${nav.map(item=>`<button class="navBtn ${state.tacticSection===item[0]?"active":""}" data-s="${item[0]}">${item[1]}</button>`).join("")}<div class="lockInfo">Formasyon<br><b>${formation(t).name}</b><br><br>Rakip bu ayarları görmez.</div>`;side.querySelectorAll(".navBtn").forEach(button=>button.onclick=()=>{state.tacticSection=button.dataset.s;renderTactics();});}
     const pitch=document.getElementById("tacticPitch");if(pitch){const chemistry=chemMap(t);pitch.innerHTML=`<div class="centerCircle"></div><div class="boxTop"></div><div class="boxBottom"></div>${formation(t).slots.map(slot=>{const footballer=player(state.teams[t].slots[slot.id]),position=v3SlotPosition(slot),role=position==="GK"?"Görev yok":taskLabel(tac.tasks[slot.id]||defaultRole(position));return `<div class="slot ${chemClass(chemistry[slot.id])} selectable ${state.selectedSlot===slot.id?"selected":""}" data-slot="${slot.id}" style="left:${slot.x}%;top:${slot.y}%"><div class="name">${footballer.name}</div><div class="role">${position} · ${role}</div></div>`;}).join("")}`;pitch.querySelectorAll(".slot").forEach(slot=>slot.onclick=()=>{state.selectedSlot=slot.dataset.slot;state.tacticSection="tasks";renderTactics();});}
     v3RenderControl();v3RenderAnalysis();
@@ -14664,15 +14778,15 @@ window.KADRO_HARD_MATCH_SYNC = {
   renderControl=v3RenderControl;renderAnalysis=v3RenderAnalysis;
 
   const previousShowTactics=typeof showTactics==="function"?showTactics:null;
-  if(previousShowTactics)showTactics=function(){const result=previousShowTactics.apply(this,arguments);ensureAll();if(!["general","tasks","attackDirection","finalAction","defenseDirection","defenseTactic","setpieces"].includes(state.tacticSection))state.tacticSection="tasks";renderTactics();return result;};
-  showComplete=function(){ensureAll();const grid=document.getElementById("completeGrid");if(grid)grid.innerHTML=["A","B"].map(team=>{const tac=normalizeTactic(state.tactics[team]);return `<div class="summaryBox"><h3>${typeof getTeamName==="function"?getTeamName(team):`Takım ${team}`}</h3><div>Genel Oyun Planı: <b>${tac.general}</b></div><div>Hücum Yönü: <b>${tac.attackDirection}</b></div><div>Son Aksiyon Tercihi: <b>${tac.finalAction}</b></div><div>Savunma Yönü: <b>${tac.defenseDirection}</b></div><div>Savunma Taktiği: <b>${tac.defenseTactic}</b></div></div>`;}).join("");document.getElementById("complete")?.classList.remove("hidden");};window.showComplete=showComplete;
+  if(previousShowTactics)showTactics=function(){const result=previousShowTactics.apply(this,arguments);ensureAll();if(!["general","tasks","attackDirection","finalAction","transitionPlan","pressingPlan","defenseDirection","defenseTactic","setpieces"].includes(state.tacticSection))state.tacticSection="tasks";renderTactics();return result;};
+  showComplete=function(){ensureAll();const grid=document.getElementById("completeGrid");if(grid)grid.innerHTML=["A","B"].map(team=>{const tac=normalizeTactic(state.tactics[team]);return `<div class="summaryBox"><h3>${typeof getTeamName==="function"?getTeamName(team):`Takım ${team}`}</h3><div>Genel Oyun Planı: <b>${tac.general}</b></div><div>Hücum Yönü: <b>${tac.attackDirection}</b></div><div>Son Aksiyon Tercihi: <b>${tac.finalAction}</b></div><div>Geçiş Planı: <b>${tac.transitionPlan}</b></div><div>Savunma Bloğu ve Pres: <b>${tac.pressingPlan}</b></div><div>Savunma Yönü: <b>${tac.defenseDirection}</b></div><div>Savunma Taktiği: <b>${tac.defenseTactic}</b></div></div>`;}).join("");document.getElementById("complete")?.classList.remove("hidden");};window.showComplete=showComplete;
 
   const previousReady=typeof tacticReady==="function"?tacticReady:null;
   if(previousReady)tacticReady=function(){ensureAll();const result=previousReady.apply(this,arguments);setTimeout(()=>{ensureAll();if(state?.tactics?.B){const b=normalizeTactic(state.tactics.B);if(window.KADRO_BOT?.active){const finals=["Dengeli","Kaleyi Görünce Vur","Ortaları Artır","Ceza Sahasına Pasla Gir"];if(!finals.includes(b.finalAction))b.finalAction=finals[Math.floor(Math.random()*finals.length)];if(b.defenseTactic==="Dengeli Savunma"&&Math.random()<.65){const counter={"Kaleyi Görünce Vur":"Şut Savunması","Ortaları Artır":"Yan Top Savunması","Ceza Sahasına Pasla Gir":"Pas Kanallarını Kapat"}[normalizeTactic(state.tactics.A).finalAction];b.defenseTactic=counter||"Dengeli Savunma";}}}},1250);return result;};
   const readyButton=document.getElementById("tacticReadyBtn");if(readyButton)readyButton.onclick=()=>tacticReady();
   const previousReset=typeof resetAll==="function"?resetAll:null;if(previousReset)resetAll=function(){const result=previousReset.apply(this,arguments);state.tactics={A:baseTactics(),B:baseTactics()};ensureAll();return result;};
-  document.title="NEON XI — V4.4 Kayıt ve Mimari Düzeltme";
-  document.querySelector('meta[name="neon-xi-engine"]')?.remove();const meta=document.createElement("meta");meta.name="neon-xi-engine";meta.content="v4.4-session-safe-single-match-engine-2026-07-30";document.head.appendChild(meta);
+  document.title="NEON XI — V5 Futbol Karar Motoru";
+  document.querySelector('meta[name="neon-xi-engine"]')?.remove();const meta=document.createElement("meta");meta.name="neon-xi-engine";meta.content="v5.0-attribute-role-tactic-context-2026-08-17";document.head.appendChild(meta);
 })();
 </script>
 
@@ -15056,15 +15170,8 @@ window.KADRO_HARD_MATCH_SYNC = {
   }
   function stageLabel(frame){return({neutral:"Yerleşim",restart:"Santra yerleşimi",build:"Geriden kuruluş",progress:"Orta saha ilerleyişi",entry:"Son bölge girişi",dribble:"Bire bir / top sürme",transition:"Geçiş hücumu",cross:"Orta",finish:"Şut",goal:"Gol",setPiece:"Duran top",turnover:"Top kaybı"})[frame?.stage]||"Yerleşim"}
   function actionLabel(frame){return actionLabels[frame?.action]||stageLabel(frame)}
-  function actionResult(frame){if(frame?.stage==="turnover")return"Top rakibe geçti";if(frame?.success===true)return frame.action==="dribble"?"Rakibini geçti":"Başarılı";if(frame?.success===false)return frame.action==="dribble"?"Savunmacı durdurdu":"Başarısız";if(frame?.stage==="goal")return"Gol";if(frame?.stage==="finish")return"Kaleye yöneldi";return"Devam ediyor"}
-  function causeTitle(frame){
-    if(frame?.stage==="turnover")return({heavyTouch:"Kontrol hatası + müdahale",press:"Baskı altında top kaybı",markedReceiver:"Pas kanalı kapandı",shortPass:"Kısa / zayıf pas",interception:"Pas arası",entryInterception:"Ceza sahası girişinde pas arası",duel:"İkili mücadele"})[frame?.outcome]||"Savunma müdahalesi";
-    if(frame.action==="dribble")return frame.success===false?"Bire bir müdahalesi":"Bireysel üstünlük ve boş alan";
-    if(frame.route==="wing")return"Genişlik ve koridor kullanımı";
-    if(frame.route==="center")return"Pas bağlantıları ve merkez yoğunluğu";
-    if(frame.route==="transition")return"Top kazanımı ve hızlı koşular";
-    return"Taktik yerleşim";
-  }
+  function actionResult(frame){if(frame?.success===true)return frame.action==="dribble"?"Rakibini geçti":"Başarılı";if(frame?.success===false)return frame.action==="dribble"?"Savunmacı durdurdu":"Başarısız";if(frame?.stage==="goal")return"Gol";if(frame?.stage==="finish")return"Kaleye yöneldi";return"Devam ediyor"}
+  function causeTitle(frame){if(frame.action==="dribble")return frame.success===false?"Bire bir müdahalesi":"Bireysel üstünlük ve boş alan";if(frame.route==="wing")return"Genişlik ve koridor kullanımı";if(frame.route==="center")return"Pas bağlantıları ve merkez yoğunluğu";if(frame.route==="transition")return"Top kazanımı ve hızlı koşular";if(frame.stage==="turnover")return"Savunma müdahalesi";return"Taktik yerleşim"}
   function updateInfo(g){const frame=vis.frame||{},formA=typeof formation==="function"?formation("A")?.name:"4-3-3",formB=typeof formation==="function"?formation("B")?.name:"4-3-3",byId=id=>document.getElementById(id),carrier=vis.carrierId?fullName(vis.carrierId):"—";if(byId("nvFormationText"))byId("nvFormationText").textContent=`${formA} · ${formB}`;if(byId("nvRouteText"))byId("nvRouteText").textContent=labels[frame.route]||"Nötr";if(byId("nvStageText"))byId("nvStageText").textContent=stageLabel(frame);if(byId("nvActionText"))byId("nvActionText").textContent=actionLabel(frame);if(byId("nvCarrierText"))byId("nvCarrierText").textContent=carrier;if(byId("nvTempoText"))byId("nvTempoText").textContent=`${g.speed||1}× · Okunabilir tempo`;if(vis.chip)vis.chip.textContent=frame.message||"Motor bağlantısı hazır";if(byId("nvCauseTitle"))byId("nvCauseTitle").textContent=causeTitle(frame);if(byId("nvCauseText"))byId("nvCauseText").textContent=frame.cause||"Formasyon sabit bir kalıp değil, oyuncuların referans bölgeleridir.";const box=byId("nvLiveAction");if(box){box.className=`nv-live-action ${frame.action==="dribble"?"dribble":""} ${frame.success===true?"success":frame.success===false?"fail":""}`;byId("nvActionType").textContent=actionLabel(frame);byId("nvActorText").textContent=frame.action==="dribble"?`${carrier} topu sürüyor`:frame.message||"Pozisyon gelişiyor";byId("nvResultText").textContent=actionResult(frame)}}
   function renderCommentary(payload){
     const feed=document.getElementById("commentaryFeed");
@@ -16187,6 +16294,8 @@ window.KADRO_HARD_MATCH_SYNC = {
       ["Genel plan",tactic.general],
       ["Hücum yönü",tactic.attackDirection],
       ["Son aksiyon",tactic.finalAction],
+      ["Geçiş",tactic.transitionPlan],
+      ["Blok ve pres",tactic.pressingPlan],
       ["Savunma yönü",tactic.defenseDirection],
       ["Savunma taktiği",tactic.defenseTactic]
     ].map(([label,value],index) =>
@@ -16812,10 +16921,7 @@ window.KADRO_HARD_MATCH_SYNC = {
   video.addEventListener("ended",()=>{ if(active && !fallbackActive) finishCurrent(true); });
   video.addEventListener("error",()=>{ if(active && !fallbackActive) tryCandidate(); });
   closeButton?.addEventListener("click",()=>finishCurrent(true));
-  window.addEventListener("neon-xi:match-event",event=>{
-    if(event?.detail?.kind==="goal") return;
-    queueDirect(event.detail);
-  });
+  window.addEventListener("neon-xi:match-event",event=>queueDirect(event.detail));
 
   /*
    * Olay animasyonlarının tek kaynağı neon-xi:match-event bildirimidir.
@@ -16851,7 +16957,7 @@ window.KADRO_HARD_MATCH_SYNC = {
     media:MEDIA
   };
 
-  document.title="NEON XI — V4.12 Hızlı Simülasyon ve Tekil Olay Animasyonları";
+  document.title="NEON XI — V5 Futbol Karar Motoru";
   const engineMeta=document.querySelector('meta[name="neon-xi-engine"]');
   if(engineMeta)engineMeta.content="v4.12-fast-simulation-single-event-cinema-2026-08-04";
 })();
@@ -17456,13 +17562,5 @@ body.nx-reduced-effects #matchSimulation .nx-goal-lightning{display:none!importa
 })();
 </script>
 
-
-
-<!-- NEON XI / Engine-2D-Stats Integration v2 2026-08-17 -->
-<style id="neon-xi-no-goal-popup-v2">
-.goalCinema,.goalCinema.show{display:none!important;visibility:hidden!important;pointer-events:none!important}
-#kadroPresentationScene.kp-scene.show.goal{display:none!important;visibility:hidden!important;pointer-events:none!important}
-#nxEventCinema.nx-event-cinema.goal{display:none!important;visibility:hidden!important;pointer-events:none!important}
-</style>
 </body>
 </html>
