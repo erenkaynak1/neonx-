@@ -16952,5 +16952,364 @@ import { getDatabase, get, onDisconnect, onValue, ref, remove, runTransaction, s
 })();
 </script>
 
+<!-- NEON XI / Premium Match Scoreboard + Goal Score Lightning v1 -->
+<style id="nx-premium-scoreboard-style">
+/* Sadece sunum katmanı: maç motoru / skor hesapları değişmez. */
+#matchSimulation .matchScoreboard{
+  --nx-a:#55d8ff;
+  --nx-b:#ff875c;
+  --nx-green:#62ff9c;
+  position:relative;
+  isolation:isolate;
+  min-height:148px;
+  grid-template-columns:minmax(0,1fr) minmax(210px,280px) minmax(0,1fr);
+  gap:0;
+  padding:16px 20px;
+  overflow:hidden;
+  border:1px solid rgba(72,255,139,.34);
+  border-radius:22px;
+  background:
+    radial-gradient(ellipse at 50% 112%,rgba(40,255,119,.12),transparent 42%),
+    radial-gradient(ellipse at 50% 10%,rgba(64,255,137,.06),transparent 40%),
+    linear-gradient(180deg,rgba(4,15,10,.99),rgba(2,9,6,.99));
+  box-shadow:
+    0 25px 80px rgba(0,0,0,.52),
+    inset 0 0 0 1px rgba(255,255,255,.012),
+    0 0 28px rgba(43,255,121,.055);
+}
+#matchSimulation .matchScoreboard::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-2;
+  opacity:.32;
+  background:
+    linear-gradient(115deg,transparent 0 33%,rgba(60,255,131,.06) 33.2% 33.5%,transparent 33.7% 66%,rgba(60,255,131,.05) 66.2% 66.5%,transparent 66.7%),
+    repeating-linear-gradient(90deg,transparent 0 79px,rgba(110,255,159,.025) 80px);
+  pointer-events:none;
+}
+#matchSimulation .matchScoreboard::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  bottom:-86px;
+  width:510px;
+  height:175px;
+  z-index:-1;
+  transform:translateX(-50%);
+  border-radius:50%;
+  background:radial-gradient(ellipse,rgba(70,255,131,.13),rgba(14,70,39,.025) 47%,transparent 70%);
+  filter:blur(2px);
+  pointer-events:none;
+}
+#matchSimulation .matchTeam{
+  position:relative;
+  min-width:0;
+  min-height:112px;
+  padding:18px 54px 18px 18px;
+  gap:16px;
+  border:1px solid rgba(85,216,255,.24);
+  border-right-color:rgba(85,216,255,.5);
+  border-radius:15px 0 0 15px;
+  background:
+    linear-gradient(90deg,rgba(5,29,34,.66),rgba(4,18,18,.5) 67%,rgba(4,15,12,.08));
+  box-shadow:inset 0 0 22px rgba(52,197,255,.035);
+  clip-path:polygon(0 0,86% 0,100% 50%,86% 100%,0 100%);
+}
+#matchSimulation .matchTeam.teamA::after,
+#matchSimulation .matchTeam.teamB::after{
+  content:"";
+  position:absolute;
+  width:72px;
+  height:72px;
+  bottom:-34px;
+  opacity:.22;
+  background-image:radial-gradient(circle,currentColor 1.1px,transparent 1.4px);
+  background-size:8px 8px;
+  pointer-events:none;
+}
+#matchSimulation .matchTeam.teamA::after{left:10px;color:var(--nx-a)}
+#matchSimulation .matchTeam.teamB::after{right:10px;color:var(--nx-b)}
+#matchSimulation .matchTeam.teamB{
+  padding:18px 18px 18px 54px;
+  border-color:rgba(255,135,92,.24);
+  border-left-color:rgba(255,135,92,.5);
+  border-right-color:rgba(255,135,92,.24);
+  border-radius:0 15px 15px 0;
+  background:linear-gradient(270deg,rgba(36,19,12,.68),rgba(25,12,8,.5) 67%,rgba(4,15,12,.08));
+  box-shadow:inset 0 0 22px rgba(255,111,57,.035);
+  clip-path:polygon(14% 0,100% 0,100% 100%,14% 100%,0 50%);
+}
+#matchSimulation .matchTeamBadge{
+  flex:0 0 auto;
+  width:64px;
+  height:64px;
+  border-radius:18px;
+  font-size:25px;
+  background:rgba(3,12,9,.82)!important;
+}
+#matchSimulation .matchTeam.teamA .matchTeamBadge{
+  border-color:rgba(85,216,255,.8);
+  box-shadow:0 0 22px rgba(85,216,255,.14),inset 0 0 18px rgba(85,216,255,.04);
+}
+#matchSimulation .matchTeam.teamB .matchTeamBadge{
+  border-color:rgba(255,135,92,.8);
+  box-shadow:0 0 22px rgba(255,135,92,.14),inset 0 0 18px rgba(255,135,92,.04);
+}
+#matchSimulation .matchTeam strong{
+  color:#f6fff9;
+  font-size:clamp(16px,1.7vw,25px);
+  line-height:1.08;
+  letter-spacing:-.02em;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+#matchSimulation .matchTeam span{
+  max-width:420px;
+  margin-top:9px;
+  color:rgba(225,238,231,.68);
+  font-size:clamp(8px,.72vw,11px);
+  line-height:1.35;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+#matchSimulation .matchCenter{
+  position:relative;
+  z-index:4;
+  min-width:0;
+  margin:0 -14px;
+  padding:0 24px;
+  align-self:stretch;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  background:radial-gradient(circle at 50% 52%,rgba(70,255,131,.11),transparent 62%);
+}
+#matchSimulation .matchClock{
+  min-width:135px;
+  min-height:36px;
+  margin:0 auto 5px;
+  padding:8px 14px;
+  border-color:rgba(81,255,143,.62);
+  background:linear-gradient(180deg,rgba(10,55,30,.96),rgba(6,32,19,.96));
+  box-shadow:0 0 24px rgba(53,255,127,.13),inset 0 0 16px rgba(71,255,139,.06);
+  font-size:17px;
+  letter-spacing:.04em;
+}
+#matchSimulation .matchClock::before{font-size:8px;letter-spacing:.13em}
+#matchSimulation .matchScore{
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  margin-top:4px;
+  color:#fafffc;
+  font-size:clamp(47px,5vw,72px);
+  line-height:.92;
+  letter-spacing:-.07em;
+  text-shadow:0 0 16px rgba(255,255,255,.08),0 0 34px rgba(80,255,141,.08);
+}
+#matchSimulation .matchScore > span:nth-child(2){
+  color:rgba(235,249,240,.82);
+  font-size:.7em;
+  transform:translateY(-2px);
+}
+#matchSimulation #matchScoreA,#matchSimulation #matchScoreB{
+  display:inline-grid;
+  min-width:.72em;
+  place-items:center;
+  transform-origin:center;
+}
+#matchSimulation .matchPhase{
+  margin-top:8px;
+  color:rgba(224,237,229,.76);
+  font-size:11px;
+  font-weight:700;
+}
+#matchSimulation .matchTimeline{
+  width:min(220px,86%);
+  height:6px;
+  margin-top:13px;
+  border:1px solid rgba(255,255,255,.035);
+  background:rgba(215,235,222,.12);
+}
+#matchSimulation .matchTimelineFill{
+  background:linear-gradient(90deg,#38f48c,#91ffc0);
+  box-shadow:0 0 14px rgba(54,255,142,.75);
+}
+
+/* Gol anı: şimşek + skor değişimi. */
+#matchSimulation .matchScoreboard .nx-goal-lightning{
+  position:absolute;
+  inset:0;
+  z-index:12;
+  pointer-events:none;
+  opacity:0;
+  overflow:hidden;
+}
+#matchSimulation .matchScoreboard .nx-goal-lightning::before,
+#matchSimulation .matchScoreboard .nx-goal-lightning::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:38%;
+  height:8px;
+  border-radius:999px;
+  background:#f9fff9;
+  box-shadow:0 0 8px #fff,0 0 22px #76ff9f,0 0 46px #45ff82;
+  transform-origin:center;
+  filter:brightness(1.35);
+}
+#matchSimulation .matchScoreboard .nx-goal-lightning::before{
+  clip-path:polygon(0 34%,24% 17%,31% 47%,52% 0,48% 42%,72% 24%,67% 57%,100% 42%,73% 79%,55% 63%,48% 100%,38% 62%,18% 80%);
+  transform:translate(-50%,-50%) rotate(-7deg) scaleX(.1);
+}
+#matchSimulation .matchScoreboard .nx-goal-lightning::after{
+  width:28%;
+  opacity:.7;
+  transform:translate(-50%,-50%) rotate(13deg) scaleX(.1);
+  clip-path:polygon(0 55%,21% 34%,32% 55%,47% 8%,53% 49%,71% 28%,65% 62%,100% 48%,74% 76%,58% 65%,49% 100%,38% 67%,19% 84%);
+}
+#matchSimulation .matchScoreboard.nx-goal-flash .nx-goal-lightning{
+  animation:nxGoalLightningWrap .72s ease-out forwards;
+}
+#matchSimulation .matchScoreboard.nx-goal-flash .nx-goal-lightning::before{
+  animation:nxGoalBoltA .62s cubic-bezier(.18,.9,.25,1) forwards;
+}
+#matchSimulation .matchScoreboard.nx-goal-flash .nx-goal-lightning::after{
+  animation:nxGoalBoltB .62s .045s cubic-bezier(.18,.9,.25,1) forwards;
+}
+#matchSimulation .matchScoreboard.nx-goal-team-a .teamA{
+  animation:nxGoalTeamA .92s ease-out;
+}
+#matchSimulation .matchScoreboard.nx-goal-team-b .teamB{
+  animation:nxGoalTeamB .92s ease-out;
+}
+#matchSimulation #matchScoreA.nx-goal-number,
+#matchSimulation #matchScoreB.nx-goal-number{
+  animation:nxGoalNumber .82s cubic-bezier(.16,.95,.23,1);
+}
+#matchSimulation .matchScoreboard.nx-goal-flash .matchCenter::after{
+  content:"";
+  position:absolute;
+  inset:-18px -34px;
+  z-index:-1;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.25),rgba(72,255,132,.14) 25%,transparent 66%);
+  animation:nxGoalCenterBurst .82s ease-out forwards;
+}
+@keyframes nxGoalLightningWrap{0%{opacity:0}8%{opacity:1}48%{opacity:.92}100%{opacity:0}}
+@keyframes nxGoalBoltA{0%{transform:translate(-50%,-50%) rotate(-7deg) scaleX(.03);opacity:0}18%{opacity:1}45%{transform:translate(-50%,-50%) rotate(-7deg) scaleX(1.05);opacity:1}100%{transform:translate(-50%,-50%) rotate(-7deg) scaleX(1.18);opacity:0}}
+@keyframes nxGoalBoltB{0%{transform:translate(-50%,-50%) rotate(13deg) scaleX(.03);opacity:0}24%{opacity:.9}53%{transform:translate(-50%,-50%) rotate(13deg) scaleX(1);opacity:.75}100%{transform:translate(-50%,-50%) rotate(13deg) scaleX(1.13);opacity:0}}
+@keyframes nxGoalNumber{0%{opacity:.22;transform:scale(.52);filter:blur(5px)}27%{opacity:1;transform:scale(1.46);filter:blur(0);text-shadow:0 0 9px #fff,0 0 28px #62ff9c,0 0 55px #62ff9c}55%{transform:scale(.92)}100%{transform:scale(1);text-shadow:0 0 0 transparent}}
+@keyframes nxGoalCenterBurst{0%{opacity:0;transform:scale(.3)}28%{opacity:1;transform:scale(1.05)}100%{opacity:0;transform:scale(1.45)}}
+@keyframes nxGoalTeamA{0%,100%{box-shadow:inset 0 0 22px rgba(52,197,255,.035)}26%{box-shadow:inset 0 0 45px rgba(85,216,255,.18),0 0 28px rgba(85,216,255,.22)}}
+@keyframes nxGoalTeamB{0%,100%{box-shadow:inset 0 0 22px rgba(255,111,57,.035)}26%{box-shadow:inset 0 0 45px rgba(255,135,92,.18),0 0 28px rgba(255,135,92,.22)}}
+
+/* Eski breakpoint takım metnini saklıyordu; yatay mobilde koru. */
+@media (orientation:landscape) and (max-height:650px){
+  #matchSimulation{padding-top:56px!important}
+  #matchSimulation .matchScoreboard{
+    min-height:112px;
+    grid-template-columns:minmax(0,1fr) minmax(160px,220px) minmax(0,1fr);
+    padding:9px 12px;
+    border-radius:17px;
+  }
+  #matchSimulation .matchTeam{min-height:88px;padding:10px 40px 10px 12px;gap:10px}
+  #matchSimulation .matchTeam.teamB{padding:10px 12px 10px 40px}
+  #matchSimulation .matchTeam div:not(.matchTeamBadge){display:block!important;min-width:0}
+  #matchSimulation .matchTeamBadge{width:48px;height:48px;border-radius:14px;font-size:19px}
+  #matchSimulation .matchTeam strong{font-size:clamp(13px,2vw,19px)}
+  #matchSimulation .matchTeam span{margin-top:5px;font-size:clamp(6px,.92vw,9px)}
+  #matchSimulation .matchCenter{margin:0 -10px;padding:0 14px}
+  #matchSimulation .matchClock{min-width:106px;min-height:27px;padding:5px 9px;margin-bottom:2px;font-size:13px}
+  #matchSimulation .matchClock::before{font-size:6px}
+  #matchSimulation .matchScore{font-size:clamp(35px,5.7vw,53px);gap:7px;margin-top:2px}
+  #matchSimulation .matchPhase{font-size:8px;margin-top:3px}
+  #matchSimulation .matchTimeline{width:min(170px,82%);height:4px;margin-top:7px}
+}
+@media (orientation:landscape) and (max-height:470px){
+  #matchSimulation .matchScoreboard{min-height:94px;padding:7px 10px}
+  #matchSimulation .matchTeam{min-height:72px;padding-top:7px;padding-bottom:7px}
+  #matchSimulation .matchTeamBadge{width:42px;height:42px;font-size:17px}
+  #matchSimulation .matchTeam span{max-width:260px}
+  #matchSimulation .matchClock{min-height:24px;padding:4px 8px;font-size:11px}
+  #matchSimulation .matchScore{font-size:38px}
+  #matchSimulation .matchTimeline{margin-top:5px}
+}
+@media (prefers-reduced-motion:reduce){
+  #matchSimulation .matchScoreboard.nx-goal-flash *,
+  #matchSimulation .matchScoreboard.nx-goal-flash *::before,
+  #matchSimulation .matchScoreboard.nx-goal-flash *::after{animation-duration:.01ms!important;animation-iteration-count:1!important}
+}
+body.nx-reduced-effects #matchSimulation .nx-goal-lightning{display:none!important}
+</style>
+<script id="nx-premium-scoreboard-script">
+(()=>{
+  'use strict';
+  const init=()=>{
+    const board=document.querySelector('#matchSimulation .matchScoreboard');
+    const a=document.getElementById('matchScoreA');
+    const b=document.getElementById('matchScoreB');
+    if(!board||!a||!b)return false;
+    if(board.dataset.nxPremiumScoreboard==='1')return true;
+    board.dataset.nxPremiumScoreboard='1';
+
+    const lightning=document.createElement('div');
+    lightning.className='nx-goal-lightning';
+    lightning.setAttribute('aria-hidden','true');
+    board.appendChild(lightning);
+
+    let oldA=Number(a.textContent)||0;
+    let oldB=Number(b.textContent)||0;
+    let cleanupTimer=0;
+
+    const animateGoal=(team,target)=>{
+      if(document.body.classList.contains('nx-reduced-effects')){
+        target.classList.remove('nx-goal-number');
+        void target.offsetWidth;
+        target.classList.add('nx-goal-number');
+        setTimeout(()=>target.classList.remove('nx-goal-number'),120);
+        return;
+      }
+      clearTimeout(cleanupTimer);
+      board.classList.remove('nx-goal-flash','nx-goal-team-a','nx-goal-team-b');
+      target.classList.remove('nx-goal-number');
+      void board.offsetWidth;
+      board.classList.add('nx-goal-flash',team==='A'?'nx-goal-team-a':'nx-goal-team-b');
+      target.classList.add('nx-goal-number');
+      cleanupTimer=setTimeout(()=>{
+        board.classList.remove('nx-goal-flash','nx-goal-team-a','nx-goal-team-b');
+        target.classList.remove('nx-goal-number');
+      },1050);
+    };
+
+    const watch=(el,team)=>new MutationObserver(()=>{
+      const current=Number(el.textContent)||0;
+      if(team==='A'){
+        if(current>oldA)animateGoal('A',el);
+        oldA=current;
+      }else{
+        if(current>oldB)animateGoal('B',el);
+        oldB=current;
+      }
+    }).observe(el,{childList:true,characterData:true,subtree:true});
+
+    watch(a,'A');
+    watch(b,'B');
+    return true;
+  };
+  if(!init()){
+    let tries=0;
+    const timer=setInterval(()=>{tries++;if(init()||tries>80)clearInterval(timer)},100);
+  }
+})();
+</script>
+
 </body>
 </html>
