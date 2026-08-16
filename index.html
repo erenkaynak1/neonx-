@@ -1,6 +1,7 @@
 <!-- NEON XI PLAYER POOL: +236 verified FMInside first-team players · 2026-08-16 -->
 <!DOCTYPE html>
 <!-- NEON XI UPDATE: FULL-HISTORY + TACTICAL-SPREAD + INLINE-EVENTS 2026-08-16 -->
+<!-- NEON XI PATCH: ENGINE-EVENT-SYNC + 100X SIM LAB 2026-08-17 -->
 
 <html lang="tr">
 <head>
@@ -7523,6 +7524,19 @@ render();
       return "Savunma Ağırlıklı plan takım boyunu kısalttı ve topun gerisindeki güvenliği artırdı.";
     return "Formasyon referans bölgeleri, oyuncu görevleri ve topun bulunduğu koridor birlikte bu yerleşimi oluşturdu.";
   }
+  function visualStatsSnapshot(){
+    const pick=team=>{
+      const s=game.stats?.[team]||{};
+      return {
+        attacks:Number(s.attacks||0),dangerousAttacks:Number(s.dangerousAttacks||0),boxEntries:Number(s.boxEntries||0),
+        transitionAttacks:Number(s.transitionAttacks||0),shots:Number(s.shots||0),onTarget:Number(s.onTarget||0),
+        xG:Number(s.xG||0),passesAttempted:Number(s.passesAttempted||0),passesCompleted:Number(s.passesCompleted||0),
+        turnovers:Number(s.turnovers||0),highTurnovers:Number(s.highTurnovers||0),corners:Number(s.corners||0),
+        saves:Number(s.saves||0),fouls:Number(s.fouls||0),yellowCards:Number(s.yellowCards||0),redCards:Number(s.redCards||0)
+      };
+    };
+    return{A:pick("A"),B:pick("B")};
+  }
   function emitVisualFrame(update={}) {
     const previous=game.visualContext||{};
     const team=update.team||previous.team||((game.momentum||0)>=0?"A":"B");
@@ -7542,11 +7556,16 @@ render();
       defenderId:update.defenderId||null,
       supportId:update.supportId||null,
       ballTargetId:update.ballTargetId||null,
+      turnoverReason:update.turnoverReason||"",
       outcome:update.outcome??"",
       shotId:update.shotId??null,
       message:update.message||previous.message||"Maç yerleşimi",
       cause:update.cause||visualPublicCause(team,route,stage,action),
       eventKind:update.eventKind||"",
+      score:{A:Number(game.score?.A||0),B:Number(game.score?.B||0)},
+      statsSnapshot:visualStatsSnapshot(),
+      possession:{A:Number(game.possession?.A||50),B:Number(game.possession?.B||50)},
+      statDelta:update.statDelta||null,
       timestamp:Date.now()
     };
     game.visualContext=frame;
@@ -7591,7 +7610,7 @@ render();
       });
     const event = { minute:game.minute, kind, text, detail, cause, visual };
     game.eventLog.push(event);
-    if (["goal","penalty","yellow","red"].includes(kind)) {
+    if (!game.testMode && ["goal","penalty","yellow","red"].includes(kind)) {
       try {
         window.dispatchEvent(new CustomEvent("neon-xi:match-event", {
           detail: {
@@ -8103,9 +8122,10 @@ render();
     const carrierSkill=v3ClampRating(stat(p.carrier,"dribbling"));
     const centerCarryChance=clamp(.18+(carrierSkill-50)*.006,.18,.56);
     const shouldCarry=phase>=2&&(route==="wing"||phase===4||rng()<centerCarryChance);
+    let carryExpected=null,carrySuccess=null;
     if(shouldCarry){
-      const carryExpected=clamp(probability*.64+carrierSkill*.0032+.02,.18,.90);
-      const carrySuccess=success?rng()<clamp(.55+carrierSkill*.0032,.58,.86):rng()<clamp(.10+carrierSkill*.0018,.14,.34);
+      carryExpected=clamp(probability*.64+carrierSkill*.0032+.02,.18,.90);
+      carrySuccess=success?rng()<clamp(.55+carrierSkill*.0032,.58,.86):rng()<clamp(.10+carrierSkill*.0018,.14,.34);
       applyMicroRating(attackingTeam,p.carrier,"carrying",carrySuccess,carryExpected,phase===3?.074:phase===4?.086:.052,{
         dribblesAttempted:1,dribblesCompleted:carrySuccess?1:0,carries:carrySuccess?1:0,turnovers:carrySuccess?0:1
       });
@@ -8113,7 +8133,7 @@ render();
         team:attackingTeam,route,phase,action:"dribble",success:carrySuccess,
         focusIds:visualMemberIds(p.carrier,p.defender,p.support),
         carrierId:p.carrier?.footballer?.id||null,defenderId:p.defender?.footballer?.id||null,supportId:p.support?.footballer?.id||null,
-        ballTargetId:p.carrier?.footballer?.id||null,
+        ballTargetId:carrySuccess?p.carrier?.footballer?.id||null:p.defender?.footballer?.id||null,
         message:carrySuccess
           ?`${p.carrier?.footballer?.name||game.teamNames[attackingTeam]} topu sürerek rakibini geçti`
           :`${p.defender?.footballer?.name||game.teamNames[defendingTeam]} bire birde top sürmeyi durdurdu`,
@@ -8128,6 +8148,7 @@ render();
     applyMicroRating(attackingTeam,p.support,"positioning",success,probability,.018,{
       positionalActions:1,positionalWins:success?1:0,positionalErrors:success?0:1
     });
+    return{...p,shouldCarry,carryExpected,carrySuccess,carrierSkill};
   }
   function v3RunPhase(attackingTeam,defendingTeam,phase,route) {
     const scores=v3PhaseScores(attackingTeam,defendingTeam,phase,route);
@@ -8135,8 +8156,8 @@ render();
     const defenseAdjustment=v3FinalAdjustment(defendingTeam,"defense",phase,route);
     const probability=v3PhaseProbability(scores.attack,scores.defense,attackAdjustment,defenseAdjustment,phase);
     const success=rng()<probability;
-    v3RecordPhaseMicro(attackingTeam,defendingTeam,phase,route,success,probability);
-    return{success,probability,scores,attackAdjustment,defenseAdjustment};
+    const micro=v3RecordPhaseMicro(attackingTeam,defendingTeam,phase,route,success,probability);
+    return{success,probability,scores,attackAdjustment,defenseAdjustment,micro};
   }
   function v3DirectionRoute(teamOrDirection,directionValue) {
     const hasTeam=directionValue!==undefined;
@@ -8306,8 +8327,11 @@ render();
       game.stats[attackingTeam].turnovers++;
       addMicroBonus(attackingTeam,result.creator,"passing",-.055,"dangerousTurnovers");
       recordRoleEvent(attackingTeam,result.creator,"turnovers");
-      setVisualPhase("turnover",{team:defendingTeam,route,phase:5,success:false,action:"interception",focusIds:visualMemberIds(result.creator,result.receiver),message:`${game.teamNames[defendingTeam]} giriş pasını kesti`});
-      addEvent("turnover",`${game.teamNames[attackingTeam]} ceza sahasına giriş pasını kaybetti.`,`${Math.round(result.probability*100)}% başarı olasılığı`,"Pas kanalı savunması giriş kombinasyonunu bozdu.");
+      const entryDefender=result.defenders?.[0]?.member||null;
+      const entryDefenderName=entryDefender?.footballer?.name||game.teamNames[defendingTeam];
+      const entryText=`${result.creator?.footballer?.name||game.teamNames[attackingTeam]} ceza sahası giriş pasını denedi; ${entryDefenderName} araya girdi.`;
+      setVisualPhase("turnover",{team:defendingTeam,route,phase:5,success:false,action:"interception",turnoverReason:"entryInterception",focusIds:visualMemberIds(result.creator,result.receiver,entryDefender),carrierId:result.creator?.footballer?.id||null,defenderId:entryDefender?.footballer?.id||null,supportId:result.receiver?.footballer?.id||null,ballTargetId:entryDefender?.footballer?.id||null,message:entryText,cause:`${entryDefenderName} pas kanalını okuyarak ceza sahası giriş kombinasyonunu bozdu.`,statDelta:{team:attackingTeam,turnovers:1}});
+      addEvent("turnover",entryText,`${Math.round(result.probability*100)}% başarı olasılığı`,`${entryDefenderName} pas kanalını okuyarak giriş kombinasyonunu bozdu.`);
       if(rng()<.20)game.forcedAttack={team:defendingTeam,route:"transition",bonus:1};return"end";
     }
     setVisualPhase("entry",{team:attackingTeam,route,phase:5,success:false,action:"secondBall",focusIds:visualMemberIds(result.creator,result.receiver),message:`${game.teamNames[attackingTeam]} ikinci topu aldı`});
@@ -8327,11 +8351,22 @@ render();
     const duel=clamp(.50+(attackerAerial-defenderAerial)*.008,.15,.85);
     const targetableSuccess=rng()<=targetable;
     applyMicroRating(attackingTeam,creator,"passing",targetableSuccess,targetable,.085,{passesAttempted:1,passesCompleted:targetableSuccess?1:0,progressivePasses:targetableSuccess?1:0,turnovers:targetableSuccess?0:1});
-    if(!targetableSuccess){addEvent("tactical",`${creator.footballer.name} ortasında hedefi bulamadı.`,`${Math.round(targetable*100)}% hedeflenebilir orta`,"Orta savunma tarafından etkisizleştirildi.");return;}
+    if(!targetableSuccess){
+      const deliveryLost=crossDelivery+4<defenderAerial;
+      const crossText=deliveryLost
+        ?`${creator.footballer.name} ortayı istediği noktaya gönderemedi; top savunmaya geçti.`
+        :`${defender?.footballer?.name||game.teamNames[defendingTeam]} ${creator.footballer.name} tarafından yapılan ortanın önüne geçti.`;
+      setVisualPhase("turnover",{team:defendingTeam,route:"wing",phase:5,success:false,action:"interception",turnoverReason:deliveryLost?"poorCross":"crossInterception",focusIds:visualMemberIds(creator,target,defender),carrierId:creator?.footballer?.id||null,defenderId:defender?.footballer?.id||null,supportId:target?.footballer?.id||null,ballTargetId:defender?.footballer?.id||null,message:crossText,cause:deliveryLost?`${creator.footballer.name} orta kalitesi hedef koşusuyla buluşmadı.`:`${defender?.footballer?.name||"Savunmacı"} ortanın geliş yönünü okuyarak hedef oyuncunun önüne geçti.`});
+      addEvent("turnover",crossText,`${Math.round(targetable*100)}% hedeflenebilir orta`,deliveryLost?"Orta hedef koşusuyla buluşmadı.":"Savunmacı orta kanalını kapattı.");return;
+    }
     const duelSuccess=rng()<=duel;
     applyMicroRating(attackingTeam,target,"duels",duelSuccess,duel,.065,{duelsAttempted:1,duelsWon:duelSuccess?1:0});
     applyMicroRating(defendingTeam,defender,"duels",!duelSuccess,1-duel,.070,{duelsAttempted:1,duelsWon:!duelSuccess?1:0,defensiveActions:1});
-    if(!duelSuccess){addEvent("tactical",`${creator.footballer.name} ortasında savunma hava topunu kazandı.`,`${Math.round(duel*100)}% hücum hava düellosu` ,"Hava savunması üstün geldi.");if(rng()<.20)return v3ResolveGroundShot(attackingTeam,defendingTeam,route,5,.88,attackCtx,token,"İkinci top");return;}
+    if(!duelSuccess){
+      const aerialText=`${defender?.footballer?.name||game.teamNames[defendingTeam]}, ${target?.footballer?.name||"hücumcu"} ile hava topunu kazanıp ${creator.footballer.name} ortasını uzaklaştırdı.`;
+      setVisualPhase("turnover",{team:defendingTeam,route:"wing",phase:5,success:false,action:"interception",turnoverReason:"aerialDuel",focusIds:visualMemberIds(creator,target,defender),carrierId:target?.footballer?.id||null,defenderId:defender?.footballer?.id||null,supportId:creator?.footballer?.id||null,ballTargetId:defender?.footballer?.id||null,message:aerialText,cause:`${defender?.footballer?.name||"Savunmacı"} hava savunması, ${target?.footballer?.name||"hücumcu"} oyuncusunun kafa/kuvvet eşleşmesine üstün geldi.`});
+      addEvent("turnover",aerialText,`${Math.round(duel*100)}% hücum hava düellosu`,`Hava savunması üstün geldi.`);if(rng()<.20)return v3ResolveGroundShot(attackingTeam,defendingTeam,route,5,.88,attackCtx,token,"İkinci top");return;
+    }
     const margin=attackerAerial-defenderAerial;
     const duelEffect=margin<=5?-8:margin<=12?0:8;
     const positionRoll=rng(),positionEffect=positionRoll<.25?10:positionRoll<.85?0:-10,distanceEffect=positionEffect===10?5:positionEffect===-10?-5:0;
@@ -8355,12 +8390,89 @@ render();
     if(roll<onTarget){shot.outcome="saved";game.stats[attackingTeam].onTarget++;game.stats[defendingTeam].saves++;incrementRatingStat(defendingTeam,keeper,"saves");applyMicroRating(defendingTeam,keeper,"goalkeeping",true,saveExpected,.18,{shotsFaced:1,difficultSaves:conditionalGoal>.38?1:0});recordRoleEvent(attackingTeam,target,"onTarget");addEvent("save",`${keeper.footballer.name} kafa vuruşunu kurtardı.`,`${goalProbability.toFixed(2)} xG`,"Kaleci doğru pozisyon aldı.");return;}
     shot.outcome="offTarget";if(goalProbability>.30)adjustRating(attackingTeam,target,-.18,"bigChanceMissed");addEvent("shot",`${target.footballer.name} kafa vuruşunda hedefi bulamadı.`,`${goalProbability.toFixed(2)} xG`,"Kafa vuruşu sonuçsuz kaldı.");
   }
-  game.v3={version:"5.0.0-attribute-role-tactic-context",phaseCap:16,matchFactor:v3DefenseMatchFactor,adjustedRate:v3AdjustedRate,phaseProbability:v3PhaseProbability,directionRoute:v3DirectionRoute,workRates:v3WorkRates,crossRates:v3CrossRates,roleScores:calculateRoleScores,teamStructure};
+  game.v3={version:"5.1.0-engine-event-sync",phaseCap:16,matchFactor:v3DefenseMatchFactor,adjustedRate:v3AdjustedRate,phaseProbability:v3PhaseProbability,directionRoute:v3DirectionRoute,workRates:v3WorkRates,crossRates:v3CrossRates,roleScores:calculateRoleScores,teamStructure};
+  function v3NarrativeHash(value){
+    const text=String(value||"");let hash=2166136261;
+    for(let i=0;i<text.length;i++){hash^=text.charCodeAt(i);hash=Math.imul(hash,16777619);}
+    return hash>>>0;
+  }
+  function v3NarrativePick(list,key){return list[v3NarrativeHash(key)%Math.max(1,list.length)]||list[0];}
+  function v3FailureNarrative(attackingTeam,defendingTeam,phase,result,route="center"){
+    const p=result?.micro||{};
+    const passer=p.primary||p.carrier||null,carrier=p.carrier||p.primary||null,defender=p.defender||null,support=p.support||null;
+    const name=(member,fallback)=>member?.footballer?.name||fallback;
+    const value=(member,key)=>{if(!member)return 50;const n=Number(stat(member,key));return Number.isFinite(n)?n:50;};
+    const passerName=name(passer,game.teamNames[attackingTeam]);
+    const carrierName=name(carrier,passerName);
+    const defenderName=name(defender,game.teamNames[defendingTeam]);
+    const supportName=name(support,"takım arkadaşına");
+    const pass=value(passer,"shortPassing")*.56+value(passer,"decisionMaking")*.27+value(passer,"composure")*.17;
+    const carry=value(carrier,"dribbling")*.56+value(carrier,"composure")*.22+value(carrier,"decisionMaking")*.22;
+    const read=value(defender,"positioning")*.38+value(defender,"defending")*.31+value(defender,"tackling")*.18+value(defender,"decisionMaking")*.13;
+    const pressure=value(defender,"pressingDiscipline")*.42+value(defender,"pace")*.22+value(defender,"tackling")*.20+value(defender,"strength")*.16;
+    const supportRun=value(support,"positioning")*.48+value(support,"decisionMaking")*.32+value(support,"pace")*.20;
+    const candidates=[
+      {reason:"interception",score:read-pass*.36+18},
+      {reason:"shortPass",score:(72-pass)*.46+Math.max(0,read-66)*.17+14},
+      {reason:"pressure",score:pressure*.23+(100-value(passer,"composure"))*.24+8},
+      {reason:"closedLane",score:read*.21+(100-supportRun)*.23+10},
+      {reason:"heavyTouch",score:(phase>=2?16:0)+(100-carry)*.30+pressure*.13+(p.shouldCarry&&p.carrySuccess===false?18:0)}
+    ].sort((a,b)=>b.score-a.score);
+    const reason=candidates[0]?.reason||"interception";
+    const key=`${game.minute}|${phase}|${route}|${passerName}|${defenderName}|${reason}|${game.visualSeq}`;
+    const texts={
+      interception:[
+        `${defenderName} pasın yönünü erken okudu ve araya girdi.`,
+        `${passerName} ${supportName} yönüne oynadı; ${defenderName} pas kanalını kapatıp topu aldı.`,
+        `${defenderName} doğru anda öne çıkarak ${passerName} tarafından gönderilen pası kesti.`
+      ],
+      shortPass:[
+        `${passerName} pası kısa bıraktı, ${defenderName} araya girdi.`,
+        `${passerName} bağlantı pasında gereken ağırlığı veremedi; ${defenderName} topu kazandı.`,
+        `${passerName} pası hedefe ulaştıramadı, ${defenderName} boşta kalan topu topladı.`
+      ],
+      pressure:[
+        `${defenderName} baskıyı zamanında yaptı; ${passerName} topu güvenli çıkaramadı.`,
+        `${passerName} baskı altında pas açısını kaybetti, ${defenderName} topu söktü aldı.`,
+        `${defenderName} yakın baskıyla ${passerName} oyuncusunu hataya zorladı.`
+      ],
+      closedLane:[
+        `${defenderName} ${supportName} koşusunu takip edip pas yolunu kapattı.`,
+        `${passerName} ileri bağlantıyı aradı ancak ${defenderName} koridoru kapattı.`,
+        `${defenderName} pozisyonunu bozmayıp hedef pas kanalını kilitledi.`
+      ],
+      heavyTouch:[
+        `${carrierName} topu ayağından biraz açtı, ${defenderName} müdahale edip kazandı.`,
+        `${carrierName} ilerlerken kontrolü uzattı; ${defenderName} araya girip hücumu bitirdi.`,
+        `${defenderName} doğru müdahale zamanlamasıyla ${carrierName} oyuncusunun top sürmesini kesti.`
+      ]
+    };
+    const causes={
+      interception:`${defenderName} için pozisyon alma ve savunma okuması, ${passerName} oyuncusunun pas uygulamasına üstün geldi.`,
+      shortPass:`${passerName} oyuncusunun pas uygulaması bu fazdaki savunma baskısını aşamadı.`,
+      pressure:`${defenderName} baskı disiplini ile ${passerName} oyuncusunun soğukkanlılığı arasındaki eşleşme top kaybını tetikledi.`,
+      closedLane:`${defenderName} pozisyon alma avantajı ve ${supportName} koşusunun yeterince ayrılamaması pas kanalını kapattı.`,
+      heavyTouch:`${carrierName} top kontrolü/dripling uygulamasında alanı koruyamadı; ${defenderName} müdahale avantajını kullandı.`
+    };
+    return{reason,text:v3NarrativePick(texts[reason],key),cause:causes[reason],passer,carrier,defender,support};
+  }
   function v3PhaseFailure(attackingTeam,defendingTeam,phase,result,route="center") {
     const label=phase===1?"geriden oyun kurma":phase===2?"orta sahada ilerleme":phase===3?"son bölgeye giriş":"geçiş oyunu";
-    setVisualPhase("turnover",{team:defendingTeam,route,phase,success:false,action:"interception",message:`${game.teamNames[defendingTeam]} ${label} aşamasını durdurdu.`});
-    addEvent("tactical",`${game.teamNames[defendingTeam]} ${label} aşamasını durdurdu.`,`${Math.round(result.probability*100)}% hücum başarı olasılığı`,`Nihai faz ayarları hücum ${result.attackAdjustment>=0?"+":""}${result.attackAdjustment}, savunma ${result.defenseAdjustment>=0?"+":""}${result.defenseAdjustment}; sınır ±18.`);
-    if((phase===1&&rng()<.15)||(phase===2&&rng()<.20))game.forcedAttack={team:defendingTeam,route:"transition",bonus:1};
+    const narrative=v3FailureNarrative(attackingTeam,defendingTeam,phase,result,route);
+    game.stats[attackingTeam].turnovers++;
+    const transitionChance=phase===1?.15:phase===2?.20:0;
+    const transitionTriggered=transitionChance>0&&rng()<transitionChance;
+    if(transitionTriggered){game.stats[attackingTeam].highTurnovers++;game.forcedAttack={team:defendingTeam,route:"transition",bonus:1};}
+    setVisualPhase("turnover",{
+      team:defendingTeam,route,phase,success:false,action:"interception",turnoverReason:narrative.reason,
+      focusIds:visualMemberIds(narrative.passer,narrative.carrier,narrative.defender,narrative.support),
+      carrierId:(narrative.reason==="heavyTouch"?narrative.carrier:narrative.passer)?.footballer?.id||null,
+      defenderId:narrative.defender?.footballer?.id||null,supportId:narrative.support?.footballer?.id||null,
+      ballTargetId:narrative.defender?.footballer?.id||null,message:narrative.text,
+      cause:transitionTriggered?`${narrative.cause} Top kazanımı ayrıca hızlı geçiş fırsatı yarattı.`:narrative.cause,
+      statDelta:{team:attackingTeam,turnovers:1,highTurnovers:transitionTriggered?1:0}
+    });
+    addEvent("turnover",narrative.text,`${Math.round(result.probability*100)}% hücum başarı olasılığı`,`${label}: ${narrative.cause}${transitionTriggered?" Top kazanımı hızlı geçişe dönüştü.":""}`);
   }
 
   async function simulateAttack(token) {
@@ -8685,33 +8797,37 @@ render();
       tacticsA:JSON.parse(JSON.stringify(tactic("A"))),
       tacticsB:JSON.parse(JSON.stringify(tactic("B")))
     };
-    if (options.random && typeof options.random === "function") game.random=options.random;
-    if (options.tactics?.A) Object.assign(state.tactics.A,options.tactics.A);
-    if (options.tactics?.B) Object.assign(state.tactics.B,options.tactics.B);
-    game.testMode=true;
-    resetMatch();
-    game.testMode=true;
-    game.running=true;
-    const token=game.token;
-    while(game.minute<90 && token===game.token){
-      game.minute=Math.min(90,game.minute+Math.floor(rand(1,4)));
-      if(game.minute>=90)break;
-      await simulateAttack(token);
+    try{
+      if (options.random && typeof options.random === "function") game.random=options.random;
+      if (options.tactics?.A) Object.assign(state.tactics.A,options.tactics.A);
+      if (options.tactics?.B) Object.assign(state.tactics.B,options.tactics.B);
+      game.testMode=true;
+      resetMatch();
+      game.testMode=true;
+      game.running=true;
+      const token=game.token;
+      while(game.minute<90 && token===game.token){
+        game.minute=Math.min(90,game.minute+Math.floor(rand(1,4)));
+        if(game.minute>=90)break;
+        await simulateAttack(token);
+      }
+      game.minute=89;
+      while(await resolvePendingPenalty(token,true)){}
+      await finishMatch(token);
+      const payload=options.summaryOnly?{
+        score:game.score,stats:game.stats,teamNames:game.teamNames,routeStats:game.routeStats
+      }:{
+        score:game.score,stats:game.stats,shots:game.shots,profiles:game.profiles,
+        penaltyPlan:game.penaltyPlan,routeStats:game.routeStats,eventLog:game.eventLog,
+        teamNames:game.teamNames,ratings:game.ratings
+      };
+      return JSON.parse(JSON.stringify(payload));
+    }finally{
+      game.random=original.random;
+      game.testMode=original.testMode;
+      Object.assign(state.tactics.A,original.tacticsA);
+      Object.assign(state.tactics.B,original.tacticsB);
     }
-    game.minute=89;
-    while(await resolvePendingPenalty(token,true)){}
-    await finishMatch(token);
-    const result=JSON.parse(JSON.stringify({
-      score:game.score,stats:game.stats,shots:game.shots,profiles:game.profiles,
-      penaltyPlan:game.penaltyPlan,
-      routeStats:game.routeStats,eventLog:game.eventLog,
-      teamNames:game.teamNames,ratings:game.ratings
-    }));
-    game.random=original.random;
-    game.testMode=original.testMode;
-    Object.assign(state.tactics.A,original.tacticsA);
-    Object.assign(state.tactics.B,original.tacticsB);
-    return result;
   }
 
   window.KADRO_ENGINE_TESTS = {
@@ -8928,11 +9044,8 @@ render();
   showScene = async function(kind, steps, token) {
     if (game.testMode) return;
     if(kind==="goal"){
-      const cinema=window.NEON_XI_EVENT_CINEMA;
-      if(cinema?.playAndWait){
-        return cinema.playAndWait("goal",{minute:game.minute,token});
-      }
-      return presentationWait(320,token);
+      /* Gol artık ayrı bir popup/cinema açmaz. Skor değişimi, 2D akış ve üst skorboard animasyonu aynı anda devam eder. */
+      return presentationWait(180,token);
     }
     if(kind==="penalty"){
       const cinema=window.NEON_XI_EVENT_CINEMA;
@@ -16858,7 +16971,8 @@ window.KADRO_HARD_MATCH_SYNC = {
     return true;
   }
   function queueDirect(detail) {
-    if(!detail || !MEDIA[detail.kind])return;
+    /* Gol görseli skorboard içinde kalır; kart/penaltı sinemaları korunur. */
+    if(!detail || detail.kind==="goal" || !MEDIA[detail.kind])return;
     const suppressed=suppressNextDirect.get(detail.kind);
     if(suppressed && minuteKey(suppressed.minute)===minuteKey(detail.minute) && Date.now()<suppressed.until){
       suppressNextDirect.delete(detail.kind);
@@ -17562,5 +17676,128 @@ body.nx-reduced-effects #matchSimulation .nx-goal-lightning{display:none!importa
 })();
 </script>
 
+<!-- NEON XI / 100X Tactical Simulation Lab + Audit Guard v1 2026-08-17 -->
+<style id="neon-xi-sim-lab-v1-style">
+/* Source-level guard: goal popup is disabled while card/penalty event cinema remains available. */
+#nxEventCinema.nx-event-cinema.goal,.goalCinema,.goalCinema.show,#kadroPresentationScene.kp-scene.show.goal{display:none!important;visibility:hidden!important;pointer-events:none!important}
+.nx-sim-tools{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
+.nx-sim-tools .btn{min-height:44px}
+.nx-sim-tools small{grid-column:1/-1;color:var(--muted);font-size:9px;line-height:1.45;text-align:center}
+.nxSimLab{position:fixed;inset:0;z-index:420000;display:grid;place-items:center;padding:18px;background:rgba(0,4,2,.88);backdrop-filter:blur(14px)}
+.nxSimLab.hidden{display:none!important}
+.nxSimLabPanel{width:min(980px,100%);max-height:calc(100dvh - 30px);overflow:auto;border:1px solid rgba(119,255,156,.34);border-radius:22px;background:linear-gradient(160deg,#07110c,#030706);box-shadow:0 28px 100px rgba(0,0,0,.72);padding:18px;color:var(--text)}
+.nxSimLabHead{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:13px}.nxSimLabHead h2{margin:0;font-size:24px}.nxSimLabHead p{margin:5px 0 0;color:var(--muted);font-size:10px}.nxSimClose{width:38px;height:38px;border-radius:11px;border:1px solid var(--line2);background:transparent;color:var(--text);font-size:22px;cursor:pointer}
+.nxSimProgress{margin-top:12px;border:1px solid var(--line);border-radius:12px;padding:10px}.nxSimProgressTop{display:flex;justify-content:space-between;gap:10px;font-size:10px}.nxSimProgressTop span{color:var(--muted)}.nxSimTrack{height:8px;margin-top:8px;border-radius:999px;background:rgba(255,255,255,.06);overflow:hidden}.nxSimTrack i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:width .15s ease}
+.nxSimHero{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;margin-top:14px}.nxSimTeam{text-align:center;border:1px solid var(--line);border-radius:14px;padding:13px;background:rgba(255,255,255,.018)}.nxSimTeam strong{display:block;font-size:13px}.nxSimTeam b{display:block;font-size:34px;margin-top:5px}.nxSimTeam span{display:block;color:var(--muted);font-size:9px}.nxSimDraw{text-align:center}.nxSimDraw b{display:block;font-size:28px}.nxSimDraw span{color:var(--muted);font-size:9px}
+.nxSimVerdict{margin-top:12px;padding:12px;border:1px solid rgba(119,211,156,.26);border-radius:13px;background:rgba(119,211,156,.055);text-align:center}.nxSimVerdict span{display:block;color:var(--accent);font-size:9px;letter-spacing:.12em}.nxSimVerdict strong{display:block;font-size:18px;margin-top:4px}.nxSimVerdict p{margin:4px 0 0;color:var(--muted);font-size:9px}
+.nxSimMetrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}.nxSimMetric{border:1px solid var(--line);border-radius:11px;padding:9px;background:rgba(255,255,255,.015)}.nxSimMetric span{display:block;color:var(--muted);font-size:8px}.nxSimMetric b{display:block;margin-top:4px;font-size:14px}.nxSimMetric small{display:block;margin-top:3px;color:var(--muted);font-size:7px}
+.nxSimBodyGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.nxSimSection{border:1px solid var(--line);border-radius:13px;padding:11px}.nxSimSection h3{margin:0 0 8px;font-size:11px}.nxScoreRow{display:grid;grid-template-columns:70px minmax(0,1fr) 44px;gap:8px;align-items:center;padding:5px 0;border-top:1px solid rgba(255,255,255,.05);font-size:9px}.nxScoreRow:first-of-type{border-top:0}.nxScoreBar{height:8px;border-radius:999px;background:rgba(255,255,255,.06);overflow:hidden}.nxScoreBar i{display:block;height:100%;background:var(--accent)}.nxSimFooter{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:13px}.nxSimFooter span{color:var(--muted);font-size:8px}.nxSimFooter .btn{min-height:36px}
+@media(max-width:760px){.nx-sim-tools{grid-template-columns:1fr}.nx-sim-tools small{grid-column:1}.nxSimLab{padding:8px}.nxSimLabPanel{max-height:calc(100dvh - 16px);padding:12px;border-radius:14px}.nxSimHero{grid-template-columns:1fr 72px 1fr}.nxSimMetrics{grid-template-columns:repeat(2,1fr)}.nxSimBodyGrid{grid-template-columns:1fr}.nxSimTeam b{font-size:26px}}
+@media(orientation:landscape) and (max-height:620px){.nxSimLab{padding:5px}.nxSimLabPanel{max-height:calc(100dvh - 10px);padding:10px}.nxSimLabHead h2{font-size:16px}.nxSimHero{margin-top:8px}.nxSimTeam{padding:7px}.nxSimTeam b{font-size:22px}.nxSimMetrics{grid-template-columns:repeat(8,1fr);gap:4px}.nxSimMetric{padding:5px}.nxSimBodyGrid{grid-template-columns:1fr 1fr;margin-top:7px}.nxScoreRow{padding:3px 0}.nxSimVerdict{margin-top:7px;padding:7px}.nxSimProgress{margin-top:7px;padding:6px}}
+</style>
+<script id="neon-xi-sim-lab-v1">
+(()=>{
+  'use strict';
+  if(window.NEON_XI_SIM_LAB?.version)return;
+  const byId=id=>document.getElementById(id);
+  const fmt=(n,d=2)=>Number(n||0).toFixed(d);
+  const pct=(n,total)=>total?Math.round(n/total*100):0;
+  const escapeHTML=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  const avg=(sum,n)=>n?sum/n:0;
+  let running=false,lastRun=null;
+
+  function ensureLab(){
+    let lab=byId('nxSimLab');
+    if(lab)return lab;
+    lab=document.createElement('div');
+    lab.id='nxSimLab';lab.className='nxSimLab hidden';lab.setAttribute('aria-hidden','true');
+    lab.innerHTML=`<div class="nxSimLabPanel" role="dialog" aria-modal="true" aria-labelledby="nxSimLabTitle">
+      <div class="nxSimLabHead"><div><h2 id="nxSimLabTitle">Taktik Simülasyon Laboratuvarı</h2><p>Aynı kadro, roller ve taktikler mevcut NEON XI maç motoruyla hızlı şekilde tekrar simüle edilir.</p></div><button class="nxSimClose" id="nxSimClose" type="button" aria-label="Kapat">×</button></div>
+      <div id="nxSimContent"></div></div>`;
+    document.body.appendChild(lab);
+    byId('nxSimClose').addEventListener('click',()=>{if(!running)close();});
+    lab.addEventListener('click',event=>{if(event.target===lab&&!running)close();});
+    return lab;
+  }
+  function open(){const lab=ensureLab();lab.classList.remove('hidden');lab.setAttribute('aria-hidden','false');}
+  function close(){const lab=byId('nxSimLab');if(!lab)return;lab.classList.add('hidden');lab.setAttribute('aria-hidden','true');}
+  function engine(){return window.KADRO_ENGINE_TESTS;}
+  function validState(){
+    try{return Boolean(window.KADRO_MATCH_PRESENTATION&&window.KADRO_ENGINE_TESTS?.runFast&&window.state?.teams?.A&&window.state?.teams?.B);}catch(_){return Boolean(window.KADRO_ENGINE_TESTS?.runFast);}
+  }
+  function initAggregate(){return{count:0,wins:{A:0,B:0},draws:0,goals:{A:0,B:0},xG:{A:0,B:0},shots:{A:0,B:0},onTarget:{A:0,B:0},possession:{A:0,B:0},passes:{A:0,B:0},passAttempts:{A:0,B:0},dangerous:{A:0,B:0},box:{A:0,B:0},scores:new Map(),teamNames:{A:'Takım A',B:'Takım B'}};}
+  function collect(agg,result){
+    const a=Number(result.score?.A||0),b=Number(result.score?.B||0),sa=result.stats?.A||{},sb=result.stats?.B||{};
+    agg.count++;if(a>b)agg.wins.A++;else if(b>a)agg.wins.B++;else agg.draws++;
+    agg.goals.A+=a;agg.goals.B+=b;agg.xG.A+=Number(sa.xG||0);agg.xG.B+=Number(sb.xG||0);
+    agg.shots.A+=Number(sa.shots||0);agg.shots.B+=Number(sb.shots||0);agg.onTarget.A+=Number(sa.onTarget||0);agg.onTarget.B+=Number(sb.onTarget||0);
+    agg.possession.A+=Number(sa.possession||50);agg.possession.B+=Number(sb.possession||50);agg.passes.A+=Number(sa.passesCompleted||0);agg.passes.B+=Number(sb.passesCompleted||0);agg.passAttempts.A+=Number(sa.passesAttempted||0);agg.passAttempts.B+=Number(sb.passesAttempted||0);agg.dangerous.A+=Number(sa.dangerousAttacks||0);agg.dangerous.B+=Number(sb.dangerousAttacks||0);agg.box.A+=Number(sa.boxEntries||0);agg.box.B+=Number(sb.boxEntries||0);
+    const key=`${a}-${b}`;agg.scores.set(key,(agg.scores.get(key)||0)+1);agg.teamNames=result.teamNames||agg.teamNames;return agg;
+  }
+  function verdict(agg){
+    const a=pct(agg.wins.A,agg.count),b=pct(agg.wins.B,agg.count),d=pct(agg.draws,agg.count),diff=a-b;
+    if(Math.abs(diff)<6)return{title:'Dengeli eşleşme',reason:`Galibiyet farkı yalnızca ${Math.abs(diff)} puan. ${agg.count} maçlık örneklemde net bir taraf oluşmadı.`};
+    const side=diff>0?'A':'B',name=agg.teamNames?.[side]||`Takım ${side}`;
+    return{title:`${name} ağırlıklı üstün`,reason:`${name} ${Math.max(a,b)}% galibiyet oranına ulaştı; beraberlik oranı ${d}%.`};
+  }
+  function renderProgress(done,total,names){
+    const content=byId('nxSimContent');if(!content)return;
+    const percent=Math.round(done/Math.max(1,total)*100);
+    content.innerHTML=`<div class="nxSimProgress"><div class="nxSimProgressTop"><strong>${total===1?'Hızlı maç simülasyonu':'100 maçlık taktik testi'}</strong><span>${done}/${total}</span></div><div class="nxSimTrack"><i style="width:${percent}%"></i></div><div style="margin-top:7px;color:var(--muted);font-size:8px">${escapeHTML(names?.A||'Takım A')} · ${escapeHTML(names?.B||'Takım B')} · Motor olayları hesaplanıyor…</div></div>`;
+  }
+  function renderResult(agg){
+    const n=agg.count,aWin=pct(agg.wins.A,n),bWin=pct(agg.wins.B,n),draw=pct(agg.draws,n),v=verdict(agg);
+    const scores=[...agg.scores.entries()].sort((x,y)=>y[1]-x[1]||x[0].localeCompare(y[0])).slice(0,8),maxScore=Math.max(1,...scores.map(x=>x[1]));
+    const passPct=team=>agg.passAttempts[team]?agg.passes[team]/agg.passAttempts[team]*100:0;
+    const metrics=[
+      ['Ort. skor',`${fmt(avg(agg.goals.A,n),2)} – ${fmt(avg(agg.goals.B,n),2)}`,'maç başına gol'],
+      ['Ort. xG',`${fmt(avg(agg.xG.A,n),2)} – ${fmt(avg(agg.xG.B,n),2)}`,'motor xG toplamı'],
+      ['Şut',`${fmt(avg(agg.shots.A,n),1)} – ${fmt(avg(agg.shots.B,n),1)}`,'maç başına'],
+      ['İsabetli',`${fmt(avg(agg.onTarget.A,n),1)} – ${fmt(avg(agg.onTarget.B,n),1)}`,'maç başına'],
+      ['Topa sahip olma',`%${fmt(avg(agg.possession.A,n),1)} – %${fmt(avg(agg.possession.B,n),1)}`,'ortalama'],
+      ['Pas başarısı',`%${fmt(passPct('A'),1)} – %${fmt(passPct('B'),1)}`,'100 maç toplamı'],
+      ['Tehlikeli atak',`${fmt(avg(agg.dangerous.A,n),1)} – ${fmt(avg(agg.dangerous.B,n),1)}`,'maç başına'],
+      ['Ceza sahası girişi',`${fmt(avg(agg.box.A,n),1)} – ${fmt(avg(agg.box.B,n),1)}`,'maç başına']
+    ];
+    byId('nxSimContent').innerHTML=`<div class="nxSimHero"><div class="nxSimTeam"><strong>${escapeHTML(agg.teamNames.A)}</strong><b>%${aWin}</b><span>${agg.wins.A} galibiyet</span></div><div class="nxSimDraw"><b>%${draw}</b><span>${agg.draws} beraberlik</span></div><div class="nxSimTeam"><strong>${escapeHTML(agg.teamNames.B)}</strong><b>%${bWin}</b><span>${agg.wins.B} galibiyet</span></div></div>
+      <div class="nxSimVerdict"><span>${n} MAÇLIK SONUÇ</span><strong>${escapeHTML(v.title)}</strong><p>${escapeHTML(v.reason)}</p></div>
+      <div class="nxSimMetrics">${metrics.map(([l,val,s])=>`<div class="nxSimMetric"><span>${l}</span><b>${val}</b><small>${s}</small></div>`).join('')}</div>
+      <div class="nxSimBodyGrid"><section class="nxSimSection"><h3>En sık oluşan skorlar</h3>${scores.map(([score,count])=>`<div class="nxScoreRow"><b>${score}</b><div class="nxScoreBar"><i style="width:${Math.max(4,count/maxScore*100)}%"></i></div><span>${count} · %${pct(count,n)}</span></div>`).join('')}</section>
+      <section class="nxSimSection"><h3>Okuma rehberi</h3><div style="font-size:9px;line-height:1.6;color:var(--muted)"><p><b style="color:var(--text)">Ağırlıklı galip</b>, 100 maç içindeki galibiyet sıklığına göre belirlenir.</p><p><b style="color:var(--text)">Ort. skor / xG</b>, tek bir maçın şansını değil taktiklerin uzun örneklem eğilimini gösterir.</p><p>Bu test mevcut kadro, kimya, oyuncu rolleri ve taktikleri değiştirmeden aynı maç motorunu hızlı modda çalıştırır.</p></div></section></div>
+      <div class="nxSimFooter"><span>Test tamamlandı · ${new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}</span><div style="display:flex;gap:7px"><button class="btn" id="nxSimAgain1" type="button">1x tekrar</button><button class="btn primary" id="nxSimAgain100" type="button">100x tekrar</button></div></div>`;
+    byId('nxSimAgain1')?.addEventListener('click',()=>run(1));byId('nxSimAgain100')?.addEventListener('click',()=>run(100));
+  }
+  async function run(count=100){
+    count=Math.max(1,Math.min(100,Math.round(Number(count)||100)));
+    if(running)return;
+    if(!validState()){alert('Hızlı simülasyon motoru henüz hazır değil. Önce iki kadroyu ve taktikleri tamamla.');return;}
+    const live=window.KADRO_MATCH_PRESENTATION;
+    if(live?.running&&!live.testMode){alert('Canlı maç devam ederken 100x test başlatılamaz. Maçı bitir veya prematch ekranından testi çalıştır.');return;}
+    running=true;open();const agg=initAggregate();
+    try{
+      renderProgress(0,count,live?.teamNames);
+      for(let i=0;i<count;i++){
+        const result=await engine().runFast({summaryOnly:true});collect(agg,result);
+        if(i===0||i===count-1||(i+1)%5===0){renderProgress(i+1,count,agg.teamNames);await new Promise(resolve=>setTimeout(resolve,0));}
+      }
+      lastRun=agg;renderResult(agg);
+    }catch(error){console.error('NEON XI sim lab:',error);byId('nxSimContent').innerHTML=`<div class="nxSimVerdict"><strong>Simülasyon tamamlanamadı</strong><p>${escapeHTML(error?.message||error)}</p></div>`;
+    }finally{
+      try{engine()?.reset?.();}catch(_){}
+      running=false;
+    }
+  }
+  function injectButtons(){
+    const complete=byId('complete');if(!complete||complete.classList.contains('hidden'))return;
+    const zone=complete.querySelector('.nx-ready-zone')||complete.querySelector('.handoverBox');if(!zone||zone.querySelector('.nx-sim-tools'))return;
+    const wrap=document.createElement('div');wrap.className='nx-sim-tools';wrap.innerHTML=`<button class="btn" id="nxQuickSim1" type="button">⚡ 1 MAÇI HEMEN SİMÜLE ET</button><button class="btn primary" id="nxQuickSim100" type="button">100× TAKTİK TESTİ</button><small>Maç ekranını beklemeden mevcut maç motorunu kullanır; kadro, roller ve taktikler aynen korunur.</small>`;
+    zone.appendChild(wrap);byId('nxQuickSim1').addEventListener('click',()=>run(1));byId('nxQuickSim100').addEventListener('click',()=>run(100));
+  }
+  const completeNode=byId('complete');if(completeNode){const observer=new MutationObserver(injectButtons);observer.observe(completeNode,{subtree:true,childList:true,attributes:true,attributeFilter:['class']});}
+  document.addEventListener('click',event=>{if(event.target.closest?.('[data-prematch-ready],#toTacticsBtn,#tacticReadyBtn'))setTimeout(injectButtons,0);},true);
+  setTimeout(injectButtons,0);
+  window.NEON_XI_SIM_LAB={version:'1.0.0',run,open,close,get lastRun(){return lastRun;}};
+})();
+</script>
 </body>
 </html>
