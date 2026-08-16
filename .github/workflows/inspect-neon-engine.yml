@@ -1,0 +1,28 @@
+name: Inspect NEON XI engine
+on:
+  push:
+    paths:
+      - '.github/workflows/inspect-neon-engine.yml'
+  workflow_dispatch:
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Print engine blocks
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          t=Path('index.html').read_text(encoding='utf-8')
+          for key in ['directRedChance','yellowChance','maybeDisciplinaryEvent','progressionChance','document.body.appendChild(scene)','nxEventCinema']:
+              print('\n===== '+key+' =====')
+              start=0; count=0
+              while True:
+                  i=t.find(key,start)
+                  if i<0: break
+                  count+=1
+                  print('\n--- occurrence',count,'at',i,'---')
+                  print(t[max(0,i-900):min(len(t),i+1600)])
+                  start=i+len(key)
+                  if count>=4: break
+          PY
