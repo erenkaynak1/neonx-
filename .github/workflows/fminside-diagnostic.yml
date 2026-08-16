@@ -10,8 +10,9 @@ jobs:
       - name: Inspect FMInside player search form
         shell: bash
         run: |
+          python3 -m pip install beautifulsoup4 requests -q
           python3 - <<'PY'
-          import requests,re
+          import requests
           from bs4 import BeautifulSoup
           u='https://fminside.net/players'
           r=requests.get(u,headers={'User-Agent':'Mozilla/5.0'},timeout=30)
@@ -22,8 +23,10 @@ jobs:
               for x in f.find_all(['input','select']):
                   print(' ',x.name,'name=',x.get('name'),'value=',x.get('value'),'id=',x.get('id'))
           print('links sample')
+          n=0
           for a in soup.find_all('a',href=True):
               h=a['href']
               if '/players/' in h:
-                  print(h, a.get_text(' ',strip=True)[:80])
+                  print(h, a.get_text(' ',strip=True)[:80]); n+=1
+                  if n>=30: break
           PY
