@@ -3,15 +3,18 @@ on:
   push:
     paths: ['.github/workflows/fminside-diagnostic.yml']
   workflow_dispatch:
+permissions:
+  contents: write
 jobs:
   inspect:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - name: Inspect FMInside player search form
         shell: bash
         run: |
           python3 -m pip install beautifulsoup4 requests -q
-          python3 - <<'PY'
+          python3 - <<'PY' > fminside-diag.txt
           import requests
           from bs4 import BeautifulSoup
           u='https://fminside.net/players'
@@ -28,5 +31,12 @@ jobs:
               h=a['href']
               if '/players/' in h:
                   print(h, a.get_text(' ',strip=True)[:80]); n+=1
-                  if n>=30: break
+                  if n>=40: break
           PY
+      - name: Commit diagnostic
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add fminside-diag.txt
+          git commit -m 'temporary FMInside diagnostic output'
+          git push
