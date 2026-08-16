@@ -1,0 +1,134 @@
+am,route,5,.88,attackCtx,token,"İkinci top");return;}
++    if(!duelSuccess){
++      const aerialText=`${defender?.footballer?.name||game.teamNames[defendingTeam]}, ${target?.footballer?.name||"hücumcu"} ile hava topunu kazanıp ${creator.footballer.name} ortasını uzaklaştırdı.`;
++      setVisualPhase("turnover",{team:defendingTeam,route:"wing",phase:5,success:false,action:"interception",turnoverReason:"aerialDuel",focusIds:visualMemberIds(creator,target,defender),carrierId:target?.footballer?.id||null,defenderId:defender?.footballer?.id||null,supportId:creator?.footballer?.id||null,ballTargetId:defender?.footballer?.id||null,message:aerialText,cause:`${defender?.footballer?.name||"Savunmacı"} hava savunması, ${target?.footballer?.name||"hücumcu"} oyuncusunun kafa/kuvvet eşleşmesine üstün geldi.`});
++      addEvent("turnover",aerialText,`${Math.round(duel*100)}% hücum hava düellosu`,`Hava savunması üstün geldi.`);if(rng()<.20)return v3ResolveGroundShot(attackingTeam,defendingTeam,route,5,.88,attackCtx,token,"İkinci top");return;
++    }
+     const margin=attackerAerial-defenderAerial;
+     const duelEffect=margin<=5?-8:margin<=12?0:8;
+     const positionRoll=rng(),positionEffect=positionRoll<.25?10:positionRoll<.85?0:-10,distanceEffect=positionEffect===10?5:positionEffect===-10?-5:0;
+     const headerApplication=v3ApplyAdjustment(v3ClampRating(stat(target,"heading"))*.75+v3ClampRating(stat(target,"decisionMaking"))*.15+v3ClampRating(stat(target,"strength"))*.10,attackAdj);
+@@ -8354,14 +8389,91 @@
+     }
+     if(roll<onTarget){shot.outcome="saved";game.stats[attackingTeam].onTarget++;game.stats[defendingTeam].saves++;incrementRatingStat(defendingTeam,keeper,"saves");applyMicroRating(defendingTeam,keeper,"goalkeeping",true,saveExpected,.18,{shotsFaced:1,difficultSaves:conditionalGoal>.38?1:0});recordRoleEvent(attackingTeam,target,"onTarget");addEvent("save",`${keeper.footballer.name} kafa vuruşunu kurtardı.`,`${goalProbability.toFixed(2)} xG`,"Kaleci doğru pozisyon aldı.");return;}
+     shot.outcome="offTarget";if(goalProbability>.30)adjustRating(attackingTeam,target,-.18,"bigChanceMissed");addEvent("shot",`${target.footballer.name} kafa vuruşunda hedefi bulamadı.`,`${goalProbability.toFixed(2)} xG`,"Kafa vuruşu sonuçsuz kaldı.");
+   }
+-  game.v3={version:"5.0.0-attribute-role-tactic-context",phaseCap:16,matchFactor:v3DefenseMatchFactor,adjustedRate:v3AdjustedRate,phaseProbability:v3PhaseProbability,directionRoute:v3DirectionRoute,workRates:v3WorkRates,crossRates:v3CrossRates,roleScores:calculateRoleScores,teamStructure};
++  game.v3={version:"5.1.0-engine-event-sync",phaseCap:16,matchFactor:v3DefenseMatchFactor,adjustedRate:v3AdjustedRate,phaseProbability:v3PhaseProbability,directionRoute:v3DirectionRoute,workRates:v3WorkRates,crossRates:v3CrossRates,roleScores:calculateRoleScores,teamStructure};
++  function v3NarrativeHash(value){
++    const text=String(value||"");let hash=2166136261;
++    for(let i=0;i<text.length;i++){hash^=text.charCodeAt(i);hash=Math.imul(hash,16777619);}
++    return hash>>>0;
++  }
++  function v3NarrativePick(list,key){return list[v3NarrativeHash(key)%Math.max(1,list.length)]||list[0];}
++  function v3FailureNarrative(attackingTeam,defendingTeam,phase,result,route="center"){
++    const p=result?.micro||{};
++    const passer=p.primary||p.carrier||null,carrier=p.carrier||p.primary||null,defender=p.defender||null,support=p.support||null;
++    const name=(member,fallback)=>member?.footballer?.name||fallback;
++    const value=(member,key)=>{if(!member)return 50;const n=Number(stat(member,key));return Number.isFinite(n)?n:50;};
++    const passerName=name(passer,game.teamNames[attackingTeam]);
++    const carrierName=name(carrier,passerName);
++    const defenderName=name(defender,game.teamNames[defendingTeam]);
++    const supportName=name(support,"takım arkadaşına");
++    const pass=value(passer,"shortPassing")*.56+value(passer,"decisionMaking")*.27+value(passer,"composure")*.17;
++    const carry=value(carrier,"dribbling")*.56+value(carrier,"composure")*.22+value(carrier,"decisionMaking")*.22;
++    const read=value(defender,"positioning")*.38+value(defender,"defending")*.31+value(defender,"tackling")*.18+value(defender,"decisionMaking")*.13;
++    const pressure=value(defender,"pressingDiscipline")*.42+value(defender,"pace")*.22+value(defender,"tackling")*.20+value(defender,"strength")*.16;
++    const supportRun=value(support,"positioning")*.48+value(support,"decisionMaking")*.32+value(support,"pace")*.20;
++    const candidates=[
++      {reason:"interception",score:read-pass*.36+18},
++      {reason:"shortPass",score:(72-pass)*.46+Math.max(0,read-66)*.17+14},
++      {reason:"pressure",score:pressure*.23+(100-value(passer,"composure"))*.24+8},
++      {reason:"closedLane",score:read*.21+(100-supportRun)*.23+10},
++      {reason:"heavyTouch",score:(phase>=2?16:0)+(100-carry)*.30+pressure*.13+(p.shouldCarry&&p.carrySuccess===false?18:0)}
++    ].sort((a,b)=>b.score-a.score);
++    const reason=candidates[0]?.reason||"interception";
++    const key=`${game.minute}|${phase}|${route}|${passerName}|${defenderName}|${reason}|${game.visualSeq}`;
++    const texts={
++      interception:[
++        `${defenderName} pasın yönünü erken okudu ve araya girdi.`,
++        `${passerName} ${supportName} yönüne oynadı; ${defenderName} pas kanalını kapatıp topu aldı.`,
++        `${defenderName} doğru anda öne çıkarak ${passerName} tarafından gönderilen pası kesti.`
++      ],
++      shortPass:[
++        `${passerName} pası kısa bıraktı, ${defenderName} araya girdi.`,
++        `${passerName} bağlantı pasında gereken ağırlığı veremedi; ${defenderName} topu kazandı.`,
++        `${passerName} pası hedefe ulaştıramadı, ${defenderName} boşta kalan topu topladı.`
++      ],
++      pressure:[
++        `${defenderName} baskıyı zamanında yaptı; ${passerName} topu güvenli çıkaramadı.`,
++        `${passerName} baskı altında pas açısını kaybetti, ${defenderName} topu söktü aldı.`,
++        `${defenderName} yakın baskıyla ${passerName} oyuncusunu hataya zorladı.`
++      ],
++      closedLane:[
++        `${defenderName} ${supportName} koşusunu takip edip pas yolunu kapattı.`,
++        `${passerName} ileri bağlantıyı aradı ancak ${defenderName} koridoru kapattı.`,
++        `${defenderName} pozisyonunu bozmayıp hedef pas kanalını kilitledi.`
++      ],
++      heavyTouch:[
++        `${carrierName} topu ayağından biraz açtı, ${defenderName} müdahale edip kazandı.`,
++        `${carrierName} ilerlerken kontrolü uzattı; ${defenderName} araya girip hücumu bitirdi.`,
++        `${defenderName} doğru müdahale zamanlamasıyla ${carrierName} oyuncusunun top sürmesini kesti.`
++      ]
++    };
++    const causes={
++      interception:`${defenderName} için pozisyon alma ve savunma okuması, ${passerName} oyuncusunun pas uygulamasına üstün geldi.`,
++      shortPass:`${passerName} oyuncusunun pas uygulaması bu fazdaki savunma baskısını aşamadı.`,
++      pressure:`${defenderName} baskı disiplini ile ${passerName} oyuncusunun soğukkanlılığı arasındaki eşleşme top kaybını tetikledi.`,
++      closedLane:`${defenderName} pozisyon alma avantajı ve ${supportName} koşusunun yeterince ayrılamaması pas kanalını kapattı.`,
++      heavyTouch:`${carrierName} top kontrolü/dripling uygulamasında alanı koruyamadı; ${defenderName} müdahale avantajını kullandı.`
++    };
++    return{reason,text:v3NarrativePick(texts[reason],key),cause:causes[reason],passer,carrier,defender,support};
++  }
+   function v3PhaseFailure(attackingTeam,defendingTeam,phase,result,route="center") {
+     const label=phase===1?"geriden oyun kurma":phase===2?"orta sahada ilerleme":phase===3?"son bölgeye giriş":"geçiş oyunu";
+-    setVisualPhase("turnover",{team:defendingTeam,route,phase,success:false,action:"interception",message:`${game.teamNames[defendingTeam]} ${label} aşamasını durdurdu.`});
+-    addEvent("tactical",`${game.teamNames[defendingTeam]} ${label} aşamasını durdurdu.`,`${Math.round(result.probability*100)}% hücum başarı olasılığı`,`Nihai faz ayarları hücum ${result.attackAdjustment>=0?"+":""}${result.attackAdjustment}, savunma ${result.defenseAdjustment>=0?"+":""}${result.defenseAdjustment}; sınır ±18.`);
+-    if((phase===1&&rng()<.15)||(phase===2&&rng()<.20))game.forcedAttack={team:defendingTeam,route:"transition",bonus:1};
++    const narrative=v3FailureNarrative(attackingTeam,defendingTeam,phase,result,route);
++    game.stats[attackingTeam].turnovers++;
++    const transitionChance=phase===1?.15:phase===2?.20:0;
++    const transitionTriggered=transitionChance>0&&rng()<transitionChance;
++    if(transitionTriggered){game.stats[attackingTeam].highTurnovers++;game.forcedAttack={team:defendingTeam,route:"transition",bonus:1};}
++    setVisualPhase("turnover",{
++      team:defendingTeam,route,phase,success:false,action:"interception",turnoverReason:narrative.reason,
++      focusIds:visualMemberIds(narrative.passer,narrative.carrier,narrative.defender,narrative.support),
++      carrierId:(narrative.reason==="heavyTouch"?narrative.carrier:narrative.passer)?.footballer?.id||null,
++      defenderId:narrative.defender?.footballer?.id||null,supportId:narrative.support?.footballer?.id||null,
++      ballTargetId:narrative.defender?.footballer?.id||null,message:narrative.text,
++      cause:transitionTriggered?`${narrative.cause} Top kazanımı ayrıca hızlı geçiş fırsatı yarattı.`:narrative.cause,
++      statDelta:{team:attackingTeam,turnovers:1,highTurnovers:transitionTriggered?1:0}
++    });
++    addEvent("turnover",narrative.text,`${Math.round(result.probability*100)}% hücum başarı olasılığı`,`${label}: ${narrative.cause}${transitionTriggered?" Top kazanımı hızlı geçişe dönüştü.":""}`);
+   }
+ 
+   async function simulateAttack(token) {
+     let attackingTeam=chooseAttackingTeam(),defendingTeam=other(attackingTeam),forced=game.forcedAttack;game.forcedAttack=null;
+@@ -8684,35 +8796,39 @@
+       testMode:game.testMode,
+       tacticsA:JSON.parse(JSON.stringify(tactic("A"))),
+       tacticsB:JSON.parse(JSON.stringify(tactic("B")))
+     };
+-    if (options.random && typeof options.random === "function") game.random=options.random;
+-    if (options.tactics?.A) Object.assign(state.tactics.A,options.tactics.A);
+-    if (options.tactics?.B) Object.assign(state.tactics.B,options.tactics.B);
+-    game.testMode=true;
+-    resetMatch();
+-    game.testMode=true;
+-    game.running=true;
+-    const token=game.token;
+-    while(game.minute<90 && token===game.token){
+-      game.minute=Math.min(90,game.minute+Math.floor(rand(1,4)));
+-      if(game.minute>=90)break;
+-      await simulateAttack(token);
+-    }
+-    game.minute=89;
+-    while(await resolvePendingPenalty(token,true)){}
+-    await finishMatch(token);
+-    const result=JSON.parse(JSON.stringify({
+-      score:game.score,stats:game.stats,shots:game.shots,profiles:game.profiles,
+-      penaltyPlan:game.penaltyPlan,
+-      routeStats:game.routeStats,eventLog:game.eventLog,
+-      teamNames:game.teamNames,ratings:game.ratings
+-    }));
+-    game.random=original.
