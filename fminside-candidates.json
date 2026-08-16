@@ -1,0 +1,2432 @@
+[
+  {
+    "name": "Rayan Cherki",
+    "sub_position": "Attacking Midfield",
+    "age": 23,
+    "nation": "France",
+    "club": "Manchester City",
+    "competition_id": "GB1",
+    "tm_player_id": "607223",
+    "market_value": 90000000
+  },
+  {
+    "name": "Antoine Semenyo",
+    "sub_position": "Right Winger",
+    "age": 26,
+    "nation": "Ghana",
+    "club": "Manchester City",
+    "competition_id": "GB1",
+    "tm_player_id": "583255",
+    "market_value": 80000000
+  },
+  {
+    "name": "Matheus Cunha",
+    "sub_position": "Centre-Forward",
+    "age": 27,
+    "nation": "Brazil",
+    "club": "Manchester United",
+    "competition_id": "GB1",
+    "tm_player_id": "517894",
+    "market_value": 75000000
+  },
+  {
+    "name": "Jérémy Doku",
+    "sub_position": "Left Winger",
+    "age": 24,
+    "nation": "Belgium",
+    "club": "Manchester City",
+    "competition_id": "GB1",
+    "tm_player_id": "486049",
+    "market_value": 75000000
+  },
+  {
+    "name": "Gabriel",
+    "sub_position": "Centre-Back",
+    "age": 29,
+    "nation": "Brazil",
+    "club": "Arsenal FC",
+    "competition_id": "GB1",
+    "tm_player_id": "435338",
+    "market_value": 75000000
+  },
+  {
+    "name": "Phil Foden",
+    "sub_position": "Attacking Midfield",
+    "age": 26,
+    "nation": "England",
+    "club": "Manchester City",
+    "competition_id": "GB1",
+    "tm_player_id": "406635",
+    "market_value": 70000000
+  },
+  {
+    "name": "Nico O'Reilly",
+    "sub_position": "Left-Back",
+    "age": 21,
+    "nation": "England",
+    "club": "Manchester City",
+    "competition_id": "GB1",
+    "tm_player_id": "743413",
+    "market_value": 70000000
+  },
+  {
+    "name": "Marc Guéhi",
+    "sub_position": "Centre-Back",
+    "age": 26,
+    "nation": "England",
+    "club": "Manchester City",
+    "competition_id": "GB1",
+    "tm_player_id": "392757",
+    "market_value": 70000000
+  },
+  {
+    "name": "Jurriën Timber",
+    "sub_position": "Right-Back",
+    "age": 25,
+    "nation": "Netherlands",
+    "club": "Arsenal FC",
+    "competition_id": "GB1",
+    "tm_player_id": "420243",
+    "market_value": 70000000
+  },
+  {
+    "name": "Eberechi Eze",
+    "sub_position": "Attacking Midfield",
+    "age": 28,
+    "nation": "England",
+    "club": "Arsenal FC",
+    "competition_id": "GB1",
+    "tm_player_id": "479999",
+    "market_value": 65000000
+  },
+  {
+    "name": "Luka Vuskovic",
+    "sub_position": "Centre-Back",
+    "age": 19,
+    "nation": "Croatia",
+    "club": "Tottenham Hotspur",
+    "competition_id": "GB1",
+    "tm_player_id": "892160",
+    "market_value": 60000000
+  },
+  {
+    "name": "Kai Havertz",
+    "sub_position": "Centre-Forward",
+    "age": 27,
+    "nation": "Germany",
+    "club": "Arsenal FC",
+    "competition_id": "GB1",
+    "tm_player_id": "309400",
+    "market_value": 55000000
+  },
+  {
+    "name": "Piero Hincapié",
+    "sub_position": "Centre-Back",
+    "age": 24,
+    "nation": "Ecuador",
+    "club": "Arsenal FC",
+    "competition_id": "GB1",
+    "tm_player_id": "659813",
+    "market_value": 50000000
+  },
+  {
+    "name": "Mohammed Kudus",
+    "sub_position": "Right Winger",
+    "age": 26,
+    "nation": "Ghana",
+    "club": "Tottenham Hotspur",
+    "competition_id": "GB1",
+    "tm_player_id": "543499",
+    "market_value": 50000000
+  },
+  {
+    "name": "Micky van de Ven",
+    "sub_position": "Centre-Back",
+    "age": 25,
+    "nation": "Netherlands",
+    "club": "Tottenham Hotspur",
+    "competition_id": "GB1",
+    "tm_player_id": "557459",
+    "market_value": 50000000
+  },
+  {
+    "name": "Matheus Nunes",
+    "sub_position": "Right-Back",
+    "age": 28,
+    "nation": "Portugal",
+    "club": "Manchester City",
+    "competition_id": "GB1",
+    "tm_player_id": "601883",
+    "market_value": 50000000
+  },
+  {
+    "name": "Leny Yoro",
+    "sub_position": "Centre-Back",
+    "age": 21,
+    "nation": "France",
+    "club": "Manchester United",
+    "competition_id": "GB1",
+    "tm_player_id": "923831",
+    "market_value": 50000000
+  },
+  {
+    "name": "Abdukodir Khusanov",
+    "sub_position": "Centre-Back",
+    "age": 22,
+    "nation": "Uzbekistan",
+    "club": "Manchester City",
+    "competition_id": "GB1",
+    "tm_player_id": "763079",
+    "market_value": 50000000
+  },
+  {
+    "name": "Myles Lewis-Skelly",
+    "sub_position": "Left-Back",
+    "age": 20,
+    "nation": "England",
+    "club": "Arsenal FC",
+    "competition_id": "GB1",
+    "tm_player_id": "890721",
+    "market_value": 45000000
+  },
+  {
+    "name": "Trevoh Chalobah",
+    "sub_position": "Centre-Back",
+    "age": 27,
+    "nation": "England",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "346314",
+    "market_value": 40000000
+  },
+  {
+    "name": "Senny Mayulu",
+    "sub_position": "Central Midfield",
+    "age": 20,
+    "nation": "France",
+    "club": "Paris Saint-Germain",
+    "competition_id": "FR1",
+    "tm_player_id": "903693",
+    "market_value": 40000000
+  },
+  {
+    "name": "Nico González",
+    "sub_position": "Defensive Midfield",
+    "age": 24,
+    "nation": "Spain",
+    "club": "Manchester City",
+    "competition_id": "GB1",
+    "tm_player_id": "466805",
+    "market_value": 40000000
+  },
+  {
+    "name": "Ilya Zabarnyi",
+    "sub_position": "Centre-Back",
+    "age": 24,
+    "nation": "Ukraine",
+    "club": "Paris Saint-Germain",
+    "competition_id": "FR1",
+    "tm_player_id": "659089",
+    "market_value": 40000000
+  },
+  {
+    "name": "Cristhian Mosquera",
+    "sub_position": "Centre-Back",
+    "age": 22,
+    "nation": "Spain",
+    "club": "Arsenal FC",
+    "competition_id": "GB1",
+    "tm_player_id": "646750",
+    "market_value": 40000000
+  },
+  {
+    "name": "Andrey Santos",
+    "sub_position": "Central Midfield",
+    "age": 22,
+    "nation": "Brazil",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "743600",
+    "market_value": 40000000
+  },
+  {
+    "name": "Patrick Dorgu",
+    "sub_position": "Left Winger",
+    "age": 22,
+    "nation": "Denmark",
+    "club": "Manchester United",
+    "competition_id": "GB1",
+    "tm_player_id": "926952",
+    "market_value": 35000000
+  },
+  {
+    "name": "Lucas Bergvall",
+    "sub_position": "Central Midfield",
+    "age": 20,
+    "nation": "Sweden",
+    "club": "Tottenham Hotspur",
+    "competition_id": "GB1",
+    "tm_player_id": "866246",
+    "market_value": 35000000
+  },
+  {
+    "name": "Jakub Kiwior",
+    "sub_position": "Centre-Back",
+    "age": 26,
+    "nation": "Poland",
+    "club": "Arsenal FC",
+    "competition_id": "GB1",
+    "tm_player_id": "425918",
+    "market_value": 35000000
+  },
+  {
+    "name": "Curtis Jones",
+    "sub_position": "Central Midfield",
+    "age": 25,
+    "nation": "England",
+    "club": "Liverpool FC",
+    "competition_id": "GB1",
+    "tm_player_id": "433188",
+    "market_value": 35000000
+  },
+  {
+    "name": "Archie Gray",
+    "sub_position": "Defensive Midfield",
+    "age": 20,
+    "nation": "England",
+    "club": "Tottenham Hotspur",
+    "competition_id": "GB1",
+    "tm_player_id": "922693",
+    "market_value": 35000000
+  },
+  {
+    "name": "Conor Gallagher",
+    "sub_position": "Central Midfield",
+    "age": 26,
+    "nation": "England",
+    "club": "Tottenham Hotspur",
+    "competition_id": "GB1",
+    "tm_player_id": "488362",
+    "market_value": 32000000
+  },
+  {
+    "name": "Rio Ngumoha",
+    "sub_position": "Left Winger",
+    "age": 18,
+    "nation": "England",
+    "club": "Liverpool FC",
+    "competition_id": "GB1",
+    "tm_player_id": "1108466",
+    "market_value": 30000000
+  },
+  {
+    "name": "Pape Matar Sarr",
+    "sub_position": "Central Midfield",
+    "age": 24,
+    "nation": "Senegal",
+    "club": "Tottenham Hotspur",
+    "competition_id": "GB1",
+    "tm_player_id": "568693",
+    "market_value": 30000000
+  },
+  {
+    "name": "Matvey Safonov",
+    "sub_position": "Goalkeeper",
+    "age": 27,
+    "nation": "Russia",
+    "club": "Paris Saint-Germain",
+    "competition_id": "FR1",
+    "tm_player_id": "318470",
+    "market_value": 30000000
+  },
+  {
+    "name": "Jamie Gittens",
+    "sub_position": "Left Winger",
+    "age": 22,
+    "nation": "England",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "670882",
+    "market_value": 30000000
+  },
+  {
+    "name": "Ibrahim Mbaye",
+    "sub_position": "Right Winger",
+    "age": 18,
+    "nation": "Senegal",
+    "club": "Paris Saint-Germain",
+    "competition_id": "FR1",
+    "tm_player_id": "1185888",
+    "market_value": 30000000
+  },
+  {
+    "name": "Fabián Ruiz",
+    "sub_position": "Central Midfield",
+    "age": 30,
+    "nation": "Spain",
+    "club": "Paris Saint-Germain",
+    "competition_id": "FR1",
+    "tm_player_id": "350219",
+    "market_value": 30000000
+  },
+  {
+    "name": "Djed Spence",
+    "sub_position": "Left-Back",
+    "age": 26,
+    "nation": "England",
+    "club": "Tottenham Hotspur",
+    "competition_id": "GB1",
+    "tm_player_id": "483348",
+    "market_value": 30000000
+  },
+  {
+    "name": "Brennan Johnson",
+    "sub_position": "Right Winger",
+    "age": 25,
+    "nation": "Wales",
+    "club": "Tottenham Hotspur",
+    "competition_id": "GB1",
+    "tm_player_id": "470607",
+    "market_value": 30000000
+  },
+  {
+    "name": "Ayden Heaven",
+    "sub_position": "Centre-Back",
+    "age": 20,
+    "nation": "England",
+    "club": "Manchester United",
+    "competition_id": "GB1",
+    "tm_player_id": "1078163",
+    "market_value": 30000000
+  },
+  {
+    "name": "Wesley Fofana",
+    "sub_position": "Centre-Back",
+    "age": 26,
+    "nation": "France",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "475411",
+    "market_value": 28000000
+  },
+  {
+    "name": "Rico Lewis",
+    "sub_position": "Right-Back",
+    "age": 22,
+    "nation": "England",
+    "club": "Manchester City",
+    "competition_id": "GB1",
+    "tm_player_id": "701057",
+    "market_value": 28000000
+  },
+  {
+    "name": "Oscar Bobb",
+    "sub_position": "Right Winger",
+    "age": 23,
+    "nation": "Norway",
+    "club": "Manchester City",
+    "competition_id": "GB1",
+    "tm_player_id": "661207",
+    "market_value": 28000000
+  },
+  {
+    "name": "Kang-in Lee",
+    "sub_position": "Attacking Midfield",
+    "age": 25,
+    "nation": "Korea, South",
+    "club": "Paris Saint-Germain",
+    "competition_id": "FR1",
+    "tm_player_id": "557149",
+    "market_value": 28000000
+  },
+  {
+    "name": "Richarlison",
+    "sub_position": "Centre-Forward",
+    "age": 29,
+    "nation": "Brazil",
+    "club": "Tottenham Hotspur",
+    "competition_id": "GB1",
+    "tm_player_id": "378710",
+    "market_value": 25000000
+  },
+  {
+    "name": "Mikel Merino",
+    "sub_position": "Central Midfield",
+    "age": 30,
+    "nation": "Spain",
+    "club": "Arsenal FC",
+    "competition_id": "GB1",
+    "tm_player_id": "338424",
+    "market_value": 25000000
+  },
+  {
+    "name": "Mason Mount",
+    "sub_position": "Attacking Midfield",
+    "age": 27,
+    "nation": "England",
+    "club": "Manchester United",
+    "competition_id": "GB1",
+    "tm_player_id": "346483",
+    "market_value": 25000000
+  },
+  {
+    "name": "Marco Verratti",
+    "sub_position": "Central Midfield",
+    "age": 34,
+    "nation": "Italy",
+    "club": "Paris Saint-Germain",
+    "competition_id": "FR1",
+    "tm_player_id": "102558",
+    "market_value": 25000000
+  },
+  {
+    "name": "Josh Acheampong",
+    "sub_position": "Right-Back",
+    "age": 20,
+    "nation": "England",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "1004708",
+    "market_value": 25000000
+  },
+  {
+    "name": "James Trafford",
+    "sub_position": "Goalkeeper",
+    "age": 24,
+    "nation": "England",
+    "club": "Manchester City",
+    "competition_id": "GB1",
+    "tm_player_id": "566799",
+    "market_value": 25000000
+  },
+  {
+    "name": "Giovanni Leoni",
+    "sub_position": "Centre-Back",
+    "age": 20,
+    "nation": "Italy",
+    "club": "Liverpool FC",
+    "competition_id": "GB1",
+    "tm_player_id": "1086619",
+    "market_value": 25000000
+  },
+  {
+    "name": "Conor Bradley",
+    "sub_position": "Right-Back",
+    "age": 23,
+    "nation": "Northern Ireland",
+    "club": "Liverpool FC",
+    "competition_id": "GB1",
+    "tm_player_id": "624258",
+    "market_value": 25000000
+  },
+  {
+    "name": "Roméo Lavia",
+    "sub_position": "Defensive Midfield",
+    "age": 22,
+    "nation": "Belgium",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "628451",
+    "market_value": 22000000
+  },
+  {
+    "name": "Mathys Tel",
+    "sub_position": "Centre-Forward",
+    "age": 21,
+    "nation": "France",
+    "club": "Tottenham Hotspur",
+    "competition_id": "GB1",
+    "tm_player_id": "801734",
+    "market_value": 22000000
+  },
+  {
+    "name": "Mamadou Sarr",
+    "sub_position": "Centre-Back",
+    "age": 21,
+    "nation": "Senegal",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "910905",
+    "market_value": 22000000
+  },
+  {
+    "name": "Lucas Beraldo",
+    "sub_position": "Centre-Back",
+    "age": 23,
+    "nation": "Brazil",
+    "club": "Paris Saint-Germain",
+    "competition_id": "FR1",
+    "tm_player_id": "872171",
+    "market_value": 22000000
+  },
+  {
+    "name": "Tyrique George",
+    "sub_position": "Left Winger",
+    "age": 20,
+    "nation": "England",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "936874",
+    "market_value": 20000000
+  },
+  {
+    "name": "Rodrigo Bentancur",
+    "sub_position": "Defensive Midfield",
+    "age": 29,
+    "nation": "Uruguay",
+    "club": "Tottenham Hotspur",
+    "competition_id": "GB1",
+    "tm_player_id": "354362",
+    "market_value": 20000000
+  },
+  {
+    "name": "Kevin Danso",
+    "sub_position": "Centre-Back",
+    "age": 28,
+    "nation": "Austria",
+    "club": "Tottenham Hotspur",
+    "competition_id": "GB1",
+    "tm_player_id": "263236",
+    "market_value": 20000000
+  },
+  {
+    "name": "Joshua Zirkzee",
+    "sub_position": "Centre-Forward",
+    "age": 25,
+    "nation": "Netherlands",
+    "club": "Manchester United",
+    "competition_id": "GB1",
+    "tm_player_id": "435648",
+    "market_value": 20000000
+  },
+  {
+    "name": "Harvey Elliott",
+    "sub_position": "Attacking Midfield",
+    "age": 23,
+    "nation": "England",
+    "club": "Liverpool FC",
+    "competition_id": "GB1",
+    "tm_player_id": "565822",
+    "market_value": 20000000
+  },
+  {
+    "name": "Wilson Odobert",
+    "sub_position": "Left Winger",
+    "age": 22,
+    "nation": "France",
+    "club": "Tottenham Hotspur",
+    "competition_id": "GB1",
+    "tm_player_id": "743498",
+    "market_value": 18000000
+  },
+  {
+    "name": "Mykhaylo Mudryk",
+    "sub_position": "Left Winger",
+    "age": 25,
+    "nation": "Ukraine",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "537860",
+    "market_value": 18000000
+  },
+  {
+    "name": "Lucas Hernández",
+    "sub_position": "Left-Back",
+    "age": 30,
+    "nation": "France",
+    "club": "Paris Saint-Germain",
+    "competition_id": "FR1",
+    "tm_player_id": "281963",
+    "market_value": 18000000
+  },
+  {
+    "name": "Leandro Trossard",
+    "sub_position": "Left Winger",
+    "age": 32,
+    "nation": "Belgium",
+    "club": "Arsenal FC",
+    "competition_id": "GB1",
+    "tm_player_id": "144028",
+    "market_value": 18000000
+  },
+  {
+    "name": "Guglielmo Vicario",
+    "sub_position": "Goalkeeper",
+    "age": 30,
+    "nation": "Italy",
+    "club": "Tottenham Hotspur",
+    "competition_id": "GB1",
+    "tm_player_id": "286047",
+    "market_value": 18000000
+  },
+  {
+    "name": "Gabriel Jesus",
+    "sub_position": "Centre-Forward",
+    "age": 29,
+    "nation": "Brazil",
+    "club": "Arsenal FC",
+    "competition_id": "GB1",
+    "tm_player_id": "363205",
+    "market_value": 17000000
+  },
+  {
+    "name": "Tosin Adarabioyo",
+    "sub_position": "Centre-Back",
+    "age": 29,
+    "nation": "England",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "258878",
+    "market_value": 16000000
+  },
+  {
+    "name": "Radu Drăgușin",
+    "sub_position": "Centre-Back",
+    "age": 24,
+    "nation": "Romania",
+    "club": "Tottenham Hotspur",
+    "competition_id": "GB1",
+    "tm_player_id": "568559",
+    "market_value": 16000000
+  },
+  {
+    "name": "João Palhinha",
+    "sub_position": "Defensive Midfield",
+    "age": 31,
+    "nation": "Portugal",
+    "club": "Tottenham Hotspur",
+    "competition_id": "GB1",
+    "tm_player_id": "257455",
+    "market_value": 15000000
+  },
+  {
+    "name": "Filip Jørgensen",
+    "sub_position": "Goalkeeper",
+    "age": 24,
+    "nation": "Denmark",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "585323",
+    "market_value": 15000000
+  },
+  {
+    "name": "Dário Essugo",
+    "sub_position": "Defensive Midfield",
+    "age": 21,
+    "nation": "Portugal",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "670717",
+    "market_value": 15000000
+  },
+  {
+    "name": "Benoît Badiashile",
+    "sub_position": "Centre-Back",
+    "age": 25,
+    "nation": "France",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "463603",
+    "market_value": 15000000
+  },
+  {
+    "name": "Ben Gannon-Doak",
+    "sub_position": "Right Winger",
+    "age": 21,
+    "nation": "Scotland",
+    "club": "Liverpool FC",
+    "competition_id": "GB1",
+    "tm_player_id": "719673",
+    "market_value": 15000000
+  },
+  {
+    "name": "Antonín Kinský",
+    "sub_position": "Goalkeeper",
+    "age": 23,
+    "nation": "Czech Republic",
+    "club": "Tottenham Hotspur",
+    "competition_id": "GB1",
+    "tm_player_id": "725912",
+    "market_value": 15000000
+  },
+  {
+    "name": "Sverre Nypan",
+    "sub_position": "Central Midfield",
+    "age": 20,
+    "nation": "Norway",
+    "club": "Manchester City",
+    "competition_id": "GB1",
+    "tm_player_id": "911736",
+    "market_value": 13000000
+  },
+  {
+    "name": "Joe Gomez",
+    "sub_position": "Centre-Back",
+    "age": 29,
+    "nation": "England",
+    "club": "Liverpool FC",
+    "competition_id": "GB1",
+    "tm_player_id": "256178",
+    "market_value": 13000000
+  },
+  {
+    "name": "Federico Chiesa",
+    "sub_position": "Right Winger",
+    "age": 29,
+    "nation": "Italy",
+    "club": "Liverpool FC",
+    "competition_id": "GB1",
+    "tm_player_id": "341092",
+    "market_value": 13000000
+  },
+  {
+    "name": "Souza",
+    "sub_position": "Left-Back",
+    "age": 20,
+    "nation": "Brazil",
+    "club": "Tottenham Hotspur",
+    "competition_id": "GB1",
+    "tm_player_id": "1086258",
+    "market_value": 12000000
+  },
+  {
+    "name": "Nathan Aké",
+    "sub_position": "Centre-Back",
+    "age": 31,
+    "nation": "Netherlands",
+    "club": "Manchester City",
+    "competition_id": "GB1",
+    "tm_player_id": "177476",
+    "market_value": 12000000
+  },
+  {
+    "name": "Marc Guiu",
+    "sub_position": "Centre-Forward",
+    "age": 20,
+    "nation": "Spain",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "938158",
+    "market_value": 12000000
+  },
+  {
+    "name": "John Stones",
+    "sub_position": "Centre-Back",
+    "age": 32,
+    "nation": "England",
+    "club": "Manchester City",
+    "competition_id": "GB1",
+    "tm_player_id": "186590",
+    "market_value": 12000000
+  },
+  {
+    "name": "Facundo Buonanotte",
+    "sub_position": "Attacking Midfield",
+    "age": 22,
+    "nation": "Argentina",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "983989",
+    "market_value": 12000000
+  },
+  {
+    "name": "Charlie Patino",
+    "sub_position": "Central Midfield",
+    "age": 23,
+    "nation": "England",
+    "club": "Arsenal FC",
+    "competition_id": "GB1",
+    "tm_player_id": "581674",
+    "market_value": 12000000
+  },
+  {
+    "name": "Yves Bissouma",
+    "sub_position": "Defensive Midfield",
+    "age": 30,
+    "nation": "Mali",
+    "club": "Tottenham Hotspur",
+    "competition_id": "GB1",
+    "tm_player_id": "410425",
+    "market_value": 10000000
+  },
+  {
+    "name": "Thiago Alcántara",
+    "sub_position": "Central Midfield",
+    "age": 35,
+    "nation": "Spain",
+    "club": "Liverpool FC",
+    "competition_id": "GB1",
+    "tm_player_id": "60444",
+    "market_value": 10000000
+  },
+  {
+    "name": "Mateo Kovacic",
+    "sub_position": "Central Midfield",
+    "age": 32,
+    "nation": "Croatia",
+    "club": "Manchester City",
+    "competition_id": "GB1",
+    "tm_player_id": "51471",
+    "market_value": 10000000
+  },
+  {
+    "name": "Trey Nyoni",
+    "sub_position": "Central Midfield",
+    "age": 19,
+    "nation": "England",
+    "club": "Liverpool FC",
+    "competition_id": "GB1",
+    "tm_player_id": "1045123",
+    "market_value": 8000000
+  },
+  {
+    "name": "Quentin Ndjantou",
+    "sub_position": "Left Winger",
+    "age": 19,
+    "nation": "France",
+    "club": "Paris Saint-Germain",
+    "competition_id": "FR1",
+    "tm_player_id": "1053208",
+    "market_value": 8000000
+  },
+  {
+    "name": "Max Alleyne",
+    "sub_position": "Centre-Back",
+    "age": 21,
+    "nation": "England",
+    "club": "Manchester City",
+    "competition_id": "GB1",
+    "tm_player_id": "843595",
+    "market_value": 8000000
+  },
+  {
+    "name": "Luke Shaw",
+    "sub_position": "Left-Back",
+    "age": 31,
+    "nation": "England",
+    "club": "Manchester United",
+    "competition_id": "GB1",
+    "tm_player_id": "183288",
+    "market_value": 8000000
+  },
+  {
+    "name": "Joel Matip",
+    "sub_position": "Centre-Back",
+    "age": 35,
+    "nation": "Cameroon",
+    "club": "Liverpool FC",
+    "competition_id": "GB1",
+    "tm_player_id": "82105",
+    "market_value": 8000000
+  },
+  {
+    "name": "Harry Maguire",
+    "sub_position": "Centre-Back",
+    "age": 33,
+    "nation": "England",
+    "club": "Manchester United",
+    "competition_id": "GB1",
+    "tm_player_id": "177907",
+    "market_value": 8000000
+  },
+  {
+    "name": "Caleb Wiley",
+    "sub_position": "Left-Back",
+    "age": 22,
+    "nation": "United States",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "746833",
+    "market_value": 8000000
+  },
+  {
+    "name": "Ashley Phillips",
+    "sub_position": "Centre-Back",
+    "age": 21,
+    "nation": "England",
+    "club": "Tottenham Hotspur",
+    "competition_id": "GB1",
+    "tm_player_id": "859951",
+    "market_value": 7000000
+  },
+  {
+    "name": "Divin Mubama",
+    "sub_position": "Centre-Forward",
+    "age": 22,
+    "nation": "England",
+    "club": "Manchester City",
+    "competition_id": "GB1",
+    "tm_player_id": "670848",
+    "market_value": 6000000
+  },
+  {
+    "name": "Casemiro",
+    "sub_position": "Defensive Midfield",
+    "age": 34,
+    "nation": "Brazil",
+    "club": "Manchester United",
+    "competition_id": "GB1",
+    "tm_player_id": "16306",
+    "market_value": 6000000
+  },
+  {
+    "name": "Toby Collyer",
+    "sub_position": "Defensive Midfield",
+    "age": 22,
+    "nation": "England",
+    "club": "Manchester United",
+    "competition_id": "GB1",
+    "tm_player_id": "654253",
+    "market_value": 5000000
+  },
+  {
+    "name": "Kota Takai",
+    "sub_position": "Centre-Back",
+    "age": 22,
+    "nation": "Japan",
+    "club": "Tottenham Hotspur",
+    "competition_id": "GB1",
+    "tm_player_id": "671108",
+    "market_value": 5000000
+  },
+  {
+    "name": "Kepa Arrizabalaga",
+    "sub_position": "Goalkeeper",
+    "age": 32,
+    "nation": "Spain",
+    "club": "Arsenal FC",
+    "competition_id": "GB1",
+    "tm_player_id": "192279",
+    "market_value": 5000000
+  },
+  {
+    "name": "John Swift",
+    "sub_position": "Central Midfield",
+    "age": 31,
+    "nation": "England",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "197693",
+    "market_value": 5000000
+  },
+  {
+    "name": "Ethan Laird",
+    "sub_position": "Right-Back",
+    "age": 25,
+    "nation": "England",
+    "club": "Manchester United",
+    "competition_id": "GB1",
+    "tm_player_id": "531679",
+    "market_value": 5000000
+  },
+  {
+    "name": "Christian Nørgaard",
+    "sub_position": "Defensive Midfield",
+    "age": 32,
+    "nation": "Denmark",
+    "club": "Arsenal FC",
+    "competition_id": "GB1",
+    "tm_player_id": "148367",
+    "market_value": 5000000
+  },
+  {
+    "name": "Altay Bayındır",
+    "sub_position": "Goalkeeper",
+    "age": 28,
+    "nation": "Türkiye",
+    "club": "Manchester United",
+    "competition_id": "GB1",
+    "tm_player_id": "336077",
+    "market_value": 5000000
+  },
+  {
+    "name": "Alfie Gilchrist",
+    "sub_position": "Centre-Back",
+    "age": 23,
+    "nation": "England",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "790992",
+    "market_value": 5000000
+  },
+  {
+    "name": "Wataru Endo",
+    "sub_position": "Defensive Midfield",
+    "age": 33,
+    "nation": "Japan",
+    "club": "Liverpool FC",
+    "competition_id": "GB1",
+    "tm_player_id": "146310",
+    "market_value": 4000000
+  },
+  {
+    "name": "Tyrell Malacia",
+    "sub_position": "Left-Back",
+    "age": 27,
+    "nation": "Netherlands",
+    "club": "Manchester United",
+    "competition_id": "GB1",
+    "tm_player_id": "339340",
+    "market_value": 4000000
+  },
+  {
+    "name": "Stefan Ortega",
+    "sub_position": "Goalkeeper",
+    "age": 34,
+    "nation": "Germany",
+    "club": "Manchester City",
+    "competition_id": "GB1",
+    "tm_player_id": "85941",
+    "market_value": 4000000
+  },
+  {
+    "name": "Stefan Bajcetic",
+    "sub_position": "Defensive Midfield",
+    "age": 22,
+    "nation": "Spain",
+    "club": "Liverpool FC",
+    "competition_id": "GB1",
+    "tm_player_id": "864799",
+    "market_value": 4000000
+  },
+  {
+    "name": "Reuell Walters",
+    "sub_position": "Right-Back",
+    "age": 22,
+    "nation": "England",
+    "club": "Arsenal FC",
+    "competition_id": "GB1",
+    "tm_player_id": "878160",
+    "market_value": 4000000
+  },
+  {
+    "name": "Presnel Kimpembe",
+    "sub_position": "Centre-Back",
+    "age": 31,
+    "nation": "France",
+    "club": "Paris Saint-Germain",
+    "competition_id": "FR1",
+    "tm_player_id": "282041",
+    "market_value": 4000000
+  },
+  {
+    "name": "Issa Kaboré",
+    "sub_position": "Right-Back",
+    "age": 25,
+    "nation": "Burkina Faso",
+    "club": "Manchester City",
+    "competition_id": "GB1",
+    "tm_player_id": "649452",
+    "market_value": 4000000
+  },
+  {
+    "name": "Ben Sheaf",
+    "sub_position": "Defensive Midfield",
+    "age": 28,
+    "nation": "England",
+    "club": "Arsenal FC",
+    "competition_id": "GB1",
+    "tm_player_id": "314384",
+    "market_value": 3800000
+  },
+  {
+    "name": "Nathaniel Phillips",
+    "sub_position": "Centre-Back",
+    "age": 29,
+    "nation": "England",
+    "club": "Liverpool FC",
+    "competition_id": "GB1",
+    "tm_player_id": "371814",
+    "market_value": 3500000
+  },
+  {
+    "name": "Tyler Fredricson",
+    "sub_position": "Centre-Back",
+    "age": 21,
+    "nation": "England",
+    "club": "Manchester United",
+    "competition_id": "GB1",
+    "tm_player_id": "911424",
+    "market_value": 3000000
+  },
+  {
+    "name": "Gabriel Slonina",
+    "sub_position": "Goalkeeper",
+    "age": 22,
+    "nation": "United States",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "656316",
+    "market_value": 3000000
+  },
+  {
+    "name": "Freddie Woodman",
+    "sub_position": "Goalkeeper",
+    "age": 29,
+    "nation": "England",
+    "club": "Liverpool FC",
+    "competition_id": "GB1",
+    "tm_player_id": "226049",
+    "market_value": 3000000
+  },
+  {
+    "name": "Ben Davies",
+    "sub_position": "Centre-Back",
+    "age": 33,
+    "nation": "Wales",
+    "club": "Tottenham Hotspur",
+    "competition_id": "GB1",
+    "tm_player_id": "192765",
+    "market_value": 3000000
+  },
+  {
+    "name": "Victor Wanyama",
+    "sub_position": "Defensive Midfield",
+    "age": 35,
+    "nation": "Kenya",
+    "club": "Tottenham Hotspur",
+    "competition_id": "GB1",
+    "tm_player_id": "77760",
+    "market_value": 2500000
+  },
+  {
+    "name": "Petr Cech",
+    "sub_position": "Goalkeeper",
+    "age": 44,
+    "nation": "Czech Republic",
+    "club": "Arsenal FC",
+    "competition_id": "GB1",
+    "tm_player_id": "5658",
+    "market_value": 2500000
+  },
+  {
+    "name": "Lewis Baker",
+    "sub_position": "Central Midfield",
+    "age": 31,
+    "nation": "England",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "198589",
+    "market_value": 2500000
+  },
+  {
+    "name": "Lassana Diarra",
+    "sub_position": "Defensive Midfield",
+    "age": 41,
+    "nation": "France",
+    "club": "Paris Saint-Germain",
+    "competition_id": "FR1",
+    "tm_player_id": "23914",
+    "market_value": 2500000
+  },
+  {
+    "name": "Krystian Bielik",
+    "sub_position": "Defensive Midfield",
+    "age": 28,
+    "nation": "Poland",
+    "club": "Arsenal FC",
+    "competition_id": "GB1",
+    "tm_player_id": "287247",
+    "market_value": 2500000
+  },
+  {
+    "name": "Kalvin Phillips",
+    "sub_position": "Defensive Midfield",
+    "age": 31,
+    "nation": "England",
+    "club": "Manchester City",
+    "competition_id": "GB1",
+    "tm_player_id": "351749",
+    "market_value": 2500000
+  },
+  {
+    "name": "Jacob Wright",
+    "sub_position": "Defensive Midfield",
+    "age": 21,
+    "nation": "England",
+    "club": "Manchester City",
+    "competition_id": "GB1",
+    "tm_player_id": "983702",
+    "market_value": 2500000
+  },
+  {
+    "name": "Brandon Williams",
+    "sub_position": "Left-Back",
+    "age": 26,
+    "nation": "England",
+    "club": "Manchester United",
+    "competition_id": "GB1",
+    "tm_player_id": "507700",
+    "market_value": 2500000
+  },
+  {
+    "name": "İlkay Gündoğan",
+    "sub_position": "Central Midfield",
+    "age": 36,
+    "nation": "Germany",
+    "club": "Manchester City",
+    "competition_id": "GB1",
+    "tm_player_id": "53622",
+    "market_value": 2000000
+  },
+  {
+    "name": "Wayne Rooney",
+    "sub_position": "Centre-Forward",
+    "age": 41,
+    "nation": "England",
+    "club": "Manchester United",
+    "competition_id": "GB1",
+    "tm_player_id": "3332",
+    "market_value": 2000000
+  },
+  {
+    "name": "Mikel Arteta",
+    "sub_position": "Central Midfield",
+    "age": 44,
+    "nation": "Spain",
+    "club": "Arsenal FC",
+    "competition_id": "GB1",
+    "tm_player_id": "7451",
+    "market_value": 2000000
+  },
+  {
+    "name": "Micah Hamilton",
+    "sub_position": "Left Winger",
+    "age": 23,
+    "nation": "England",
+    "club": "Manchester City",
+    "competition_id": "GB1",
+    "tm_player_id": "652797",
+    "market_value": 2000000
+  },
+  {
+    "name": "Luke Mbete",
+    "sub_position": "Centre-Back",
+    "age": 23,
+    "nation": "",
+    "club": "Manchester City",
+    "competition_id": "GB1",
+    "tm_player_id": "609883",
+    "market_value": 2000000
+  },
+  {
+    "name": "Jonny Evans",
+    "sub_position": "Centre-Back",
+    "age": 38,
+    "nation": "Northern Ireland",
+    "club": "Manchester United",
+    "competition_id": "GB1",
+    "tm_player_id": "42412",
+    "market_value": 2000000
+  },
+  {
+    "name": "James McConnell",
+    "sub_position": "Defensive Midfield",
+    "age": 22,
+    "nation": "England",
+    "club": "Liverpool FC",
+    "competition_id": "GB1",
+    "tm_player_id": "845289",
+    "market_value": 2000000
+  },
+  {
+    "name": "Ezequiel Lavezzi",
+    "sub_position": "Left Winger",
+    "age": 41,
+    "nation": "Argentina",
+    "club": "Paris Saint-Germain",
+    "competition_id": "FR1",
+    "tm_player_id": "50570",
+    "market_value": 2000000
+  },
+  {
+    "name": "Di'Shon Bernard",
+    "sub_position": "Centre-Back",
+    "age": 26,
+    "nation": "England",
+    "club": "Manchester United",
+    "competition_id": "GB1",
+    "tm_player_id": "531677",
+    "market_value": 2000000
+  },
+  {
+    "name": "Chris Willock",
+    "sub_position": "Left Winger",
+    "age": 28,
+    "nation": "England",
+    "club": "Arsenal FC",
+    "competition_id": "GB1",
+    "tm_player_id": "314341",
+    "market_value": 2000000
+  },
+  {
+    "name": "Mason Burstow",
+    "sub_position": "Centre-Forward",
+    "age": 23,
+    "nation": "England",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "874080",
+    "market_value": 1800000
+  },
+  {
+    "name": "Japhet Tanganga",
+    "sub_position": "Centre-Back",
+    "age": 27,
+    "nation": "England",
+    "club": "Tottenham Hotspur",
+    "competition_id": "GB1",
+    "tm_player_id": "346478",
+    "market_value": 1800000
+  },
+  {
+    "name": "Arthur Okonkwo",
+    "sub_position": "Goalkeeper",
+    "age": 25,
+    "nation": "England",
+    "club": "Arsenal FC",
+    "competition_id": "GB1",
+    "tm_player_id": "503769",
+    "market_value": 1800000
+  },
+  {
+    "name": "Antonio Valencia",
+    "sub_position": "Right-Back",
+    "age": 41,
+    "nation": "Ecuador",
+    "club": "Manchester United",
+    "competition_id": "GB1",
+    "tm_player_id": "33544",
+    "market_value": 1800000
+  },
+  {
+    "name": "Steven Gerrard",
+    "sub_position": "Central Midfield",
+    "age": 46,
+    "nation": "England",
+    "club": "Liverpool FC",
+    "competition_id": "GB1",
+    "tm_player_id": "3109",
+    "market_value": 1750000
+  },
+  {
+    "name": "Sergio Rico",
+    "sub_position": "Goalkeeper",
+    "age": 33,
+    "nation": "Spain",
+    "club": "Paris Saint-Germain",
+    "competition_id": "FR1",
+    "tm_player_id": "207302",
+    "market_value": 1500000
+  },
+  {
+    "name": "Omari Kellyman",
+    "sub_position": "Attacking Midfield",
+    "age": 21,
+    "nation": "England",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "926135",
+    "market_value": 1500000
+  },
+  {
+    "name": "Luke Chambers",
+    "sub_position": "Centre-Back",
+    "age": 22,
+    "nation": "England",
+    "club": "Liverpool FC",
+    "competition_id": "GB1",
+    "tm_player_id": "670861",
+    "market_value": 1500000
+  },
+  {
+    "name": "Jake Clarke-Salter",
+    "sub_position": "Centre-Back",
+    "age": 29,
+    "nation": "England",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "316551",
+    "market_value": 1500000
+  },
+  {
+    "name": "Harvey Vale",
+    "sub_position": "Right Midfield",
+    "age": 23,
+    "nation": "Ireland",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "581675",
+    "market_value": 1500000
+  },
+  {
+    "name": "Calvin Ramsay",
+    "sub_position": "Right-Back",
+    "age": 23,
+    "nation": "Scotland",
+    "club": "Liverpool FC",
+    "competition_id": "GB1",
+    "tm_player_id": "633652",
+    "market_value": 1500000
+  },
+  {
+    "name": "Claudio Gomes",
+    "sub_position": "Defensive Midfield",
+    "age": 26,
+    "nation": "France",
+    "club": "Manchester City",
+    "competition_id": "GB1",
+    "tm_player_id": "395239",
+    "market_value": 1400000
+  },
+  {
+    "name": "Owen Beck",
+    "sub_position": "Left-Back",
+    "age": 24,
+    "nation": "Wales",
+    "club": "Liverpool FC",
+    "competition_id": "GB1",
+    "tm_player_id": "551001",
+    "market_value": 1250000
+  },
+  {
+    "name": "Kaide Gordon",
+    "sub_position": "Right Winger",
+    "age": 22,
+    "nation": "England",
+    "club": "Liverpool FC",
+    "competition_id": "GB1",
+    "tm_player_id": "732119",
+    "market_value": 1200000
+  },
+  {
+    "name": "Alex Matos",
+    "sub_position": "Central Midfield",
+    "age": 22,
+    "nation": "England",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "670850",
+    "market_value": 1200000
+  },
+  {
+    "name": "Herbie Kane",
+    "sub_position": "Central Midfield",
+    "age": 28,
+    "nation": "England",
+    "club": "Liverpool FC",
+    "competition_id": "GB1",
+    "tm_player_id": "314253",
+    "market_value": 1100000
+  },
+  {
+    "name": "Thiago Motta",
+    "sub_position": "Defensive Midfield",
+    "age": 44,
+    "nation": "Italy",
+    "club": "Paris Saint-Germain",
+    "competition_id": "FR1",
+    "tm_player_id": "7602",
+    "market_value": 1000000
+  },
+  {
+    "name": "Ryan Giggs",
+    "sub_position": "Left Midfield",
+    "age": 53,
+    "nation": "Wales",
+    "club": "Manchester United",
+    "competition_id": "GB1",
+    "tm_player_id": "3406",
+    "market_value": 1000000
+  },
+  {
+    "name": "Phil Jones",
+    "sub_position": "Centre-Back",
+    "age": 34,
+    "nation": "England",
+    "club": "Manchester United",
+    "competition_id": "GB1",
+    "tm_player_id": "117996",
+    "market_value": 1000000
+  },
+  {
+    "name": "Per Mertesacker",
+    "sub_position": "Centre-Back",
+    "age": 42,
+    "nation": "Germany",
+    "club": "Arsenal FC",
+    "competition_id": "GB1",
+    "tm_player_id": "6710",
+    "market_value": 1000000
+  },
+  {
+    "name": "Paul Scholes",
+    "sub_position": "Central Midfield",
+    "age": 52,
+    "nation": "England",
+    "club": "Manchester United",
+    "competition_id": "GB1",
+    "tm_player_id": "3397",
+    "market_value": 1000000
+  },
+  {
+    "name": "Michael Carrick",
+    "sub_position": "Defensive Midfield",
+    "age": 45,
+    "nation": "England",
+    "club": "Manchester United",
+    "competition_id": "GB1",
+    "tm_player_id": "3878",
+    "market_value": 1000000
+  },
+  {
+    "name": "Maxwell",
+    "sub_position": "Left-Back",
+    "age": 45,
+    "nation": "Brazil",
+    "club": "Paris Saint-Germain",
+    "competition_id": "FR1",
+    "tm_player_id": "4317",
+    "market_value": 1000000
+  },
+  {
+    "name": "Marouane Fellaini",
+    "sub_position": "Central Midfield",
+    "age": 39,
+    "nation": "Belgium",
+    "club": "Manchester United",
+    "competition_id": "GB1",
+    "tm_player_id": "39679",
+    "market_value": 1000000
+  },
+  {
+    "name": "John Terry",
+    "sub_position": "Centre-Back",
+    "age": 46,
+    "nation": "England",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "3160",
+    "market_value": 1000000
+  },
+  {
+    "name": "Jamie Cumming",
+    "sub_position": "Goalkeeper",
+    "age": 27,
+    "nation": "England",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "396859",
+    "market_value": 1000000
+  },
+  {
+    "name": "Jamie Carragher",
+    "sub_position": "Centre-Back",
+    "age": 48,
+    "nation": "England",
+    "club": "Liverpool FC",
+    "competition_id": "GB1",
+    "tm_player_id": "3597",
+    "market_value": 1000000
+  },
+  {
+    "name": "Goran Causic",
+    "sub_position": "Central Midfield",
+    "age": 34,
+    "nation": "Serbia",
+    "club": "Arsenal Tula",
+    "competition_id": "RU1",
+    "tm_player_id": "94304",
+    "market_value": 1000000
+  },
+  {
+    "name": "Frank Lampard",
+    "sub_position": "Central Midfield",
+    "age": 48,
+    "nation": "England",
+    "club": "Manchester City",
+    "competition_id": "GB1",
+    "tm_player_id": "3163",
+    "market_value": 1000000
+  },
+  {
+    "name": "David Beckham",
+    "sub_position": "Right Midfield",
+    "age": 51,
+    "nation": "England",
+    "club": "Paris Saint-Germain",
+    "competition_id": "FR1",
+    "tm_player_id": "3139",
+    "market_value": 1000000
+  },
+  {
+    "name": "Ben Woodburn",
+    "sub_position": "Attacking Midfield",
+    "age": 27,
+    "nation": "Wales",
+    "club": "Liverpool FC",
+    "competition_id": "GB1",
+    "tm_player_id": "344015",
+    "market_value": 1000000
+  },
+  {
+    "name": "Bastian Schweinsteiger",
+    "sub_position": "Central Midfield",
+    "age": 42,
+    "nation": "Germany",
+    "club": "Manchester United",
+    "competition_id": "GB1",
+    "tm_player_id": "2514",
+    "market_value": 1000000
+  },
+  {
+    "name": "Anton Walkes",
+    "sub_position": "Centre-Back",
+    "age": 29,
+    "nation": "England",
+    "club": "Tottenham Hotspur",
+    "competition_id": "GB1",
+    "tm_player_id": "307763",
+    "market_value": 1000000
+  },
+  {
+    "name": "Tomas Kalas",
+    "sub_position": "Centre-Back",
+    "age": 33,
+    "nation": "Czech Republic",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "148657",
+    "market_value": 900000
+  },
+  {
+    "name": "Nick Powell",
+    "sub_position": "Attacking Midfield",
+    "age": 32,
+    "nation": "England",
+    "club": "Manchester United",
+    "competition_id": "GB1",
+    "tm_player_id": "134424",
+    "market_value": 900000
+  },
+  {
+    "name": "Leo Castledine",
+    "sub_position": "Attacking Midfield",
+    "age": 21,
+    "nation": "England",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "796303",
+    "market_value": 900000
+  },
+  {
+    "name": "Dan Gore",
+    "sub_position": "Central Midfield",
+    "age": 22,
+    "nation": "England",
+    "club": "Manchester United",
+    "competition_id": "GB1",
+    "tm_player_id": "747153",
+    "market_value": 900000
+  },
+  {
+    "name": "Wallace Oliveira",
+    "sub_position": "Right-Back",
+    "age": 32,
+    "nation": "Brazil",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "181779",
+    "market_value": 800000
+  },
+  {
+    "name": "Michel Vorm",
+    "sub_position": "Goalkeeper",
+    "age": 43,
+    "nation": "Netherlands",
+    "club": "Tottenham Hotspur",
+    "competition_id": "GB1",
+    "tm_player_id": "26276",
+    "market_value": 800000
+  },
+  {
+    "name": "José Enrique",
+    "sub_position": "Left-Back",
+    "age": 40,
+    "nation": "Spain",
+    "club": "Liverpool FC",
+    "competition_id": "GB1",
+    "tm_player_id": "35571",
+    "market_value": 800000
+  },
+  {
+    "name": "Izzy Brown",
+    "sub_position": "Second Striker",
+    "age": 29,
+    "nation": "England",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "245805",
+    "market_value": 800000
+  },
+  {
+    "name": "Paulo Ferreira",
+    "sub_position": "Right-Back",
+    "age": 47,
+    "nation": "Portugal",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "9832",
+    "market_value": 750000
+  },
+  {
+    "name": "Brad Friedel",
+    "sub_position": "Goalkeeper",
+    "age": 55,
+    "nation": "United States",
+    "club": "Tottenham Hotspur",
+    "competition_id": "GB1",
+    "tm_player_id": "3476",
+    "market_value": 750000
+  },
+  {
+    "name": "Calum Scanlon",
+    "sub_position": "Left-Back",
+    "age": 21,
+    "nation": "England",
+    "club": "Liverpool FC",
+    "competition_id": "GB1",
+    "tm_player_id": "796298",
+    "market_value": 700000
+  },
+  {
+    "name": "Sam Rak-Sakyi",
+    "sub_position": "Defensive Midfield",
+    "age": 21,
+    "nation": "England",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "906214",
+    "market_value": 600000
+  },
+  {
+    "name": "Péguy Luyindula",
+    "sub_position": "Centre-Forward",
+    "age": 47,
+    "nation": "France",
+    "club": "Paris Saint-Germain",
+    "competition_id": "FR1",
+    "tm_player_id": "3916",
+    "market_value": 600000
+  },
+  {
+    "name": "Miguel Azeez",
+    "sub_position": "Central Midfield",
+    "age": 24,
+    "nation": "England",
+    "club": "Arsenal FC",
+    "competition_id": "GB1",
+    "tm_player_id": "547533",
+    "market_value": 600000
+  },
+  {
+    "name": "Jay Spearing",
+    "sub_position": "Defensive Midfield",
+    "age": 38,
+    "nation": "England",
+    "club": "Liverpool FC",
+    "competition_id": "GB1",
+    "tm_player_id": "52111",
+    "market_value": 600000
+  },
+  {
+    "name": "Ionut Mazilu",
+    "sub_position": "Centre-Forward",
+    "age": 44,
+    "nation": "Romania",
+    "club": "Arsenal Kyiv",
+    "competition_id": "UKR1",
+    "tm_player_id": "43934",
+    "market_value": 600000
+  },
+  {
+    "name": "Harvey White",
+    "sub_position": "Defensive Midfield",
+    "age": 25,
+    "nation": "",
+    "club": "Tottenham Hotspur",
+    "competition_id": "GB1",
+    "tm_player_id": "581598",
+    "market_value": 600000
+  },
+  {
+    "name": "Georgi Kostadinov",
+    "sub_position": "Defensive Midfield",
+    "age": 36,
+    "nation": "Bulgaria",
+    "club": "Arsenal Tula",
+    "competition_id": "RU1",
+    "tm_player_id": "198816",
+    "market_value": 600000
+  },
+  {
+    "name": "Fernandinho",
+    "sub_position": "Defensive Midfield",
+    "age": 41,
+    "nation": "Brazil",
+    "club": "Manchester City",
+    "competition_id": "GB1",
+    "tm_player_id": "26267",
+    "market_value": 600000
+  },
+  {
+    "name": "Cohen Bramall",
+    "sub_position": "Left-Back",
+    "age": 30,
+    "nation": "England",
+    "club": "Arsenal FC",
+    "competition_id": "GB1",
+    "tm_player_id": "480191",
+    "market_value": 600000
+  },
+  {
+    "name": "Charlie Savage",
+    "sub_position": "Defensive Midfield",
+    "age": 23,
+    "nation": "Wales",
+    "club": "Manchester United",
+    "competition_id": "GB1",
+    "tm_player_id": "686837",
+    "market_value": 600000
+  },
+  {
+    "name": "Zoumana Camara",
+    "sub_position": "Centre-Back",
+    "age": 47,
+    "nation": "France",
+    "club": "Paris Saint-Germain",
+    "competition_id": "FR1",
+    "tm_player_id": "5474",
+    "market_value": 500000
+  },
+  {
+    "name": "Xavier Simons",
+    "sub_position": "Defensive Midfield",
+    "age": 23,
+    "nation": "England",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "599739",
+    "market_value": 500000
+  },
+  {
+    "name": "William Gallas",
+    "sub_position": "Centre-Back",
+    "age": 49,
+    "nation": "France",
+    "club": "Tottenham Hotspur",
+    "competition_id": "GB1",
+    "tm_player_id": "3156",
+    "market_value": 500000
+  },
+  {
+    "name": "Wayne Bridge",
+    "sub_position": "Left-Back",
+    "age": 46,
+    "nation": "England",
+    "club": "Manchester City",
+    "competition_id": "GB1",
+    "tm_player_id": "3682",
+    "market_value": 500000
+  },
+  {
+    "name": "True Grant",
+    "sub_position": "Goalkeeper",
+    "age": 21,
+    "nation": "England",
+    "club": "Manchester City",
+    "competition_id": "GB1",
+    "tm_player_id": "919438",
+    "market_value": 500000
+  },
+  {
+    "name": "Timothy Eyoma",
+    "sub_position": "Right-Back",
+    "age": 26,
+    "nation": "England",
+    "club": "Tottenham Hotspur",
+    "competition_id": "GB1",
+    "tm_player_id": "406559",
+    "market_value": 500000
+  },
+  {
+    "name": "Teddy Sharman-Lowe",
+    "sub_position": "Goalkeeper",
+    "age": 23,
+    "nation": "England",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "731466",
+    "market_value": 500000
+  },
+  {
+    "name": "Rhys Williams",
+    "sub_position": "Centre-Back",
+    "age": 25,
+    "nation": "England",
+    "club": "Liverpool FC",
+    "competition_id": "GB1",
+    "tm_player_id": "503679",
+    "market_value": 500000
+  },
+  {
+    "name": "Jérémy Hélan",
+    "sub_position": "Left Midfield",
+    "age": 34,
+    "nation": "France",
+    "club": "Manchester City",
+    "competition_id": "GB1",
+    "tm_player_id": "103261",
+    "market_value": 500000
+  },
+  {
+    "name": "Josh Brooking",
+    "sub_position": "Centre-Back",
+    "age": 24,
+    "nation": "England",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "566832",
+    "market_value": 500000
+  },
+  {
+    "name": "Harvey Davies",
+    "sub_position": "Goalkeeper",
+    "age": 23,
+    "nation": "England",
+    "club": "Liverpool FC",
+    "competition_id": "GB1",
+    "tm_player_id": "706815",
+    "market_value": 500000
+  },
+  {
+    "name": "Grant Hall",
+    "sub_position": "Centre-Back",
+    "age": 35,
+    "nation": "England",
+    "club": "Tottenham Hotspur",
+    "competition_id": "GB1",
+    "tm_player_id": "124845",
+    "market_value": 500000
+  },
+  {
+    "name": "Evans Kangwa",
+    "sub_position": "Left Winger",
+    "age": 34,
+    "nation": "Zambia",
+    "club": "Arsenal Tula",
+    "competition_id": "RU1",
+    "tm_player_id": "212415",
+    "market_value": 500000
+  },
+  {
+    "name": "Edarlyn Reyes",
+    "sub_position": "Left Winger",
+    "age": 29,
+    "nation": "Dominican Republic",
+    "club": "Arsenal Tula",
+    "competition_id": "RU1",
+    "tm_player_id": "625269",
+    "market_value": 500000
+  },
+  {
+    "name": "Didier Drogba",
+    "sub_position": "Centre-Forward",
+    "age": 48,
+    "nation": "Cote d'Ivoire",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "3924",
+    "market_value": 500000
+  },
+  {
+    "name": "Daniel Grimshaw",
+    "sub_position": "Goalkeeper",
+    "age": 28,
+    "nation": "England",
+    "club": "Manchester City",
+    "competition_id": "GB1",
+    "tm_player_id": "339253",
+    "market_value": 500000
+  },
+  {
+    "name": "Charly Musonda Jr.",
+    "sub_position": "Left Winger",
+    "age": 30,
+    "nation": "Belgium",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "177862",
+    "market_value": 500000
+  },
+  {
+    "name": "Carlo Cudicini",
+    "sub_position": "Goalkeeper",
+    "age": 53,
+    "nation": "Italy",
+    "club": "Tottenham Hotspur",
+    "competition_id": "GB1",
+    "tm_player_id": "3151",
+    "market_value": 500000
+  },
+  {
+    "name": "Cameron Brannagan",
+    "sub_position": "Central Midfield",
+    "age": 30,
+    "nation": "England",
+    "club": "Liverpool FC",
+    "competition_id": "GB1",
+    "tm_player_id": "261357",
+    "market_value": 500000
+  },
+  {
+    "name": "Brandon Austin",
+    "sub_position": "Goalkeeper",
+    "age": 27,
+    "nation": "England",
+    "club": "Tottenham Hotspur",
+    "competition_id": "GB1",
+    "tm_player_id": "428016",
+    "market_value": 500000
+  },
+  {
+    "name": "Alfie Whiteman",
+    "sub_position": "Goalkeeper",
+    "age": 28,
+    "nation": "England",
+    "club": "Tottenham Hotspur",
+    "competition_id": "GB1",
+    "tm_player_id": "282823",
+    "market_value": 500000
+  },
+  {
+    "name": "Alex Robertson",
+    "sub_position": "Central Midfield",
+    "age": 23,
+    "nation": "Australia",
+    "club": "Manchester City",
+    "competition_id": "GB1",
+    "tm_player_id": "609887",
+    "market_value": 500000
+  },
+  {
+    "name": "Wellington Silva",
+    "sub_position": "Right Winger",
+    "age": 33,
+    "nation": "Brazil",
+    "club": "Arsenal FC",
+    "competition_id": "GB1",
+    "tm_player_id": "121990",
+    "market_value": 450000
+  },
+  {
+    "name": "Sekou Yansané",
+    "sub_position": "Centre-Forward",
+    "age": 23,
+    "nation": "France",
+    "club": "Paris Saint-Germain",
+    "competition_id": "FR1",
+    "tm_player_id": "853344",
+    "market_value": 450000
+  },
+  {
+    "name": "Regan Poole",
+    "sub_position": "Right-Back",
+    "age": 28,
+    "nation": "Wales",
+    "club": "Manchester United",
+    "competition_id": "GB1",
+    "tm_player_id": "340194",
+    "market_value": 450000
+  },
+  {
+    "name": "Rafael Santos",
+    "sub_position": "Centre-Back",
+    "age": 42,
+    "nation": "Brazil",
+    "club": "Arsenal Kyiv",
+    "competition_id": "UKR1",
+    "tm_player_id": "45587",
+    "market_value": 450000
+  },
+  {
+    "name": "Carl Jenkinson",
+    "sub_position": "Right-Back",
+    "age": 34,
+    "nation": "England",
+    "club": "Arsenal FC",
+    "competition_id": "GB1",
+    "tm_player_id": "126321",
+    "market_value": 450000
+  },
+  {
+    "name": "Alec Georgen",
+    "sub_position": "Right-Back",
+    "age": 28,
+    "nation": "France",
+    "club": "Paris Saint-Germain",
+    "competition_id": "FR1",
+    "tm_player_id": "324800",
+    "market_value": 450000
+  },
+  {
+    "name": "Sergey Maslov",
+    "sub_position": "Right Winger",
+    "age": 36,
+    "nation": "Russia",
+    "club": "Arsenal Tula",
+    "competition_id": "RU1",
+    "tm_player_id": "58415",
+    "market_value": 400000
+  },
+  {
+    "name": "Nathan Baxter",
+    "sub_position": "Goalkeeper",
+    "age": 28,
+    "nation": "England",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "342050",
+    "market_value": 400000
+  },
+  {
+    "name": "Mousa Dembélé",
+    "sub_position": "Central Midfield",
+    "age": 39,
+    "nation": "Belgium",
+    "club": "Tottenham Hotspur",
+    "competition_id": "GB1",
+    "tm_player_id": "19368",
+    "market_value": 400000
+  },
+  {
+    "name": "Ivan Novoseltsev",
+    "sub_position": "Centre-Back",
+    "age": 35,
+    "nation": "Russia",
+    "club": "Arsenal Tula",
+    "competition_id": "RU1",
+    "tm_player_id": "231873",
+    "market_value": 400000
+  },
+  {
+    "name": "Danny Drinkwater",
+    "sub_position": "Central Midfield",
+    "age": 36,
+    "nation": "England",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "73491",
+    "market_value": 400000
+  },
+  {
+    "name": "Connor Ogilvie",
+    "sub_position": "Left-Back",
+    "age": 30,
+    "nation": "England",
+    "club": "Tottenham Hotspur",
+    "competition_id": "GB1",
+    "tm_player_id": "236509",
+    "market_value": 400000
+  },
+  {
+    "name": "Bradley Ibrahim",
+    "sub_position": "Defensive Midfield",
+    "age": 22,
+    "nation": "England",
+    "club": "Arsenal FC",
+    "competition_id": "GB1",
+    "tm_player_id": "871837",
+    "market_value": 400000
+  },
+  {
+    "name": "Artem Sokol",
+    "sub_position": "Centre-Back",
+    "age": 29,
+    "nation": "Russia",
+    "club": "Arsenal Tula",
+    "competition_id": "RU1",
+    "tm_player_id": "330780",
+    "market_value": 400000
+  },
+  {
+    "name": "Marnick Vermijl",
+    "sub_position": "Left-Back",
+    "age": 34,
+    "nation": "Belgium",
+    "club": "Manchester United",
+    "competition_id": "GB1",
+    "tm_player_id": "110798",
+    "market_value": 375000
+  },
+  {
+    "name": "Tomas Rosicky",
+    "sub_position": "Attacking Midfield",
+    "age": 46,
+    "nation": "Czech Republic",
+    "club": "Arsenal FC",
+    "competition_id": "GB1",
+    "tm_player_id": "132",
+    "market_value": 350000
+  },
+  {
+    "name": "Salah Oulad",
+    "sub_position": "Central Midfield",
+    "age": 23,
+    "nation": "Netherlands",
+    "club": "Arsenal FC",
+    "competition_id": "GB1",
+    "tm_player_id": "559330",
+    "market_value": 350000
+  },
+  {
+    "name": "Ross Turnbull",
+    "sub_position": "Goalkeeper",
+    "age": 41,
+    "nation": "England",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "29159",
+    "market_value": 350000
+  },
+  {
+    "name": "Oleksiy Larin",
+    "sub_position": "Centre-Back",
+    "age": 32,
+    "nation": "Ukraine",
+    "club": "Arsenal Kyiv",
+    "competition_id": "UKR1",
+    "tm_player_id": "288855",
+    "market_value": 350000
+  },
+  {
+    "name": "Matt Smith",
+    "sub_position": "Central Midfield",
+    "age": 26,
+    "nation": "England",
+    "club": "Arsenal FC",
+    "competition_id": "GB1",
+    "tm_player_id": "528894",
+    "market_value": 350000
+  },
+  {
+    "name": "Marcus McGuane",
+    "sub_position": "Defensive Midfield",
+    "age": 27,
+    "nation": "England",
+    "club": "Arsenal FC",
+    "competition_id": "GB1",
+    "tm_player_id": "340320",
+    "market_value": 350000
+  },
+  {
+    "name": "Jamal Blackman",
+    "sub_position": "Goalkeeper",
+    "age": 33,
+    "nation": "England",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "128898",
+    "market_value": 350000
+  },
+  {
+    "name": "George Evans",
+    "sub_position": "Defensive Midfield",
+    "age": 32,
+    "nation": "England",
+    "club": "Manchester City",
+    "competition_id": "GB1",
+    "tm_player_id": "181498",
+    "market_value": 350000
+  },
+  {
+    "name": "Ansor Khabibov",
+    "sub_position": "Left Midfield",
+    "age": 23,
+    "nation": "Russia",
+    "club": "Arsenal Tula",
+    "competition_id": "RU1",
+    "tm_player_id": "685219",
+    "market_value": 350000
+  },
+  {
+    "name": "Bakary Koné",
+    "sub_position": "Centre-Back",
+    "age": 38,
+    "nation": "Burkina Faso",
+    "club": "Arsenal Tula",
+    "competition_id": "RU1",
+    "tm_player_id": "57186",
+    "market_value": 325000
+  },
+  {
+    "name": "Yuriy Bushman",
+    "sub_position": "Left-Back",
+    "age": 36,
+    "nation": "Ukraine",
+    "club": "Arsenal Kyiv",
+    "competition_id": "UKR1",
+    "tm_player_id": "130264",
+    "market_value": 300000
+  },
+  {
+    "name": "Tom Hill",
+    "sub_position": "Central Midfield",
+    "age": 24,
+    "nation": "Wales",
+    "club": "Liverpool FC",
+    "competition_id": "GB1",
+    "tm_player_id": "655990",
+    "market_value": 300000
+  },
+  {
+    "name": "Sergey Tkachev",
+    "sub_position": "Attacking Midfield",
+    "age": 37,
+    "nation": "Russia",
+    "club": "Arsenal Tula",
+    "competition_id": "RU1",
+    "tm_player_id": "132091",
+    "market_value": 300000
+  },
+  {
+    "name": "Robbie Burton",
+    "sub_position": "Central Midfield",
+    "age": 27,
+    "nation": "Wales",
+    "club": "Arsenal FC",
+    "competition_id": "GB1",
+    "tm_player_id": "404386",
+    "market_value": 300000
+  },
+  {
+    "name": "Ramires",
+    "sub_position": "Central Midfield",
+    "age": 39,
+    "nation": "Brazil",
+    "club": "Chelsea FC",
+    "competition_id": "GB1",
+    "tm_player_id": "54170",
+    "market_value": 300000
+  },
+  {
+    "name": "Nathan Bishop",
+    "sub_position": "Goalkeeper",
+    "age": 27,
+    "nation": "England",
+    "club": "Manchester United",
+    "competition_id": "GB1",
+    "tm_player_id": "495033",
+    "market_value": 300000
+  }
+]
