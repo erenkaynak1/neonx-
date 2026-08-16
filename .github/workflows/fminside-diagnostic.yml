@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Build 243 active first-team candidates
+      - name: Build 243 unique active first-team candidates
         shell: bash
         run: |
           python3 - <<'PY'
@@ -24,23 +24,21 @@ jobs:
           existing=set()
           for m in re.finditer(r'"name"\s*:\s*"([^"]+)"',html): existing.add(norm(m.group(1)))
           for m in re.finditer(r'\[\s*"[^"]+"\s*,\s*"([^"]+)"\s*,\s*"(?:GK|LB|RB|CB|DM|CM|LW|RW|ST)"\s*,\s*\d{4}',html): existing.add(norm(m.group(1)))
-          url='https://pub-e682421888d945d684bcae8890b0ec20.r2.dev/data/players.csv.gz'
-          data=requests.get(url,timeout=60).content
+          data=requests.get('https://pub-e682421888d945d684bcae8890b0ec20.r2.dev/data/players.csv.gz',timeout=60).content
           rows=list(csv.DictReader(io.TextIOWrapper(gzip.GzipFile(fileobj=io.BytesIO(data)),encoding='utf-8')))
           supported={'Goalkeeper','Centre-Back','Left-Back','Right-Back','Defensive Midfield','Central Midfield','Attacking Midfield','Left Winger','Right Winger','Centre-Forward','Second Striker','Left Midfield','Right Midfield'}
           elite_tokens=['Arsenal','Manchester City','Liverpool','Chelsea','Manchester United','Tottenham','Paris Saint-Germain','Real Madrid','Barcelona','Bayern','Inter','Juventus','Milan','Napoli','Atlético Madrid','Atletico Madrid','Borussia Dortmund','Bayer 04 Leverkusen','Bayer Leverkusen']
           top_comps={'GB1','ES1','IT1','L1','FR1','PO1','NL1','TR1','SA1','MLS1'}
           cand=[]
           for r in rows:
-            name=r.get('name') or ''
-            if not name or norm(name) in existing: continue
+            name=r.get('name') or ''; nk=norm(name)
+            if not name or nk in existing: continue
             try: last=int(float(r.get('last_season') or 0))
             except: last=0
             if last < 2025: continue
             pos=r.get('sub_position') or r.get('position') or ''
             if pos not in supported: continue
-            club=r.get('current_club_name') or ''
-            comp=r.get('current_club_domestic_competition_id') or ''
+            club=r.get('current_club_name') or ''; comp=r.get('current_club_domestic_competition_id') or ''
             try: mv=int(float(r.get('market_value_in_eur') or 0))
             except: mv=0
             if not club or mv < 1_000_000: continue
@@ -48,28 +46,27 @@ jobs:
             if not elite and comp not in top_comps: continue
             lowclub=club.lower()
             if any(x in lowclub for x in [' u19',' u21',' u23',' youth',' juvenil',' primavera',' b team']): continue
-            birth=r.get('date_of_birth') or ''
-            year=int(birth[:4]) if birth[:4].isdigit() else 1998
-            age=2026-year
+            birth=r.get('date_of_birth') or ''; year=int(birth[:4]) if birth[:4].isdigit() else 1998; age=2026-year
             if age < 18 or age > 39: continue
             if age <= 20 and mv < 8_000_000: continue
-            score=mv
-            if elite: score += 60_000_000
-            if any(t.lower() in club.lower() for t in elite_tokens[:7]): score += 50_000_000
-            cand.append((score,mv,name,pos,age,r.get('country_of_citizenship') or '',club,comp,r.get('player_id') or '',last))
+            score=mv + (60_000_000 if elite else 0) + (50_000_000 if any(t.lower() in club.lower() for t in elite_tokens[:7]) else 0)
+            cand.append((score,mv,name,nk,pos,age,r.get('country_of_citizenship') or '',club,comp,r.get('player_id') or '',last))
           cand.sort(reverse=True)
-          chosen=cand[:243]
-          Path('fminside-candidates.json').write_text(json.dumps([
-            {'name':x[2],'sub_position':x[3],'age':x[4],'nation':x[5],'club':x[6],'competition_id':x[7],'tm_player_id':x[8],'market_value':x[1],'last_season':x[9]}
-            for x in chosen],ensure_ascii=False,indent=2),encoding='utf-8')
-          Path('fminside-candidates.txt').write_text('\n'.join(x[2] for x in chosen),encoding='utf-8')
-          print('existing',len(existing),'eligible',len(cand),'chosen',len(chosen))
+          chosen=[]; seen=set()
+          for x in cand:
+            if x[3] in seen: continue
+            seen.add(x[3]); chosen.append(x)
+            if len(chosen)==243: break
+          payload=[{'name':x[2],'sub_position':x[4],'age':x[5],'nation':x[6],'club':x[7],'competition_id':x[8],'tm_player_id':x[9],'market_value':x[1],'last_season':x[10]} for x in chosen]
+          Path('fminside-candidates.json').write_text(json.dumps(payload,ensure_ascii=False,indent=2),encoding='utf-8')
+          Path('fminside-candidates.txt').write_text('\n'.join(x['name'] for x in payload),encoding='utf-8')
+          print('existing',len(existing),'eligible',len(cand),'unique chosen',len(payload))
           PY
       - name: Commit candidates
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add fminside-candidates.json fminside-candidates.txt
-          git commit -m 'refresh active first-team expansion candidates' || true
+          git commit -m 'dedupe active first-team expansion candidates' || true
           git pull --rebase origin main
           git push
