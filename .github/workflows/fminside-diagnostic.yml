@@ -1,4 +1,4 @@
-name: FMInside diagnostic
+name: Apply FMInside first-team expansion
 on:
   push:
     paths: ['.github/workflows/fminside-diagnostic.yml']
@@ -6,67 +6,124 @@ on:
 permissions:
   contents: write
 jobs:
-  candidates:
+  apply:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Build 243 unique active first-team candidates
+      - name: Build and inject verified player expansion
         shell: bash
         run: |
           python3 - <<'PY'
-          import csv,gzip,io,re,requests,unicodedata,json
+          import csv,gzip,io,json,re,requests,unicodedata
           from pathlib import Path
-          html=Path('index.html').read_text(encoding='utf-8')
+
+          index_path=Path('index.html')
+          text=index_path.read_text(encoding='utf-8')
+          marker='NEON XI PLAYER POOL EXPANSION: FMInside verified CA 2026-08-16'
+          if marker in text:
+              print('Expansion already applied')
+              raise SystemExit(0)
+
+          candidates=json.loads(Path('fminside-candidates.json').read_text(encoding='utf-8'))
+          ratings=json.loads(Path('fminside-ratings.json').read_text(encoding='utf-8'))
+
+          pos_map={
+            'Goalkeeper':'GK','Centre-Back':'CB','Left-Back':'LB','Right-Back':'RB',
+            'Defensive Midfield':'DM','Central Midfield':'CM','Attacking Midfield':'CM',
+            'Left Winger':'LW','Left Midfield':'LW','Right Winger':'RW','Right Midfield':'RW',
+            'Centre-Forward':'ST','Second Striker':'ST'
+          }
+          league_map={
+            'GB1':'Premier League','ES1':'La Liga','IT1':'Serie A','L1':'Bundesliga',
+            'FR1':'Ligue 1','PO1':'Primeira Liga','NL1':'Eredivisie','TR1':'Süper Lig',
+            'SA1':'Saudi Pro League','MLS1':'MLS','BR1':'Brasileirão Série A'
+          }
+          def style_for(raw,pos):
+            if pos=='GK': return 'keeper'
+            if pos=='CB': return 'defender'
+            if pos in ('LB','RB'): return 'balanced'
+            if pos=='DM': return 'defender'
+            if pos=='CM': return 'creator' if raw=='Attacking Midfield' else 'playmaker'
+            if pos in ('LW','RW'): return 'winger'
+            return 'finisher'
           def norm(s):
             s=unicodedata.normalize('NFD',str(s or ''))
             s=''.join(c for c in s if unicodedata.category(c)!='Mn')
             return re.sub(r'[^a-z0-9]+','',s.lower())
-          existing=set()
-          for m in re.finditer(r'"name"\s*:\s*"([^"]+)"',html): existing.add(norm(m.group(1)))
-          for m in re.finditer(r'\[\s*"[^"]+"\s*,\s*"([^"]+)"\s*,\s*"(?:GK|LB|RB|CB|DM|CM|LW|RW|ST)"\s*,\s*\d{4}',html): existing.add(norm(m.group(1)))
-          data=requests.get('https://pub-e682421888d945d684bcae8890b0ec20.r2.dev/data/players.csv.gz',timeout=60).content
-          rows=list(csv.DictReader(io.TextIOWrapper(gzip.GzipFile(fileobj=io.BytesIO(data)),encoding='utf-8')))
-          supported={'Goalkeeper','Centre-Back','Left-Back','Right-Back','Defensive Midfield','Central Midfield','Attacking Midfield','Left Winger','Right Winger','Centre-Forward','Second Striker','Left Midfield','Right Midfield'}
-          elite_tokens=['Arsenal','Manchester City','Liverpool','Chelsea','Manchester United','Tottenham','Paris Saint-Germain','Real Madrid','Barcelona','Bayern','Inter','Juventus','Milan','Napoli','Atlético Madrid','Atletico Madrid','Borussia Dortmund','Bayer 04 Leverkusen','Bayer Leverkusen']
-          top_comps={'GB1','ES1','IT1','L1','FR1','PO1','NL1','TR1','SA1','MLS1'}
-          cand=[]
-          for r in rows:
-            name=r.get('name') or ''; nk=norm(name)
-            if not name or nk in existing: continue
-            try: last=int(float(r.get('last_season') or 0))
-            except: last=0
-            if last < 2025: continue
-            pos=r.get('sub_position') or r.get('position') or ''
-            if pos not in supported: continue
-            club=r.get('current_club_name') or ''; comp=r.get('current_club_domestic_competition_id') or ''
-            try: mv=int(float(r.get('market_value_in_eur') or 0))
-            except: mv=0
-            if not club or mv < 1_000_000: continue
-            elite=any(t.lower() in club.lower() for t in elite_tokens)
-            if not elite and comp not in top_comps: continue
-            lowclub=club.lower()
-            if any(x in lowclub for x in [' u19',' u21',' u23',' youth',' juvenil',' primavera',' b team']): continue
-            birth=r.get('date_of_birth') or ''; year=int(birth[:4]) if birth[:4].isdigit() else 1998; age=2026-year
-            if age < 18 or age > 39: continue
-            if age <= 20 and mv < 8_000_000: continue
-            score=mv + (60_000_000 if elite else 0) + (50_000_000 if any(t.lower() in club.lower() for t in elite_tokens[:7]) else 0)
-            cand.append((score,mv,name,nk,pos,age,r.get('country_of_citizenship') or '',club,comp,r.get('player_id') or '',last))
-          cand.sort(reverse=True)
-          chosen=[]; seen=set()
-          for x in cand:
-            if x[3] in seen: continue
-            seen.add(x[3]); chosen.append(x)
-            if len(chosen)==243: break
-          payload=[{'name':x[2],'sub_position':x[4],'age':x[5],'nation':x[6],'club':x[7],'competition_id':x[8],'tm_player_id':x[9],'market_value':x[1],'last_season':x[10]} for x in chosen]
-          Path('fminside-candidates.json').write_text(json.dumps(payload,ensure_ascii=False,indent=2),encoding='utf-8')
-          Path('fminside-candidates.txt').write_text('\n'.join(x['name'] for x in payload),encoding='utf-8')
-          print('existing',len(existing),'eligible',len(cand),'unique chosen',len(payload))
+
+          selected=[]
+          for c in candidates:
+            name=c['name']
+            if name not in ratings: continue
+            raw=c['sub_position']; pos=pos_map.get(raw)
+            if not pos: continue
+            selected.append({
+              'id':'fmi26-'+str(c['tm_player_id']), 'name':name, 'pos':pos,
+              'birthYear':2026-int(c['age']), 'nation':c.get('nation') or 'Bilinmiyor',
+              'club':c.get('club') or 'Kulüpsüz', 'league':league_map.get(c.get('competition_id') or '', c.get('competition_id') or 'Diğer'),
+              'overall':int(ratings[name]), 'style':style_for(raw,pos), 'tmid':str(c['tm_player_id'])
+            })
+
+          # Transfermarkt weekly transfer history for the selected players.
+          transfer_url='https://pub-e682421888d945d684bcae8890b0ec20.r2.dev/data/transfers.csv.gz'
+          r=requests.get(transfer_url,timeout=90); r.raise_for_status()
+          rows=csv.DictReader(io.TextIOWrapper(gzip.GzipFile(fileobj=io.BytesIO(r.content)),encoding='utf-8'))
+          wanted={x['tmid']:x for x in selected}
+          history={x['name']:[] for x in selected}
+          dated={x['name']:[] for x in selected}
+          for row in rows:
+            pid=str(row.get('player_id') or '')
+            if pid not in wanted: continue
+            dated[wanted[pid]['name']].append((row.get('transfer_date') or '',row.get('from_club_name') or '',row.get('to_club_name') or ''))
+          bad_tokens=('u19','u21','u23','youth','juvenil','primavera','academy','b team')
+          for x in selected:
+            cur=norm(x['club']); seen=set(); out=[]
+            for _,frm,to in sorted(dated[x['name']],reverse=True):
+              for club in (frm,to):
+                clean=str(club or '').strip(); key=norm(clean); low=clean.lower()
+                if not key or key==cur or key in seen: continue
+                if any(t in low for t in bad_tokens): continue
+                if key in ('withoutclub','retired','retirement','careerbreak','endofcareer'): continue
+                seen.add(key); out.append(clean)
+            history[x['name']]=out
+
+          specs=[[x['id'],x['name'],x['pos'],x['birthYear'],x['nation'],x['club'],x['league'],x['overall'],x['style']] for x in selected]
+          names=[x['name'] for x in selected]
+          payload='''\n  /* '''+marker+'''\n   * Yeni oyuncular: aktif A takım + önemli gençler. Toplu U17/U19/U21 kadroları eklenmez.\n   * Overall kaynağı: FMInside FM26 current ability (CA).\n   * Detay attribute dağılımı: mevcut NEON XI pozisyon/stil üretim sistemi.\n   * Kulüp geçmişi: Transfermarkt haftalık transfer verisi.\n   */\n  const FMINSIDE_EXPANSION_2026 = '''+json.dumps(specs,ensure_ascii=False,separators=(',',':'))+''';\n  const FMINSIDE_EXPANSION_NAMES_2026 = new Set('''+json.dumps(names,ensure_ascii=False,separators=(',',':'))+''');\n  const FMINSIDE_FORMER_CLUBS_2026 = '''+json.dumps(history,ensure_ascii=False,separators=(',',':'))+''';\n  EXTRA_PLAYER_SPECIFICATIONS.push(...FMINSIDE_EXPANSION_2026);\n'''
+
+          matches=list(re.finditer(r'(^[ \t]*)addExpandedPlayerPool\(\);',text,re.M))
+          if len(matches)!=1:
+            raise SystemExit(f'Expected exactly one addExpandedPlayerPool call, found {len(matches)}')
+          m=matches[0]
+          text=text[:m.start()]+payload+text[m.start():]
+
+          after='''\n  // FMInside expansion provenance + former-club chemistry data\n  PLAYERS.forEach((player) => {\n    if (!FMINSIDE_EXPANSION_NAMES_2026.has(player.name)) return;\n    const former = FMINSIDE_FORMER_CLUBS_2026[player.name];\n    if (Array.isArray(former) && former.length) player.former = former.slice();\n    player.ratingSource = "FMInside FM26 CA";\n    player.ratingUpdatedAt = "2026-08-16";\n    player.clubHistorySource = "Transfermarkt weekly dataset";\n  });\n'''
+          # insert immediately after the one call
+          m2=re.search(r'(^[ \t]*addExpandedPlayerPool\(\);)',text,re.M)
+          text=text[:m2.end()]+after+text[m2.end():]
+          text='<!-- NEON XI PLAYER POOL: +'+str(len(selected))+' verified FMInside first-team players · 2026-08-16 -->\n'+text
+          index_path.write_text(text,encoding='utf-8')
+          Path('expansion-result.txt').write_text(f'added={len(selected)}\nmissing={len(candidates)-len(selected)}\n'+'\n'.join(c['name'] for c in candidates if c['name'] not in ratings),encoding='utf-8')
+          print('selected',len(selected),'missing',len(candidates)-len(selected))
           PY
-      - name: Commit candidates
+      - name: Syntax check inline JavaScript
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          t=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script(?:\s[^>]*)?>([\s\S]*?)</script>',t,re.I)
+          Path('/tmp/neon-inline.js').write_text('\n;\n'.join(scripts),encoding='utf-8')
+          print('scripts',len(scripts),'bytes',Path('/tmp/neon-inline.js').stat().st_size)
+          PY
+          node --check /tmp/neon-inline.js
+      - name: Commit expanded game
+        shell: bash
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add fminside-candidates.json fminside-candidates.txt
-          git commit -m 'dedupe active first-team expansion candidates' || true
+          git add index.html expansion-result.txt
+          git commit -m 'expand NEON XI player pool with verified FMInside players' || true
           git pull --rebase origin main
           git push
