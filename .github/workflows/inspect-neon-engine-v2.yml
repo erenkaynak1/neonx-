@@ -1,0 +1,25 @@
+name: Inspect NEON XI engine v2
+on:
+  push:
+    paths:
+      - '.github/workflows/inspect-neon-engine-v2.yml'
+  workflow_dispatch:
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Print matching engine terms
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          t=Path('index.html').read_text(encoding='utf-8')
+          terms=['simulateAttack','yellowCard','redCard','foulChance','penaltyPlan','makePenaltyPlan','simulatePenalty','yellow','red','foul','xGModifier','routeQuality','attackSequence','creationChance','goalChance','shotChance']
+          for key in terms:
+              inds=[m.start() for m in re.finditer(re.escape(key),t,re.I)]
+              print(f'\n===== {key}: {len(inds)} =====')
+              for i in inds[:3]:
+                  print('\n---',i,'---')
+                  print(t[max(0,i-650):min(len(t),i+1300)])
+          PY
