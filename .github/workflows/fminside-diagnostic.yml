@@ -10,33 +10,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Inspect FMInside player search form
+      - name: Test readonly FMInside mirror
         shell: bash
         run: |
-          python3 -m pip install beautifulsoup4 requests -q
           python3 - <<'PY' > fminside-diag.txt
           import requests
-          from bs4 import BeautifulSoup
-          u='https://fminside.net/players'
-          r=requests.get(u,headers={'User-Agent':'Mozilla/5.0'},timeout=30)
-          print('status',r.status_code,'len',len(r.text),'url',r.url)
-          soup=BeautifulSoup(r.text,'html.parser')
-          for i,f in enumerate(soup.find_all('form')):
-              print('FORM',i,'action=',f.get('action'),'method=',f.get('method'))
-              for x in f.find_all(['input','select']):
-                  print(' ',x.name,'name=',x.get('name'),'value=',x.get('value'),'id=',x.get('id'))
-          print('links sample')
-          n=0
-          for a in soup.find_all('a',href=True):
-              h=a['href']
-              if '/players/' in h:
-                  print(h, a.get_text(' ',strip=True)[:80]); n+=1
-                  if n>=40: break
+          urls=[
+            'https://r.jina.ai/https://fminside.net/players/7-fm-26/28122642-bukayo-saka',
+            'https://r.jina.ai/https://fminside.net/players?name=Bukayo%20Saka',
+            'https://r.jina.ai/http://fminside.net/players/7-fm-26/28122642-bukayo-saka'
+          ]
+          for u in urls:
+            try:
+              r=requests.get(u,headers={'User-Agent':'Mozilla/5.0'},timeout=60)
+              print('\nURL',u,'status',r.status_code,'len',len(r.text))
+              print(r.text[:12000])
+            except Exception as e:
+              print('ERR',u,repr(e))
           PY
       - name: Commit diagnostic
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add fminside-diag.txt
-          git commit -m 'temporary FMInside diagnostic output'
+          git commit -m 'temporary FMInside mirror diagnostic' || true
           git push
