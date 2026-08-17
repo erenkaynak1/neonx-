@@ -2,6 +2,7 @@
 <!DOCTYPE html>
 <!-- NEON XI UPDATE: FULL-HISTORY + TACTICAL-SPREAD + INLINE-EVENTS 2026-08-16 -->
 <!-- NEON XI PATCH: ENGINE-EVENT-SYNC + 100X SIM LAB 2026-08-17 -->
+<!-- NEON XI HOTFIX: 100X SIM READY-GUARD v1.0.1 · 2026-08-17 -->
 
 <html lang="tr">
 <head>
@@ -17723,7 +17724,13 @@ body.nx-reduced-effects #matchSimulation .nx-goal-lightning{display:none!importa
   function close(){const lab=byId('nxSimLab');if(!lab)return;lab.classList.add('hidden');lab.setAttribute('aria-hidden','true');}
   function engine(){return window.KADRO_ENGINE_TESTS;}
   function validState(){
-    try{return Boolean(window.KADRO_MATCH_PRESENTATION&&window.KADRO_ENGINE_TESTS?.runFast&&window.state?.teams?.A&&window.state?.teams?.B);}catch(_){return Boolean(window.KADRO_ENGINE_TESTS?.runFast);}
+    /* state is script-scoped in the main game, so window.state is not a reliable readiness signal.
+       The fast-sim API is the authoritative contract; runFast() rebuilds the current squads itself. */
+    try{
+      const live=window.KADRO_MATCH_PRESENTATION;
+      const fast=window.KADRO_ENGINE_TESTS?.runFast;
+      return Boolean(live&&typeof fast==='function');
+    }catch(_){return false;}
   }
   function initAggregate(){return{count:0,wins:{A:0,B:0},draws:0,goals:{A:0,B:0},xG:{A:0,B:0},shots:{A:0,B:0},onTarget:{A:0,B:0},possession:{A:0,B:0},passes:{A:0,B:0},passAttempts:{A:0,B:0},dangerous:{A:0,B:0},box:{A:0,B:0},scores:new Map(),teamNames:{A:'Takım A',B:'Takım B'}};}
   function collect(agg,result){
@@ -17770,7 +17777,7 @@ body.nx-reduced-effects #matchSimulation .nx-goal-lightning{display:none!importa
   async function run(count=100){
     count=Math.max(1,Math.min(100,Math.round(Number(count)||100)));
     if(running)return;
-    if(!validState()){alert('Hızlı simülasyon motoru henüz hazır değil. Önce iki kadroyu ve taktikleri tamamla.');return;}
+    if(!validState()){alert('Hızlı simülasyon motoru yüklenemedi. Sayfayı yenileyip maç öncesi ekrana tekrar gel.');return;}
     const live=window.KADRO_MATCH_PRESENTATION;
     if(live?.running&&!live.testMode){alert('Canlı maç devam ederken 100x test başlatılamaz. Maçı bitir veya prematch ekranından testi çalıştır.');return;}
     running=true;open();const agg=initAggregate();
@@ -17796,7 +17803,7 @@ body.nx-reduced-effects #matchSimulation .nx-goal-lightning{display:none!importa
   const completeNode=byId('complete');if(completeNode){const observer=new MutationObserver(injectButtons);observer.observe(completeNode,{subtree:true,childList:true,attributes:true,attributeFilter:['class']});}
   document.addEventListener('click',event=>{if(event.target.closest?.('[data-prematch-ready],#toTacticsBtn,#tacticReadyBtn'))setTimeout(injectButtons,0);},true);
   setTimeout(injectButtons,0);
-  window.NEON_XI_SIM_LAB={version:'1.0.0',run,open,close,get lastRun(){return lastRun;}};
+  window.NEON_XI_SIM_LAB={version:'1.0.1',run,open,close,get lastRun(){return lastRun;}};
 })();
 </script>
 </body>
