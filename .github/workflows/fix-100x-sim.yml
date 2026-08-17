@@ -1,0 +1,51 @@
+name: Fix NEON XI 100x simulation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/fix-100x-sim.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Apply 100x hotfix
+        run: python .github/scripts/fix_100x_sim.py
+
+      - name: Verify simulation script syntax
+        run: |
+          python - <<'PY'
+          import re
+          from pathlib import Path
+          s = Path('index.html').read_text(encoding='utf-8')
+          m = re.search(r'<script id="neon-xi-sim-lab-v1">(.*?)</script>', s, re.S)
+          if not m:
+              raise SystemExit('sim lab script block not found')
+          Path('/tmp/neon-xi-sim-lab.js').write_text(m.group(1), encoding='utf-8')
+          assert "version:'1.0.1'" in m.group(1)
+          assert 'window.state?.teams?.A' not in m.group(1)
+          PY
+          node --check /tmp/neon-xi-sim-lab.js
+
+      - name: Remove temporary deployment helpers
+        run: |
+          rm -f .github/scripts/fix_100x_sim.py
+          rm -f .github/workflows/fix-100x-sim.yml
+
+      - name: Commit live fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Fix 100x tactical simulation readiness check"
+          git push origin main
