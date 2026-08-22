@@ -1,0 +1,100 @@
+layers:O.players };
+    data.status = 'playing';
+    data.footballer = footballer;
+    data.imposterId = imposter;
+    data.round = newRound;
+    data.players = O.players;
+    await window.storage.set('lobby:'+O.code, JSON.stringify(data), true);
+    O.status='playing'; O.footballer=footballer; O.imposterId=imposter; O.round=newRound; O.revealed=false;
+    state.screen = 'online-reveal';
+    render();
+  }catch(e){
+    render();
+  }
+}
+
+/* ---------- ONLINE: REVEAL ---------- */
+function renderOnlineReveal(app){
+  const O = state.online;
+  const isImposter = O.imposterId === O.myId;
+  header(app, 'TUR ' + O.round, O.myName.toUpperCase(), 'Rolünü kimse görmesin');
+
+  const peel = buildPeelCard(O.revealed, isImposter, O.footballer, (revealed) => {
+    O.revealed = revealed;
+    hideBtn.classList.toggle('hidden', !revealed);
+  });
+  app.appendChild(peel);
+  app.appendChild(el('div','peel-caption','Kartın sağ alt köşesini yukarı doğru kaydır'));
+
+  const hideBtn = el('button','btn ghost','GİZLE');
+  hideBtn.classList.toggle('hidden', !O.revealed);
+  hideBtn.onclick = () => { O.revealed = false; render(); };
+  app.appendChild(hideBtn);
+
+  if(O.isHost){
+    const again = el('button','btn solid','YENİ TUR BAŞLAT');
+    again.onclick = () => startOnlineRound();
+    app.appendChild(again);
+  } else {
+    app.appendChild(el('div','info-text','Lobi sahibi yeni tur başlattığında ekranın otomatik güncellenecek.'));
+  }
+
+  const leave = el('button','btn danger','LOBİDEN AYRIL');
+  leave.onclick = () => leaveLobby();
+  app.appendChild(leave);
+}
+
+/* ---------- POLLING ---------- */
+function startPolling(){
+  stopPolling();
+  state.online.polling = setInterval(pollLobby, 1800);
+}
+function stopPolling(){
+  if(state.online.polling){ clearInterval(state.online.polling); state.online.polling = null; }
+}
+async function pollLobby(){
+  const O = state.online;
+  if(!O.code) return;
+  try{
+    const res = await window.storage.get('lobby:'+O.code, true);
+    if(!res) return;
+    const data = JSON.parse(res.value);
+    O.players = data.players || O.players;
+    O.hostId = data.hostId;
+    if(data.status === 'playing' && (state.screen === 'online-lobby' || (state.screen==='online-reveal' && data.round !== O.round))){
+      O.status = 'playing';
+      O.footballer = data.footballer;
+      O.imposterId = data.imposterId;
+      O.round = data.round;
+      O.revealed = false;
+      state.screen = 'online-reveal';
+      render();
+    } else if(state.screen === 'online-lobby'){
+      render();
+    }
+  }catch(e){}
+}
+
+async function leaveLobby(){
+  const O = state.online;
+  stopPolling();
+  try{
+    if(O.code){
+      const res = await window.storage.get('lobby:'+O.code, true);
+      if(res){
+        const data = JSON.parse(res.value);
+        data.players = (data.players||[]).filter(p => p.id !== O.myId);
+        await window.storage.set('lobby:'+O.code, JSON.stringify(data), true);
+      }
+    }
+  }catch(e){}
+  state.online.code=''; state.online.players=[]; state.online.status='idle';
+  state.online.isHost=false; state.online.revealed=false; state.online.err='';
+  state.screen = 'menu';
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
