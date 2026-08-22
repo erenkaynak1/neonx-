@@ -1,7 +1,7 @@
 {
-  "candidate_count": 5950,
+  "candidate_count": 5654,
   "missing_by_field": {
-    "weight_kg": 4169,
+    "weight_kg": 3873,
     "trophies": 5456,
     "career_goals": 5456,
     "career_assists": 5456,
@@ -32,7 +32,7 @@
       "fields": [
         "weight_kg"
       ],
-      "count": 493
+      "count": 197
     },
     {
       "fields": [
@@ -62,9 +62,9 @@
       "count": 1
     }
   ],
-  "uoc_enriched_remaining": 494,
+  "uoc_enriched_remaining": 198,
   "uoc_missing_by_field": {
-    "weight_kg": 493,
+    "weight_kg": 197,
     "peak_market_value_eur": 1
   }
 }

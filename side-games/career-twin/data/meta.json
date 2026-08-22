@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-08-22T23:29:59.177381+00:00",
-  "playable_count": 550,
-  "candidate_count": 5950,
+  "generated_at": "2026-08-22T23:31:35.883498+00:00",
+  "playable_count": 846,
+  "candidate_count": 5654,
   "total_selected": 6500,
   "required_fields": [
     "height_cm",
@@ -24,6 +24,7 @@
     "uoc_2026": "https://zenodo.org/api/records/19396819"
   },
   "uoc_matched_names": 1075,
+  "fuzzy_weights_added": 296,
   "context_weights_added": 0,
   "context_only_matches": 0
 }
