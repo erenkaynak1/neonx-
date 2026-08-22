@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-08-22T23:24:30.241207+00:00",
-  "playable_count": 550,
-  "candidate_count": 5950,
+  "generated_at": "2026-08-22T23:26:05.112651+00:00",
+  "playable_count": 846,
+  "candidate_count": 5654,
   "total_selected": 6500,
   "required_fields": [
     "height_cm",
@@ -46,5 +46,6 @@
     "eafc26": "https://raw.githubusercontent.com/ismailoksuz/EAFC26-DataHub/main/data/players.csv",
     "uoc_2026": "https://zenodo.org/api/records/19396819"
   },
-  "uoc_matched_names": 1075
+  "uoc_matched_names": 1075,
+  "fuzzy_weights_added": 296
 }
