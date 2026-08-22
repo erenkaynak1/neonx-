@@ -7,6 +7,7 @@ on:
   push:
     paths:
       - 'scripts/build_career_twin_pool.py'
+      - 'scripts/enrich_career_twin_uoc.py'
       - '.github/workflows/update-career-twin-pool.yml'
 
 permissions:
@@ -23,8 +24,10 @@ jobs:
           python-version: '3.12'
       - name: Install data dependencies
         run: pip install --disable-pip-version-check duckdb pandas requests openpyxl
-      - name: Build verified player pool
+      - name: Build current candidate pool
         run: python scripts/build_career_twin_pool.py
+      - name: Enrich trophies and career totals
+        run: python scripts/enrich_career_twin_uoc.py
       - name: Commit refreshed pool
         run: |
           git config user.name "github-actions[bot]"
