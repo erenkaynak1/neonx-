@@ -1,7 +1,7 @@
 {
-  "candidate_count": 5654,
+  "candidate_count": 5950,
   "missing_by_field": {
-    "weight_kg": 3874,
+    "weight_kg": 4169,
     "trophies": 5456,
     "career_goals": 5456,
     "career_assists": 5456,
@@ -17,7 +17,7 @@
         "career_assists",
         "career_appearances"
       ],
-      "count": 3500
+      "count": 3499
     },
     {
       "fields": [
@@ -26,13 +26,13 @@
         "career_assists",
         "career_appearances"
       ],
-      "count": 1763
+      "count": 1764
     },
     {
       "fields": [
         "weight_kg"
       ],
-      "count": 197
+      "count": 493
     },
     {
       "fields": [
@@ -62,9 +62,9 @@
       "count": 1
     }
   ],
-  "uoc_enriched_remaining": 198,
+  "uoc_enriched_remaining": 494,
   "uoc_missing_by_field": {
-    "weight_kg": 197,
+    "weight_kg": 493,
     "peak_market_value_eur": 1
   }
 }
