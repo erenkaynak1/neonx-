@@ -8,6 +8,7 @@ on:
     paths:
       - 'scripts/build_career_twin_pool.py'
       - 'scripts/enrich_career_twin_uoc_v3.py'
+      - 'scripts/enrich_career_twin_weights_v2.py'
       - 'scripts/enrich_career_twin_weights_v3.py'
       - 'scripts/diagnose_career_twin_missing.py'
       - '.github/workflows/update-career-twin-pool.yml'
@@ -30,7 +31,9 @@ jobs:
         run: python scripts/build_career_twin_pool.py
       - name: Enrich trophies and career totals
         run: python scripts/enrich_career_twin_uoc_v3.py
-      - name: Recover safe physical-data matches
+      - name: Recover high-confidence physical-data matches
+        run: python scripts/enrich_career_twin_weights_v2.py
+      - name: Recover additional team-aware physical matches
         run: python scripts/enrich_career_twin_weights_v3.py
       - name: Diagnose remaining gaps
         run: python scripts/diagnose_career_twin_missing.py
