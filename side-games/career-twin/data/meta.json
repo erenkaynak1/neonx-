@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-08-22T23:22:42.665678+00:00",
-  "playable_count": 0,
-  "candidate_count": 6500,
+  "generated_at": "2026-08-22T23:24:30.241207+00:00",
+  "playable_count": 550,
+  "candidate_count": 5950,
   "total_selected": 6500,
   "required_fields": [
     "height_cm",
@@ -15,12 +15,36 @@
     "career_appearances"
   ],
   "policy": "Only 9/9 complete records are playable. Missing data is never invented.",
-  "uoc_file": null,
-  "uoc_columns": [],
+  "uoc_file": "jugadors.csv",
+  "uoc_columns": [
+    "lliga",
+    "equip",
+    "nom",
+    "posicio",
+    "edat",
+    "nacionalitat",
+    "dorsal",
+    "valor_mercat",
+    "trofeus",
+    "partits",
+    "gols",
+    "assistencies",
+    "targetes_grogues",
+    "segones_grogues",
+    "targetes_vermelles",
+    "percn_minuts_jugats",
+    "percen_xi_inicial",
+    "percen_participacio",
+    "agent",
+    "fitxat",
+    "contracte_fins",
+    "url"
+  ],
   "zenodo_title": "Football Players Dataset from La Liga, Premier League and Bundesliga extracted from Transfermarkt",
   "sources": {
     "transfermarkt_datasets": "https://pub-e682421888d945d684bcae8890b0ec20.r2.dev/data/transfermarkt-datasets.duckdb",
     "eafc26": "https://raw.githubusercontent.com/ismailoksuz/EAFC26-DataHub/main/data/players.csv",
     "uoc_2026": "https://zenodo.org/api/records/19396819"
-  }
+  },
+  "uoc_matched_names": 1075
 }
