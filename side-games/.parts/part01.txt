@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>İMPOSTOR 11 — Futbolcu İmposter Oyunu</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;900&family=Rajdhani:wght@500;600;700&display=swap');
+
+:root{
+  --bg: #04070a;
+  --panel: #0a1310;
+  --panel2: #0d1815;
+  --green: #39ff88;
+  --green-dim: #1c8f4f;
+  --cyan: #34e6ff;
+  --magenta: #ff3fd8;
+  --amber: #ffc93c;
+  --red: #ff3355;
+  --text: #eafff2;
+  --text-dim: #8fb8a5;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+html,body{margin:0; padding:0; height:100%;}
+body{
+  background: radial-gradient(ellipse at top, #0a1712 0%, #04070a 55%, #020403 100%);
+  color: var(--text);
+  font-family: 'Rajdhani', sans-serif;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow-x:hidden;
+  position:relative;
+}
+body::before{
+  content:"";
+  position:fixed; inset:0;
+  background-image:
+    linear-gradient(rgba(57,255,136,0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(57,255,136,0.035) 1px, transparent 1px);
+  background-size: 38px 38px;
+  pointer-events:none;
+  z-index:0;
+}
+.app{
+  position:relative; z-index:1;
+  width:100%; max-width:460px;
+  min-height:100vh;
+  padding: 28px 20px 40px;
+  display:flex; flex-direction:column;
+}
+.title-wrap{ text-align:center; margin-bottom: 18px; }
+.crest{
+  font-family:'Orbitron', sans-serif;
+  font-weight:900;
+  font-size: 13px;
+  letter-spacing: 6px;
+  color: var(--green);
+  text-shadow: 0 0 8px rgba(57,255,136,0.9), 0 0 20px rgba(57,255,136,0.4);
+  margin-bottom:6px;
+}
+.title{
+  font-family:'Orbitron', sans-serif;
+  font-weight:900;
+  font-size: 34px;
+  letter-spacing: 2px;
+  line-height:1.05;
+  color: #fff;
+  text-shadow: 0 0 10px rgba(57,255,136,0.7), 0 0 30px rgba(57,255,136,0.35);
+}
+.title span{ color: var(--green); }
+.subtitle{ margin-top:8px; font-size:14px; color: var(--text-dim); letter-spacing:0.5px;}
+
+.card{
+  background: linear-gradient(180deg, var(--panel) 0%, var(--panel2) 100%);
+  border: 1px solid rgba(57,255,136,0.25);
+  border-radius: 18px;
+  padding: 22px 20px;
+  margin-bottom:16px;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.4) inset, 0 0 24px rgba(57,255,136,0.06);
+  position:relative;
+  overflow:hidden;
+}
+.card::after{
+  content:""; position:absolute; left:0; right:0; top:0; height:2px;
+  background: linear-gradient(90deg, transparent, var(--green), transparent);
+  opacity:0.6;
+}
+
+.btn{
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  width:100%;
+  font-family:'Rajdhani', sans-serif;
+  font-weight:700;
+  font-size: 17px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 15px 18px;
+  border-radius: 12px;
+  border: 1.5px solid var(--green);
+  background: rgba(57,255,136,0.08);
+  color: var(--green);
+  cursor:pointer;
+  margin-bottom: 12px;
+  transition: all 0.15s ease;
+}
+.btn:active{ transform: scale(0.97); }
+.btn:hover{ background: rgba(57,255,136,0.16); box-shadow: 0 0 18px rgba(57,255,136,0.35); }
+.btn.solid{ background: var(--green); color:#00190c; box-shadow: 0 0 18px rgba(57,255,136,0.5);}
+.btn.solid:hover{ background:#4dffa0; }
+.btn.ghost{ border-color: rgba(255,255,255,0.18); color: var(--text-dim); background:transparent; }
+.btn.ghost:hover{ border-color: rgba(255,255,255,0.4); color:#fff; background: rgba(255,255,255,0.04);}
+.btn.danger{ border-color: var(--red); color: var(--red); background: rgba(255,51,85,0.08);}
+.btn.danger:hover{ background: rgba(255,51,85,0.18); box-shadow: 0 0 18px rgba(255,51,85,0.35);}
+.btn:disabled{ opacity:0.35; cursor:not-allowed; }
+.btn small-tag{ }
+
+.row{ display:flex; gap:10px; }
+.row .btn{ margin-bottom:0; }
+
+label.field-label{
+  display:block; font-size:12px; letter-spacing:1.5px; text-transform:uppercase;
+  color: var(--text-dim); margin-bottom:6px; margin-top:14px;
+}
+label.field-label:first-child{ margin-top:0; }
+input[type=text], input[type=number]{
+  width:100%;
+  background: rgba(0,0,0,0.35);
+  border: 1.5px solid rgba(57,255,136,0.3);
+  border-radius: 10px;
+  padding: 12px 14px;
+  color: #fff;
+  font-family:'Rajdhani',sans-serif;
+  font-size: 16px;
+  font-weight:600;
+  letter-spacing:0.5px;
+  outline:none;
+}
+input[type=text]:focus, input[type=number]:focus{
+  border-color: var(--green);
+  box-shadow: 0 0 12px rgba(57,255,136,0.3);
+}
+input.code-input{
+  text-align:center; letter-spacing: 8px; font-family:'Orbitron',sans-serif; font-size:22px;
+  text-transform:uppercase;
+}
+
+.stepper{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.stepper button{
+  width:42px; height:42px; border-radius:10px; border:1.5px solid rgba(57,255,136,0.3);
+  background: rgba(0,0,0,0.3); color: var(--green); font-size:20px; font-weight:700; cursor:pointer;
+}
+.stepper .count{
+  font-family:'Orbitron',sans-serif; font-size:26px; color:#fff; text-shadow:0 0 10px rgba(57,255,136,0.6);
+}
+
+.player-name-input{ margin-bottom:8px; }
+
+.center-txt{ text-align:center; }
+.eyebrow{
+  font-size:12px; letter-spacing:3px; text-transform:uppercase; color: var(--text-dim); margin-bottom:8px;
+}
+.big-name{
+  font-family:'Orbitron', sans-serif; font-weight:900; font-size:22px; text-align:center;
+  color: var(--text-dim);
+}
+
+.reveal-card{
+  position:relative;
+  min-height: 220px;
+  border-radius: 18px;
+  border: 2px solid rgba(57,255,136,0.3);
+  background: repeating-linear-gradient(135deg, rgba(255,255,255,0.015) 0 2px, transparent 2px 6px), #060b09;
+  display:flex; align-items:center; justify-content:center; flex-direction:column; gap:14px;
+  cursor:pointer; user-select:none; text-align:center; padding: 22px;
+  transition: box-shadow 0.2s;
+}
+.reveal-card.hidden-state{ box-shadow: inset 0 0 40px rgba(57,255,136,0.06); }
+.reveal-card .hint{ color: var(--text-dim); font-size:14px; letter-spacing:1px; }
+.reveal-card .hint i{ display:block; font-size:34px; margin-bottom:10px; opacity:0.7; }
+.reveal-card.shown{ }
+.reveal-card .role-label{
+  font-size:12px; letter-spacing:3px; text-transform:uppercase; opacity:0.85;
+}
+.reveal-card .player-name{
+  font-family:'Orbitron', sans-serif; font-weight:900; font-size:26px; line-height:1.2;
+}
+.reveal-card.normal{ border-color: var(--green); box-shadow: 0 0 30px rgba(57,255,136,0.35), inset 0 0 30px rgba(57,255,136,0.08); }
+.reveal-card.normal .role-label{ color: var(--green); }
+.reveal-card.normal .player-name{ color:#fff; text-shadow: 0 0 14px rgba(57,255,136,0.7); }
+.reveal-card.imposter{ border-color: var(--red); box-shadow: 0 0 30px rgba(255,51,85,0.4), inset 0 0 30px rgba(255,51,85,0.1); }
+.reveal-card.imposter .role-label{ color: var(--red); }
+.reveal-card.imposter .player-name{ color:#fff; text-shadow: 0 0 14px rgba(255,51,85,0.8); }
+
+.tag{
+  display:inline-block; padding:4px 12px; border-radius:999px; font-size:11px; letter-spacing:1.5px;
+  text-transform:uppercase; font-weight:700; border:1px solid var(--green); color: var(--green);
+  background: rgba(57,255,136,0.08);
+}
+.tag.pulse{ animation: pulseGlow 1.6s ease-in-out infinite; }
+@keyframes pulseGlow{
+  0%,100%{ box-shadow: 0 0 4px rgba(57,255,136,0.3);}
+  50%{ box-shadow: 0 0 16px rgba(57,255,136,0.7);}
+}
+
+.code-display{
+  font-family:'Orbitron',sans-serif; font-size: 40px; font-weight:900; text-align:center;
+  letter-spacing: 10px; color: var(--cyan); text-shadow: 0 0 16px rgba(52,230,255,0.7);
+  padding: 10px 0;
+}
+
+.player-list{ list-style:none; padding:0; margin:14px 0 0; display:flex; flex-direction:column; gap:8px; }
+.player-list li{
+  display:flex; align-items:center; justify-content:space-between;
+  background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08);
+  border-radius:10px; padding:10px 14px; font-weight:600; font-size:15px;
+}
+.player-list li .host-badge{ font-size:10px; color: var(--amber); border:1px solid var(--amber); padding:2px 8px; border-radius:999px; letter-spacing:1px;}
+
+.error-text{ color: var(--red); font-size:13px; margin-top:8px; text-a
