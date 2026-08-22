@@ -16,7 +16,7 @@ html,body{margin:0;min-height:100%;background:#04070a;color:#bfffd8;font-family:
     const names=['part01.txt','part02.txt','part03.txt','part04.txt','part05.txt','part06.txt'];
     const parts=await Promise.all(names.map(n=>fetch('./parts/'+n,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(n);return r.text();})));
     let html=parts.join('');
-    html=html.replace('</body>','<scr'+'ipt src="./online-v2.js?v=20260822-2"></scr'+'ipt></body>');
+    html=html.replace('</body>','<scr'+'ipt src="./online-v2.js?v=20260822-2"></scr'+'ipt><scr'+'ipt src="./paper-ui-fix.js?v=20260823-1"></scr'+'ipt></body>');
     document.open();
     document.write(html);
     document.close();
