@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "game": "Kariyer İkizi",
+  "required_parameters": [
+    {"key":"height_cm","label":"Boy","unit":"cm","comparison":"absolute_difference"},
+    {"key":"weight_kg","label":"Kilo","unit":"kg","comparison":"absolute_difference"},
+    {"key":"birth_date","label":"Doğum Tarihi","unit":"day","comparison":"date_difference_days"},
+    {"key":"club_count","label":"Oynadığı Toplam Kulüp Sayısı","unit":"club","comparison":"absolute_difference"},
+    {"key":"trophies","label":"Kazandığı Toplam Kupa","unit":"trophy","comparison":"absolute_difference"},
+    {"key":"career_goals","label":"Toplam Gol","unit":"goal","comparison":"absolute_difference"},
+    {"key":"career_assists","label":"Toplam Asist","unit":"assist","comparison":"absolute_difference"},
+    {"key":"peak_market_value_eur","label":"En Yüksek Piyasa Değeri","unit":"EUR","comparison":"absolute_difference"},
+    {"key":"career_appearances","label":"Toplam Maç","unit":"match","comparison":"absolute_difference"}
+  ],
+  "career_scope": "official senior club + senior national team",
+  "pool_policy": {
+    "playable_requires_all_9": true,
+    "missing_values_are_never_estimated": true,
+    "preferred_population": ["active", "recently_retired", "recognizable_legend"],
+    "pre_2000": "legends_only",
+    "target_pool": "5000+ playable players"
+  }
+}
