@@ -38,6 +38,176 @@ function renderLocalDone(app){
   app.appendChild(menu);
 }
 
+/* ---------- ONLINE: P2P CORE ---------- */
+let p2pPeer = null;
+let p2pHostConnection = null;
+let p2pHostConnections = new Map();
+let p2pJoinTimer = null;
+let p2pLoaderPromise = null;
+let p2pLeaving = false;
+const P2P_PREFIX = 'neonxi-imposter-';
+
+function ensurePeerJS(){
+  if(window.Peer) return Promise.resolve(window.Peer);
+  if(p2pLoaderPromise) return p2pLoaderPromise;
+  p2pLoaderPromise = new Promise((resolve, reject) => {
+    const existing = document.querySelector('script[data-neon-peerjs]');
+    if(existing){
+      existing.addEventListener('load', () => window.Peer ? resolve(window.Peer) : reject(new Error('peerjs-load')),{once:true});
+      existing.addEventListener('error', () => reject(new Error('peerjs-load')),{once:true});
+      return;
+    }
+    const s = document.createElement('script');
+    s.src = 'https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js';
+    s.async = true;
+    s.dataset.neonPeerjs = '1';
+    s.onload = () => window.Peer ? resolve(window.Peer) : reject(new Error('peerjs-load'));
+    s.onerror = () => reject(new Error('peerjs-load'));
+    document.head.appendChild(s);
+  });
+  return p2pLoaderPromise;
+}
+
+function lobbyPeerId(code){
+  return P2P_PREFIX + String(code || '').toLowerCase();
+}
+
+async function openPeer(id){
+  await ensurePeerJS();
+  return new Promise((resolve, reject) => {
+    const peer = id ? new window.Peer(id) : new window.Peer();
+    let settled = false;
+    const timer = setTimeout(() => {
+      if(settled) return;
+      settled = true;
+      try{ peer.destroy(); }catch(e){}
+      reject(new Error('peer-timeout'));
+    }, 9000);
+    peer.on('open', () => {
+      if(settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve(peer);
+    });
+    peer.on('error', err => {
+      if(settled) return;
+      settled = true;
+      clearTimeout(timer);
+      try{ peer.destroy(); }catch(e){}
+      reject(err || new Error('peer-error'));
+    });
+  });
+}
+
+function clearP2P(){
+  clearTimeout(p2pJoinTimer);
+  p2pJoinTimer = null;
+  if(p2pHostConnection){ try{ p2pHostConnection.close(); }catch(e){} }
+  p2pHostConnection = null;
+  p2pHostConnections.forEach(c => { try{ c.close(); }catch(e){} });
+  p2pHostConnections.clear();
+  if(p2pPeer){ try{ p2pPeer.destroy(); }catch(e){} }
+  p2pPeer = null;
+}
+
+function lobbySnapshot(){
+  const O = state.online;
+  return {
+    code: O.code,
+    hostId: O.hostId || O.myId,
+    status: O.status,
+    players: O.players,
+    round: O.round,
+    footballer: O.footballer,
+    imposterId: O.imposterId
+  };
+}
+
+function sendConn(conn, payload){
+  try{ if(conn && conn.open) conn.send(payload); }catch(e){}
+}
+
+function broadcastLobbyState(){
+  const msg = { type:'state', data:lobbySnapshot() };
+  p2pHostConnections.forEach(conn => sendConn(conn, msg));
+}
+
+function applyLobbyState(data){
+  if(!data) return;
+  const O = state.online;
+  const previousRound = O.round;
+  O.code = data.code || O.code;
+  O.hostId = data.hostId;
+  O.players = Array.isArray(data.players) ? data.players : O.players;
+  O.status = data.status || O.status;
+  O.round = data.round || 0;
+  O.footballer = data.footballer || null;
+  O.imposterId = data.imposterId || null;
+
+  if(O.status === 'playing'){
+    if(state.screen === 'online-lobby' || (state.screen === 'online-reveal' && O.round !== previousRound)){
+      O.revealed = false;
+      state.screen = 'online-reveal';
+      render();
+    }
+  } else if(state.screen === 'online-lobby'){
+    render();
+  }
+}
+
+function removeGuest(playerId){
+  const O = state.online;
+  if(!O.isHost || !playerId) return;
+  const before = O.players.length;
+  O.players = O.players.filter(p => p.id !== playerId || p.id === O.myId);
+  if(O.players.length !== before){
+    broadcastLobbyState();
+    if(state.screen === 'online-lobby') render();
+  }
+}
+
+function bindHostConnection(conn){
+  if(!conn) return;
+  p2pHostConnections.set(conn.peer, conn);
+  let joinedId = null;
+
+  conn.on('data', msg => {
+    if(!msg || typeof msg !== 'object') return;
+    const O = state.online;
+    if(msg.type === 'join'){
+      const player = msg.player || {};
+      if(O.status === 'playing'){
+        sendConn(conn,{type:'reject', reason:'Bu lobide oyun zaten başladı.'});
+        setTimeout(()=>{ try{ conn.close(); }catch(e){} },80);
+        return;
+      }
+      if(O.players.length >= 12){
+        sendConn(conn,{type:'reject', reason:'Lobi dolu.'});
+        setTimeout(()=>{ try{ conn.close(); }catch(e){} },80);
+        return;
+      }
+      if(!player.id || !String(player.name||'').trim()) return;
+      joinedId = player.id;
+      conn.__neonPlayerId = joinedId;
+      O.players = O.players.filter(p => p.id !== joinedId);
+      O.players.push({id:joinedId, name:String(player.name).trim().slice(0,24)});
+      sendConn(conn,{type:'accepted'});
+      broadcastLobbyState();
+      if(state.screen === 'online-lobby') render();
+    } else if(msg.type === 'leave'){
+      removeGuest(msg.playerId || joinedId);
+      try{ conn.close(); }catch(e){}
+    }
+  });
+
+  const gone = () => {
+    p2pHostConnections.delete(conn.peer);
+    removeGuest(conn.__neonPlayerId || joinedId);
+  };
+  conn.on('close', gone);
+  conn.on('error', gone);
+}
+
 /* ---------- ONLINE: CHOICE ---------- */
 function renderOnlineChoice(app){
   backBar(app, 'Ana Menü', () => { state.screen='menu'; render(); });
@@ -45,10 +215,10 @@ function renderOnlineChoice(app){
 
   const card = el('div','card');
   const b1 = el('button','btn solid','LOBİ KUR');
-  b1.onclick = () => { state.screen='online-create'; render(); };
+  b1.onclick = () => { state.online.err=''; state.screen='online-create'; render(); };
   card.appendChild(b1);
   const b2 = el('button','btn','KODLA KATIL');
-  b2.onclick = () => { state.screen='online-join'; render(); };
+  b2.onclick = () => { state.online.err=''; state.screen='online-join'; render(); };
   card.appendChild(b2);
   app.appendChild(card);
 }
@@ -61,7 +231,7 @@ function renderOnlineCreate(app){
   const card = el('div','card');
   card.appendChild(el('label','field-label','Adın'));
   const input = el('input');
-  input.type='text'; input.placeholder='Örn. Kaan';
+  input.type='text'; input.placeholder='Örn. Kaan'; input.maxLength=24;
   input.value = state.online.myName;
   input.oninput = (e) => { state.online.myName = e.target.value; };
   card.appendChild(input);
@@ -74,39 +244,58 @@ function renderOnlineCreate(app){
     const name = state.online.myName.trim();
     if(!name){ state.online.err='Önce adını yaz.'; render(); return; }
     state.online.err='';
-    btn.disabled = true; btn.textContent='OLUŞTURULUYOR...';
+    btn.disabled = true; btn.textContent='LOBİ AÇILIYOR...';
     await createLobby(name);
   };
   app.appendChild(btn);
 }
 
 async function createLobby(name){
-  let code;
-  for(let tries=0; tries<5; tries++){
-    code = makeCode();
-    try{
-      const existing = await window.storage.get('lobby:'+code, true);
-      if(!existing) break;
-    }catch(e){ break; }
-  }
   const O = state.online;
-  O.isHost = true;
-  O.code = code;
-  O.myName = name;
-  O.players = [{ id: O.myId, name }];
-  O.status = 'waiting';
-  O.round = 0;
+  p2pLeaving = true;
+  clearP2P();
+  p2pLeaving = false;
+  let peer = null;
+  let code = '';
   try{
-    await window.storage.set('lobby:'+code, JSON.stringify({
-      code, hostId: O.myId, status: 'waiting', players: O.players,
-      round: 0, footballer: null, imposterId: null
-    }), true);
-    O.err='';
+    for(let tries=0; tries<8; tries++){
+      code = makeCode();
+      try{
+        peer = await openPeer(lobbyPeerId(code));
+        break;
+      }catch(err){
+        if(err && err.type === 'unavailable-id') continue;
+        throw err;
+      }
+    }
+    if(!peer) throw new Error('code-collision');
+
+    p2pPeer = peer;
+    O.isHost = true;
+    O.code = code;
+    O.myName = name;
+    O.hostId = O.myId;
+    O.players = [{ id: O.myId, name }];
+    O.status = 'waiting';
+    O.round = 0;
+    O.footballer = null;
+    O.imposterId = null;
+    O.revealed = false;
+    O.err = '';
+
+    peer.on('connection', bindHostConnection);
+    peer.on('error', err => {
+      if(err && err.type === 'network'){
+        O.err = 'Bağlantı geçici olarak kesildi.';
+        if(state.screen === 'online-lobby') render();
+      }
+    });
+
     state.screen = 'online-lobby';
-    startPolling();
     render();
   }catch(e){
-    O.err = 'Lobi oluşturulamadı, tekrar dene.';
+    clearP2P();
+    O.err = 'Lobi oluşturulamadı. İnternet bağlantını kontrol edip tekrar dene.';
     state.screen = 'online-create';
     render();
   }
@@ -127,7 +316,7 @@ function renderOnlineJoin(app){
 
   card.appendChild(el('label','field-label','Adın'));
   const nameInput = el('input');
-  nameInput.type='text'; nameInput.placeholder='Örn. Ayşe';
+  nameInput.type='text'; nameInput.placeholder='Örn. Ayşe'; nameInput.maxLength=24;
   nameInput.value = state.online.myName;
   nameInput.oninput = (e) => { state.online.myName = e.target.value; };
   card.appendChild(nameInput);
@@ -138,11 +327,12 @@ function renderOnlineJoin(app){
 
   const btn = el('button','btn solid','LOBİYE KATIL');
   btn.onclick = async () => {
-    const code = state.online.code.trim();
+    const code = state.online.code.trim().toUpperCase();
     const name = state.online.myName.trim();
-    if(code.length < 4){ state.online.err='Geçerli bir kod gir.'; render(); return; }
+    if(code.length !== 5){ state.online.err='5 haneli lobi kodunu gir.'; render(); return; }
     if(!name){ state.online.err='Önce adını yaz.'; render(); return; }
-    btn.disabled = true; btn.textContent='KATILINIYOR...';
+    state.online.err='';
+    btn.disabled = true; btn.textContent='BAĞLANILIYOR...';
     await joinLobby(code, name);
   };
   app.appendChild(btn);
@@ -150,24 +340,84 @@ function renderOnlineJoin(app){
 
 async function joinLobby(code, name){
   const O = state.online;
+  p2pLeaving = true;
+  clearP2P();
+  p2pLeaving = false;
   try{
-    const res = await window.storage.get('lobby:'+code, true);
-    if(!res){ O.err='Böyle bir lobi bulunamadı.'; state.screen='online-join'; render(); return; }
-    const data = JSON.parse(res.value);
-    if(data.status === 'playing'){ O.err='Bu lobide oyun zaten başladı.'; state.screen='online-join'; render(); return; }
-    data.players.push({ id: O.myId, name });
-    await window.storage.set('lobby:'+code, JSON.stringify(data), true);
+    const peer = await openPeer();
+    p2pPeer = peer;
     O.isHost = false;
     O.code = code;
     O.myName = name;
-    O.players = data.players;
-    O.status = data.status;
-    O.err = '';
-    state.screen = 'online-lobby';
-    startPolling();
-    render();
+    O.players = [];
+    O.status = 'connecting';
+    O.round = 0;
+    O.revealed = false;
+
+    await new Promise((resolve, reject) => {
+      let settled = false;
+      const conn = peer.connect(lobbyPeerId(code), { reliable:true });
+      p2pHostConnection = conn;
+      const fail = (err) => {
+        if(settled) return;
+        settled = true;
+        clearTimeout(p2pJoinTimer);
+        reject(err instanceof Error ? err : new Error(String(err||'join-failed')));
+      };
+      p2pJoinTimer = setTimeout(() => fail(new Error('join-timeout')), 9000);
+
+      conn.on('open', () => {
+        sendConn(conn,{type:'join', player:{id:O.myId, name:name}});
+      });
+      conn.on('data', msg => {
+        if(!msg || typeof msg !== 'object') return;
+        if(msg.type === 'reject'){
+          O.err = msg.reason || 'Lobiye katılamadın.';
+          fail(new Error('rejected'));
+          return;
+        }
+        if(msg.type === 'accepted') return;
+        if(msg.type === 'state'){
+          if(!settled){
+            settled = true;
+            clearTimeout(p2pJoinTimer);
+            O.err = '';
+            O.status = msg.data && msg.data.status || 'waiting';
+            state.screen = 'online-lobby';
+            applyLobbyState(msg.data);
+            if(state.screen === 'online-lobby') render();
+            resolve();
+          } else {
+            applyLobbyState(msg.data);
+          }
+        } else if(msg.type === 'host-closed'){
+          O.err = 'Lobi kurucusu lobiden ayrıldı.';
+          p2pLeaving = true;
+          clearP2P();
+          p2pLeaving = false;
+          state.screen = 'online-choice';
+          render();
+        }
+      });
+      conn.on('close', () => {
+        if(!settled){ fail(new Error('connection-closed')); return; }
+        if(!p2pLeaving && (state.screen === 'online-lobby' || state.screen === 'online-reveal')){
+          O.err = 'Lobi bağlantısı kesildi.';
+          state.screen = 'online-choice';
+          render();
+        }
+      });
+      conn.on('error', fail);
+      peer.on('error', err => {
+        if(!settled && err && err.type === 'peer-unavailable') fail(err);
+      });
+    });
   }catch(e){
-    O.err = 'Bağlantı hatası, tekrar dene.';
+    const preset = O.err;
+    p2pLeaving = true;
+    clearP2P();
+    p2pLeaving = false;
+    O.err = preset || 'Lobi bulunamadı veya kurucu artık lobide değil.';
     state.screen = 'online-join';
     render();
   }
@@ -191,11 +441,13 @@ function renderOnlineLobby(app){
   O.players.forEach(p => {
     const li = el('li');
     li.appendChild(el('span', null, p.name + (p.id===O.myId ? ' (sen)' : '')));
-    if(p.id === O.hostId || (O.isHost && p.id===O.myId)) li.appendChild(el('span','host-badge','KURUCU'));
+    if(p.id === O.hostId) li.appendChild(el('span','host-badge','KURUCU'));
     ul.appendChild(li);
   });
   listCard.appendChild(ul);
   app.appendChild(listCard);
+
+  if(O.err) app.appendChild(el('div','error-text',O.err));
 
   if(O.isHost){
     const startBtn = el('button','btn solid','OYUNU BAŞLAT');
@@ -212,12 +464,3 @@ function renderOnlineLobby(app){
     app.appendChild(wait);
   }
 }
-
-async function startOnlineRound(){
-  const O = state.online;
-  const footballer = pick(FOOTBALLERS);
-  const imposter = pick(O.players).id;
-  const newRound = O.round + 1;
-  try{
-    const res = await window.storage.get('lobby:'+O.code, true);
-    const data = res ? JSON.parse(res.value) : { code:O.code, hostId:O.myId, p
