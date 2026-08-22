@@ -1,0 +1,223 @@
+ealedThis;
+
+  const peel = buildPeelCard(L.revealedThis, isImp, L.footballer, (revealed) => {
+    L.revealedThis = revealed;
+    nextBtn.disabled = !revealed;
+  });
+  app.appendChild(peel);
+  app.appendChild(el('div','peel-caption','Kartın sağ alt köşesini yukarı doğru kaydır'));
+
+  const dots = el('div','progress-dots');
+  for(let i=0;i<total;i++){
+    dots.appendChild(el('span', i<L.idx ? 'done' : (i===L.idx?'current':'')));
+  }
+  app.appendChild(dots);
+
+  nextBtn.onclick = () => {
+    if(L.idx < total-1){ L.idx++; L.revealedThis = false; render(); }
+    else { state.screen = 'local-done'; render(); }
+  };
+  app.appendChild(nextBtn);
+}
+
+/* ---------- LOCAL: DONE ---------- */
+function renderLocalDone(app){
+  header(app, 'HERKES HAZIR', 'TARTIŞMA VAKTİ', 'Sırayla ipucu verin, imposteri bulun');
+
+  const card = el('div','card center-txt');
+  card.appendChild(el('div','tag pulse','OYUN DEVAM EDİYOR'));
+  card.appendChild(el('div','info-text','Herkes rolünü gördü. Şimdi sırayla birer kelime ya da cümleyle ipucu verin. İmposter belli olmadan hayatta kalmaya çalışsın!'));
+  app.appendChild(card);
+
+  const again = el('button','btn solid','AYNI OYUNCULARLA YENİ TUR');
+  again.onclick = () => startLocalGame();
+  app.appendChild(again);
+
+  const menu = el('button','btn ghost','ANA MENÜYE DÖN');
+  menu.onclick = () => { state.screen='menu'; render(); };
+  app.appendChild(menu);
+}
+
+/* ---------- ONLINE: CHOICE ---------- */
+function renderOnlineChoice(app){
+  backBar(app, 'Ana Menü', () => { state.screen='menu'; render(); });
+  header(app, 'FARKLI CİHAZLAR', 'ONLİNE LOBİ', 'Bir lobi kur ya da koda katıl');
+
+  const card = el('div','card');
+  const b1 = el('button','btn solid','LOBİ KUR');
+  b1.onclick = () => { state.screen='online-create'; render(); };
+  card.appendChild(b1);
+  const b2 = el('button','btn','KODLA KATIL');
+  b2.onclick = () => { state.screen='online-join'; render(); };
+  card.appendChild(b2);
+  app.appendChild(card);
+}
+
+/* ---------- ONLINE: CREATE ---------- */
+function renderOnlineCreate(app){
+  backBar(app, 'Geri', () => { state.screen='online-choice'; render(); });
+  header(app, 'LOBİ KUR', 'İSMİNİ GİR', 'Diğerleri seni bu isimle görecek');
+
+  const card = el('div','card');
+  card.appendChild(el('label','field-label','Adın'));
+  const input = el('input');
+  input.type='text'; input.placeholder='Örn. Kaan';
+  input.value = state.online.myName;
+  input.oninput = (e) => { state.online.myName = e.target.value; };
+  card.appendChild(input);
+  const err = el('div','error-text', state.online.err);
+  card.appendChild(err);
+  app.appendChild(card);
+
+  const btn = el('button','btn solid','LOBİYİ OLUŞTUR');
+  btn.onclick = async () => {
+    const name = state.online.myName.trim();
+    if(!name){ state.online.err='Önce adını yaz.'; render(); return; }
+    state.online.err='';
+    btn.disabled = true; btn.textContent='OLUŞTURULUYOR...';
+    await createLobby(name);
+  };
+  app.appendChild(btn);
+}
+
+async function createLobby(name){
+  let code;
+  for(let tries=0; tries<5; tries++){
+    code = makeCode();
+    try{
+      const existing = await window.storage.get('lobby:'+code, true);
+      if(!existing) break;
+    }catch(e){ break; }
+  }
+  const O = state.online;
+  O.isHost = true;
+  O.code = code;
+  O.myName = name;
+  O.players = [{ id: O.myId, name }];
+  O.status = 'waiting';
+  O.round = 0;
+  try{
+    await window.storage.set('lobby:'+code, JSON.stringify({
+      code, hostId: O.myId, status: 'waiting', players: O.players,
+      round: 0, footballer: null, imposterId: null
+    }), true);
+    O.err='';
+    state.screen = 'online-lobby';
+    startPolling();
+    render();
+  }catch(e){
+    O.err = 'Lobi oluşturulamadı, tekrar dene.';
+    state.screen = 'online-create';
+    render();
+  }
+}
+
+/* ---------- ONLINE: JOIN ---------- */
+function renderOnlineJoin(app){
+  backBar(app, 'Geri', () => { state.screen='online-choice'; render(); });
+  header(app, 'KODLA KATIL', 'LOBİYE GİR', 'Kod ve adını gir');
+
+  const card = el('div','card');
+  card.appendChild(el('label','field-label','Lobi kodu'));
+  const codeInput = el('input','code-input');
+  codeInput.type='text'; codeInput.maxLength=5; codeInput.placeholder='ABCDE';
+  codeInput.value = state.online.code;
+  codeInput.oninput = (e) => { state.online.code = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,''); e.target.value = state.online.code; };
+  card.appendChild(codeInput);
+
+  card.appendChild(el('label','field-label','Adın'));
+  const nameInput = el('input');
+  nameInput.type='text'; nameInput.placeholder='Örn. Ayşe';
+  nameInput.value = state.online.myName;
+  nameInput.oninput = (e) => { state.online.myName = e.target.value; };
+  card.appendChild(nameInput);
+
+  const err = el('div','error-text', state.online.err);
+  card.appendChild(err);
+  app.appendChild(card);
+
+  const btn = el('button','btn solid','LOBİYE KATIL');
+  btn.onclick = async () => {
+    const code = state.online.code.trim();
+    const name = state.online.myName.trim();
+    if(code.length < 4){ state.online.err='Geçerli bir kod gir.'; render(); return; }
+    if(!name){ state.online.err='Önce adını yaz.'; render(); return; }
+    btn.disabled = true; btn.textContent='KATILINIYOR...';
+    await joinLobby(code, name);
+  };
+  app.appendChild(btn);
+}
+
+async function joinLobby(code, name){
+  const O = state.online;
+  try{
+    const res = await window.storage.get('lobby:'+code, true);
+    if(!res){ O.err='Böyle bir lobi bulunamadı.'; state.screen='online-join'; render(); return; }
+    const data = JSON.parse(res.value);
+    if(data.status === 'playing'){ O.err='Bu lobide oyun zaten başladı.'; state.screen='online-join'; render(); return; }
+    data.players.push({ id: O.myId, name });
+    await window.storage.set('lobby:'+code, JSON.stringify(data), true);
+    O.isHost = false;
+    O.code = code;
+    O.myName = name;
+    O.players = data.players;
+    O.status = data.status;
+    O.err = '';
+    state.screen = 'online-lobby';
+    startPolling();
+    render();
+  }catch(e){
+    O.err = 'Bağlantı hatası, tekrar dene.';
+    state.screen = 'online-join';
+    render();
+  }
+}
+
+/* ---------- ONLINE: LOBBY ---------- */
+function renderOnlineLobby(app){
+  const O = state.online;
+  backBar(app, 'Lobiden Ayrıl', () => leaveLobby());
+  header(app, O.isHost ? 'LOBİ SAHİBİSİN' : 'LOBİDESİN', 'BEKLEME SALONU', 'Arkadaşların kodu girsin');
+
+  const card = el('div','card center-txt');
+  card.appendChild(el('div','section-title','Lobi kodu'));
+  card.appendChild(el('div','code-display', O.code));
+  card.appendChild(el('div','info-text','Bu kodu diğer oyunculara paylaş. Onlar "Kodla Katıl" ile girecek.'));
+  app.appendChild(card);
+
+  const listCard = el('div','card');
+  listCard.appendChild(el('div','section-title','Oyuncular (' + O.players.length + ')'));
+  const ul = el('ul','player-list');
+  O.players.forEach(p => {
+    const li = el('li');
+    li.appendChild(el('span', null, p.name + (p.id===O.myId ? ' (sen)' : '')));
+    if(p.id === O.hostId || (O.isHost && p.id===O.myId)) li.appendChild(el('span','host-badge','KURUCU'));
+    ul.appendChild(li);
+  });
+  listCard.appendChild(ul);
+  app.appendChild(listCard);
+
+  if(O.isHost){
+    const startBtn = el('button','btn solid','OYUNU BAŞLAT');
+    startBtn.disabled = O.players.length < 3;
+    startBtn.onclick = () => startOnlineRound();
+    app.appendChild(startBtn);
+    if(O.players.length < 3){
+      app.appendChild(el('div','info-text','Başlamak için en az 3 oyuncu gerekiyor.'));
+    }
+  } else {
+    const wait = el('div','card center-txt');
+    wait.appendChild(el('div','spinner'));
+    wait.appendChild(el('div','info-text','Lobi sahibinin oyunu başlatması bekleniyor...'));
+    app.appendChild(wait);
+  }
+}
+
+async function startOnlineRound(){
+  const O = state.online;
+  const footballer = pick(FOOTBALLERS);
+  const imposter = pick(O.players).id;
+  const newRound = O.round + 1;
+  try{
+    const res = await window.storage.get('lobby:'+O.code, true);
+    const data = res ? JSON.parse(res.value) : { code:O.code, hostId:O.myId, p
