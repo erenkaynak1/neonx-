@@ -9,6 +9,7 @@ on:
       - 'scripts/build_career_twin_pool.py'
       - 'scripts/enrich_career_twin_uoc_v2.py'
       - 'scripts/enrich_career_twin_weights_v2.py'
+      - 'scripts/diagnose_career_twin_missing.py'
       - '.github/workflows/update-career-twin-pool.yml'
 
 permissions:
@@ -31,6 +32,8 @@ jobs:
         run: python scripts/enrich_career_twin_uoc_v2.py
       - name: Recover safe physical-data matches
         run: python scripts/enrich_career_twin_weights_v2.py
+      - name: Diagnose remaining gaps
+        run: python scripts/diagnose_career_twin_missing.py
       - name: Commit refreshed pool
         run: |
           git config user.name "github-actions[bot]"
