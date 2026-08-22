@@ -1,0 +1,26 @@
+{
+  "generated_at": "2026-08-22T23:20:36.154018+00:00",
+  "playable_count": 0,
+  "candidate_count": 6500,
+  "total_selected": 6500,
+  "required_fields": [
+    "height_cm",
+    "weight_kg",
+    "birth_date",
+    "club_count",
+    "trophies",
+    "career_goals",
+    "career_assists",
+    "peak_market_value_eur",
+    "career_appearances"
+  ],
+  "policy": "Only 9/9 complete records are playable. Missing data is never invented.",
+  "uoc_file": null,
+  "uoc_columns": [],
+  "zenodo_title": "Football Players Dataset from La Liga, Premier League and Bundesliga extracted from Transfermarkt",
+  "sources": {
+    "transfermarkt_datasets": "https://pub-e682421888d945d684bcae8890b0ec20.r2.dev/data/transfermarkt-datasets.duckdb",
+    "eafc26": "https://raw.githubusercontent.com/ismailoksuz/EAFC26-DataHub/main/data/players.csv",
+    "uoc_2026": "https://zenodo.org/api/records/19396819"
+  }
+}
