@@ -22,7 +22,17 @@ const FOOTBALLERS = [
   "Arda Güler","Hakan Çalhanoğlu","Kerem Aktürkoğlu","Cengiz Ünder","Barış Alper Yılmaz",
   "Merih Demiral","Zeki Çelik","Uğurcan Çakır","Orkun Kökçü","Yunus Akgün",
   "Salih Özcan","İrfan Can Kahveci","Burak Yılmaz","Arda Turan","Hakan Şükür",
-  "Rüştü Reçber","Emre Belözoğlu","Nuri Şahin","Tuncay Şanlı","Alex de Souza"
+  "Rüştü Reçber","Emre Belözoğlu","Nuri Şahin","Tuncay Şanlı","Alex de Souza",
+  "Antony","Hasan Ali Kaldırım","Dani Güiza","Sabri Sarıoğlu","Nicklas Bendtner",
+  "Mario Balotelli","Harry Maguire","Peter Crouch","Marouane Fellaini","Adama Traoré",
+  "Michu","Adebayo Akinfenwa","Hatem Ben Arfa","Ricardo Quaresma","Guti",
+  "Adriano","Roberto Carlos","Marcelo","Pepe","Mesut Özil",
+  "Kaká","Fernando Torres","Iker Casillas","Gianluigi Buffon","Manuel Neuer",
+  "Yaya Touré","Park Ji-sung","Nani","Mario Gómez","Lukas Podolski",
+  "Demba Ba","Bafétimbi Gomis","Moussa Sow","Emmanuel Emenike","Volkan Demirel",
+  "Felipe Melo","Selçuk İnan","İlhan Mansız","Sergen Yalçın","Tümer Metin",
+  "Pascal Nouma","Pierre van Hooijdonk","Jay-Jay Okocha","Djibril Cissé","Colin Kazım-Richards",
+  "Servet Çetin"
 ];
 
 function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
