@@ -1,0 +1,41 @@
+{
+  "files": [
+    {
+      "key": "jugadors.csv",
+      "links": {
+        "self": "https://zenodo.org/api/records/19396819/files/jugadors.csv",
+        "content": "https://zenodo.org/api/records/19396819/files/jugadors.csv/content"
+      }
+    }
+  ],
+  "tables": [
+    {
+      "name": "jugadors.csv",
+      "rows": 1332,
+      "columns": [
+        "lliga",
+        "equip",
+        "nom",
+        "posicio",
+        "edat",
+        "nacionalitat",
+        "dorsal",
+        "valor_mercat",
+        "trofeus",
+        "partits",
+        "gols",
+        "assistencies",
+        "targetes_grogues",
+        "segones_grogues",
+        "targetes_vermelles",
+        "percn_minuts_jugats",
+        "percen_xi_inicial",
+        "percen_participacio",
+        "agent",
+        "fitxat",
+        "contracte_fins",
+        "url"
+      ]
+    }
+  ]
+}
