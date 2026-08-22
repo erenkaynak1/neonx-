@@ -1,0 +1,203 @@
+;border:1px solid rgba(57,255,136,.38);background:rgba(4,10,8,.78);backdrop-filter:blur(10px);color:#bfffd8;text-decoration:none;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;letter-spacing:.08em;box-shadow:0 0 18px rgba(57,255,136,.10)}
+.sidegames-return:active{transform:scale(.97)}
+</style>
+</head>
+<body>
+<a class="sidegames-return" href="./index.html" aria-label="Yan oyunlara dön">← YAN OYUNLAR</a>
+
+<div class="rotate-overlay">
+  <div class="icon">&#128241;</div>
+  <div class="msg">EN İYİ DENEYİM İÇİN<br>TELEFONU DİKEY ÇEVİR</div>
+</div>
+<div class="app" id="app"></div>
+
+<script>
+const FOOTBALLERS = [
+  "Lionel Messi","Cristiano Ronaldo","Kylian Mbappé","Erling Haaland","Neymar Jr.",
+  "Kevin De Bruyne","Vinicius Jr.","Jude Bellingham","Mohamed Salah","Robert Lewandowski",
+  "Karim Benzema","Luka Modrić","Toni Kroos","Sergio Ramos","Zlatan Ibrahimović",
+  "Ronaldinho","Zinedine Zidane","Ronaldo Nazário","David Beckham","Andrés Iniesta",
+  "Xavi Hernández","Pelé","Diego Maradona","Thierry Henry","Paolo Maldini",
+  "Franz Beckenbauer","Johan Cruyff","Wesley Sneijder","Didier Drogba",
+  "Arda Güler","Hakan Çalhanoğlu","Kerem Aktürkoğlu","Cengiz Ünder","Barış Alper Yılmaz",
+  "Merih Demiral","Zeki Çelik","Uğurcan Çakır","Orkun Kökçü","Yunus Akgün",
+  "Salih Özcan","İrfan Can Kahveci","Burak Yılmaz","Arda Turan","Hakan Şükür",
+  "Rüştü Reçber","Emre Belözoğlu","Nuri Şahin","Tuncay Şanlı","Alex de Souza"
+];
+
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function uid(){ return Math.random().toString(36).slice(2,10); }
+function makeCode(){
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let c = "";
+  for(let i=0;i<5;i++) c += chars[Math.floor(Math.random()*chars.length)];
+  return c;
+}
+
+function buildPeelCard(revealed, isImposter, footballer, onChange){
+  const wrap = el('div','peel-wrap');
+
+  // 1) Alt kağıt: tamamen sabit ve gizli içerik doğrudan burada.
+  const bottom = el('div','bottom-paper ' + (isImposter ? 'imposter' : 'normal'));
+  if(isImposter){
+    bottom.appendChild(el('div','role-label','Dikkat'));
+    bottom.appendChild(el('div','player-name','SEN İMPOSTERSİN'));
+  } else {
+    bottom.appendChild(el('div','role-label','Futbolcu'));
+    bottom.appendChild(el('div','player-name', footballer));
+  }
+
+  // 2) Üst kağıt: ön yüz + aynı kağıdın katlanan arka yüzü.
+  const front = el('div','top-paper-front');
+  const frontBody = el('div','paper-body');
+  frontBody.innerHTML = '<span class="paper-icon">&#9917;</span><div class="paper-top-title">Rolünü Aç</div><div class="paper-top-hint">Sağ alt köşeden sol üste sürükle</div>';
+  front.appendChild(frontBody);
+
+  const back = el('div','top-paper-back');
+  const shadow = el('div','fold-shadow');
+  const crease = el('div','fold-crease');
+  const hitZone = el('div','peel-hit-zone' + (revealed ? ' disabled' : ''));
+
+  wrap.appendChild(bottom);
+  wrap.appendChild(front);
+  wrap.appendChild(back);
+  wrap.appendChild(shadow);
+  wrap.appendChild(crease);
+  wrap.appendChild(hitZone);
+
+  const square = [[0,0],[1,0],[1,1],[0,1]];
+  let dragging = false;
+  let pointerId = null;
+  let startX = 0;
+  let startY = 0;
+  let progress = revealed ? 1 : 0;
+  let snapRaf = null;
+  let opened = !!revealed;
+  let foldNX = Math.SQRT1_2;
+  let foldNY = Math.SQRT1_2;
+
+  function clamp(v,min=0,max=1){ return Math.max(min, Math.min(max, v)); }
+
+  // Genel yarım-düzlem kırpması: nx*x + ny*y <= threshold / >= threshold.
+  // Fold çizgisinin açısı artık pointer'ın gerçek X/Y hareketine bağlıdır.
+  function clipHalfPlane(poly, nx, ny, threshold, keepLess){
+    if(!poly.length) return [];
+    const out = [];
+    const side = (pt) => nx*pt[0] + ny*pt[1] - threshold;
+    const inside = (pt) => keepLess ? side(pt) <= 1e-7 : side(pt) >= -1e-7;
+    for(let i=0;i<poly.length;i++){
+      const a = poly[i];
+      const b = poly[(i+1)%poly.length];
+      const aIn = inside(a);
+      const bIn = inside(b);
+      if(aIn) out.push(a);
+      if(aIn !== bIn){
+        const sa = side(a);
+        const sb = side(b);
+        const denom = sa - sb;
+        const t = Math.abs(denom) < 1e-9 ? 0 : sa / denom;
+        out.push([
+          a[0] + (b[0]-a[0]) * t,
+          a[1] + (b[1]-a[1]) * t
+        ]);
+      }
+    }
+    return out;
+  }
+
+  function polyCss(poly){
+    if(poly.length < 3) return 'polygon(0 0,0 0,0 0)';
+    return 'polygon(' + poly.map(([x,y]) => (x*100).toFixed(3) + '% ' + (y*100).toFixed(3) + '%').join(',') + ')';
+  }
+
+  // nx*x + ny*y = threshold çizgisinin kart kenarlarıyla kesişimlerini bulur.
+  function lineSquareIntersections(nx, ny, threshold){
+    const pts = [];
+    const add = (x,y) => {
+      if(x < -1e-6 || x > 1+1e-6 || y < -1e-6 || y > 1+1e-6) return;
+      if(!pts.some(p => Math.hypot(p[0]-x,p[1]-y) < 1e-5)) pts.push([clamp(x),clamp(y)]);
+    };
+    if(Math.abs(ny) > 1e-8){
+      add(0, threshold/ny);
+      add(1, (threshold-nx)/ny);
+    }
+    if(Math.abs(nx) > 1e-8){
+      add(threshold/nx, 0);
+      add((threshold-ny)/nx, 1);
+    }
+    if(pts.length < 2) return [[1,1],[1,1]];
+    let best=[pts[0],pts[1]], bestD=-1;
+    for(let i=0;i<pts.length;i++) for(let j=i+1;j<pts.length;j++){
+      const d=Math.hypot(pts[i][0]-pts[j][0],pts[i][1]-pts[j][1]);
+      if(d>bestD){ bestD=d; best=[pts[i],pts[j]]; }
+    }
+    return best;
+  }
+
+  function setLineElement(node, p1, p2, normalOffset=0){
+    const rect = wrap.getBoundingClientRect();
+    const inset = 10;
+    const w = Math.max(1, rect.width - inset*2);
+    const h = Math.max(1, rect.height - inset*2);
+    let x1 = inset + p1[0]*w;
+    let y1 = inset + p1[1]*h;
+    let x2 = inset + p2[0]*w;
+    let y2 = inset + p2[1]*h;
+    const dx = x2-x1;
+    const dy = y2-y1;
+    const len = Math.hypot(dx,dy);
+    if(len < 0.5){ node.style.opacity='0'; return; }
+    // çizginin alt-kağıt tarafına doğru küçük gölge offset'i
+    const inv = 1/len;
+    const ox = -dy*inv*normalOffset;
+    const oy =  dx*inv*normalOffset;
+    x1 += ox; y1 += oy;
+    const angle = Math.atan2(dy,dx) * 180/Math.PI;
+    node.style.left = x1 + 'px';
+    node.style.top = y1 + 'px';
+    node.style.width = len + 'px';
+    node.style.transform = 'rotate(' + angle + 'deg)';
+  }
+
+  function renderProgress(value, nx=foldNX, ny=foldNY){
+    progress = clamp(value);
+    const nLen = Math.hypot(nx,ny) || 1;
+    foldNX = nx/nLen;
+    foldNY = ny/nLen;
+
+    // Kapalıyken çizgi sağ-alt köşenin dışında; açıldıkça pointer yönüne dik biçimde
+    // sol-üste ilerler. Böylece "sürgülü kapı" gibi sabit 45° taramaz.
+    const maxDot = foldNX + foldNY;
+    const threshold = maxDot * (1 - progress);
+
+    const frontPoly = clipHalfPlane(square, foldNX, foldNY, threshold, true);
+    front.style.clipPath = polyCss(frontPoly);
+
+    // Gerçek peel hissi: crease'in ötesindeki üst-kağıt bölgesini aynı crease'e göre
+    // yansıtarak kağıdın kendi arka yüzünü üret. Crease üzerindeki noktalar yerinde kalır,
+    // yani bağımsız bir flap/üçgen oluşmaz.
+    const peeled = clipHalfPlane(square, foldNX, foldNY, threshold, false);
+    const lift = Math.sin(Math.PI * progress);
+    // 2 = tamamen düz yansıma. Biraz daha düşük değer kağıdın havaya kalktığı hissini verir.
+    const reflection = 1.58 + 0.30 * lift;
+    const reflected = peeled.map(([x,y]) => {
+      const d = foldNX*x + foldNY*y - threshold;
+      return [
+        x - reflection*d*foldNX,
+        y - reflection*d*foldNY
+      ];
+    });
+    back.style.clipPath = polyCss(reflected);
+
+    const endpoints = lineSquareIntersections(foldNX, foldNY, threshold);
+    setLineElement(crease, endpoints[0], endpoints[1], 0);
+    setLineElement(shadow, endpoints[0], endpoints[1], 5 + lift*5);
+
+    const visibility = Math.sin(Math.PI * progress);
+    crease.style.opacity = String(clamp(visibility * 1.18));
+    shadow.style.opacity = String(clamp(visibility * 0.90));
+
+    // Arka yüzde dinamik ışık + gölge: z ekseninde hafif kalkma hissi verir,
+    // fakat kağıdın tamamını translate/rotate etmez.
+    back.style.filter =
+      'brightness(' + (0.78 + vis
