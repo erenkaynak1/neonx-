@@ -1,0 +1,240 @@
+ibility*0.28).toFixed(3) + ')' +
+      ' saturate(' + (0.92 + visibility*0.12).toFixed(3) + ')' +
+      ' drop-shadow(' + (-foldNX*7*visibility).toFixed(1) + 'px ' + (-foldNY*7*visibility).toFixed(1) + 'px ' + (5+visibility*7).toFixed(1) + 'px rgba(0,0,0,' + (0.12+visibility*0.26).toFixed(3) + '))';
+
+    // Ön yüzde çok hafif ışık değişimi; düz dijital maske hissini azaltır.
+    front.style.filter = 'brightness(' + (1 - visibility*0.035).toFixed(3) + ')';
+  }
+
+  function progressFromPointer(e){
+    const rect = wrap.getBoundingClientRect();
+    const innerW = Math.max(1, rect.width - 20);
+    const innerH = Math.max(1, rect.height - 20);
+    const dx = Math.max(0, startX - e.clientX);
+    const dy = Math.max(0, startY - e.clientY);
+    const px = dx / innerW;
+    const py = dy / innerH;
+    const p = clamp((px + py) / 2);
+
+    // Kullanıcı daha yatay/dikey çekerse fold açısı da buna doğal şekilde tepki verir.
+    // Çok küçük harekette açı zıplamasın diye mevcut normal korunur.
+    if(dx + dy > 4){
+      const vx = Math.max(0.08, px);
+      const vy = Math.max(0.08, py);
+      const len = Math.hypot(vx,vy) || 1;
+      foldNX = vx/len;
+      foldNY = vy/len;
+    }
+    return p;
+  }
+
+  function stopSnap(){
+    if(snapRaf){ cancelAnimationFrame(snapRaf); snapRaf = null; }
+  }
+
+  function snapTo(target){
+    stopSnap();
+    const from = progress;
+    const duration = 220;
+    const t0 = performance.now();
+    function frame(now){
+      const t = clamp((now - t0) / duration);
+      const eased = 1 - Math.pow(1-t,3);
+      renderProgress(from + (target-from)*eased);
+      if(t < 1){
+        snapRaf = requestAnimationFrame(frame);
+      } else {
+        snapRaf = null;
+        progress = target;
+        opened = target === 1;
+        hitZone.classList.toggle('disabled', opened);
+        onChange(opened);
+      }
+    }
+    snapRaf = requestAnimationFrame(frame);
+  }
+
+  function onDown(e){
+    if(opened) return;
+    stopSnap();
+    dragging = true;
+    pointerId = e.pointerId;
+    startX = e.clientX;
+    startY = e.clientY;
+    try{ hitZone.setPointerCapture(pointerId); }catch(err){}
+    e.preventDefault();
+  }
+
+  function onMove(e){
+    if(!dragging || e.pointerId !== pointerId) return;
+    // Drag sırasında hiçbir transition/snap yok: geometri doğrudan parmağa bağlı.
+    renderProgress(progressFromPointer(e), foldNX, foldNY);
+    e.preventDefault();
+  }
+
+  function finishDrag(e){
+    if(!dragging || (pointerId !== null && e.pointerId !== pointerId)) return;
+    dragging = false;
+    try{ hitZone.releasePointerCapture(pointerId); }catch(err){}
+    pointerId = null;
+    const target = progress > 0.55 ? 1 : 0;
+    snapTo(target);
+    e.preventDefault();
+  }
+
+  hitZone.addEventListener('pointerdown', onDown);
+  hitZone.addEventListener('pointermove', onMove);
+  hitZone.addEventListener('pointerup', finishDrag);
+  hitZone.addEventListener('pointercancel', finishDrag);
+
+  // İlk render: revealed state korunur.
+  requestAnimationFrame(() => renderProgress(progress));
+
+  return wrap;
+}
+
+const state = {
+  screen: 'menu',
+  local: { count: 4, names: [], idx: 0, revealedThis: false, footballer: null, imposterIdx: null, order: [] },
+  online: {
+    myId: uid(), myName: '', code: '', isHost: false,
+    players: [], status: 'idle', round: 0, footballer: null, imposterId: null,
+    revealed: false, polling: null, err: ''
+  }
+};
+
+function render(){
+  const app = document.getElementById('app');
+  app.innerHTML = '';
+  const wrap = el('div','screen');
+  const screens = {
+    menu: renderMenu,
+    'local-setup': renderLocalSetup,
+    'local-reveal': renderLocalReveal,
+    'local-done': renderLocalDone,
+    'online-choice': renderOnlineChoice,
+    'online-create': renderOnlineCreate,
+    'online-join': renderOnlineJoin,
+    'online-lobby': renderOnlineLobby,
+    'online-reveal': renderOnlineReveal
+  };
+  (screens[state.screen] || renderMenu)(wrap);
+  app.appendChild(wrap);
+}
+
+try{
+  if(screen.orientation && screen.orientation.lock){
+    screen.orientation.lock('portrait').catch(()=>{});
+  }
+}catch(e){}
+
+function el(tag, cls, html){
+  const e = document.createElement(tag);
+  if(cls) e.className = cls;
+  if(html !== undefined) e.innerHTML = html;
+  return e;
+}
+
+function header(app, eyebrow, title, sub){
+  const wrap = el('div','title-wrap');
+  wrap.appendChild(el('div','crest', eyebrow));
+  wrap.appendChild(el('div','title', title));
+  if(sub) wrap.appendChild(el('div','subtitle', sub));
+  app.appendChild(wrap);
+}
+
+function backBar(app, label, onBack){
+  const bar = el('div','topbar');
+  const b = el('button','back-btn','&larr; ' + label);
+  b.onclick = onBack;
+  bar.appendChild(b);
+  app.appendChild(bar);
+}
+
+/* ---------- MENU ---------- */
+function renderMenu(app){
+  header(app, 'YAN OYUNLAR', 'İMPOSTOR<span>11</span>', 'NEON XI yan oyun modu · Aranızdaki gizli imposteri bulun');
+
+  const card = el('div','card');
+  card.appendChild(el('div','section-title','Oyun modu seç'));
+
+  const b1 = el('button','btn solid','TEK TELEFON İLE OYNA');
+  b1.onclick = () => { state.screen = 'local-setup'; render(); };
+  card.appendChild(b1);
+
+  const b2 = el('button','btn','FARKLI CİHAZLAR İLE OYNA');
+  b2.onclick = () => { state.screen = 'online-choice'; render(); };
+  card.appendChild(b2);
+
+  app.appendChild(card);
+
+  const info = el('div','card');
+  info.appendChild(el('div','section-title','Nasıl oynanır'));
+  info.appendChild(el('div','info-text',
+    'Bir oyuncu hariç herkese aynı ünlü futbolcunun ismi gösterilir. İmposter olan kişiye ise sadece "İMPOSTERSİN" yazar. Herkes sırayla ipucu niteliğinde bir şey söyler, imposteri bulmaya çalışır. İmposter de belli etmemeye çalışır!'
+  ));
+  app.appendChild(info);
+}
+
+/* ---------- LOCAL: SETUP ---------- */
+function renderLocalSetup(app){
+  backBar(app, 'Ana Menü', () => { state.screen='menu'; render(); });
+  header(app, 'TEK TELEFON', 'OYUNCULAR', 'Kaç kişi oynuyorsunuz?');
+
+  const card = el('div','card');
+  const stepper = el('div','stepper');
+  const minus = el('button', null, '−');
+  const countEl = el('div','count', String(state.local.count));
+  const plus = el('button', null, '+');
+  minus.onclick = () => { if(state.local.count>3){ state.local.count--; syncLocalNames(); render(); } };
+  plus.onclick = () => { if(state.local.count<12){ state.local.count++; syncLocalNames(); render(); } };
+  stepper.appendChild(minus); stepper.appendChild(countEl); stepper.appendChild(plus);
+  card.appendChild(stepper);
+  app.appendChild(card);
+
+  syncLocalNames();
+  const namesCard = el('div','card');
+  namesCard.appendChild(el('div','section-title','İsimler (opsiyonel)'));
+  state.local.names.forEach((n,i) => {
+    const input = el('input','player-name-input');
+    input.type = 'text';
+    input.placeholder = 'Oyuncu ' + (i+1);
+    input.value = n;
+    input.oninput = (e) => { state.local.names[i] = e.target.value; };
+    namesCard.appendChild(input);
+  });
+  app.appendChild(namesCard);
+
+  const startBtn = el('button','btn solid','OYUNU BAŞLAT');
+  startBtn.onclick = () => startLocalGame();
+  app.appendChild(startBtn);
+}
+
+function syncLocalNames(){
+  const n = state.local.count;
+  while(state.local.names.length < n) state.local.names.push('');
+  while(state.local.names.length > n) state.local.names.pop();
+}
+
+function startLocalGame(){
+  const names = state.local.names.map((n,i) => n.trim() || ('Oyuncu ' + (i+1)));
+  state.local.footballer = pick(FOOTBALLERS);
+  state.local.imposterIdx = Math.floor(Math.random()*names.length);
+  state.local.order = names;
+  state.local.idx = 0;
+  state.local.revealedThis = false;
+  state.screen = 'local-reveal';
+  render();
+}
+
+/* ---------- LOCAL: REVEAL ---------- */
+function renderLocalReveal(app){
+  const L = state.local;
+  const total = L.order.length;
+  const name = L.order[L.idx];
+
+  header(app, 'SIRA SENDE', name.toUpperCase(), 'Telefonu ' + name + '\'e ver');
+
+  const isImp = L.idx === L.imposterIdx;
+  const nextBtn = el('button','btn solid', L.idx < total-1 ? 'SIRAYI GEÇ' : 'BİTİR');
+  nextBtn.disabled = !L.rev
