@@ -1,0 +1,70 @@
+{
+  "candidate_count": 5654,
+  "missing_by_field": {
+    "weight_kg": 3874,
+    "trophies": 5456,
+    "career_goals": 5456,
+    "career_assists": 5456,
+    "career_appearances": 5456,
+    "peak_market_value_eur": 194
+  },
+  "top_missing_combinations": [
+    {
+      "fields": [
+        "weight_kg",
+        "trophies",
+        "career_goals",
+        "career_assists",
+        "career_appearances"
+      ],
+      "count": 3500
+    },
+    {
+      "fields": [
+        "trophies",
+        "career_goals",
+        "career_assists",
+        "career_appearances"
+      ],
+      "count": 1763
+    },
+    {
+      "fields": [
+        "weight_kg"
+      ],
+      "count": 197
+    },
+    {
+      "fields": [
+        "weight_kg",
+        "trophies",
+        "career_goals",
+        "career_assists",
+        "peak_market_value_eur",
+        "career_appearances"
+      ],
+      "count": 177
+    },
+    {
+      "fields": [
+        "trophies",
+        "career_goals",
+        "career_assists",
+        "peak_market_value_eur",
+        "career_appearances"
+      ],
+      "count": 16
+    },
+    {
+      "fields": [
+        "peak_market_value_eur"
+      ],
+      "count": 1
+    }
+  ],
+  "uoc_enriched_remaining": 198,
+  "uoc_missing_by_field": {
+    "weight_kg": 197,
+    "peak_market_value_eur": 1
+  }
+}
