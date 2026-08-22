@@ -14,7 +14,12 @@ ibility*0.28).toFixed(3) + ')' +
     const dy = Math.max(0, startY - e.clientY);
     const px = dx / innerW;
     const py = dy / innerH;
-    const p = clamp((px + py) / 2);
+
+    // Mobil parmak hareketi kartın fiziksel boyutundan daha kısa kaldığı için
+    // diagonal ilerlemeyi biraz hızlandırıyoruz. Böylece normal bir sağ-alt → sol-üst
+    // sürükleme merkezdeki rol/isim alanını rahatça tamamen açabiliyor.
+    const diagonal = (px + py) / 2;
+    const p = clamp(diagonal * 1.65);
 
     // Kullanıcı daha yatay/dikey çekerse fold açısı da buna doğal şekilde tepki verir.
     // Çok küçük harekette açı zıplamasın diye mevcut normal korunur.
@@ -35,7 +40,7 @@ ibility*0.28).toFixed(3) + ')' +
   function snapTo(target){
     stopSnap();
     const from = progress;
-    const duration = 220;
+    const duration = 200;
     const t0 = performance.now();
     function frame(now){
       const t = clamp((now - t0) / duration);
@@ -77,7 +82,8 @@ ibility*0.28).toFixed(3) + ')' +
     dragging = false;
     try{ hitZone.releasePointerCapture(pointerId); }catch(err){}
     pointerId = null;
-    const target = progress > 0.55 ? 1 : 0;
+    // Kullanıcı rol alanını belirgin biçimde açtıysa bırakınca tam açılsın.
+    const target = progress > 0.42 ? 1 : 0;
     snapTo(target);
     e.preventDefault();
   }
