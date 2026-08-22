@@ -8,6 +8,7 @@ on:
     paths:
       - 'scripts/build_career_twin_pool.py'
       - 'scripts/enrich_career_twin_uoc_v2.py'
+      - 'scripts/enrich_career_twin_weights_v2.py'
       - '.github/workflows/update-career-twin-pool.yml'
 
 permissions:
@@ -23,11 +24,13 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install data dependencies
-        run: pip install --disable-pip-version-check duckdb pandas requests openpyxl
+        run: pip install --disable-pip-version-check duckdb pandas requests openpyxl rapidfuzz
       - name: Build current candidate pool
         run: python scripts/build_career_twin_pool.py
       - name: Enrich trophies and career totals
         run: python scripts/enrich_career_twin_uoc_v2.py
+      - name: Recover safe physical-data matches
+        run: python scripts/enrich_career_twin_weights_v2.py
       - name: Commit refreshed pool
         run: |
           git config user.name "github-actions[bot]"
