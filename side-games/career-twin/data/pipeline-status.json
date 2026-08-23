@@ -1,0 +1,15 @@
+{
+  "generated_at": "2026-08-23T13:21:05.067608+00:00",
+  "success": false,
+  "stages": {
+    "deps": "success",
+    "candidates": "success",
+    "trophies": "success",
+    "career": "failure",
+    "weight1": "skipped",
+    "weight2": "skipped",
+    "validate": "skipped",
+    "diagnose": "skipped",
+    "finalize": "skipped"
+  }
+}
