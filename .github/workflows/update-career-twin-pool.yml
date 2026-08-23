@@ -49,8 +49,22 @@ jobs:
         name: Build club-only career totals from Transfermarkt archives
         shell: bash
         run: |
+          set +e
           set -o pipefail
           python scripts/enrich_career_twin_open_archive.py 2>&1 | tee side-games/career-twin/data/pipeline-career-error.log
+          RC=${PIPESTATUS[0]}
+          if [ -f .tmp-career-twin-player-performances.csv ]; then
+            echo "" >> side-games/career-twin/data/pipeline-career-error.log
+            echo "=== ACTUAL ARCHIVE CSV HEADER ===" >> side-games/career-twin/data/pipeline-career-error.log
+            python - <<'PY' >> side-games/career-twin/data/pipeline-career-error.log 2>&1
+          import pandas as pd
+          p = '.tmp-career-twin-player-performances.csv'
+          df = pd.read_csv(p, nrows=3, low_memory=False)
+          print(list(df.columns))
+          print(df.head(3).to_dict(orient='records'))
+          PY
+          fi
+          exit $RC
 
       - id: weight1
         name: Recover high-confidence physical-data matches
