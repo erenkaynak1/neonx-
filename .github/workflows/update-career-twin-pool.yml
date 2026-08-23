@@ -10,7 +10,7 @@ on:
       - 'scripts/enrich_career_twin_uoc_v3.py'
       - 'scripts/enrich_career_twin_weights_v2.py'
       - 'scripts/enrich_career_twin_weights_v3.py'
-      - 'scripts/enrich_career_twin_transfermarkt_v4.py'
+      - 'scripts/enrich_career_twin_open_archive.py'
       - 'scripts/finalize_career_twin_runtime.py'
       - 'scripts/diagnose_career_twin_missing.py'
       - '.github/workflows/update-career-twin-pool.yml'
@@ -32,7 +32,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install data dependencies
-        run: pip install --disable-pip-version-check duckdb pandas requests openpyxl rapidfuzz beautifulsoup4
+        run: pip install --disable-pip-version-check duckdb pandas requests openpyxl rapidfuzz
       - name: Build recognition-first candidate pool
         run: python scripts/build_career_twin_pool.py
       - name: Enrich trophy reference data only
@@ -41,8 +41,8 @@ jobs:
         run: python scripts/enrich_career_twin_weights_v2.py
       - name: Recover additional team-aware physical matches
         run: python scripts/enrich_career_twin_weights_v3.py
-      - name: Build full Transfermarkt career totals
-        run: python scripts/enrich_career_twin_transfermarkt_v4.py
+      - name: Build verified senior career totals from open Transfermarkt archive
+        run: python scripts/enrich_career_twin_open_archive.py
       - name: Diagnose remaining gaps
         run: python scripts/diagnose_career_twin_missing.py
       - name: Strip unused runtime metadata
