@@ -35,14 +35,14 @@ jobs:
         run: pip install --disable-pip-version-check duckdb pandas requests openpyxl rapidfuzz
       - name: Build recognition-first candidate pool
         run: python scripts/build_career_twin_pool.py
-      - name: Enrich trophy reference data only
+      - name: Enrich direct trophy reference data
         run: python scripts/enrich_career_twin_uoc_v3.py
+      - name: Build verified senior career totals and trophy fallback
+        run: python scripts/enrich_career_twin_open_archive.py
       - name: Recover high-confidence physical-data matches
         run: python scripts/enrich_career_twin_weights_v2.py
       - name: Recover additional team-aware physical matches
         run: python scripts/enrich_career_twin_weights_v3.py
-      - name: Build verified senior career totals from open Transfermarkt archive
-        run: python scripts/enrich_career_twin_open_archive.py
       - name: Diagnose remaining gaps
         run: python scripts/diagnose_career_twin_missing.py
       - name: Strip unused runtime metadata
