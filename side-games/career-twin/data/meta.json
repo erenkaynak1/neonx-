@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-23T00:19:28.734803+00:00",
+  "generated_at": "2026-08-23T00:21:15.143024+00:00",
   "playable_count": 0,
   "candidate_count": 7625,
   "total_selected": 7625,
@@ -22,11 +22,46 @@
   "sources": {
     "transfermarkt_datasets": "https://pub-e682421888d945d684bcae8890b0ec20.r2.dev/data/transfermarkt-datasets.duckdb",
     "eafc26": "https://raw.githubusercontent.com/ismailoksuz/EAFC26-DataHub/main/data/players.csv",
-    "uoc_2026": "https://zenodo.org/api/records/19396819"
+    "uoc_2026": "https://zenodo.org/api/records/19396819",
+    "transfermarkt_career_performance": "https://www.transfermarkt.com.tr/ceapi/player/{id}/performance",
+    "transfermarkt_achievements": "https://www.transfermarkt.com.tr/-/erfolge/spieler/{id}"
   },
   "uoc_matched_names": 1091,
   "uoc_career_totals_disabled": true,
   "fuzzy_weights_added": 300,
   "context_weights_added": 0,
-  "context_only_matches": 0
+  "context_only_matches": 0,
+  "transfermarkt_performance_attempted": 5000,
+  "transfermarkt_performance_matched": 0,
+  "transfermarkt_achievements_attempted": 1800,
+  "transfermarkt_achievements_matched": 0,
+  "career_stats_source": "Transfermarkt CEAPI player performance; senior club rows summed",
+  "zero_appearance_records_playable": false,
+  "runtime_fields": [
+    "id",
+    "name",
+    "status",
+    "recognition_score",
+    "height_cm",
+    "weight_kg",
+    "birth_date",
+    "club_count",
+    "trophies",
+    "career_goals",
+    "career_assists",
+    "peak_market_value_eur",
+    "career_appearances"
+  ],
+  "runtime_removed_fields": [
+    "club",
+    "country",
+    "position",
+    "slug",
+    "sources",
+    "uoc_team",
+    "uoc_age",
+    "updated_at",
+    "turkish_familiar",
+    "playable"
+  ]
 }
