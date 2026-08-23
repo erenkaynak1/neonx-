@@ -13,87 +13,63 @@ YOUTH_RE=re.compile(r'(\bu[- ]?(?:15|16|17|18|19|20|21|23)\b|under[- ]?(?:15|16|
 RESERVE_TEAM_RE=re.compile(r'(?:\s|[-–])(?:ii|iii|b|c)$',re.I)
 TEAM_ID_RE=re.compile(r'/verein/(\d+)')
 
-
 def download():
     if TMP.exists() and TMP.stat().st_size>100_000_000:return
-    with requests.get(ARCHIVE_URL,stream=True,timeout=(30,300),headers={'User-Agent':'Mozilla/5.0 NEON-XI-Career-Twin/2.3'}) as r:
+    with requests.get(ARCHIVE_URL,stream=True,timeout=(30,300),headers={'User-Agent':'Mozilla/5.0 NEON-XI-Career-Twin/3.0'}) as r:
         r.raise_for_status()
         with TMP.open('wb') as f:
             for part in r.iter_content(1024*1024):
                 if part:f.write(part)
-    if TMP.stat().st_size<100_000_000:raise RuntimeError(f'archive too small: {TMP.stat().st_size}')
-
+    if TMP.stat().st_size<100_000_000:raise RuntimeError('career archive download incomplete')
 
 def num(series):
     return pd.to_numeric(series.replace({'-':0,'':0,'None':0,'nan':0}),errors='coerce').fillna(0)
 
-
 def senior_mask(df):
     team=df['team_name'].fillna('').astype(str).str.strip()
     comp=df['competition_name'].fillna('').astype(str).str.strip()
-    youth=team.str.contains(YOUTH_RE,na=False)|comp.str.contains(YOUTH_RE,na=False)
-    reserve=team.str.contains(RESERVE_TEAM_RE,na=False)
-    return ~(youth|reserve)
+    return ~(team.str.contains(YOUTH_RE,na=False)|comp.str.contains(YOUTH_RE,na=False)|team.str.contains(RESERVE_TEAM_RE,na=False))
 
-
-def team_key(url,name):
+def club_key(url,name):
     m=TEAM_ID_RE.search(str(url or ''))
     return 'id:'+m.group(1) if m else 'name:'+str(name or '').strip().lower()
-
 
 def main():
     players=json.loads((DATA/'players.json').read_text(encoding='utf-8'))
     candidates=json.loads((DATA/'candidates.json').read_text(encoding='utf-8'))
-    byid={int(p['id']):p for p in players+candidates}; wanted=set(byid)
+    byid={int(p['id']):p for p in players+candidates};wanted=set(byid)
     if not wanted:raise RuntimeError('no Career Twin candidates')
     download()
-    agg={pid:{'apps':0,'goals':0,'assists':0,'clubs':set(),'rows':0} for pid in wanted}
+    agg={pid:{'apps':0,'goals':0,'assists':0,'clubs':set()} for pid in wanted}
     usecols=['player_id','competition_name','team_url','team_name','nb_on_pitch','goals','assists']
     read_rows=matched_rows=0
     for chunk in pd.read_csv(TMP,usecols=usecols,chunksize=CHUNK,low_memory=False):
-        read_rows+=len(chunk)
-        chunk['player_id']=pd.to_numeric(chunk['player_id'],errors='coerce')
-        chunk=chunk[chunk['player_id'].isin(wanted)]
+        read_rows+=len(chunk);chunk['player_id']=pd.to_numeric(chunk['player_id'],errors='coerce');chunk=chunk[chunk['player_id'].isin(wanted)]
         if chunk.empty:continue
         chunk=chunk[senior_mask(chunk)]
         if chunk.empty:continue
-        chunk['apps']=num(chunk['nb_on_pitch']);chunk['g']=num(chunk['goals']);chunk['a']=num(chunk['assists'])
-        chunk=chunk[chunk['apps']>0];matched_rows+=len(chunk)
-        for row in chunk.itertuples(index=False):
-            pid=int(row.player_id);x=agg[pid]
-            x['apps']+=int(row.apps);x['goals']+=int(row.g);x['assists']+=int(row.a);x['rows']+=1
-            x['clubs'].add(team_key(row.team_url,row.team_name))
-        if read_rows%900000<CHUNK:print(f'archive rows={read_rows:,} matched={matched_rows:,}',flush=True)
-
+        chunk['apps']=num(chunk['nb_on_pitch']);chunk['g']=num(chunk['goals']);chunk['a']=num(chunk['assists']);chunk=chunk[chunk['apps']>0]
+        matched_rows+=len(chunk)
+        for r in chunk.itertuples(index=False):
+            x=agg[int(r.player_id)];x['apps']+=int(r.apps);x['goals']+=int(r.g);x['assists']+=int(r.a);x['clubs'].add(club_key(r.team_url,r.team_name))
     matched_players=0
     for pid,p in byid.items():
         a=agg[pid]
         if a['apps']<=0:continue
-        matched_players+=1
-        p['career_appearances']=a['apps'];p['career_goals']=a['goals'];p['career_assists']=a['assists']
+        matched_players+=1;p['career_appearances']=a['apps'];p['career_goals']=a['goals'];p['career_assists']=a['assists']
         if a['clubs']:p['club_count']=len(a['clubs'])
         p.setdefault('sources',{})['career_stats']='salimt/football-datasets Transfermarkt player_performances'
         p['sources']['club_count']='salimt/football-datasets Transfermarkt player_performances'
-
     req=['height_cm','weight_kg','birth_date','club_count','trophies','career_goals','career_assists','peak_market_value_eur','career_appearances']
     playable=[];remaining=[]
     for p in byid.values():
-        complete=all(p.get(k) is not None for k in req) and int(p.get('career_appearances') or 0)>0
-        p['playable']=bool(complete);(playable if complete else remaining).append(p)
-    key=lambda p:(not bool(p.get('turkish_familiar')),-float(p.get('recognition_score') or 0))
-    playable.sort(key=key);remaining.sort(key=key)
+        p['playable']=all(p.get(k) is not None for k in req) and int(p.get('career_appearances') or 0)>0
+        (playable if p['playable'] else remaining).append(p)
+    key=lambda p:(not bool(p.get('turkish_familiar')),-float(p.get('recognition_score') or 0));playable.sort(key=key);remaining.sort(key=key)
     (DATA/'players.json').write_text(json.dumps(playable,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
     (DATA/'candidates.json').write_text(json.dumps(remaining,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
-    meta=json.loads((DATA/'meta.json').read_text(encoding='utf-8'))
-    meta.update({
-        'generated_at':datetime.now(timezone.utc).isoformat(),'playable_count':len(playable),'candidate_count':len(remaining),
-        'open_archive_rows_read':read_rows,'open_archive_rows_matched':matched_rows,'open_archive_players_matched':matched_players,
-        'career_stats_source':'salimt/football-datasets Transfermarkt player_performances; senior club official rows summed',
-        'career_stats_definition':'senior club official matches/goals/assists only; youth and reserve rows excluded',
-        'trophy_fallback_disabled':True,'zero_appearance_records_playable':False
-    })
-    meta.setdefault('sources',{})['career_performance_archive']=ARCHIVE_URL
+    meta=json.loads((DATA/'meta.json').read_text(encoding='utf-8'));meta.update({'generated_at':datetime.now(timezone.utc).isoformat(),'playable_count':len(playable),'candidate_count':len(remaining),'open_archive_rows_read':read_rows,'open_archive_rows_matched':matched_rows,'open_archive_players_matched':matched_players,'career_stats_source':'salimt/football-datasets Transfermarkt player_performances; senior club rows only','zero_appearance_records_playable':False});meta.setdefault('sources',{})['career_performance_archive']=ARCHIVE_URL
     (DATA/'meta.json').write_text(json.dumps(meta,ensure_ascii=False,indent=2),encoding='utf-8')
-    print(json.dumps({'playable':len(playable),'remaining':len(remaining),'career_players':matched_players,'matched_rows':matched_rows},ensure_ascii=False),flush=True)
+    print(json.dumps({'playable_before_weight_recovery':len(playable),'remaining':len(remaining),'career_players':matched_players,'matched_rows':matched_rows},ensure_ascii=False))
 
 if __name__=='__main__':main()
