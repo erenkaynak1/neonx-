@@ -47,7 +47,10 @@ jobs:
 
       - id: career
         name: Build club-only career totals from Transfermarkt archives
-        run: python scripts/enrich_career_twin_open_archive.py
+        shell: bash
+        run: |
+          set -o pipefail
+          python scripts/enrich_career_twin_open_archive.py 2>&1 | tee side-games/career-twin/data/pipeline-career-error.log
 
       - id: weight1
         name: Recover high-confidence physical-data matches
@@ -91,6 +94,8 @@ jobs:
           path = Path('side-games/career-twin/data/pipeline-status.json')
           if ok:
               if path.exists(): path.unlink()
+              log = Path('side-games/career-twin/data/pipeline-career-error.log')
+              if log.exists(): log.unlink()
           else:
               path.write_text(json.dumps({'generated_at': datetime.now(timezone.utc).isoformat(), 'success': False, 'stages': stages}, indent=2), encoding='utf-8')
           print(json.dumps({'success': ok, 'stages': stages}))
@@ -105,6 +110,9 @@ jobs:
             git commit -m "Refresh verified Career Twin player pool"
           else
             git add side-games/career-twin/data/pipeline-status.json
+            if [ -f side-games/career-twin/data/pipeline-career-error.log ]; then
+              git add side-games/career-twin/data/pipeline-career-error.log
+            fi
             git diff --cached --quiet && exit 1
             git commit -m "Record Career Twin pipeline failure"
           fi
