@@ -11,7 +11,6 @@ on:
       - 'scripts/enrich_career_twin_weights_v2.py'
       - 'scripts/enrich_career_twin_weights_v3.py'
       - 'scripts/enrich_career_twin_open_archive.py'
-      - 'scripts/enrich_career_twin_tm_api_verified.py'
       - 'scripts/validate_career_twin_pool.py'
       - 'scripts/finalize_career_twin_runtime.py'
       - 'scripts/diagnose_career_twin_missing.py'
@@ -45,8 +44,6 @@ jobs:
         run: python scripts/enrich_career_twin_weights_v2.py
       - name: Recover additional team-aware physical matches
         run: python scripts/enrich_career_twin_weights_v3.py
-      - name: Verify familiar players with direct Transfermarkt API
-        run: python scripts/enrich_career_twin_tm_api_verified.py
       - name: Apply strict multi-source quality gate
         run: python scripts/validate_career_twin_pool.py
       - name: Diagnose remaining gaps
