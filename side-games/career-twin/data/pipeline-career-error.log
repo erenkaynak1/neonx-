@@ -1,0 +1,26 @@
+Traceback (most recent call last):
+  File "/home/runner/work/neonx-/neonx-/scripts/enrich_career_twin_open_archive.py", line 223, in <module>
+    main()
+  File "/home/runner/work/neonx-/neonx-/scripts/enrich_career_twin_open_archive.py", line 153, in main
+    full, full_clubs, read_rows, matched_rows = load_full_archive(wanted)
+                                                ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/neonx-/neonx-/scripts/enrich_career_twin_open_archive.py", line 68, in load_full_archive
+    for chunk in pd.read_csv(TMP, usecols=usecols, chunksize=CHUNK, low_memory=False):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 873, in read_csv
+    return _read(filepath_or_buffer, kwds)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 300, in _read
+    parser = TextFileReader(filepath_or_buffer, **kwds)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 1645, in __init__
+    self._engine = self._make_engine(f, self.engine)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 1922, in _make_engine
+    return mapping[engine](f, **self.options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages/pandas/io/parsers/c_parser_wrapper.py", line 137, in __init__
+    self._validate_usecols_names(usecols, self.orig_names)
+  File "/opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/site-packages/pandas/io/parsers/base_parser.py", line 662, in _validate_usecols_names
+    raise ValueError(
+ValueError: Usecols do not match columns, columns expected but not found: ['season', 'team_url']
