@@ -7,12 +7,12 @@ ROOT=Path(__file__).resolve().parents[1]
 DATA=ROOT/'side-games'/'career-twin'/'data'
 REQ=['height_cm','weight_kg','birth_date','club_count','trophies','career_goals','career_assists','peak_market_value_eur','career_appearances']
 KNOWN_IDS={418560:'Erling Haaland',342229:'Kylian Mbappé',581678:'Jude Bellingham',132098:'Harry Kane',861410:'Arda Güler',68863:'Mauro Icardi',28396:'Edin Dzeko'}
+MIN_VERIFIED_PLAYERS=1000
 
 
 def norm(s):
  s=unicodedata.normalize('NFKD',str(s or '')).encode('ascii','ignore').decode().lower()
  return re.sub(r'[^a-z0-9]+','',s)
-
 def parse_birth(s):
  try:return datetime.strptime(str(s)[:10],'%Y-%m-%d').date()
  except:return None
@@ -64,14 +64,12 @@ def main():
   else:
    p['playable']=False;p['validation_reasons']=reasons;rejected.append(p)
 
- # UOC/Transfermarkt cross-check statistics. We do not silently overwrite here.
- refs=exact=monotonic=close=0;deltas=[]
+ refs=exact=monotonic=close=0
  for p in accepted+rejected:
   um=p.get('uoc_matches');ug=p.get('uoc_goals');ua=p.get('uoc_assists')
   if None in (um,ug,ua) or p.get('career_appearances') is None:continue
   refs+=1
   dm=int(p['career_appearances'])-int(um);dg=int(p['career_goals'])-int(ug);da=int(p['career_assists'])-int(ua)
-  deltas.append((dm,dg,da))
   if dm==0 and dg==0 and da==0:exact+=1
   if dm>=0 and dg>=0 and da>=0:monotonic+=1
   if abs(dm)<=45 and abs(dg)<=30 and abs(da)<=25:close+=1
@@ -85,14 +83,14 @@ def main():
  (DATA/'players.json').write_text(json.dumps(accepted,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
  (DATA/'candidates.json').write_text(json.dumps(rejected,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
  audit_doc={'generated_at':datetime.now(timezone.utc).isoformat(),'accepted':len(accepted),'rejected':len(rejected),'duplicate_names_removed':duplicates,
-            'uoc_crosscheck':{'records':refs,'exact':exact,'archive_greater_or_equal':monotonic,'within_tolerance':close},'known_players':audit}
+            'minimum_required':MIN_VERIFIED_PLAYERS,'uoc_crosscheck':{'records':refs,'exact':exact,'archive_greater_or_equal':monotonic,'within_tolerance':close},'known_players':audit}
  (DATA/'audit.json').write_text(json.dumps(audit_doc,ensure_ascii=False,indent=2),encoding='utf-8')
  meta=json.loads((DATA/'meta.json').read_text(encoding='utf-8'))
- meta.update({'generated_at':audit_doc['generated_at'],'playable_count':len(accepted),'candidate_count':len(rejected),'validation_gate':'strict-v1',
-              'uoc_crosscheck_records':refs,'uoc_crosscheck_exact':exact,'uoc_crosscheck_monotonic':monotonic,'uoc_crosscheck_close':close,'duplicate_names_removed':duplicates})
+ meta.update({'generated_at':audit_doc['generated_at'],'playable_count':len(accepted),'candidate_count':len(rejected),'validation_gate':'strict-v2',
+              'minimum_verified_players':MIN_VERIFIED_PLAYERS,'uoc_crosscheck_records':refs,'uoc_crosscheck_exact':exact,'uoc_crosscheck_monotonic':monotonic,'uoc_crosscheck_close':close,'duplicate_names_removed':duplicates})
  (DATA/'meta.json').write_text(json.dumps(meta,ensure_ascii=False,indent=2),encoding='utf-8')
  print(json.dumps(audit_doc,ensure_ascii=False))
- if len(accepted)<700:
-  raise SystemExit(f'quality gate left only {len(accepted)} players; refusing to publish suspiciously small pool')
+ if len(accepted)<MIN_VERIFIED_PLAYERS:
+  raise SystemExit(f'quality gate left only {len(accepted)} players; minimum is {MIN_VERIFIED_PLAYERS}, refusing to publish')
 
 if __name__=='__main__':main()
