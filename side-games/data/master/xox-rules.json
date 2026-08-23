@@ -1,10 +1,10 @@
 {
-  "version": 1,
+  "version": 2,
   "principle": "The master player pool remains broad. Only selectable XOX conditions are whitelisted here.",
   "nationalities": [
     "Türkiye","Arjantin","Brezilya","Fransa","İspanya","Almanya","İtalya","İngiltere","Portekiz","Hollanda",
-    "Belçika","Hırvatistan","Sırbistan","Bosna-Hersek","Uruguay","Kolombiya","Fas","Cezayir","Mısır","Nijerya",
-    "Senegal","Gana","Fildişi Sahili","Kamerun","Japonya","Güney Kore","Norveç","İsveç"
+    "Belçika","Hırvatistan","Sırbistan","Kolombiya","Fas","Cezayir","Mısır","Nijerya","Senegal","Fildişi Sahili",
+    "Japonya","Norveç","İsveç"
   ],
   "leagues": [
     "Süper Lig","Premier League","LaLiga","Serie A","Bundesliga","Ligue 1","Eredivisie","Primeira Liga","Saudi Pro League","MLS"
@@ -13,12 +13,11 @@
     "Türkiye": ["Fenerbahçe","Galatasaray","Beşiktaş","Trabzonspor"],
     "İspanya": ["Real Madrid","Barcelona","Atlético Madrid","Sevilla"],
     "İngiltere": ["Manchester United","Manchester City","Liverpool","Arsenal","Chelsea","Tottenham Hotspur","Newcastle United"],
-    "İtalya": ["Juventus","Inter","AC Milan","Roma","Napoli","Lazio"],
+    "İtalya": ["Juventus","Inter","AC Milan","Roma","Napoli"],
     "Almanya": ["Bayern Münih","Borussia Dortmund","Bayer Leverkusen","RB Leipzig"],
     "Fransa": ["Paris Saint-Germain","Olympique Marseille","Olympique Lyon"],
     "Hollanda": ["Ajax","PSV","Feyenoord"],
-    "Portekiz": ["Benfica","Porto","Sporting CP"],
-    "Diğer": ["Celtic","Rangers","Al-Hilal","Al-Nassr","Inter Miami"]
+    "Portekiz": ["Benfica","Porto","Sporting CP"]
   },
   "allowed_condition_types": ["club","nationality","league"],
   "player_match_rules": {
