@@ -5,7 +5,7 @@ import pandas as pd,requests
 
 ROOT=Path(__file__).resolve().parents[1]
 DATA=ROOT/'side-games'/'career-twin'/'data'
-UA={'User-Agent':'Mozilla/5.0 NEON-XI-Career-Twin/1.4'}
+UA={'User-Agent':'Mozilla/5.0 NEON-XI-Career-Twin/2.2'}
 URL='https://zenodo.org/api/records/19396819/files/jugadors.csv/content'
 
 
@@ -24,7 +24,7 @@ def iv(v):
 
 
 def main():
-    r=requests.get(URL,headers=UA,timeout=90);r.raise_for_status()
+    r=requests.get(URL,headers=UA,timeout=120);r.raise_for_status()
     df=pd.read_csv(io.BytesIO(r.content),low_memory=False)
     mp={}
     for _,x in df.iterrows():
@@ -32,6 +32,9 @@ def main():
         if k:
             mp[k]={
                 'trophies':iv(x.get('trofeus')),
+                'matches':iv(x.get('partits')),
+                'goals':iv(x.get('gols')),
+                'assists':iv(x.get('assistencies')),
                 'uoc_team':None if pd.isna(x.get('equip')) else str(x.get('equip')),
                 'uoc_age':iv(x.get('edat'))
             }
@@ -39,9 +42,8 @@ def main():
     players=json.loads((DATA/'players.json').read_text(encoding='utf-8'))
     cand=json.loads((DATA/'candidates.json').read_text(encoding='utf-8'))
     all_records={int(p['id']):p for p in players+cand}
-    matched=0
+    matched=stats_reference=0
     for p in all_records.values():
-        # Never allow the previous UOC partits/gols/assistencies mapping to survive.
         p['career_appearances']=None
         p['career_goals']=None
         p['career_assists']=None
@@ -50,6 +52,12 @@ def main():
         u=mp.get(norm(p.get('name')))
         if not u: continue
         matched+=1
+        p['uoc_matches']=u.get('matches')
+        p['uoc_goals']=u.get('goals')
+        p['uoc_assists']=u.get('assists')
+        p['uoc_trophies']=u.get('trophies')
+        if all(u.get(k) is not None for k in ('matches','goals','assists')):
+            stats_reference+=1
         if u.get('trophies') is not None:
             p['trophies']=u['trophies']
             p['sources']['trophies']='UOC-Transfermarkt-2026'
@@ -60,8 +68,13 @@ def main():
     (DATA/'players.json').write_text('[]',encoding='utf-8')
     (DATA/'candidates.json').write_text(json.dumps(records,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
     meta=json.loads((DATA/'meta.json').read_text(encoding='utf-8'))
-    meta.update({'playable_count':0,'candidate_count':len(records),'uoc_file':'jugadors.csv','uoc_matched_names':matched,'uoc_career_totals_disabled':True})
+    meta.update({
+        'playable_count':0,'candidate_count':len(records),'uoc_file':'jugadors.csv',
+        'uoc_matched_names':matched,'uoc_stats_reference_count':stats_reference,
+        'uoc_career_totals_used_as_primary':False,
+        'uoc_reference_source':URL
+    })
     (DATA/'meta.json').write_text(json.dumps(meta,ensure_ascii=False,indent=2),encoding='utf-8')
-    print(json.dumps({'matched':matched,'records':len(records),'career_totals_from_uoc':False},ensure_ascii=False))
+    print(json.dumps({'matched':matched,'stats_reference':stats_reference,'records':len(records)},ensure_ascii=False))
 
 if __name__=='__main__': main()
