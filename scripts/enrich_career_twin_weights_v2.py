@@ -19,7 +19,7 @@ def main():
  fc=fc.dropna(subset=['weight_kg','height_cm']); fc['nclub']=fc.club_name.map(norm); fc['nshort']=fc.short_name.map(norm); fc['nlong']=fc.long_name.map(norm)
  filled=0
  for p in cand:
-  if p.get('weight_kg') is not None or p.get('trophies') is None: continue
+  if p.get('weight_kg') is not None: continue
   h=p.get('height_cm'); club=norm(p.get('club')); age=age_from_birth(p.get('birth_date')); name=p.get('name','')
   q=fc[(fc.height_cm.between(h-2,h+2))] if h else fc
   if age is not None:q=q[q.age.between(age-2,age+2)]
@@ -36,12 +36,12 @@ def main():
   if not scored:continue
   best=scored[0]; second=scored[1][0] if len(scored)>1 else 0
   if best[0]>=88 and best[0]-second>=5:
-   row=fc.loc[best[1]]; p['weight_kg']=int(round(float(row.weight_kg))); p['sources']['weight']='EAFC26/SoFIFA-fuzzy-verified'; filled+=1
+   row=fc.loc[best[1]]; p['weight_kg']=int(round(float(row.weight_kg))); p.setdefault('sources',{})['weight']='EAFC26/SoFIFA-fuzzy-verified'; filled+=1
  req=['height_cm','weight_kg','birth_date','club_count','trophies','career_goals','career_assists','peak_market_value_eur','career_appearances']
  moved=[]; remain=[]
  for p in cand:
-  p['playable']=all(p.get(k) is not None for k in req); (moved if p['playable'] else remain).append(p)
- byid={p['id']:p for p in players+moved}; playable=sorted(byid.values(),key=lambda p:-p.get('recognition_score',0)); remain.sort(key=lambda p:-p.get('recognition_score',0))
+  p['playable']=all(p.get(k) is not None for k in req) and int(p.get('career_appearances') or 0)>0; (moved if p['playable'] else remain).append(p)
+ byid={p['id']:p for p in players+moved}; playable=sorted(byid.values(),key=lambda p:(not bool(p.get('turkish_familiar')),-p.get('recognition_score',0))); remain.sort(key=lambda p:(not bool(p.get('turkish_familiar')),-p.get('recognition_score',0)))
  (DATA/'players.json').write_text(json.dumps(playable,ensure_ascii=False,separators=(',',':'))); (DATA/'candidates.json').write_text(json.dumps(remain,ensure_ascii=False,separators=(',',':')))
  meta=json.loads((DATA/'meta.json').read_text()); meta.update({'playable_count':len(playable),'candidate_count':len(remain),'fuzzy_weights_added':filled}); (DATA/'meta.json').write_text(json.dumps(meta,ensure_ascii=False,indent=2))
  print(json.dumps({'weights_added':filled,'new_playable':len(moved),'playable_total':len(playable)},ensure_ascii=False))
