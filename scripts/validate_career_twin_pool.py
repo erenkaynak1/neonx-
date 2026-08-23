@@ -6,7 +6,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / 'side-games' / 'career-twin' / 'data'
 REQ = ['height_cm','weight_kg','birth_date','club_count','trophies','career_goals','career_assists','peak_market_value_eur','career_appearances']
-KNOWN_IDS = {418560:'Erling Haaland',342229:'Kylian Mbappé',581678:'Jude Bellingham',132098:'Harry Kane',861410:'Arda Güler',68863:'Mauro Icardi',28396:'Edin Dzeko',149577:'Kevin De Bruyne',28003:'Lionel Messi',8198:'Cristiano Ronaldo'}
+KNOWN_IDS = {418560:'Erling Haaland',342229:'Kylian Mbappé',581678:'Jude Bellingham',132098:'Harry Kane',861410:'Arda Güler',68863:'Mauro Icardi',28396:'Edin Dzeko',88755:'Kevin De Bruyne',28003:'Lionel Messi',8198:'Cristiano Ronaldo'}
 MIN_VERIFIED_PLAYERS = 100
 
 
@@ -53,25 +53,43 @@ def valid_record(p):
     if assists > apps * 1.5: reasons.append('assists_vs_apps')
     if not 1_000 <= peak <= 300_000_000: reasons.append('market_value_range')
 
-    # UOC/Transfermarkt values are reference snapshots only. A verified career total
-    # cannot be below a referenced match/goal/assist counter.
+    # UOC is a Transfermarkt-derived reference snapshot. A current career total
+    # should not be lower than a safely matched historical reference counter.
     for field, ref_field in [('career_appearances','uoc_matches'),('career_goals','uoc_goals'),('career_assists','uoc_assists')]:
         if p.get(ref_field) is not None and int(p[field]) < int(p[ref_field]):
             reasons.append('career_below_reference:' + field)
 
+    # Mackolik is secondary only. Large disagreement with Transfermarkt blocks
+    # publication until that player is manually reconciled.
+    if p.get('secondary_conflict'):
+        reasons.append('mackolik_transfermarkt_conflict')
+
     src = p.get('sources') or {}
     trophy_src = str(src.get('trophies') or '')
-    if not trophy_src.startswith('transfermarkt-api.fly.dev achievements'):
-        reasons.append('trophy_not_live_transfermarkt_verified')
+    trophy_ok = (
+        trophy_src.startswith('transfermarkt-api.fly.dev achievements') or
+        trophy_src.startswith('UOC-Transfermarkt-2026-safe-name-age-team')
+    )
+    if not trophy_ok:
+        reasons.append('trophy_source_not_verified')
+
     career_src = str(src.get('career_stats') or '')
-    if not career_src.startswith('transfermarkt-api.fly.dev stats'):
-        reasons.append('career_not_live_transfermarkt_verified')
+    career_ok = (
+        'Transfermarkt' in career_src or
+        'transfermarkt' in career_src or
+        career_src.startswith('Mackolik official senior club career fallback')
+    )
+    if not career_ok:
+        reasons.append('career_source_not_verified')
+
     club_src = str(src.get('club_count') or '')
     if 'Transfermarkt' not in club_src and 'transfermarkt' not in club_src:
         reasons.append('club_count_source')
+
     weight_src = str(src.get('weight') or '')
     if not weight_src:
         reasons.append('weight_source')
+
     return not reasons, reasons
 
 
@@ -82,7 +100,7 @@ def main():
 
     accepted, rejected, names = [], [], set()
     duplicates = 0
-    for p in sorted(all_rows.values(), key=lambda x: (not bool(x.get('turkish_familiar')), -float(x.get('recognition_score') or 0))):
+    for p in sorted(all_rows.values(), key=lambda x: (not bool(x.get('turkish_familiar')), not bool(x.get('focus_history')), -float(x.get('recognition_score') or 0))):
         ok, reasons = valid_record(p)
         nk = norm(p.get('name'))
         if ok and nk in names:
@@ -96,7 +114,7 @@ def main():
     for pid, label in KNOWN_IDS.items():
         p = all_rows.get(pid)
         if p:
-            audit[str(pid)] = {k: p.get(k) for k in ['name','height_cm','weight_kg','birth_date','club_count','trophies','career_goals','career_assists','peak_market_value_eur','career_appearances','sources','validation_reasons']}
+            audit[str(pid)] = {k: p.get(k) for k in ['name','height_cm','weight_kg','birth_date','club_count','trophies','career_goals','career_assists','peak_market_value_eur','career_appearances','sources','secondary_checks','validation_reasons']}
 
     generated = datetime.now(timezone.utc).isoformat()
     (DATA / 'players.json').write_text(json.dumps(accepted, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
@@ -107,8 +125,8 @@ def main():
         'rejected': len(rejected),
         'minimum_required_for_first_release': MIN_VERIFIED_PLAYERS,
         'duplicate_names_removed': duplicates,
-        'career_stats_definition': 'Senior official club appearances/goals/assists from live Transfermarkt stats, filtered by Transfermarkt senior club IDs. Youth/reserve and national-team rows excluded.',
-        'trophy_definition': 'Senior team trophies from live Transfermarkt achievements; individual awards, participation, finalist/runner-up and youth titles excluded.',
+        'career_stats_definition': 'Senior official club appearances/goals/assists. Transfermarkt ID-based data is primary; Mackolik official club-career totals are secondary verification/fallback. Youth/reserve and national-team rows excluded.',
+        'trophy_definition': 'Senior team trophies from Transfermarkt-derived sources; individual awards, youth titles, finalist/runner-up and participation excluded.',
         'known_players': audit
     }
     (DATA / 'audit.json').write_text(json.dumps(audit_doc, ensure_ascii=False, indent=2), encoding='utf-8')
@@ -118,10 +136,10 @@ def main():
         'generated_at': generated,
         'playable_count': len(accepted),
         'candidate_count': len(rejected),
-        'validation_gate': 'strict-live-transfermarkt-v5',
+        'validation_gate': 'strict-transfermarkt-primary-mackolik-secondary-v6',
         'minimum_verified_players': MIN_VERIFIED_PLAYERS,
         'duplicate_names_removed': duplicates,
-        'publication_policy': 'Only 9/9 records whose career totals and senior team trophies were re-read from live Transfermarkt are published in the first release.'
+        'publication_policy': 'Only 9/9 sourced records are published. Transfermarkt is primary; Mackolik is used for secondary verification/fallback, and material source conflicts are rejected.'
     })
     (DATA / 'meta.json').write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding='utf-8')
     print(json.dumps(audit_doc, ensure_ascii=False))
