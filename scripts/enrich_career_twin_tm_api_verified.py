@@ -9,10 +9,11 @@ DATA=ROOT/'side-games'/'career-twin'/'data'
 BASE='https://transfermarkt-api.fly.dev/players/{}/{}'
 LIMIT=320
 TIMEOUT=25
-UA={'User-Agent':'Mozilla/5.0 NEON-XI-Career-Twin/2.4','Accept':'application/json'}
+UA={'User-Agent':'Mozilla/5.0 NEON-XI-Career-Twin/2.5','Accept':'application/json'}
 INDIVIDUAL_WORDS=(
  'top scorer','top goalscorer','player of','footballer of','most valuable player','golden boot','golden ball',
  'best player','young player','player of the season','player of the tournament','footballer of the year',
+ 'striker of the year','midfielder of the year','defender of the year','goalkeeper of the year','talent of the year',
  'torschutzenkonig','torschützenkönig','weltfussballer','weltfußballer','fussballer des jahres','fußballer des jahres',
  'gol krali','gol kralı','yilin futbolcusu','yılın futbolcusu','sezonun oyuncusu','turnuvanin oyuncusu','turnuvanın oyuncusu'
 )
@@ -46,7 +47,6 @@ def trophy_total(payload):
   if any(norm_title(w) in title for w in INDIVIDUAL_WORDS):continue
   if any(w in title for w in YOUTH_WORDS):continue
   details=item.get('details') or []
-  # A senior team achievement must have a club or competition context.
   has_team_context=any(isinstance(d,dict) and (d.get('club') or d.get('competition')) for d in details)
   if not has_team_context and details:continue
   try:count=int(item.get('count') or len(details) or 0)
@@ -60,7 +60,6 @@ def stats_total(payload):
  if not isinstance(rows,list) or not rows:return None
  apps=goals=assists=0
  for r in rows:
-  # API rows are competition-season-club records; youth competitions are excluded by name.
   comp=norm_title(r.get('competitionName') or r.get('competition_name'))
   if any(w in comp for w in YOUTH_WORDS):continue
   try:a=int(r.get('appearances') or 0);g=int(r.get('goals') or 0);s=int(r.get('assists') or 0)
@@ -75,7 +74,6 @@ def main():
  cand=json.loads((DATA/'candidates.json').read_text(encoding='utf-8'))
  byid={int(p['id']):p for p in players+cand}
  records=list(byid.values())
- # Turkish-familiar players first, then globally recognizable players that still lack direct trophies.
  records.sort(key=lambda p:(not bool(p.get('turkish_familiar')),p.get('trophies') is not None,-float(p.get('recognition_score') or 0)))
  targets=[p for p in records if p.get('trophies') is None][:LIMIT]
  trophy_ok=stats_ok=stats_agree=0
@@ -88,15 +86,11 @@ def main():
    stats_ok+=1
    local=(int(p.get('career_appearances') or 0),int(p.get('career_goals') or 0),int(p.get('career_assists') or 0))
    remote=(sv['apps'],sv['goals'],sv['assists'])
-   # Accept as a validation signal when totals are equal or the API is only modestly newer.
    da=remote[0]-local[0];dg=remote[1]-local[1];ds=remote[2]-local[2]
    agree=(local[0]>0 and da>=-3 and da<=45 and dg>=-3 and dg<=30 and ds>=-3 and ds<=25)
    if agree:
     stats_agree+=1;p.setdefault('sources',{})['career_stats_crosscheck']='transfermarkt-api.fly.dev stats'
-    # If API is newer and internally consistent, use its newer exact totals.
-    if remote[0]>=local[0] and remote[1]>=local[1] and remote[2]>=local[2]:
-     p['career_appearances'],p['career_goals'],p['career_assists']=remote
-     p['sources']['career_stats']='transfermarkt-api.fly.dev stats + open archive crosscheck'
+    p['tm_api_stats_crosscheck']={'archive':local,'api':remote,'agree':True}
    else:
     p['tm_api_stats_disagreement']={'archive':local,'api':remote}
   if i%25==0:print(f'tm-api {i}/{len(targets)} trophies={trophy_ok} stats={stats_ok} agree={stats_agree}',flush=True)
@@ -113,7 +107,8 @@ def main():
  (DATA/'candidates.json').write_text(json.dumps(remaining,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
  meta=json.loads((DATA/'meta.json').read_text(encoding='utf-8'))
  meta.update({'generated_at':datetime.now(timezone.utc).isoformat(),'playable_count':len(playable),'candidate_count':len(remaining),
-              'tm_api_targets':len(targets),'tm_api_trophies_verified':trophy_ok,'tm_api_stats_received':stats_ok,'tm_api_stats_agreed':stats_agree})
+              'tm_api_targets':len(targets),'tm_api_trophies_verified':trophy_ok,'tm_api_stats_received':stats_ok,'tm_api_stats_agreed':stats_agree,
+              'tm_api_stats_policy':'cross-check only; never overwrites filtered archive career totals'})
  meta.setdefault('sources',{})['transfermarkt_verification_api']='https://transfermarkt-api.fly.dev/'
  (DATA/'meta.json').write_text(json.dumps(meta,ensure_ascii=False,indent=2),encoding='utf-8')
  print(json.dumps({'playable':len(playable),'remaining':len(remaining),'trophies':trophy_ok,'stats':stats_ok,'agree':stats_agree},ensure_ascii=False))
