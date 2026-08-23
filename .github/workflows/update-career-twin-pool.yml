@@ -11,6 +11,7 @@ on:
       - 'scripts/enrich_career_twin_weights_v2.py'
       - 'scripts/enrich_career_twin_weights_v3.py'
       - 'scripts/enrich_career_twin_open_archive.py'
+      - 'scripts/enrich_career_twin_tm_api_verified.py'
       - 'scripts/validate_career_twin_pool.py'
       - 'scripts/finalize_career_twin_runtime.py'
       - 'scripts/diagnose_career_twin_missing.py'
@@ -41,8 +42,8 @@ jobs:
         name: Build Transfermarkt-ID candidate pool
         run: python scripts/build_career_twin_pool.py
 
-      - id: trophies
-        name: Load safely matched 2026 UOC Transfermarkt trophy values
+      - id: trophies_ref
+        name: Load UOC Transfermarkt values as reference only
         run: python scripts/enrich_career_twin_uoc_v3.py
 
       - id: career
@@ -74,6 +75,10 @@ jobs:
         name: Recover additional team-aware physical matches
         run: python scripts/enrich_career_twin_weights_v3.py
 
+      - id: trophies_verified
+        name: Verify senior team trophies from Transfermarkt achievements
+        run: python scripts/enrich_career_twin_tm_api_verified.py
+
       - id: validate
         name: Apply strict multi-source quality gate
         run: python scripts/validate_career_twin_pool.py
@@ -91,10 +96,11 @@ jobs:
         env:
           DEPS: ${{ steps.deps.conclusion }}
           CANDIDATES: ${{ steps.candidates.conclusion }}
-          TROPHIES: ${{ steps.trophies.conclusion }}
+          TROPHIES_REF: ${{ steps.trophies_ref.conclusion }}
           CAREER: ${{ steps.career.conclusion }}
           WEIGHT1: ${{ steps.weight1.conclusion }}
           WEIGHT2: ${{ steps.weight2.conclusion }}
+          TROPHIES_VERIFIED: ${{ steps.trophies_verified.conclusion }}
           VALIDATE: ${{ steps.validate.conclusion }}
           DIAGNOSE: ${{ steps.diagnose.conclusion }}
           FINALIZE: ${{ steps.finalize.conclusion }}
@@ -103,7 +109,7 @@ jobs:
           import json, os
           from datetime import datetime, timezone
           from pathlib import Path
-          stages = {k.lower(): os.environ.get(k, 'unknown') for k in ['DEPS','CANDIDATES','TROPHIES','CAREER','WEIGHT1','WEIGHT2','VALIDATE','DIAGNOSE','FINALIZE']}
+          stages = {k.lower(): os.environ.get(k, 'unknown') for k in ['DEPS','CANDIDATES','TROPHIES_REF','CAREER','WEIGHT1','WEIGHT2','TROPHIES_VERIFIED','VALIDATE','DIAGNOSE','FINALIZE']}
           ok = all(v == 'success' for v in stages.values())
           path = Path('side-games/career-twin/data/pipeline-status.json')
           if ok:
@@ -118,7 +124,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          if [ "$DEPS" = "success" ] && [ "$CANDIDATES" = "success" ] && [ "$TROPHIES" = "success" ] && [ "$CAREER" = "success" ] && [ "$WEIGHT1" = "success" ] && [ "$WEIGHT2" = "success" ] && [ "$VALIDATE" = "success" ] && [ "$DIAGNOSE" = "success" ] && [ "$FINALIZE" = "success" ]; then
+          if [ "$DEPS" = "success" ] && [ "$CANDIDATES" = "success" ] && [ "$TROPHIES_REF" = "success" ] && [ "$CAREER" = "success" ] && [ "$WEIGHT1" = "success" ] && [ "$WEIGHT2" = "success" ] && [ "$TROPHIES_VERIFIED" = "success" ] && [ "$VALIDATE" = "success" ] && [ "$DIAGNOSE" = "success" ] && [ "$FINALIZE" = "success" ]; then
             git add -A side-games/career-twin/data
             git diff --cached --quiet && exit 0
             git commit -m "Refresh verified Career Twin player pool"
