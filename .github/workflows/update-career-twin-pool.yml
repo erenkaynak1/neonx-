@@ -10,33 +10,43 @@ on:
       - 'scripts/enrich_career_twin_uoc_v3.py'
       - 'scripts/enrich_career_twin_weights_v2.py'
       - 'scripts/enrich_career_twin_weights_v3.py'
+      - 'scripts/enrich_career_twin_transfermarkt_v4.py'
+      - 'scripts/finalize_career_twin_runtime.py'
       - 'scripts/diagnose_career_twin_missing.py'
       - '.github/workflows/update-career-twin-pool.yml'
 
 permissions:
   contents: write
 
+concurrency:
+  group: career-twin-player-pool
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 75
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - name: Install data dependencies
-        run: pip install --disable-pip-version-check duckdb pandas requests openpyxl rapidfuzz
-      - name: Build current candidate pool
+        run: pip install --disable-pip-version-check duckdb pandas requests openpyxl rapidfuzz beautifulsoup4
+      - name: Build recognition-first candidate pool
         run: python scripts/build_career_twin_pool.py
-      - name: Enrich trophies and career totals
+      - name: Enrich trophy reference data only
         run: python scripts/enrich_career_twin_uoc_v3.py
       - name: Recover high-confidence physical-data matches
         run: python scripts/enrich_career_twin_weights_v2.py
       - name: Recover additional team-aware physical matches
         run: python scripts/enrich_career_twin_weights_v3.py
+      - name: Build full Transfermarkt career totals
+        run: python scripts/enrich_career_twin_transfermarkt_v4.py
       - name: Diagnose remaining gaps
         run: python scripts/diagnose_career_twin_missing.py
+      - name: Strip unused runtime metadata
+        run: python scripts/finalize_career_twin_runtime.py
       - name: Commit refreshed pool
         run: |
           git config user.name "github-actions[bot]"
