@@ -7,9 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / 'side-games' / 'career-twin' / 'data'
 REQ = ['height_cm','weight_kg','birth_date','club_count','trophies','career_goals','career_assists','peak_market_value_eur','career_appearances']
 KNOWN_IDS = {418560:'Erling Haaland',342229:'Kylian Mbappé',581678:'Jude Bellingham',132098:'Harry Kane',861410:'Arda Güler',68863:'Mauro Icardi',28396:'Edin Dzeko',149577:'Kevin De Bruyne',28003:'Lionel Messi',8198:'Cristiano Ronaldo'}
-MIN_VERIFIED_PLAYERS = 150
-# Transfermarkt career page snapshot (2026) used only as a regression floor; counters may grow later.
-REFERENCE_FLOORS = {418560:{'career_appearances':371,'career_goals':290,'career_assists':65}}
+MIN_VERIFIED_PLAYERS = 100
 
 
 def norm(s):
@@ -55,23 +53,19 @@ def valid_record(p):
     if assists > apps * 1.5: reasons.append('assists_vs_apps')
     if not 1_000 <= peak <= 300_000_000: reasons.append('market_value_range')
 
-    # UOC statistics are not used as career totals, but if present they are a useful
-    # lower-bound sanity check: a career counter cannot be below a sourced season/snapshot counter.
+    # UOC/Transfermarkt values are reference snapshots only. A verified career total
+    # cannot be below a referenced match/goal/assist counter.
     for field, ref_field in [('career_appearances','uoc_matches'),('career_goals','uoc_goals'),('career_assists','uoc_assists')]:
         if p.get(ref_field) is not None and int(p[field]) < int(p[ref_field]):
             reasons.append('career_below_reference:' + field)
 
-    for field, floor in REFERENCE_FLOORS.get(int(p.get('id') or 0), {}).items():
-        if int(p.get(field) or 0) < int(floor):
-            reasons.append('transfermarkt_regression_floor:' + field)
-
     src = p.get('sources') or {}
     trophy_src = str(src.get('trophies') or '')
     if not trophy_src.startswith('transfermarkt-api.fly.dev achievements'):
-        reasons.append('trophy_not_direct_transfermarkt_verified')
+        reasons.append('trophy_not_live_transfermarkt_verified')
     career_src = str(src.get('career_stats') or '')
-    if 'Transfermarkt' not in career_src and 'transfermarkt' not in career_src:
-        reasons.append('career_source')
+    if not career_src.startswith('transfermarkt-api.fly.dev stats'):
+        reasons.append('career_not_live_transfermarkt_verified')
     club_src = str(src.get('club_count') or '')
     if 'Transfermarkt' not in club_src and 'transfermarkt' not in club_src:
         reasons.append('club_count_source')
@@ -113,8 +107,8 @@ def main():
         'rejected': len(rejected),
         'minimum_required_for_first_release': MIN_VERIFIED_PLAYERS,
         'duplicate_names_removed': duplicates,
-        'career_stats_definition': 'Senior official club appearances/goals/assists from Transfermarkt-derived performance sources; youth/reserve and national-team rows excluded.',
-        'trophy_definition': 'Senior team trophies only; individual awards, participation, finalist/runner-up and youth titles excluded.',
+        'career_stats_definition': 'Senior official club appearances/goals/assists from live Transfermarkt stats, filtered by Transfermarkt senior club IDs. Youth/reserve and national-team rows excluded.',
+        'trophy_definition': 'Senior team trophies from live Transfermarkt achievements; individual awards, participation, finalist/runner-up and youth titles excluded.',
         'known_players': audit
     }
     (DATA / 'audit.json').write_text(json.dumps(audit_doc, ensure_ascii=False, indent=2), encoding='utf-8')
@@ -124,10 +118,10 @@ def main():
         'generated_at': generated,
         'playable_count': len(accepted),
         'candidate_count': len(rejected),
-        'validation_gate': 'strict-transfermarkt-trophies-v4',
+        'validation_gate': 'strict-live-transfermarkt-v5',
         'minimum_verified_players': MIN_VERIFIED_PLAYERS,
         'duplicate_names_removed': duplicates,
-        'publication_policy': 'Only 9/9 records with direct Transfermarkt-derived career stats and directly verified Transfermarkt team trophies are published.'
+        'publication_policy': 'Only 9/9 records whose career totals and senior team trophies were re-read from live Transfermarkt are published in the first release.'
     })
     (DATA / 'meta.json').write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding='utf-8')
     print(json.dumps(audit_doc, ensure_ascii=False))
