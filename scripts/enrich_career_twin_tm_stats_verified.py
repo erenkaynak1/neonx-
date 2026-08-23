@@ -16,11 +16,10 @@ BASE = 'https://transfermarkt-api.fly.dev/players/{}/stats'
 LIMIT = 260
 TIMEOUT = 25
 REQUEST_INTERVAL = 1.65
-UA = {'User-Agent':'Mozilla/5.0 NEON-XI-Career-Twin/5.0','Accept':'application/json'}
+UA = {'User-Agent':'Mozilla/5.0 NEON-XI-Career-Twin/5.1','Accept':'application/json'}
 PRIORITY_IDS = [28003,8198,418560,342229,581678,132098,861410,68863,28396,149577]
 YOUTH_RE = re.compile(r'(\bu[- ]?(?:15|16|17|18|19|20|21|23)\b|under[- ]?(?:15|16|17|18|19|20|21|23)|youth|junioren|juniors|juvenil|primavera|academy|akademi|reserve|reserves)', re.I)
 RESERVE_TEAM_RE = re.compile(r'(?:\s|[-–])(?:ii|iii|b|c)$', re.I)
-TEAM_ID_RE = re.compile(r'/verein/(\d+)')
 
 _lock = threading.Lock()
 _next_allowed = 0.0
@@ -70,7 +69,8 @@ def senior_mask(df):
 def collect_senior_club_ids(wanted):
     clubs = defaultdict(set)
     if TMP.exists():
-        usecols = ['player_id','competition_name','team_url','team_name','nb_on_pitch']
+        # Current salimt Transfermarkt archive schema exposes team_id directly.
+        usecols = ['player_id','competition_name','team_id','team_name','nb_on_pitch']
         for chunk in pd.read_csv(TMP, usecols=usecols, chunksize=180000, low_memory=False):
             chunk['player_id'] = pd.to_numeric(chunk['player_id'], errors='coerce')
             chunk = chunk[chunk['player_id'].isin(wanted)]
@@ -82,9 +82,8 @@ def collect_senior_club_ids(wanted):
             apps = pd.to_numeric(chunk['nb_on_pitch'].replace({'-':0,'':0}), errors='coerce').fillna(0)
             chunk = chunk[apps > 0]
             for r in chunk.itertuples(index=False):
-                m = TEAM_ID_RE.search(str(r.team_url or ''))
-                if m:
-                    clubs[int(r.player_id)].add(m.group(1))
+                if pd.notna(r.team_id):
+                    clubs[int(r.player_id)].add(str(int(r.team_id)))
 
     if TM_DB.exists() and wanted:
         con = duckdb.connect(str(TM_DB), read_only=True)
