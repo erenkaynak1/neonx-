@@ -16,13 +16,12 @@ ARCHIVE_URL = 'https://media.githubusercontent.com/media/salimt/football-dataset
 CHUNK = 180_000
 YOUTH_RE = re.compile(r'(\bu[- ]?(?:15|16|17|18|19|20|21|23)\b|under[- ]?(?:15|16|17|18|19|20|21|23)|youth|junioren|juniors|juvenil|primavera|academy|akademi|reserve|reserves)', re.I)
 RESERVE_TEAM_RE = re.compile(r'(?:\s|[-–])(?:ii|iii|b|c)$', re.I)
-TEAM_ID_RE = re.compile(r'/verein/(\d+)')
 
 
 def download_archive():
     if TMP.exists() and TMP.stat().st_size > 100_000_000:
         return
-    with requests.get(ARCHIVE_URL, stream=True, timeout=(30, 300), headers={'User-Agent':'Mozilla/5.0 NEON-XI-Career-Twin/4.2'}) as r:
+    with requests.get(ARCHIVE_URL, stream=True, timeout=(30, 300), headers={'User-Agent':'Mozilla/5.0 NEON-XI-Career-Twin/4.3'}) as r:
         r.raise_for_status()
         with TMP.open('wb') as f:
             for part in r.iter_content(1024 * 1024):
@@ -42,11 +41,6 @@ def senior_mask(df):
     return ~(team.str.contains(YOUTH_RE, na=False) | comp.str.contains(YOUTH_RE, na=False) | team.str.contains(RESERVE_TEAM_RE, na=False))
 
 
-def club_key(url, name):
-    m = TEAM_ID_RE.search(str(url or ''))
-    return 'id:' + m.group(1) if m else 'name:' + str(name or '').strip().lower()
-
-
 def season_start(value):
     s = str(value or '').strip()
     m = re.match(r'^(\d{2,4})', s)
@@ -63,7 +57,7 @@ def load_full_archive(wanted):
     seasons = defaultdict(lambda: defaultdict(lambda: {'apps':0, 'goals':0, 'assists':0}))
     clubs = defaultdict(set)
     read_rows = matched_rows = 0
-    usecols = ['player_id','season','competition_name','team_url','team_name','nb_on_pitch','goals','assists']
+    usecols = ['player_id','season_name','competition_name','team_id','team_name','nb_on_pitch','goals','assists']
 
     for chunk in pd.read_csv(TMP, usecols=usecols, chunksize=CHUNK, low_memory=False):
         read_rows += len(chunk)
@@ -81,14 +75,17 @@ def load_full_archive(wanted):
         matched_rows += len(chunk)
         for r in chunk.itertuples(index=False):
             pid = int(r.player_id)
-            sy = season_start(r.season)
+            sy = season_start(r.season_name)
             if sy is None:
                 continue
             x = seasons[pid][sy]
             x['apps'] += int(r.apps)
             x['goals'] += int(r.g)
             x['assists'] += int(r.a)
-            clubs[pid].add(club_key(r.team_url, r.team_name))
+            if pd.notna(r.team_id):
+                clubs[pid].add('id:' + str(int(r.team_id)))
+            elif str(r.team_name or '').strip():
+                clubs[pid].add('name:' + str(r.team_name).strip().lower())
     return seasons, clubs, read_rows, matched_rows
 
 
