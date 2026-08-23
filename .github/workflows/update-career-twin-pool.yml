@@ -12,6 +12,8 @@ on:
       - 'scripts/enrich_career_twin_weights_v2.py'
       - 'scripts/enrich_career_twin_weights_v3.py'
       - 'scripts/enrich_career_twin_trophies_v2.py'
+      - 'scripts/enrich_career_twin_mackolik_fallback.py'
+      - 'side-games/data/master/mackolik-secondary.json'
       - 'scripts/validate_career_twin_pool.py'
       - 'scripts/diagnose_career_twin_missing.py'
       - 'scripts/finalize_career_twin_runtime.py'
@@ -47,6 +49,8 @@ jobs:
         run: python scripts/enrich_career_twin_weights_v3.py
       - name: Verify missing trophies for famous players
         run: python scripts/enrich_career_twin_trophies_v2.py
+      - name: Apply Mackolik secondary verification and fallback
+        run: python scripts/enrich_career_twin_mackolik_fallback.py
       - name: Apply strict 9-of-9 quality gate
         run: python scripts/validate_career_twin_pool.py
       - name: Diagnose remaining gaps
