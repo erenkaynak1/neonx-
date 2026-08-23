@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "principle": "The master player pool remains broad. Only selectable XOX conditions are whitelisted here.",
+  "nationalities": [
+    "Türkiye","Arjantin","Brezilya","Fransa","İspanya","Almanya","İtalya","İngiltere","Portekiz","Hollanda",
+    "Belçika","Hırvatistan","Sırbistan","Bosna-Hersek","Uruguay","Kolombiya","Fas","Cezayir","Mısır","Nijerya",
+    "Senegal","Gana","Fildişi Sahili","Kamerun","Japonya","Güney Kore","Norveç","İsveç"
+  ],
+  "leagues": [
+    "Süper Lig","Premier League","LaLiga","Serie A","Bundesliga","Ligue 1","Eredivisie","Primeira Liga","Saudi Pro League","MLS"
+  ],
+  "clubs": {
+    "Türkiye": ["Fenerbahçe","Galatasaray","Beşiktaş","Trabzonspor"],
+    "İspanya": ["Real Madrid","Barcelona","Atlético Madrid","Sevilla"],
+    "İngiltere": ["Manchester United","Manchester City","Liverpool","Arsenal","Chelsea","Tottenham Hotspur","Newcastle United"],
+    "İtalya": ["Juventus","Inter","AC Milan","Roma","Napoli","Lazio"],
+    "Almanya": ["Bayern Münih","Borussia Dortmund","Bayer Leverkusen","RB Leipzig"],
+    "Fransa": ["Paris Saint-Germain","Olympique Marseille","Olympique Lyon"],
+    "Hollanda": ["Ajax","PSV","Feyenoord"],
+    "Portekiz": ["Benfica","Porto","Sporting CP"],
+    "Diğer": ["Celtic","Rangers","Al-Hilal","Al-Nassr","Inter Miami"]
+  },
+  "allowed_condition_types": ["club","nationality","league"],
+  "player_match_rules": {
+    "club": "Valid if the player made at least one official senior first-team appearance for the club.",
+    "league": "Valid if the player made at least one official senior league appearance in that competition.",
+    "nationality": "Use the player's senior national-team country where available; otherwise primary football nationality.",
+    "historical_clubs_count": true,
+    "current_club_counts": true,
+    "youth_and_reserve_teams_count": false
+  }
+}
