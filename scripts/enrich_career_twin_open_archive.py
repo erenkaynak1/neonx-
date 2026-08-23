@@ -22,7 +22,7 @@ TEAM_ID_RE = re.compile(r'/verein/(\d+)')
 def download_archive():
     if TMP.exists() and TMP.stat().st_size > 100_000_000:
         return
-    with requests.get(ARCHIVE_URL, stream=True, timeout=(30, 300), headers={'User-Agent':'Mozilla/5.0 NEON-XI-Career-Twin/4.1'}) as r:
+    with requests.get(ARCHIVE_URL, stream=True, timeout=(30, 300), headers={'User-Agent':'Mozilla/5.0 NEON-XI-Career-Twin/4.2'}) as r:
         r.raise_for_status()
         with TMP.open('wb') as f:
             for part in r.iter_content(1024 * 1024):
@@ -97,6 +97,8 @@ def load_weekly_transfermarkt(wanted):
         raise RuntimeError('weekly Transfermarkt DuckDB was not created by build step')
     con = duckdb.connect(str(TM_DB), read_only=True)
     ids = ','.join(str(int(x)) for x in sorted(wanted))
+    # dcaribou also contains national-team tournaments. Requiring both match sides to
+    # resolve in the clubs table guarantees that only club football enters career totals.
     df = con.execute(f'''
         SELECT a.player_id,
                g.season AS season,
@@ -105,17 +107,22 @@ def load_weekly_transfermarkt(wanted):
                coalesce(sum(a.assists),0) AS assists
         FROM appearances a
         JOIN games g USING(game_id)
+        JOIN clubs home_club ON home_club.club_id = g.home_club_id
+        JOIN clubs away_club ON away_club.club_id = g.away_club_id
         WHERE a.player_id IN ({ids})
           AND a.player_club_id IS NOT NULL
           AND a.player_club_id > 0
         GROUP BY a.player_id, g.season
     ''').df()
     clubs_df = con.execute(f'''
-        SELECT DISTINCT player_id, player_club_id
-        FROM appearances
-        WHERE player_id IN ({ids})
-          AND player_club_id IS NOT NULL
-          AND player_club_id > 0
+        SELECT DISTINCT a.player_id, a.player_club_id
+        FROM appearances a
+        JOIN games g USING(game_id)
+        JOIN clubs home_club ON home_club.club_id = g.home_club_id
+        JOIN clubs away_club ON away_club.club_id = g.away_club_id
+        WHERE a.player_id IN ({ids})
+          AND a.player_club_id IS NOT NULL
+          AND a.player_club_id > 0
     ''').df()
     con.close()
 
@@ -152,16 +159,14 @@ def main():
         total_apps = total_goals = total_assists = 0
         used = 0
         for sy in sorted(season_keys):
-            s = full.get(pid, {}).get(sy)
-            d = weekly.get(pid, {}).get(sy)
+            historical = full.get(pid, {}).get(sy)
+            current = weekly.get(pid, {}).get(sy)
             chosen = None
-            # Full archive is best for old career coverage. The weekly Transfermarkt
-            # appearance table wins when it has more games, or ties in the current era.
-            if d and (not s or d['apps'] > s['apps'] or (sy >= 2025 and d['apps'] >= s['apps'])):
-                chosen = d
+            if current and (not historical or current['apps'] > historical['apps'] or (sy >= 2025 and current['apps'] >= historical['apps'])):
+                chosen = current
                 weekly_seasons_used += 1
-            elif s:
-                chosen = s
+            elif historical:
+                chosen = historical
                 full_seasons_used += 1
             if not chosen or chosen['apps'] <= 0:
                 continue
@@ -180,8 +185,8 @@ def main():
         if clubs:
             p['club_count'] = len(clubs)
         src = p.setdefault('sources', {})
-        src['career_stats'] = 'Transfermarkt season-merged: salimt full player_performances + dcaribou weekly appearances'
-        src['club_count'] = 'Transfermarkt club IDs from full performance archive + weekly appearances'
+        src['career_stats'] = 'Transfermarkt club-only season merge: salimt full player_performances + dcaribou weekly appearances'
+        src['club_count'] = 'Transfermarkt senior club IDs from full performance archive + weekly club games'
         p['career_seasons_counted'] = used
 
     req = ['height_cm','weight_kg','birth_date','club_count','trophies','career_goals','career_assists','peak_market_value_eur','career_appearances']
@@ -205,11 +210,11 @@ def main():
         'career_players_matched': matched_players,
         'full_archive_seasons_used': full_seasons_used,
         'weekly_transfermarkt_seasons_used': weekly_seasons_used,
-        'career_stats_source': 'Transfermarkt season merge: full historical archive plus weekly dcaribou appearances; larger/more-current season aggregate selected, never summed twice.',
+        'career_stats_source': 'Transfermarkt club-only season merge: full historical archive plus weekly dcaribou appearances; national-team matches excluded; one source selected per season, never summed twice.',
         'zero_appearance_records_playable': False
     })
     meta.setdefault('sources', {})['career_performance_archive'] = ARCHIVE_URL
-    meta['sources']['weekly_transfermarkt_appearances'] = 'dcaribou/transfermarkt-datasets DuckDB appearances + games'
+    meta['sources']['weekly_transfermarkt_appearances'] = 'dcaribou/transfermarkt-datasets DuckDB appearances + games, restricted to games whose home/away IDs resolve in clubs'
     (DATA / 'meta.json').write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding='utf-8')
     print(json.dumps({'playable_before_weight_recovery':len(playable),'remaining':len(remaining),'career_players':matched_players,'full_seasons':full_seasons_used,'weekly_seasons':weekly_seasons_used}, ensure_ascii=False))
 
