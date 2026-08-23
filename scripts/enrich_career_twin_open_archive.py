@@ -21,7 +21,7 @@ RESERVE_TEAM_RE = re.compile(r'(?:\s|[-–])(?:ii|iii|b|c)$', re.I)
 def download_archive():
     if TMP.exists() and TMP.stat().st_size > 100_000_000:
         return
-    with requests.get(ARCHIVE_URL, stream=True, timeout=(30, 300), headers={'User-Agent':'Mozilla/5.0 NEON-XI-Career-Twin/4.3'}) as r:
+    with requests.get(ARCHIVE_URL, stream=True, timeout=(30, 300), headers={'User-Agent':'Mozilla/5.0 NEON-XI-Career-Twin/4.4'}) as r:
         r.raise_for_status()
         with TMP.open('wb') as f:
             for part in r.iter_content(1024 * 1024):
@@ -94,8 +94,6 @@ def load_weekly_transfermarkt(wanted):
         raise RuntimeError('weekly Transfermarkt DuckDB was not created by build step')
     con = duckdb.connect(str(TM_DB), read_only=True)
     ids = ','.join(str(int(x)) for x in sorted(wanted))
-    # dcaribou also contains national-team tournaments. Requiring both match sides to
-    # resolve in the clubs table guarantees that only club football enters career totals.
     df = con.execute(f'''
         SELECT a.player_id,
                g.season AS season,
@@ -139,6 +137,24 @@ def load_weekly_transfermarkt(wanted):
     return seasons, clubs
 
 
+def merge_same_season(historical, current):
+    if historical and current:
+        # Both sources are Transfermarkt-derived snapshots of the same season.
+        # Career counters are cumulative and cannot decrease, so use the maximum
+        # observed value for each independent counter instead of replacing the
+        # whole season row with a potentially newer-but-less-complete snapshot.
+        return {
+            'apps': max(int(historical['apps']), int(current['apps'])),
+            'goals': max(int(historical['goals']), int(current['goals'])),
+            'assists': max(int(historical['assists']), int(current['assists']))
+        }, 'merged'
+    if current:
+        return current, 'weekly'
+    if historical:
+        return historical, 'full'
+    return None, None
+
+
 def main():
     players = json.loads((DATA / 'players.json').read_text(encoding='utf-8'))
     candidates = json.loads((DATA / 'candidates.json').read_text(encoding='utf-8'))
@@ -150,23 +166,18 @@ def main():
     full, full_clubs, read_rows, matched_rows = load_full_archive(wanted)
     weekly, weekly_clubs = load_weekly_transfermarkt(wanted)
 
-    matched_players = full_seasons_used = weekly_seasons_used = 0
+    matched_players = full_seasons_used = weekly_seasons_used = merged_seasons_used = 0
     for pid, p in byid.items():
         season_keys = set(full.get(pid, {})) | set(weekly.get(pid, {}))
         total_apps = total_goals = total_assists = 0
         used = 0
         for sy in sorted(season_keys):
-            historical = full.get(pid, {}).get(sy)
-            current = weekly.get(pid, {}).get(sy)
-            chosen = None
-            if current and (not historical or current['apps'] > historical['apps'] or (sy >= 2025 and current['apps'] >= historical['apps'])):
-                chosen = current
-                weekly_seasons_used += 1
-            elif historical:
-                chosen = historical
-                full_seasons_used += 1
+            chosen, origin = merge_same_season(full.get(pid, {}).get(sy), weekly.get(pid, {}).get(sy))
             if not chosen or chosen['apps'] <= 0:
                 continue
+            if origin == 'merged': merged_seasons_used += 1
+            elif origin == 'weekly': weekly_seasons_used += 1
+            else: full_seasons_used += 1
             used += 1
             total_apps += chosen['apps']
             total_goals += chosen['goals']
@@ -182,7 +193,7 @@ def main():
         if clubs:
             p['club_count'] = len(clubs)
         src = p.setdefault('sources', {})
-        src['career_stats'] = 'Transfermarkt club-only season merge: salimt full player_performances + dcaribou weekly appearances'
+        src['career_stats'] = 'Transfermarkt club-only season merge: salimt full player_performances + dcaribou weekly appearances; per-counter monotonic max on overlapping seasons'
         src['club_count'] = 'Transfermarkt senior club IDs from full performance archive + weekly club games'
         p['career_seasons_counted'] = used
 
@@ -207,13 +218,14 @@ def main():
         'career_players_matched': matched_players,
         'full_archive_seasons_used': full_seasons_used,
         'weekly_transfermarkt_seasons_used': weekly_seasons_used,
-        'career_stats_source': 'Transfermarkt club-only season merge: full historical archive plus weekly dcaribou appearances; national-team matches excluded; one source selected per season, never summed twice.',
+        'merged_transfermarkt_seasons_used': merged_seasons_used,
+        'career_stats_source': 'Transfermarkt club-only season merge. Overlapping season counters use monotonic max per appearances/goals/assists; national teams excluded.',
         'zero_appearance_records_playable': False
     })
     meta.setdefault('sources', {})['career_performance_archive'] = ARCHIVE_URL
     meta['sources']['weekly_transfermarkt_appearances'] = 'dcaribou/transfermarkt-datasets DuckDB appearances + games, restricted to games whose home/away IDs resolve in clubs'
     (DATA / 'meta.json').write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding='utf-8')
-    print(json.dumps({'playable_before_weight_recovery':len(playable),'remaining':len(remaining),'career_players':matched_players,'full_seasons':full_seasons_used,'weekly_seasons':weekly_seasons_used}, ensure_ascii=False))
+    print(json.dumps({'playable_before_weight_recovery':len(playable),'remaining':len(remaining),'career_players':matched_players,'full_seasons':full_seasons_used,'weekly_seasons':weekly_seasons_used,'merged_seasons':merged_seasons_used}, ensure_ascii=False))
 
 
 if __name__ == '__main__':
