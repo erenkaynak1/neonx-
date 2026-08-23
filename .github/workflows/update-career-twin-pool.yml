@@ -6,16 +6,15 @@ on:
     - cron: '25 4 * * 1'
   push:
     paths:
-      - 'scripts/build_career_twin_pool.py'
+      - 'scripts/build_career_twin_pool_v2.py'
       - 'scripts/enrich_career_twin_uoc_v3.py'
+      - 'scripts/enrich_career_twin_open_archive.py'
       - 'scripts/enrich_career_twin_weights_v2.py'
       - 'scripts/enrich_career_twin_weights_v3.py'
-      - 'scripts/enrich_career_twin_open_archive.py'
-      - 'scripts/enrich_career_twin_tm_stats_verified.py'
-      - 'scripts/enrich_career_twin_tm_api_verified.py'
+      - 'scripts/enrich_career_twin_trophies_v2.py'
       - 'scripts/validate_career_twin_pool.py'
-      - 'scripts/finalize_career_twin_runtime.py'
       - 'scripts/diagnose_career_twin_missing.py'
+      - 'scripts/finalize_career_twin_runtime.py'
       - '.github/workflows/update-career-twin-pool.yml'
 
 permissions:
@@ -34,112 +33,32 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-
-      - id: deps
-        name: Install data dependencies
+      - name: Install data dependencies
         run: pip install --disable-pip-version-check duckdb pandas requests openpyxl rapidfuzz
-
-      - id: candidates
-        name: Build Transfermarkt-ID candidate pool
-        run: python scripts/build_career_twin_pool.py
-
-      - id: trophies_ref
-        name: Load UOC Transfermarkt values as reference only
+      - name: Build famous-player-first Transfermarkt ID pool
+        run: python scripts/build_career_twin_pool_v2.py
+      - name: Load UOC Transfermarkt trophy reference
         run: python scripts/enrich_career_twin_uoc_v3.py
-
-      - id: career
-        name: Build club-only career totals from Transfermarkt archives
-        shell: bash
-        run: |
-          set +e
-          set -o pipefail
-          python scripts/enrich_career_twin_open_archive.py 2>&1 | tee side-games/career-twin/data/pipeline-career-error.log
-          RC=${PIPESTATUS[0]}
-          if [ -f .tmp-career-twin-player-performances.csv ]; then
-            echo "" >> side-games/career-twin/data/pipeline-career-error.log
-            echo "=== ACTUAL ARCHIVE CSV HEADER ===" >> side-games/career-twin/data/pipeline-career-error.log
-            python - <<'PY' >> side-games/career-twin/data/pipeline-career-error.log 2>&1
-          import pandas as pd
-          p = '.tmp-career-twin-player-performances.csv'
-          df = pd.read_csv(p, nrows=3, low_memory=False)
-          print(list(df.columns))
-          print(df.head(3).to_dict(orient='records'))
-          PY
-          fi
-          exit $RC
-
-      - id: weight1
-        name: Recover high-confidence physical-data matches
+      - name: Build official senior club career totals
+        run: python scripts/enrich_career_twin_open_archive.py
+      - name: Recover exact and high-confidence weights
         run: python scripts/enrich_career_twin_weights_v2.py
-
-      - id: weight2
-        name: Recover additional team-aware physical matches
+      - name: Recover additional multi-key weights
         run: python scripts/enrich_career_twin_weights_v3.py
-
-      - id: stats_verified
-        name: Re-read career totals from live Transfermarkt stats
-        run: python scripts/enrich_career_twin_tm_stats_verified.py
-
-      - id: trophies_verified
-        name: Verify senior team trophies from live Transfermarkt achievements
-        run: python scripts/enrich_career_twin_tm_api_verified.py
-
-      - id: validate
-        name: Apply strict live-Transfermarkt quality gate
+      - name: Verify missing trophies for famous players
+        run: python scripts/enrich_career_twin_trophies_v2.py
+      - name: Apply strict 9-of-9 quality gate
         run: python scripts/validate_career_twin_pool.py
-
-      - id: diagnose
-        name: Diagnose remaining gaps
+      - name: Diagnose remaining gaps
         run: python scripts/diagnose_career_twin_missing.py
-
-      - id: finalize
-        name: Strip unused runtime metadata
+      - name: Strip unused runtime metadata
         run: python scripts/finalize_career_twin_runtime.py
-
-      - name: Publish verified pool or record failed stage
-        if: ${{ always() }}
-        env:
-          DEPS: ${{ steps.deps.conclusion }}
-          CANDIDATES: ${{ steps.candidates.conclusion }}
-          TROPHIES_REF: ${{ steps.trophies_ref.conclusion }}
-          CAREER: ${{ steps.career.conclusion }}
-          WEIGHT1: ${{ steps.weight1.conclusion }}
-          WEIGHT2: ${{ steps.weight2.conclusion }}
-          STATS_VERIFIED: ${{ steps.stats_verified.conclusion }}
-          TROPHIES_VERIFIED: ${{ steps.trophies_verified.conclusion }}
-          VALIDATE: ${{ steps.validate.conclusion }}
-          DIAGNOSE: ${{ steps.diagnose.conclusion }}
-          FINALIZE: ${{ steps.finalize.conclusion }}
+      - name: Publish verified Career Twin pool
         run: |
-          python - <<'PY'
-          import json, os
-          from datetime import datetime, timezone
-          from pathlib import Path
-          stages = {k.lower(): os.environ.get(k, 'unknown') for k in ['DEPS','CANDIDATES','TROPHIES_REF','CAREER','WEIGHT1','WEIGHT2','STATS_VERIFIED','TROPHIES_VERIFIED','VALIDATE','DIAGNOSE','FINALIZE']}
-          ok = all(v == 'success' for v in stages.values())
-          path = Path('side-games/career-twin/data/pipeline-status.json')
-          if ok:
-              if path.exists(): path.unlink()
-              log = Path('side-games/career-twin/data/pipeline-career-error.log')
-              if log.exists(): log.unlink()
-          else:
-              path.write_text(json.dumps({'generated_at': datetime.now(timezone.utc).isoformat(), 'success': False, 'stages': stages}, indent=2), encoding='utf-8')
-          print(json.dumps({'success': ok, 'stages': stages}))
-          PY
-
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          if [ "$DEPS" = "success" ] && [ "$CANDIDATES" = "success" ] && [ "$TROPHIES_REF" = "success" ] && [ "$CAREER" = "success" ] && [ "$WEIGHT1" = "success" ] && [ "$WEIGHT2" = "success" ] && [ "$STATS_VERIFIED" = "success" ] && [ "$TROPHIES_VERIFIED" = "success" ] && [ "$VALIDATE" = "success" ] && [ "$DIAGNOSE" = "success" ] && [ "$FINALIZE" = "success" ]; then
-            git add -A side-games/career-twin/data
-            git diff --cached --quiet && exit 0
-            git commit -m "Refresh live-verified Career Twin player pool"
-          else
-            git add side-games/career-twin/data/pipeline-status.json
-            if [ -f side-games/career-twin/data/pipeline-career-error.log ]; then
-              git add side-games/career-twin/data/pipeline-career-error.log
-            fi
-            git diff --cached --quiet && exit 1
-            git commit -m "Record Career Twin pipeline failure"
-          fi
+          rm -f side-games/career-twin/data/pipeline-status.json side-games/career-twin/data/pipeline-career-error.log
+          git add -A side-games/career-twin/data
+          git diff --cached --quiet && exit 0
+          git commit -m "Refresh famous-player-first Career Twin pool"
           git push
