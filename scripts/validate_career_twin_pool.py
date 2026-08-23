@@ -8,6 +8,7 @@ DATA=ROOT/'side-games'/'career-twin'/'data'
 REQ=['height_cm','weight_kg','birth_date','club_count','trophies','career_goals','career_assists','peak_market_value_eur','career_appearances']
 KNOWN_IDS={418560:'Erling Haaland',342229:'Kylian Mbappé',581678:'Jude Bellingham',132098:'Harry Kane',861410:'Arda Güler',68863:'Mauro Icardi',28396:'Edin Dzeko'}
 MIN_VERIFIED_PLAYERS=1000
+BUILD_TRIGGER='2026-08-23T12:55+02:00'
 
 
 def norm(s):
