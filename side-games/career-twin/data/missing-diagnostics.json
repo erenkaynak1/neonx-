@@ -1,40 +1,25 @@
 {
-  "candidate_count": 7625,
+  "candidate_count": 6940,
   "missing_by_field": {
-    "career_goals": 7625,
-    "career_assists": 7625,
-    "career_appearances": 7625,
-    "weight_kg": 4748,
-    "trophies": 6567,
-    "peak_market_value_eur": 221
+    "weight_kg": 5769,
+    "trophies": 6831,
+    "career_goals": 816,
+    "career_assists": 816,
+    "career_appearances": 816
   },
   "top_missing_combinations": [
     {
       "fields": [
         "weight_kg",
-        "trophies",
-        "career_goals",
-        "career_assists",
-        "career_appearances"
+        "trophies"
       ],
-      "count": 4346
+      "count": 4889
     },
     {
       "fields": [
-        "trophies",
-        "career_goals",
-        "career_assists",
-        "career_appearances"
+        "trophies"
       ],
-      "count": 2001
-    },
-    {
-      "fields": [
-        "career_goals",
-        "career_assists",
-        "career_appearances"
-      ],
-      "count": 857
+      "count": 1128
     },
     {
       "fields": [
@@ -42,46 +27,34 @@
         "trophies",
         "career_goals",
         "career_assists",
-        "peak_market_value_eur",
         "career_appearances"
       ],
-      "count": 202
+      "count": 773
     },
     {
       "fields": [
-        "weight_kg",
-        "career_goals",
-        "career_assists",
-        "career_appearances"
+        "weight_kg"
       ],
-      "count": 200
+      "count": 107
     },
     {
       "fields": [
         "trophies",
         "career_goals",
         "career_assists",
-        "peak_market_value_eur",
         "career_appearances"
       ],
-      "count": 18
+      "count": 41
     },
     {
       "fields": [
         "career_goals",
         "career_assists",
-        "peak_market_value_eur",
         "career_appearances"
       ],
-      "count": 1
+      "count": 2
     }
   ],
-  "uoc_enriched_remaining": 1058,
-  "uoc_missing_by_field": {
-    "career_goals": 1058,
-    "career_assists": 1058,
-    "career_appearances": 1058,
-    "weight_kg": 200,
-    "peak_market_value_eur": 1
-  }
+  "uoc_enriched_remaining": 0,
+  "uoc_missing_by_field": {}
 }

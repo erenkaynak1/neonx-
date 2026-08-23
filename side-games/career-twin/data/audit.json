@@ -1,0 +1,208 @@
+{
+  "generated_at": "2026-08-23T15:37:28.194891+00:00",
+  "accepted": 885,
+  "rejected": 6940,
+  "minimum_required_for_first_release": 150,
+  "duplicate_names_removed": 0,
+  "career_stats_definition": "Senior official club appearances/goals/assists from Transfermarkt performance archive; youth and reserve rows excluded.",
+  "known_players": {
+    "418560": {
+      "name": "Erling Haaland",
+      "height_cm": 195,
+      "weight_kg": 94,
+      "birth_date": "2000-07-21",
+      "club_count": 5,
+      "trophies": 6,
+      "career_goals": 296,
+      "career_assists": 64,
+      "peak_market_value_eur": 200000000,
+      "career_appearances": 376,
+      "sources": {
+        "profile": "dcaribou/transfermarkt-datasets",
+        "weight": "EAFC26/SoFIFA-fuzzy-verified",
+        "career_stats": "Transfermarkt club-only season merge: salimt full player_performances + dcaribou weekly appearances",
+        "club_count": "Transfermarkt senior club IDs from full performance archive + weekly club games",
+        "trophies": "UOC-Transfermarkt-2026-safe-name-age-team",
+        "peak_value": "dcaribou/transfermarkt-datasets player_valuations"
+      },
+      "validation_reasons": null
+    },
+    "342229": {
+      "name": "Kylian Mbappé",
+      "height_cm": 180,
+      "weight_kg": 75,
+      "birth_date": "1998-12-20",
+      "club_count": 3,
+      "trophies": 13,
+      "career_goals": 364,
+      "career_assists": 137,
+      "peak_market_value_eur": 200000000,
+      "career_appearances": 469,
+      "sources": {
+        "profile": "dcaribou/transfermarkt-datasets",
+        "weight": "EAFC26/SoFIFA-fuzzy-verified",
+        "career_stats": "Transfermarkt club-only season merge: salimt full player_performances + dcaribou weekly appearances",
+        "club_count": "Transfermarkt senior club IDs from full performance archive + weekly club games",
+        "trophies": "UOC-Transfermarkt-2026-safe-name-age-team",
+        "peak_value": "dcaribou/transfermarkt-datasets player_valuations"
+      },
+      "validation_reasons": null
+    },
+    "581678": {
+      "name": "Jude Bellingham",
+      "height_cm": 186,
+      "weight_kg": 75,
+      "birth_date": "2003-06-29",
+      "club_count": 3,
+      "trophies": 6,
+      "career_goals": 74,
+      "career_assists": 60,
+      "peak_market_value_eur": 180000000,
+      "career_appearances": 314,
+      "sources": {
+        "profile": "dcaribou/transfermarkt-datasets",
+        "weight": "EAFC26/SoFIFA-fuzzy-verified",
+        "career_stats": "Transfermarkt club-only season merge: salimt full player_performances + dcaribou weekly appearances",
+        "club_count": "Transfermarkt senior club IDs from full performance archive + weekly club games",
+        "trophies": "UOC-Transfermarkt-2026-safe-name-age-team",
+        "peak_value": "dcaribou/transfermarkt-datasets player_valuations"
+      },
+      "validation_reasons": null
+    },
+    "132098": {
+      "name": "Harry Kane",
+      "height_cm": 188,
+      "weight_kg": 86,
+      "birth_date": "1993-07-28",
+      "club_count": 6,
+      "trophies": 14,
+      "career_goals": 435,
+      "career_assists": 102,
+      "peak_market_value_eur": 150000000,
+      "career_appearances": 643,
+      "sources": {
+        "profile": "dcaribou/transfermarkt-datasets",
+        "weight": "EAFC26/SoFIFA-multikey-verified",
+        "career_stats": "Transfermarkt club-only season merge: salimt full player_performances + dcaribou weekly appearances",
+        "club_count": "Transfermarkt senior club IDs from full performance archive + weekly club games",
+        "trophies": "UOC-Transfermarkt-2026-safe-name-age-team",
+        "peak_value": "dcaribou/transfermarkt-datasets player_valuations"
+      },
+      "validation_reasons": null
+    },
+    "861410": {
+      "name": "Arda Güler",
+      "height_cm": 175,
+      "weight_kg": 70,
+      "birth_date": "2005-02-25",
+      "club_count": 2,
+      "trophies": 5,
+      "career_goals": 27,
+      "career_assists": 35,
+      "peak_market_value_eur": 90000000,
+      "career_appearances": 160,
+      "sources": {
+        "profile": "dcaribou/transfermarkt-datasets",
+        "weight": "EAFC26/SoFIFA-fuzzy-verified",
+        "career_stats": "Transfermarkt club-only season merge: salimt full player_performances + dcaribou weekly appearances",
+        "club_count": "Transfermarkt senior club IDs from full performance archive + weekly club games",
+        "trophies": "UOC-Transfermarkt-2026-safe-name-age-team",
+        "peak_value": "dcaribou/transfermarkt-datasets player_valuations"
+      },
+      "validation_reasons": null
+    },
+    "68863": {
+      "name": "Mauro Icardi",
+      "height_cm": 181,
+      "weight_kg": null,
+      "birth_date": "1993-02-19",
+      "club_count": 4,
+      "trophies": null,
+      "career_goals": 248,
+      "career_assists": 66,
+      "peak_market_value_eur": 100000000,
+      "career_appearances": 472,
+      "sources": {
+        "profile": "dcaribou/transfermarkt-datasets",
+        "weight": null,
+        "career_stats": "Transfermarkt club-only season merge: salimt full player_performances + dcaribou weekly appearances",
+        "club_count": "Transfermarkt senior club IDs from full performance archive + weekly club games",
+        "trophies": null,
+        "peak_value": "dcaribou/transfermarkt-datasets player_valuations"
+      },
+      "validation_reasons": [
+        "missing:weight_kg",
+        "missing:trophies"
+      ]
+    },
+    "28396": {
+      "name": "Edin Dzeko",
+      "height_cm": 192,
+      "weight_kg": 80,
+      "birth_date": "1986-03-17",
+      "club_count": 8,
+      "trophies": null,
+      "career_goals": 370,
+      "career_assists": 153,
+      "peak_market_value_eur": 32000000,
+      "career_appearances": 850,
+      "sources": {
+        "profile": "dcaribou/transfermarkt-datasets",
+        "weight": "EAFC26/SoFIFA-fuzzy-verified",
+        "career_stats": "Transfermarkt club-only season merge: salimt full player_performances + dcaribou weekly appearances",
+        "club_count": "Transfermarkt senior club IDs from full performance archive + weekly club games",
+        "trophies": null,
+        "peak_value": "dcaribou/transfermarkt-datasets player_valuations"
+      },
+      "validation_reasons": [
+        "missing:trophies"
+      ]
+    },
+    "28003": {
+      "name": "Lionel Messi",
+      "height_cm": 170,
+      "weight_kg": 67,
+      "birth_date": "1987-06-24",
+      "club_count": 3,
+      "trophies": null,
+      "career_goals": 766,
+      "career_assists": 367,
+      "peak_market_value_eur": 180000000,
+      "career_appearances": 927,
+      "sources": {
+        "profile": "dcaribou/transfermarkt-datasets",
+        "weight": "EAFC26/SoFIFA-fuzzy-verified",
+        "career_stats": "Transfermarkt club-only season merge: salimt full player_performances + dcaribou weekly appearances",
+        "club_count": "Transfermarkt senior club IDs from full performance archive + weekly club games",
+        "trophies": null,
+        "peak_value": "dcaribou/transfermarkt-datasets player_valuations"
+      },
+      "validation_reasons": [
+        "missing:trophies"
+      ]
+    },
+    "8198": {
+      "name": "Cristiano Ronaldo",
+      "height_cm": 185,
+      "weight_kg": 85,
+      "birth_date": "1985-02-05",
+      "club_count": 5,
+      "trophies": null,
+      "career_goals": 800,
+      "career_assists": 257,
+      "peak_market_value_eur": 120000000,
+      "career_appearances": 1059,
+      "sources": {
+        "profile": "dcaribou/transfermarkt-datasets",
+        "weight": "EAFC26/SoFIFA-fuzzy-verified",
+        "career_stats": "Transfermarkt club-only season merge: salimt full player_performances + dcaribou weekly appearances",
+        "club_count": "Transfermarkt senior club IDs from full performance archive + weekly club games",
+        "trophies": null,
+        "peak_value": "dcaribou/transfermarkt-datasets player_valuations"
+      },
+      "validation_reasons": [
+        "missing:trophies"
+      ]
+    }
+  }
+}
