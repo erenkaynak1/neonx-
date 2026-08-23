@@ -1,124 +1,159 @@
 #!/usr/bin/env python3
-import json,re,time,threading
+import json, re, time, threading, unicodedata
 from pathlib import Path
-from datetime import datetime,timezone
-from concurrent.futures import ThreadPoolExecutor,as_completed
+from datetime import datetime, timezone
 import requests
 
-ROOT=Path(__file__).resolve().parents[1]
-DATA=ROOT/'side-games'/'career-twin'/'data'
-BASE='https://transfermarkt-api.fly.dev/players/{}/{}'
-LIMIT=320
-WORKERS=6
-TIMEOUT=15
-UA={'User-Agent':'Mozilla/5.0 NEON-XI-Career-Twin/2.6','Accept':'application/json'}
-_tls=threading.local()
-INDIVIDUAL_WORDS=(
- 'top scorer','top goalscorer','player of','footballer of','most valuable player','golden boot','golden ball',
- 'best player','young player','player of the season','player of the tournament','footballer of the year',
- 'striker of the year','midfielder of the year','defender of the year','goalkeeper of the year','talent of the year',
- 'torschutzenkonig','torschützenkönig','weltfussballer','weltfußballer','fussballer des jahres','fußballer des jahres',
- 'gol krali','gol kralı','yilin futbolcusu','yılın futbolcusu','sezonun oyuncusu','turnuvanin oyuncusu','turnuvanın oyuncusu'
+ROOT = Path(__file__).resolve().parents[1]
+DATA = ROOT / 'side-games' / 'career-twin' / 'data'
+BASE = 'https://transfermarkt-api.fly.dev/players/{}/achievements'
+LIMIT = 320
+TIMEOUT = 25
+REQUEST_INTERVAL = 1.65  # deployed test API is limited to 2 requests / 3 seconds
+UA = {'User-Agent':'Mozilla/5.0 NEON-XI-Career-Twin/4.5','Accept':'application/json'}
+PRIORITY_IDS = [28003,8198,418560,342229,581678,132098,861410,68863,28396,149577]
+
+INDIVIDUAL_WORDS = (
+    'top scorer','top goalscorer','goalscorer','player of','footballer of','most valuable player','golden boot','golden ball',
+    'best player','young player','player of the season','player of the tournament','footballer of the year','assist leader',
+    'striker of the year','midfielder of the year','defender of the year','goalkeeper of the year','talent of the year',
+    'torschutzenkonig','weltfussballer','fussballer des jahres','gol krali','yilin futbolcusu','sezonun oyuncusu',
+    'turnuvanin oyuncusu','altin ayakkabi','golden boy','ballon d or','uefa best player','most assists','assist king'
 )
-YOUTH_WORDS=('u17','u18','u19','u20','u21','u23','youth','jugend','academy','juvenil','primavera')
+NON_WIN_WORDS = (
+    'participant','participation','finalist','runner up','runners up','second place','vice champion','vice-champion',
+    'katilimci','katilimcisi','ikincisi','finalisti','teilnehmer','vizemeister','finalteilnahme','subcampeon','subcampeón',
+    'vice champion','finaliste','runners-up'
+)
+YOUTH_WORDS = ('u15','u16','u17','u18','u19','u20','u21','u23','under 15','under 16','under 17','under 18','under 19','under 20','under 21','under 23','youth','jugend','academy','juvenil','primavera','altyapi','gencler')
+
+_lock = threading.Lock()
+_next_allowed = 0.0
 
 
-def session():
- if not hasattr(_tls,'s'):
-  s=requests.Session();s.headers.update(UA);_tls.s=s
- return _tls.s
+def norm_text(s):
+    s = unicodedata.normalize('NFKD', str(s or '')).encode('ascii','ignore').decode().lower()
+    s = re.sub(r'[^a-z0-9]+', ' ', s)
+    return ' '.join(s.split())
 
-def norm_title(s):
- s=' '.join(str(s or '').lower().split())
- return s.replace('ş','s').replace('ı','i').replace('ğ','g').replace('ü','u').replace('ö','o').replace('ç','c')
 
-def get_json(player_id,kind):
- url=BASE.format(player_id,kind)
- for attempt in range(2):
-  try:
-   r=session().get(url,timeout=TIMEOUT)
-   if r.status_code==200:return r.json()
-   if r.status_code in (429,500,502,503,504):time.sleep(1.2*(attempt+1))
-   else:return None
-  except Exception:
-   if attempt==0:time.sleep(.8)
- return None
+def throttled_get(url):
+    global _next_allowed
+    for attempt in range(4):
+        with _lock:
+            now = time.monotonic()
+            wait = max(0.0, _next_allowed - now)
+            if wait:
+                time.sleep(wait)
+            _next_allowed = time.monotonic() + REQUEST_INTERVAL
+        try:
+            r = requests.get(url, headers=UA, timeout=TIMEOUT)
+            if r.status_code == 200:
+                return r.json()
+            if r.status_code == 429:
+                time.sleep(4.0 + attempt * 3.0)
+                continue
+            if r.status_code in (500,502,503,504):
+                time.sleep(2.0 + attempt * 2.0)
+                continue
+            return None
+        except Exception:
+            time.sleep(2.0 + attempt * 2.0)
+    return None
+
+
+def is_team_trophy(item):
+    title = norm_text(item.get('title'))
+    if not title:
+        return False
+    if any(norm_text(w) in title for w in INDIVIDUAL_WORDS):
+        return False
+    if any(norm_text(w) in title for w in NON_WIN_WORDS):
+        return False
+    if any(norm_text(w) in title for w in YOUTH_WORDS):
+        return False
+    details = item.get('details') or []
+    if not isinstance(details, list) or not details:
+        return False
+    # A Transfermarkt team title has season context and normally club or competition context.
+    return any(isinstance(d, dict) and d.get('season') and (d.get('club') or d.get('competition')) for d in details)
+
 
 def trophy_total(payload):
- ach=(payload or {}).get('achievements')
- if not isinstance(ach,list):return None
- total=0
- for item in ach:
-  title=norm_title(item.get('title'))
-  if any(norm_title(w) in title for w in INDIVIDUAL_WORDS):continue
-  if any(w in title for w in YOUTH_WORDS):continue
-  details=item.get('details') or []
-  has_team_context=any(isinstance(d,dict) and (d.get('club') or d.get('competition')) for d in details)
-  if not has_team_context and details:continue
-  try:count=int(item.get('count') or len(details) or 0)
-  except:count=len(details)
-  if count>0:total+=count
- return total
+    achievements = (payload or {}).get('achievements')
+    if not isinstance(achievements, list):
+        return None
+    total = 0
+    accepted_titles = []
+    for item in achievements:
+        if not isinstance(item, dict) or not is_team_trophy(item):
+            continue
+        details = item.get('details') or []
+        valid_details = [d for d in details if isinstance(d, dict) and d.get('season') and (d.get('club') or d.get('competition'))]
+        count = len(valid_details)
+        if count <= 0:
+            continue
+        total += count
+        accepted_titles.append({'title': item.get('title'), 'count': count})
+    return total, accepted_titles
 
-def stats_total(payload):
- rows=(payload or {}).get('stats')
- if not isinstance(rows,list) or not rows:return None
- apps=goals=assists=0
- for r in rows:
-  comp=norm_title(r.get('competitionName') or r.get('competition_name'))
-  if any(w in comp for w in YOUTH_WORDS):continue
-  try:a=int(r.get('appearances') or 0);g=int(r.get('goals') or 0);s=int(r.get('assists') or 0)
-  except:continue
-  if a<=0:continue
-  apps+=a;goals+=max(0,g);assists+=max(0,s)
- return {'apps':apps,'goals':goals,'assists':assists} if apps>0 else None
-
-def verify(p):
- tv=trophy_total(get_json(p['id'],'achievements'))
- sv=stats_total(get_json(p['id'],'stats'))
- return p,tv,sv
 
 def main():
- players=json.loads((DATA/'players.json').read_text(encoding='utf-8'))
- cand=json.loads((DATA/'candidates.json').read_text(encoding='utf-8'))
- byid={int(p['id']):p for p in players+cand};records=list(byid.values())
- records.sort(key=lambda p:(not bool(p.get('turkish_familiar')),p.get('trophies') is not None,-float(p.get('recognition_score') or 0)))
- targets=[p for p in records if p.get('trophies') is None][:LIMIT]
- trophy_ok=stats_ok=stats_agree=0
- with ThreadPoolExecutor(max_workers=WORKERS) as ex:
-  futures=[ex.submit(verify,p) for p in targets]
-  for i,f in enumerate(as_completed(futures),1):
-   try:p,tv,sv=f.result()
-   except Exception:continue
-   if tv is not None:
-    p['trophies']=tv;p.setdefault('sources',{})['trophies']='transfermarkt-api.fly.dev achievements';trophy_ok+=1
-   if sv:
-    stats_ok+=1
-    local=(int(p.get('career_appearances') or 0),int(p.get('career_goals') or 0),int(p.get('career_assists') or 0))
-    remote=(sv['apps'],sv['goals'],sv['assists'])
-    da=remote[0]-local[0];dg=remote[1]-local[1];ds=remote[2]-local[2]
-    agree=(local[0]>0 and da>=-3 and da<=45 and dg>=-3 and dg<=30 and ds>=-3 and ds<=25)
-    if agree:
-     stats_agree+=1;p.setdefault('sources',{})['career_stats_crosscheck']='transfermarkt-api.fly.dev stats'
-     p['tm_api_stats_crosscheck']={'archive':local,'api':remote,'agree':True}
-    else:p['tm_api_stats_disagreement']={'archive':local,'api':remote}
-   if i%25==0:print(f'tm-api {i}/{len(targets)} trophies={trophy_ok} stats={stats_ok} agree={stats_agree}',flush=True)
+    players = json.loads((DATA/'players.json').read_text(encoding='utf-8'))
+    candidates = json.loads((DATA/'candidates.json').read_text(encoding='utf-8'))
+    byid = {int(p['id']):p for p in players + candidates}
+    records = list(byid.values())
 
- req=['height_cm','weight_kg','birth_date','club_count','trophies','career_goals','career_assists','peak_market_value_eur','career_appearances']
- playable=[];remaining=[]
- for p in records:
-  complete=all(p.get(k) is not None for k in req) and int(p.get('career_appearances') or 0)>0
-  p['playable']=bool(complete);(playable if complete else remaining).append(p)
- key=lambda p:(not bool(p.get('turkish_familiar')),-float(p.get('recognition_score') or 0))
- playable.sort(key=key);remaining.sort(key=key)
- (DATA/'players.json').write_text(json.dumps(playable,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
- (DATA/'candidates.json').write_text(json.dumps(remaining,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
- meta=json.loads((DATA/'meta.json').read_text(encoding='utf-8'))
- meta.update({'generated_at':datetime.now(timezone.utc).isoformat(),'playable_count':len(playable),'candidate_count':len(remaining),
-              'tm_api_targets':len(targets),'tm_api_trophies_verified':trophy_ok,'tm_api_stats_received':stats_ok,'tm_api_stats_agreed':stats_agree,
-              'tm_api_stats_policy':'cross-check only; never overwrites filtered archive career totals','tm_api_workers':WORKERS})
- meta.setdefault('sources',{})['transfermarkt_verification_api']='https://transfermarkt-api.fly.dev/'
- (DATA/'meta.json').write_text(json.dumps(meta,ensure_ascii=False,indent=2),encoding='utf-8')
- print(json.dumps({'playable':len(playable),'remaining':len(remaining),'trophies':trophy_ok,'stats':stats_ok,'agree':stats_agree},ensure_ascii=False))
+    non_trophy_req = ['height_cm','weight_kg','birth_date','club_count','career_goals','career_assists','peak_market_value_eur','career_appearances']
+    priority_rank = {pid:i for i,pid in enumerate(PRIORITY_IDS)}
+    records.sort(key=lambda p: (
+        0 if int(p['id']) in priority_rank else 1,
+        priority_rank.get(int(p['id']), 9999),
+        0 if all(p.get(k) is not None for k in non_trophy_req) else 1,
+        0 if p.get('turkish_familiar') else 1,
+        -float(p.get('recognition_score') or 0)
+    ))
+    targets = records[:LIMIT]
 
-if __name__=='__main__':main()
+    verified = failed = 0
+    for i,p in enumerate(targets,1):
+        payload = throttled_get(BASE.format(int(p['id'])))
+        result = trophy_total(payload)
+        if result is None:
+            failed += 1
+        else:
+            total, titles = result
+            p['trophies'] = int(total)
+            p.setdefault('sources', {})['trophies'] = 'transfermarkt-api.fly.dev achievements (Transfermarkt)'
+            p['verified_team_trophy_titles'] = titles
+            verified += 1
+        if i % 20 == 0:
+            print(f'transfermarkt achievements {i}/{len(targets)} verified={verified} failed={failed}', flush=True)
+
+    req = non_trophy_req + ['trophies']
+    playable, remaining = [], []
+    for p in records:
+        p['playable'] = all(p.get(k) is not None for k in req) and int(p.get('career_appearances') or 0) > 0
+        (playable if p['playable'] else remaining).append(p)
+    key = lambda p:(not bool(p.get('turkish_familiar')),-float(p.get('recognition_score') or 0))
+    playable.sort(key=key); remaining.sort(key=key)
+    (DATA/'players.json').write_text(json.dumps(playable,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
+    (DATA/'candidates.json').write_text(json.dumps(remaining,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
+
+    meta = json.loads((DATA/'meta.json').read_text(encoding='utf-8'))
+    meta.update({
+        'generated_at':datetime.now(timezone.utc).isoformat(),
+        'playable_count':len(playable),
+        'candidate_count':len(remaining),
+        'tm_achievement_targets':len(targets),
+        'tm_achievement_verified':verified,
+        'tm_achievement_failed':failed,
+        'trophy_definition':'Senior team trophies only; individual awards, participation, finalist/runner-up and youth titles excluded.',
+        'trophy_source':'Transfermarkt achievements via felipeall/transfermarkt-api test deployment'
+    })
+    meta.setdefault('sources', {})['transfermarkt_verification_api'] = 'https://transfermarkt-api.fly.dev/'
+    (DATA/'meta.json').write_text(json.dumps(meta,ensure_ascii=False,indent=2),encoding='utf-8')
+    print(json.dumps({'playable_before_validation':len(playable),'remaining':len(remaining),'trophies_verified':verified,'failed':failed},ensure_ascii=False))
+
+if __name__ == '__main__':
+    main()
