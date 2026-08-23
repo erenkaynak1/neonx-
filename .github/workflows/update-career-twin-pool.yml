@@ -32,29 +32,80 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Install data dependencies
+
+      - id: deps
+        name: Install data dependencies
         run: pip install --disable-pip-version-check duckdb pandas requests openpyxl rapidfuzz
-      - name: Build recognition-first Transfermarkt candidate pool
+
+      - id: candidates
+        name: Build Transfermarkt-ID candidate pool
         run: python scripts/build_career_twin_pool.py
-      - name: Load 2026 UOC Transfermarkt reference values
+
+      - id: trophies
+        name: Load safely matched 2026 UOC Transfermarkt trophy values
         run: python scripts/enrich_career_twin_uoc_v3.py
-      - name: Build senior club career totals from full Transfermarkt archive
+
+      - id: career
+        name: Build club-only career totals from Transfermarkt archives
         run: python scripts/enrich_career_twin_open_archive.py
-      - name: Recover high-confidence physical-data matches
+
+      - id: weight1
+        name: Recover high-confidence physical-data matches
         run: python scripts/enrich_career_twin_weights_v2.py
-      - name: Recover additional team-aware physical matches
+
+      - id: weight2
+        name: Recover additional team-aware physical matches
         run: python scripts/enrich_career_twin_weights_v3.py
-      - name: Apply strict multi-source quality gate
+
+      - id: validate
+        name: Apply strict multi-source quality gate
         run: python scripts/validate_career_twin_pool.py
-      - name: Diagnose remaining gaps
+
+      - id: diagnose
+        name: Diagnose remaining gaps
         run: python scripts/diagnose_career_twin_missing.py
-      - name: Strip unused runtime metadata
+
+      - id: finalize
+        name: Strip unused runtime metadata
         run: python scripts/finalize_career_twin_runtime.py
-      - name: Commit verified pool
+
+      - name: Publish verified pool or record failed stage
+        if: ${{ always() }}
+        env:
+          DEPS: ${{ steps.deps.conclusion }}
+          CANDIDATES: ${{ steps.candidates.conclusion }}
+          TROPHIES: ${{ steps.trophies.conclusion }}
+          CAREER: ${{ steps.career.conclusion }}
+          WEIGHT1: ${{ steps.weight1.conclusion }}
+          WEIGHT2: ${{ steps.weight2.conclusion }}
+          VALIDATE: ${{ steps.validate.conclusion }}
+          DIAGNOSE: ${{ steps.diagnose.conclusion }}
+          FINALIZE: ${{ steps.finalize.conclusion }}
         run: |
+          python - <<'PY'
+          import json, os
+          from datetime import datetime, timezone
+          from pathlib import Path
+          stages = {k.lower(): os.environ.get(k, 'unknown') for k in ['DEPS','CANDIDATES','TROPHIES','CAREER','WEIGHT1','WEIGHT2','VALIDATE','DIAGNOSE','FINALIZE']}
+          ok = all(v == 'success' for v in stages.values())
+          path = Path('side-games/career-twin/data/pipeline-status.json')
+          if ok:
+              if path.exists(): path.unlink()
+          else:
+              path.write_text(json.dumps({'generated_at': datetime.now(timezone.utc).isoformat(), 'success': False, 'stages': stages}, indent=2), encoding='utf-8')
+          print(json.dumps({'success': ok, 'stages': stages}))
+          PY
+
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add side-games/career-twin/data
-          git diff --cached --quiet && exit 0
-          git commit -m "Refresh verified Career Twin player pool"
+
+          if [ "$DEPS" = "success" ] && [ "$CANDIDATES" = "success" ] && [ "$TROPHIES" = "success" ] && [ "$CAREER" = "success" ] && [ "$WEIGHT1" = "success" ] && [ "$WEIGHT2" = "success" ] && [ "$VALIDATE" = "success" ] && [ "$DIAGNOSE" = "success" ] && [ "$FINALIZE" = "success" ]; then
+            git add -A side-games/career-twin/data
+            git diff --cached --quiet && exit 0
+            git commit -m "Refresh verified Career Twin player pool"
+          else
+            git add side-games/career-twin/data/pipeline-status.json
+            git diff --cached --quiet && exit 1
+            git commit -m "Record Career Twin pipeline failure"
+          fi
           git push
