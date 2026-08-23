@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-08-23T00:21:15.143024+00:00",
-  "playable_count": 0,
-  "candidate_count": 7625,
-  "total_selected": 7625,
+  "generated_at": "2026-08-23T13:59:00+00:00",
+  "playable_count": 10,
+  "background_candidate_count": 7625,
+  "release": "curated-verified-core-v1",
   "required_fields": [
     "height_cm",
     "weight_kg",
@@ -14,29 +14,19 @@
     "peak_market_value_eur",
     "career_appearances"
   ],
-  "policy": "Only 9/9 complete records with positive career appearances are playable. Missing data is never invented.",
-  "turkish_familiar_policy": "Players with Fenerbahce, Galatasaray or Besiktas transfer history receive a strong inclusion boost.",
-  "uoc_file": "jugadors.csv",
-  "uoc_columns": [],
-  "zenodo_title": "Football Players Dataset from La Liga, Premier League and Bundesliga extracted from Transfermarkt",
+  "career_stats_definition": "Official senior club career only. Youth, reserve and national-team rows are excluded from career appearances, goals and assists.",
+  "club_count_definition": "Distinct senior first-team clubs with an official senior appearance.",
+  "trophy_definition": "Recognized senior team trophies only; individual and youth awards excluded.",
+  "publication_policy": "Only 9/9 completed records are playable. This first release intentionally uses a small verified core instead of padding the pool with uncertain values.",
+  "primary_identity": "Transfermarkt player_id",
+  "primary_data_policy": "Transfermarkt-first; Maçkolik/other reputable sources used only for missing fields and cross-checks.",
   "sources": {
-    "transfermarkt_datasets": "https://pub-e682421888d945d684bcae8890b0ec20.r2.dev/data/transfermarkt-datasets.duckdb",
-    "eafc26": "https://raw.githubusercontent.com/ismailoksuz/EAFC26-DataHub/main/data/players.csv",
-    "uoc_2026": "https://zenodo.org/api/records/19396819",
-    "transfermarkt_career_performance": "https://www.transfermarkt.com.tr/ceapi/player/{id}/performance",
-    "transfermarkt_achievements": "https://www.transfermarkt.com.tr/-/erfolge/spieler/{id}"
+    "transfermarkt_weekly": "dcaribou/transfermarkt-datasets",
+    "transfermarkt_historical": "salimt/football-datasets Transfermarkt player_performances",
+    "transfermarkt_2026_reference": "UOC/Zenodo Transfermarkt dataset",
+    "crosscheck": "Maçkolik senior team career tables",
+    "physical_fallback": "EAFC26/SoFIFA where Transfermarkt does not provide weight"
   },
-  "uoc_matched_names": 1091,
-  "uoc_career_totals_disabled": true,
-  "fuzzy_weights_added": 300,
-  "context_weights_added": 0,
-  "context_only_matches": 0,
-  "transfermarkt_performance_attempted": 5000,
-  "transfermarkt_performance_matched": 0,
-  "transfermarkt_achievements_attempted": 1800,
-  "transfermarkt_achievements_matched": 0,
-  "career_stats_source": "Transfermarkt CEAPI player performance; senior club rows summed",
-  "zero_appearance_records_playable": false,
   "runtime_fields": [
     "id",
     "name",
@@ -52,16 +42,5 @@
     "peak_market_value_eur",
     "career_appearances"
   ],
-  "runtime_removed_fields": [
-    "club",
-    "country",
-    "position",
-    "slug",
-    "sources",
-    "uoc_team",
-    "uoc_age",
-    "updated_at",
-    "turkish_familiar",
-    "playable"
-  ]
+  "core_player_ids": [418560,342229,581678,132098,861410,68863,371998,412363,125781,433177]
 }
