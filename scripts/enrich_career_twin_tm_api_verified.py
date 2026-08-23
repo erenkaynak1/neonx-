@@ -7,10 +7,10 @@ import requests
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / 'side-games' / 'career-twin' / 'data'
 BASE = 'https://transfermarkt-api.fly.dev/players/{}/achievements'
-LIMIT = 320
+LIMIT = 260
 TIMEOUT = 25
 REQUEST_INTERVAL = 1.65  # deployed test API is limited to 2 requests / 3 seconds
-UA = {'User-Agent':'Mozilla/5.0 NEON-XI-Career-Twin/4.5','Accept':'application/json'}
+UA = {'User-Agent':'Mozilla/5.0 NEON-XI-Career-Twin/5.0','Accept':'application/json'}
 PRIORITY_IDS = [28003,8198,418560,342229,581678,132098,861410,68863,28396,149577]
 
 INDIVIDUAL_WORDS = (
@@ -75,7 +75,6 @@ def is_team_trophy(item):
     details = item.get('details') or []
     if not isinstance(details, list) or not details:
         return False
-    # A Transfermarkt team title has season context and normally club or competition context.
     return any(isinstance(d, dict) and d.get('season') and (d.get('club') or d.get('competition')) for d in details)
 
 
@@ -104,16 +103,16 @@ def main():
     byid = {int(p['id']):p for p in players + candidates}
     records = list(byid.values())
 
-    non_trophy_req = ['height_cm','weight_kg','birth_date','club_count','career_goals','career_assists','peak_market_value_eur','career_appearances']
     priority_rank = {pid:i for i,pid in enumerate(PRIORITY_IDS)}
-    records.sort(key=lambda p: (
+    non_trophy_req = ['height_cm','weight_kg','birth_date','club_count','career_goals','career_assists','peak_market_value_eur','career_appearances']
+    eligible = [p for p in records if all(p.get(k) is not None for k in non_trophy_req) and str((p.get('sources') or {}).get('career_stats') or '').startswith('transfermarkt-api.fly.dev stats')]
+    eligible.sort(key=lambda p: (
         0 if int(p['id']) in priority_rank else 1,
         priority_rank.get(int(p['id']), 9999),
-        0 if all(p.get(k) is not None for k in non_trophy_req) else 1,
         0 if p.get('turkish_familiar') else 1,
         -float(p.get('recognition_score') or 0)
     ))
-    targets = records[:LIMIT]
+    targets = eligible[:LIMIT]
 
     verified = failed = 0
     for i,p in enumerate(targets,1):
@@ -124,36 +123,33 @@ def main():
         else:
             total, titles = result
             p['trophies'] = int(total)
-            p.setdefault('sources', {})['trophies'] = 'transfermarkt-api.fly.dev achievements (Transfermarkt)'
+            p.setdefault('sources', {})['trophies'] = 'transfermarkt-api.fly.dev achievements (live Transfermarkt)'
             p['verified_team_trophy_titles'] = titles
+            p['tm_trophies_verified_at'] = datetime.now(timezone.utc).isoformat()
             verified += 1
         if i % 20 == 0:
             print(f'transfermarkt achievements {i}/{len(targets)} verified={verified} failed={failed}', flush=True)
 
-    req = non_trophy_req + ['trophies']
-    playable, remaining = [], []
-    for p in records:
-        p['playable'] = all(p.get(k) is not None for k in req) and int(p.get('career_appearances') or 0) > 0
-        (playable if p['playable'] else remaining).append(p)
+    records = list(byid.values())
     key = lambda p:(not bool(p.get('turkish_familiar')),-float(p.get('recognition_score') or 0))
-    playable.sort(key=key); remaining.sort(key=key)
-    (DATA/'players.json').write_text(json.dumps(playable,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
-    (DATA/'candidates.json').write_text(json.dumps(remaining,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
+    records.sort(key=key)
+    (DATA/'players.json').write_text('[]', encoding='utf-8')
+    (DATA/'candidates.json').write_text(json.dumps(records,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
 
     meta = json.loads((DATA/'meta.json').read_text(encoding='utf-8'))
     meta.update({
         'generated_at':datetime.now(timezone.utc).isoformat(),
-        'playable_count':len(playable),
-        'candidate_count':len(remaining),
+        'playable_count':0,
+        'candidate_count':len(records),
         'tm_achievement_targets':len(targets),
         'tm_achievement_verified':verified,
         'tm_achievement_failed':failed,
         'trophy_definition':'Senior team trophies only; individual awards, participation, finalist/runner-up and youth titles excluded.',
-        'trophy_source':'Transfermarkt achievements via felipeall/transfermarkt-api test deployment'
+        'trophy_source':'Live Transfermarkt achievements via felipeall/transfermarkt-api test deployment'
     })
     meta.setdefault('sources', {})['transfermarkt_verification_api'] = 'https://transfermarkt-api.fly.dev/'
     (DATA/'meta.json').write_text(json.dumps(meta,ensure_ascii=False,indent=2),encoding='utf-8')
-    print(json.dumps({'playable_before_validation':len(playable),'remaining':len(remaining),'trophies_verified':verified,'failed':failed},ensure_ascii=False))
+    print(json.dumps({'targets':len(targets),'trophies_verified':verified,'failed':failed},ensure_ascii=False))
 
 if __name__ == '__main__':
     main()
