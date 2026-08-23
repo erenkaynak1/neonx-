@@ -19,7 +19,7 @@ def main():
  fc=fc.dropna(subset=['weight_kg','height_cm']); fc['nclub']=fc.club_name.fillna('').map(norm); fc['nshort']=fc.short_name.fillna('').map(norm); fc['nlong']=fc.long_name.fillna('').map(norm)
  filled=0; exact_context=0
  for p in cand:
-  if p.get('weight_kg') is not None or p.get('trophies') is None: continue
+  if p.get('weight_kg') is not None: continue
   h=p.get('height_cm'); age=p.get('uoc_age') or age_from_birth(p.get('birth_date')); club=norm(p.get('uoc_team') or p.get('club')); pname=norm(p.get('name'))
   q=fc.copy()
   if h is not None:q=q[q.height_cm.between(float(h)-3,float(h)+3)]
@@ -40,8 +40,8 @@ def main():
  req=['height_cm','weight_kg','birth_date','club_count','trophies','career_goals','career_assists','peak_market_value_eur','career_appearances']
  moved=[];remain=[]
  for p in cand:
-  p['playable']=all(p.get(k) is not None for k in req); (moved if p['playable'] else remain).append(p)
- byid={p['id']:p for p in players+moved}; playable=sorted(byid.values(),key=lambda p:-p.get('recognition_score',0)); remain.sort(key=lambda p:-p.get('recognition_score',0))
+  p['playable']=all(p.get(k) is not None for k in req) and int(p.get('career_appearances') or 0)>0; (moved if p['playable'] else remain).append(p)
+ byid={p['id']:p for p in players+moved}; playable=sorted(byid.values(),key=lambda p:(not bool(p.get('turkish_familiar')),-p.get('recognition_score',0))); remain.sort(key=lambda p:(not bool(p.get('turkish_familiar')),-p.get('recognition_score',0)))
  (DATA/'players.json').write_text(json.dumps(playable,ensure_ascii=False,separators=(',',':')));(DATA/'candidates.json').write_text(json.dumps(remain,ensure_ascii=False,separators=(',',':')))
  meta=json.loads((DATA/'meta.json').read_text());meta.update({'playable_count':len(playable),'candidate_count':len(remain),'context_weights_added':filled,'context_only_matches':exact_context});(DATA/'meta.json').write_text(json.dumps(meta,ensure_ascii=False,indent=2))
  print(json.dumps({'weights_added':filled,'context_only':exact_context,'new_playable':len(moved),'playable_total':len(playable)},ensure_ascii=False))
