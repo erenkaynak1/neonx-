@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "policy": "Transfermarkt is primary. Mackolik individual player pages are secondary verification/fallback for official senior club career totals and missing physical data.",
+  "players": {
+    "418560": {"name":"Erling Haaland","career_appearances":384,"career_goals":306,"career_assists":29,"weight_kg":85,"checked_at":"2026-08-24","url":"https://arsiv.mackolik.com/Futbolcu/460863/Erling-Haaland"},
+    "342229": {"name":"Kylian Mbappe","career_appearances":483,"career_goals":373,"career_assists":56,"weight_kg":73,"checked_at":"2026-08-24","url":"https://arsiv.mackolik.com/Futbolcu/369252/Kylian-Mbappe"},
+    "68863": {"name":"Mauro Icardi","career_appearances":479,"career_goals":248,"career_assists":26,"weight_kg":76,"checked_at":"2026-08-24","url":"https://arsiv.mackolik.com/Futbolcu/94082/Mauro-Icardi"},
+    "28396": {"name":"Edin Dzeko","career_appearances":808,"career_goals":348,"career_assists":92,"weight_kg":80,"checked_at":"2026-08-24","url":"https://arsiv.mackolik.com/Futbolcu/26236/Edin-Dzeko"},
+    "581678": {"name":"Jude Bellingham","career_appearances":316,"career_goals":74,"career_assists":66,"weight_kg":75,"checked_at":"2026-08-24","url":"https://arsiv.mackolik.com/Futbolcu/580866/Jude-Bellingham"},
+    "861410": {"name":"Arda Guler","career_appearances":190,"career_goals":41,"career_assists":11,"weight_kg":72,"checked_at":"2026-08-24","url":"https://arsiv.mackolik.com/Futbolcu/620781/Arda-Guler"},
+    "132098": {"name":"Harry Kane","career_appearances":630,"career_goals":437,"career_assists":60,"weight_kg":86,"checked_at":"2026-08-24","url":"https://arsiv.mackolik.com/Futbolcu/76974/Harry-Kane"},
+    "28003": {"name":"Lionel Messi","career_appearances":962,"career_goals":788,"career_assists":92,"weight_kg":67,"checked_at":"2026-08-24","url":"https://arsiv.mackolik.com/Futbolcu/22564/Lionel-Messi"},
+    "8198": {"name":"Cristiano Ronaldo","career_appearances":1079,"career_goals":815,"career_assists":131,"weight_kg":83,"checked_at":"2026-08-24","url":"https://arsiv.mackolik.com/Futbolcu/12581/Cristiano-Ronaldo"}
+  }
+}
