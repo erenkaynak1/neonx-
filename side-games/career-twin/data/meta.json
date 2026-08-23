@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-08-22T23:31:35.883498+00:00",
-  "playable_count": 846,
-  "candidate_count": 5654,
-  "total_selected": 6500,
+  "generated_at": "2026-08-23T00:19:28.734803+00:00",
+  "playable_count": 0,
+  "candidate_count": 7625,
+  "total_selected": 7625,
   "required_fields": [
     "height_cm",
     "weight_kg",
@@ -14,7 +14,8 @@
     "peak_market_value_eur",
     "career_appearances"
   ],
-  "policy": "Only 9/9 complete records are playable. Missing data is never invented.",
+  "policy": "Only 9/9 complete records with positive career appearances are playable. Missing data is never invented.",
+  "turkish_familiar_policy": "Players with Fenerbahce, Galatasaray or Besiktas transfer history receive a strong inclusion boost.",
   "uoc_file": "jugadors.csv",
   "uoc_columns": [],
   "zenodo_title": "Football Players Dataset from La Liga, Premier League and Bundesliga extracted from Transfermarkt",
@@ -23,8 +24,9 @@
     "eafc26": "https://raw.githubusercontent.com/ismailoksuz/EAFC26-DataHub/main/data/players.csv",
     "uoc_2026": "https://zenodo.org/api/records/19396819"
   },
-  "uoc_matched_names": 1075,
-  "fuzzy_weights_added": 296,
+  "uoc_matched_names": 1091,
+  "uoc_career_totals_disabled": true,
+  "fuzzy_weights_added": 300,
   "context_weights_added": 0,
   "context_only_matches": 0
 }
