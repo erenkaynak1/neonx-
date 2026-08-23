@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "primary_key": "transfermarkt_id",
+  "player": {
+    "transfermarkt_id": "integer",
+    "name": "string",
+    "aliases": "string[]",
+    "status": "active|retired|recent",
+    "nationalities": "string[]",
+    "senior_national_team": "string|null",
+    "birth_date": "YYYY-MM-DD|null",
+    "height_cm": "integer|null",
+    "weight_kg": "integer|null",
+    "clubs": [
+      {
+        "club_id": "integer|string",
+        "club_name": "string",
+        "from_date": "YYYY-MM-DD|null",
+        "to_date": "YYYY-MM-DD|null",
+        "official_appearances": "integer|null",
+        "leagues": "string[]"
+      }
+    ],
+    "career": {
+      "official_senior_club_appearances": "integer|null",
+      "official_senior_club_goals": "integer|null",
+      "official_senior_club_assists": "integer|null",
+      "senior_team_trophies": "integer|null",
+      "peak_market_value_eur": "integer|null"
+    },
+    "recognition_score": "number",
+    "quality": {
+      "identity_verified": "boolean",
+      "clubs_verified": "boolean",
+      "leagues_verified": "boolean",
+      "nationality_verified": "boolean",
+      "career_totals_verified": "boolean",
+      "physical_verified": "boolean",
+      "trophies_verified": "boolean"
+    }
+  },
+  "derived_game_pools": {
+    "xox": "Requires name plus verified club/league/nationality data.",
+    "connection": "Requires verified overlapping senior club periods or verified shared senior first-team appearances.",
+    "career_twin": "Requires all nine Career Twin parameters to be present and verified."
+  },
+  "career_twin_parameter_definition": {
+    "height_cm": "Current/latest reliable senior profile height.",
+    "weight_kg": "Current/latest reliable sourced weight.",
+    "birth_date": "Exact date of birth.",
+    "club_count": "Distinct senior first-team clubs with at least one official appearance.",
+    "trophies": "Recognized senior team trophies only; individual awards excluded.",
+    "career_goals": "Total official senior club goals across all competitions.",
+    "career_assists": "Total official senior club assists across all competitions.",
+    "peak_market_value_eur": "Highest historical Transfermarkt market value in EUR.",
+    "career_appearances": "Total official senior club appearances across all competitions."
+  }
+}
