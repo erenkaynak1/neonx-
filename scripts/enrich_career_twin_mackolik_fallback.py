@@ -22,13 +22,18 @@ def main():
         p=byid.get(int(rid))
         if not p:
             continue
-        check={'url':ref.get('url'),'checked_at':ref.get('checked_at')}
+        approved=set(ref.get('fallback_fields') or [])
+        check={
+            'url':ref.get('url'),
+            'checked_at':ref.get('checked_at'),
+            'fallback_fields':sorted(approved)
+        }
         p.setdefault('secondary_checks',{})['mackolik']=check
 
-        # Weight is fallback only. Never overwrite an already sourced primary value.
-        if p.get('weight_kg') is None and ref.get('weight_kg') is not None:
+        # Physical data is allowed to fill only when explicitly approved for this player.
+        if 'weight_kg' in approved and p.get('weight_kg') is None and ref.get('weight_kg') is not None:
             p['weight_kg']=int(ref['weight_kg'])
-            p.setdefault('sources',{})['weight']='Mackolik fallback'
+            p.setdefault('sources',{})['weight']='Mackolik explicitly verified fallback'
             filled+=1
 
         differences=[]
@@ -38,12 +43,13 @@ def main():
                 continue
             pv=p.get(field)
 
-            # If Transfermarkt-derived career data is genuinely missing, Mackolik can
-            # supply the official senior-club counter as a fallback.
+            # Mackolik may fill a genuinely missing Transfermarkt value only when the
+            # field was explicitly approved from a page labelled official club career.
             if pv is None:
-                p[field]=int(rv)
-                p.setdefault('sources',{})['career_stats']='Mackolik official senior club career fallback'
-                filled+=1
+                if field in approved:
+                    p[field]=int(rv)
+                    p.setdefault('sources',{})['career_stats']='Mackolik explicitly verified official senior club career fallback'
+                    filled+=1
                 continue
 
             delta=abs(int(pv)-int(rv))
@@ -56,8 +62,8 @@ def main():
                     'delta':delta
                 })
             else:
-                # Different providers can use different historical assist definitions.
-                # Record the disagreement for audit, but keep Transfermarkt primary.
+                # Providers can differ in historical coverage/assist definitions.
+                # Keep Transfermarkt primary and retain the disagreement for audit.
                 disagreements+=1
                 differences.append({
                     'field':field,
@@ -76,7 +82,6 @@ def main():
     req=['height_cm','weight_kg','birth_date','club_count','trophies','career_goals','career_assists','peak_market_value_eur','career_appearances']
     playable=[];remaining=[]
     for p in rows:
-        p.pop('secondary_conflict',None)
         p['playable']=all(p.get(k) is not None for k in req) and int(p.get('career_appearances') or 0)>0
         (playable if p['playable'] else remaining).append(p)
 
@@ -93,9 +98,9 @@ def main():
         'mackolik_values_corroborated':corroborated,
         'mackolik_definition_disagreements':disagreements,
         'mackolik_secondary_checked_at':datetime.now(timezone.utc).isoformat(),
-        'mackolik_policy':'Secondary fallback/audit only. Transfermarkt remains primary when both sources have values.'
+        'mackolik_policy':'Secondary fallback/audit only. Only explicitly approved fields can fill missing Transfermarkt values.'
     })
-    meta.setdefault('sources',{})['mackolik_secondary']='Mackolik individual player pages; official senior club career totals'
+    meta.setdefault('sources',{})['mackolik_secondary']='Mackolik individual player pages; official senior club career totals / physical data when explicitly approved'
     (DATA/'meta.json').write_text(json.dumps(meta,ensure_ascii=False,indent=2),encoding='utf-8')
     print(json.dumps({'playable':len(playable),'filled':filled,'corroborated':corroborated,'definition_disagreements':disagreements},ensure_ascii=False))
 
