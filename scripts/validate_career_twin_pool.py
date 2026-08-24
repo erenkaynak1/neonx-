@@ -59,11 +59,6 @@ def valid_record(p):
         if p.get(ref_field) is not None and int(p[field]) < int(p[ref_field]):
             reasons.append('career_below_reference:' + field)
 
-    # Mackolik is secondary only. Large disagreement with Transfermarkt blocks
-    # publication until that player is manually reconciled.
-    if p.get('secondary_conflict'):
-        reasons.append('mackolik_transfermarkt_conflict')
-
     src = p.get('sources') or {}
     trophy_src = str(src.get('trophies') or '')
     trophy_ok = (
@@ -127,6 +122,7 @@ def main():
         'duplicate_names_removed': duplicates,
         'career_stats_definition': 'Senior official club appearances/goals/assists. Transfermarkt ID-based data is primary; Mackolik official club-career totals are secondary verification/fallback. Youth/reserve and national-team rows excluded.',
         'trophy_definition': 'Senior team trophies from Transfermarkt-derived sources; individual awards, youth titles, finalist/runner-up and participation excluded.',
+        'secondary_source_policy': 'Mackolik fills genuinely missing fields and records definition differences for audit. Existing sourced Transfermarkt values remain primary when both providers disagree.',
         'known_players': audit
     }
     (DATA / 'audit.json').write_text(json.dumps(audit_doc, ensure_ascii=False, indent=2), encoding='utf-8')
@@ -136,10 +132,10 @@ def main():
         'generated_at': generated,
         'playable_count': len(accepted),
         'candidate_count': len(rejected),
-        'validation_gate': 'strict-transfermarkt-primary-mackolik-secondary-v6',
+        'validation_gate': 'strict-transfermarkt-primary-mackolik-secondary-v7',
         'minimum_verified_players': MIN_VERIFIED_PLAYERS,
         'duplicate_names_removed': duplicates,
-        'publication_policy': 'Only 9/9 sourced records are published. Transfermarkt is primary; Mackolik is used for secondary verification/fallback, and material source conflicts are rejected.'
+        'publication_policy': 'Only 9/9 sourced records are published. Transfermarkt is primary; Mackolik is used to fill missing fields and as secondary audit evidence.'
     })
     (DATA / 'meta.json').write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding='utf-8')
     print(json.dumps(audit_doc, ensure_ascii=False))
