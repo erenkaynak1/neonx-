@@ -14,8 +14,8 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 MASTER_DIR = ROOT / "side-games" / "data" / "master"
-DEFAULT_MIN_PLAYERS = 800
-DEFAULT_MAX_PLAYERS = 5_000
+DEFAULT_MIN_PLAYERS = 10_000
+DEFAULT_MAX_PLAYERS = 50_000
 MIN_PLAYERS_PER_CONDITION = 12
 
 
@@ -162,7 +162,7 @@ def balanced_runtime_pool(
     conditions: list[tuple[str, str]],
     maximum: int,
 ) -> list[dict[str, Any]]:
-    """Keep the most recognisable players without starving a valid XOX condition."""
+    """Retain every match up to the safety limit without starving a condition."""
     selected: list[dict[str, Any]] = []
     selected_ids: set[int] = set()
     for condition_type, value in conditions:
@@ -235,12 +235,19 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
         json.dumps(records, ensure_ascii=False, separators=(",", ":")),
         encoding="utf-8",
     )
+    status_counts = {
+        status: sum(1 for player in records if player["status"] == status)
+        for status in ("active", "recent", "legend", "unknown")
+    }
     meta = {
         "schema_version": 2,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "player_count": len(records),
+        "status_counts": status_counts,
+        "historical_player_count": status_counts["recent"] + status_counts["legend"],
         "minimum_required": args.min_players,
         "maximum_runtime_players": args.max_players,
+        "selection_policy": "Every rule-matching master player is retained up to 50,000 players.",
         "minimum_players_per_available_condition": MIN_PLAYERS_PER_CONDITION,
         "master_pool": "side-games/data/master/transfermarkt-players.json",
         "master_provider": master_meta.get("provider"),

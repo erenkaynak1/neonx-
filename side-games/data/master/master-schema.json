@@ -37,6 +37,7 @@
   },
   "source_policy": {
     "identity": "players.player_id",
+    "population": "All upstream current and historical players up to the 50,000-player safety limit",
     "profile": "players",
     "clubs_and_leagues": "appearances joined to clubs and competitions",
     "covered_match_totals": "appearances",
@@ -45,7 +46,7 @@
     "other_sources": "Not permitted in the master player pool"
   },
   "derived_game_pools": {
-    "xox": "A rule-filtered view of the master pool; xox-rules.json remains authoritative.",
+    "xox": "All rule-matching master players up to 50,000; xox-rules.json remains authoritative.",
     "career_twin": "Reads the master pool directly and skips metrics without sufficient source coverage."
   },
   "career_metric_definition": {

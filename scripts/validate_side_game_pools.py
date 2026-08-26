@@ -13,8 +13,8 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 MASTER_DIR = ROOT / "side-games" / "data" / "master"
 CAREER_DATA = ROOT / "side-games" / "career-twin" / "data"
-MIN_MASTER = 8_000
-MIN_XOX = 800
+MIN_MASTER = 25_000
+MIN_XOX = 10_000
 MIN_CAREER_TARGETS = 100
 CAREER_METRICS = {
     "height_cm",
@@ -62,6 +62,9 @@ def validate_master(players: list[dict[str, Any]], meta: dict[str, Any], minimum
     require(meta.get("primary_key") == "Transfermarkt player_id", "unexpected master identity")
     require(all(player.get("weight_kg") is None for player in players), "weight must stay null")
     require(all(player.get("trophies") is None for player in players), "trophies must stay null")
+    historical = sum(1 for player in players if player.get("status") in {"recent", "legend"})
+    require(historical >= max(1, minimum // 10), "master pool lacks historical players")
+    require(meta.get("historical_player_count") == historical, "master historical count mismatch")
     for player in players:
         height = player.get("height_cm")
         if height is not None:
@@ -86,6 +89,9 @@ def validate_xox(
 ) -> dict[str, int]:
     require(len(players) >= minimum, f"XOX player count is {len(players)}; minimum {minimum}")
     require(meta.get("master_provider") == "dcaribou/transfermarkt-datasets", "XOX master mismatch")
+    historical = sum(1 for player in players if player.get("status") in {"recent", "legend"})
+    require(historical >= max(1, minimum // 10), "XOX pool lacks historical players")
+    require(meta.get("historical_player_count") == historical, "XOX historical count mismatch")
     allowed_clubs = {club for values in rules["clubs"].values() for club in values}
     allowed_leagues = set(rules["leagues"])
     allowed_nationalities = set(rules["nationalities"])

@@ -30,8 +30,8 @@ UPSTREAM_REPOSITORY = "dcaribou/transfermarkt-datasets"
 UPSTREAM_COMMIT_API = (
     "https://api.github.com/repos/dcaribou/transfermarkt-datasets/commits/master"
 )
-DEFAULT_MIN_PLAYERS = 8_000
-DEFAULT_MAX_PLAYERS = 15_000
+DEFAULT_MIN_PLAYERS = 25_000
+DEFAULT_MAX_PLAYERS = 50_000
 BIG_THREE_CLUB_IDS = {36, 141, 114}
 
 
@@ -294,6 +294,10 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
         json.dumps(records, ensure_ascii=False, separators=(",", ":")),
         encoding="utf-8",
     )
+    status_counts = {
+        status: sum(1 for player in records if player["status"] == status)
+        for status in ("active", "recent", "legend", "unknown")
+    }
     generated_at = datetime.now(timezone.utc).isoformat()
     meta = {
         "schema_version": 2,
@@ -304,8 +308,11 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
         "dataset_last_appearance": iso(latest_row[1] if latest_row else None),
         "latest_season": latest_season,
         "player_count": len(records),
+        "status_counts": status_counts,
+        "historical_player_count": status_counts["recent"] + status_counts["legend"],
         "minimum_required": args.min_players,
         "maximum_runtime_players": args.max_players,
+        "selection_policy": "All upstream players are retained up to the 50,000-player safety limit.",
         "primary_key": "Transfermarkt player_id",
         "career_scope": (
             "Official senior-club appearances present in dcaribou/transfermarkt-datasets; "

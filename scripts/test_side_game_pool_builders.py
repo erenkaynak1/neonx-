@@ -93,7 +93,7 @@ def create_fixture(path: Path, player_count: int = 300) -> None:
                 2_000_000 + index * 50_000,
                 index % 100,
                 index % 30,
-                2025,
+                2010 if index % 3 == 0 else 2025,
             )
         )
         for appearance in range(3):
@@ -170,6 +170,9 @@ class SideGamePoolPipelineTest(unittest.TestCase):
             validator.validate_xox(xox, xox_meta, rules, {row["id"] for row in master}, 100)
             validator.validate_career(career_meta, 100)
             self.assertEqual(len(master), 300)
+            self.assertEqual(len(xox), 300)
+            self.assertEqual(master_meta["historical_player_count"], 100)
+            self.assertEqual(xox_meta["historical_player_count"], 100)
             self.assertTrue(all(player["weight_kg"] is None for player in master))
             self.assertIn("weight_kg", career_meta["disabled_metrics"])
             self.assertNotIn("weight_kg", career_meta["active_metrics"])
