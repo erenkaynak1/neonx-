@@ -1,0 +1,20 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-08-26T13:59:01.566476+00:00",
+  "provider": "dcaribou/transfermarkt-datasets",
+  "provider_revision": "154367dfa6d6eb0b86332e332f9df0a080c7ddce",
+  "dataset_url": "https://pub-e682421888d945d684bcae8890b0ec20.r2.dev/data/transfermarkt-datasets.duckdb",
+  "dataset_last_appearance": "2026-06-28",
+  "latest_season": 2025,
+  "player_count": 15000,
+  "minimum_required": 8000,
+  "maximum_runtime_players": 15000,
+  "primary_key": "Transfermarkt player_id",
+  "career_scope": "Official senior-club appearances present in dcaribou/transfermarkt-datasets; national-team rows are excluded.",
+  "physical_data_policy": "weight_kg is intentionally null until a separate physical dataset is supplied; no value is estimated.",
+  "unavailable_upstream_fields": [
+    "weight_kg",
+    "trophies"
+  ],
+  "source_policy": "Profiles, club history, competition history, appearances, goals, assists and market values come only from dcaribou/transfermarkt-datasets."
+}

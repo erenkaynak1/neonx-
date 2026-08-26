@@ -1,16 +1,16 @@
 {
   "schema_version": 2,
-  "generated_at": null,
+  "generated_at": "2026-08-26T13:59:02.457166+00:00",
   "player_count": 5000,
   "minimum_required": 800,
   "maximum_runtime_players": 5000,
+  "minimum_players_per_available_condition": 12,
   "master_pool": "side-games/data/master/transfermarkt-players.json",
   "master_provider": "dcaribou/transfermarkt-datasets",
-  "master_provider_revision": null,
+  "master_provider_revision": "154367dfa6d6eb0b86332e332f9df0a080c7ddce",
   "identity": "Transfermarkt player_id",
   "club_rule": "At least one dcaribou senior-club appearance, plus current-club membership.",
-  "league_rule": "At least one dcaribou appearance in the whitelisted league.",
+  "league_rule": "dcaribou appearance history, plus current domestic-league membership.",
   "nationality_rule": "Senior national-team country when available, otherwise citizenship.",
-  "rules": "side-games/data/master/xox-rules.json",
-  "status": "Regenerated with the master pool by the Transfermarkt workflow."
+  "rules": "side-games/data/master/xox-rules.json"
 }
