@@ -1,11 +1,11 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-08-26T13:59:02.762776+00:00",
+  "generated_at": "2026-08-26T14:13:12.852441+00:00",
   "master_pool": "side-games/data/master/transfermarkt-players.json",
   "provider": "dcaribou/transfermarkt-datasets",
   "provider_revision": "154367dfa6d6eb0b86332e332f9df0a080c7ddce",
-  "player_count": 15000,
-  "target_eligible_count": 12118,
+  "player_count": 50000,
+  "target_eligible_count": 26678,
   "metric_minimum_players": 100,
   "active_metrics": [
     "height_cm",
@@ -21,15 +21,15 @@
     "trophies"
   ],
   "metric_coverage": {
-    "height_cm": 14708,
+    "height_cm": 45673,
     "weight_kg": 0,
-    "birth_date": 14998,
-    "club_count": 12751,
+    "birth_date": 49953,
+    "club_count": 28487,
     "trophies": 0,
-    "career_goals": 12751,
-    "career_assists": 12751,
-    "peak_market_value_eur": 14119,
-    "career_appearances": 12751
+    "career_goals": 28487,
+    "career_assists": 28487,
+    "peak_market_value_eur": 41528,
+    "career_appearances": 28487
   },
   "career_scope": "Official senior-club appearances present in dcaribou/transfermarkt-datasets; national-team rows are excluded.",
   "physical_data_policy": "weight_kg is intentionally null until a separate physical dataset is supplied; no value is estimated.",
