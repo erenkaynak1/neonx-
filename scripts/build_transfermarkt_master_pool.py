@@ -94,6 +94,11 @@ def integer(value: Any) -> int | None:
     return int(round(number))
 
 
+def bounded_integer(value: Any, minimum: int, maximum: int) -> int | None:
+    number = integer(value)
+    return number if number is not None and minimum <= number <= maximum else None
+
+
 def clean_strings(values: Any) -> list[str]:
     if not values:
         return []
@@ -255,7 +260,7 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
             "sub_position": str(profile.get("sub_position") or "").strip() or None,
             "foot": str(profile.get("foot") or "").strip() or None,
             "birth_date": iso(profile.get("date_of_birth")),
-            "height_cm": integer(profile.get("height_in_cm")),
+            "height_cm": bounded_integer(profile.get("height_in_cm"), 140, 220),
             "weight_kg": None,
             "club_ids": club_ids,
             "clubs": clubs,
