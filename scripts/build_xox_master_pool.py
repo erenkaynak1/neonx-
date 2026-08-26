@@ -84,6 +84,19 @@ CLUB_ALIASES = {
     "Sporting CP": ["Sporting CP", "Sporting Lisbon"],
 }
 
+# Stable Transfermarkt club identities prevent display-name changes from
+# silently removing a valid XOX condition.
+CLUB_ID_MAP = {
+    36: "Fenerbahçe", 141: "Galatasaray", 114: "Beşiktaş", 449: "Trabzonspor",
+    418: "Real Madrid", 131: "Barcelona", 13: "Atlético Madrid", 368: "Sevilla",
+    985: "Manchester United", 281: "Manchester City", 31: "Liverpool", 11: "Arsenal",
+    631: "Chelsea", 148: "Tottenham Hotspur", 762: "Newcastle United",
+    506: "Juventus", 46: "Inter", 5: "AC Milan", 12: "Roma", 6195: "Napoli",
+    27: "Bayern Münih", 16: "Borussia Dortmund", 15: "Bayer Leverkusen", 23826: "RB Leipzig",
+    583: "Paris Saint-Germain", 244: "Olympique Marseille", 1041: "Olympique Lyon",
+    610: "Ajax", 383: "PSV", 234: "Feyenoord", 294: "Benfica", 720: "Porto", 336: "Sporting CP",
+}
+
 LEAGUE_ALIASES = {
     "Süper Lig": ["Süper Lig", "Super Lig"],
     "Premier League": ["Premier League"],
@@ -184,8 +197,14 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
     for player in master:
         national_source = player.get("national_team") or player.get("nationality")
         nationality = COUNTRY_INDEX.get(norm(national_source))
-        clubs = mapped_values(player.get("clubs") or [], CLUB_INDEX, allowed_clubs)
-        leagues = mapped_values(player.get("leagues") or [], LEAGUE_INDEX, allowed_leagues)
+        clubs = set(mapped_values(player.get("clubs") or [], CLUB_INDEX, allowed_clubs))
+        clubs.update(
+            CLUB_ID_MAP[club_id]
+            for value in (player.get("club_ids") or [])
+            if (club_id := int(value)) in CLUB_ID_MAP and CLUB_ID_MAP[club_id] in allowed_clubs
+        )
+        league_sources = [*(player.get("leagues") or []), player.get("current_league")]
+        leagues = mapped_values(league_sources, LEAGUE_INDEX, allowed_leagues)
         if nationality not in allowed_nationalities and not clubs and not leagues:
             continue
         records.append(
@@ -195,7 +214,7 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
                 "nationality": nationality,
                 "nationalTeam": nationality,
                 "currentClub": player.get("current_club"),
-                "clubs": clubs,
+                "clubs": sorted(clubs),
                 "leagues": leagues,
                 "status": player.get("status") or "unknown",
                 "recognitionScore": float(player.get("recognition_score") or 0),
@@ -228,7 +247,7 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
         "master_provider_revision": master_meta.get("provider_revision"),
         "identity": "Transfermarkt player_id",
         "club_rule": "At least one dcaribou senior-club appearance, plus current-club membership.",
-        "league_rule": "At least one dcaribou appearance in the whitelisted league.",
+        "league_rule": "dcaribou appearance history, plus current domestic-league membership.",
         "nationality_rule": "Senior national-team country when available, otherwise citizenship.",
         "rules": "side-games/data/master/xox-rules.json",
     }
