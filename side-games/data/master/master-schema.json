@@ -1,58 +1,62 @@
 {
-  "version": 1,
-  "primary_key": "transfermarkt_id",
+  "version": 2,
+  "provider": "dcaribou/transfermarkt-datasets",
+  "primary_key": "Transfermarkt player_id",
   "player": {
-    "transfermarkt_id": "integer",
+    "id": "integer",
     "name": "string",
-    "aliases": "string[]",
-    "status": "active|retired|recent",
-    "nationalities": "string[]",
-    "senior_national_team": "string|null",
+    "slug": "string|null",
+    "status": "active|recent|legend|unknown",
+    "recognition_score": "number",
+    "nationality": "string|null",
+    "national_team": "string|null",
+    "current_club": "string|null",
+    "current_league": "string|null",
+    "position": "string|null",
+    "sub_position": "string|null",
+    "foot": "string|null",
     "birth_date": "YYYY-MM-DD|null",
     "height_cm": "integer|null",
-    "weight_kg": "integer|null",
-    "clubs": [
-      {
-        "club_id": "integer|string",
-        "club_name": "string",
-        "from_date": "YYYY-MM-DD|null",
-        "to_date": "YYYY-MM-DD|null",
-        "official_appearances": "integer|null",
-        "leagues": "string[]"
-      }
-    ],
-    "career": {
-      "official_senior_club_appearances": "integer|null",
-      "official_senior_club_goals": "integer|null",
-      "official_senior_club_assists": "integer|null",
-      "senior_team_trophies": "integer|null",
-      "peak_market_value_eur": "integer|null"
-    },
-    "recognition_score": "number",
-    "quality": {
-      "identity_verified": "boolean",
-      "clubs_verified": "boolean",
-      "leagues_verified": "boolean",
-      "nationality_verified": "boolean",
-      "career_totals_verified": "boolean",
-      "physical_verified": "boolean",
-      "trophies_verified": "boolean"
-    }
+    "weight_kg": "null until a separate physical dataset is supplied",
+    "club_ids": "integer[]",
+    "clubs": "string[]",
+    "leagues": "string[]",
+    "club_count": "integer|null",
+    "trophies": "null because the upstream dataset has no trophy table",
+    "career_goals": "integer|null",
+    "career_assists": "integer|null",
+    "career_appearances": "integer|null",
+    "peak_market_value_eur": "integer|null",
+    "current_market_value_eur": "integer|null",
+    "international_caps": "integer|null",
+    "international_goals": "integer|null",
+    "last_season": "integer|null",
+    "first_appearance": "YYYY-MM-DD|null",
+    "last_appearance": "YYYY-MM-DD|null",
+    "turkish_familiar": "boolean"
+  },
+  "source_policy": {
+    "identity": "players.player_id",
+    "profile": "players",
+    "clubs_and_leagues": "appearances joined to clubs and competitions",
+    "covered_match_totals": "appearances",
+    "market_values": "players fields derived from player_valuations upstream",
+    "physical": "Kept null when absent upstream; never estimated",
+    "other_sources": "Not permitted in the master player pool"
   },
   "derived_game_pools": {
-    "xox": "Requires name plus verified club/league/nationality data.",
-    "connection": "Requires verified overlapping senior club periods or verified shared senior first-team appearances.",
-    "career_twin": "Requires all nine Career Twin parameters to be present and verified."
+    "xox": "A rule-filtered view of the master pool; xox-rules.json remains authoritative.",
+    "career_twin": "Reads the master pool directly and skips metrics without sufficient source coverage."
   },
-  "career_twin_parameter_definition": {
-    "height_cm": "Current/latest reliable senior profile height.",
-    "weight_kg": "Current/latest reliable sourced weight.",
-    "birth_date": "Exact date of birth.",
-    "club_count": "Distinct senior first-team clubs with at least one official appearance.",
-    "trophies": "Recognized senior team trophies only; individual awards excluded.",
-    "career_goals": "Total official senior club goals across all competitions.",
-    "career_assists": "Total official senior club assists across all competitions.",
+  "career_metric_definition": {
+    "height_cm": "Transfermarkt profile height.",
+    "weight_kg": "Reserved for a future separately supplied physical dataset.",
+    "birth_date": "Transfermarkt profile date of birth.",
+    "club_count": "Distinct clubs represented by official appearances in the dcaribou dataset.",
+    "trophies": "Unavailable in dcaribou and therefore disabled.",
+    "career_goals": "Goals in official senior-club appearances covered by dcaribou.",
+    "career_assists": "Assists in official senior-club appearances covered by dcaribou.",
     "peak_market_value_eur": "Highest historical Transfermarkt market value in EUR.",
-    "career_appearances": "Total official senior club appearances across all competitions."
+    "career_appearances": "Official senior-club appearances covered by dcaribou."
   }
 }

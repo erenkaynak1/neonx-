@@ -1,16 +1,16 @@
 {
-  "generated_at": "2026-08-24T05:22:34.896565+00:00",
+  "schema_version": 2,
+  "generated_at": null,
   "player_count": 5000,
   "minimum_required": 800,
-  "rows_read": 1878719,
-  "matched_performance_rows": 119356,
+  "maximum_runtime_players": 5000,
+  "master_pool": "side-games/data/master/transfermarkt-players.json",
+  "master_provider": "dcaribou/transfermarkt-datasets",
+  "master_provider_revision": null,
   "identity": "Transfermarkt player_id",
-  "club_rule": "at least one senior official appearance in Transfermarkt performance archive",
-  "league_rule": "at least one senior official league appearance",
-  "nationality_rule": "Transfermarkt country_of_citizenship mapped to XOX whitelist",
-  "sources": {
-    "profiles": "https://pub-e682421888d945d684bcae8890b0ec20.r2.dev/data/transfermarkt-datasets.duckdb",
-    "career_performances": "https://media.githubusercontent.com/media/salimt/football-datasets/refs/heads/main/datalake/transfermarkt/player_performances/player_performances.csv",
-    "rules": "side-games/data/master/xox-rules.json"
-  }
+  "club_rule": "At least one dcaribou senior-club appearance, plus current-club membership.",
+  "league_rule": "At least one dcaribou appearance in the whitelisted league.",
+  "nationality_rule": "Senior national-team country when available, otherwise citizenship.",
+  "rules": "side-games/data/master/xox-rules.json",
+  "status": "Regenerated with the master pool by the Transfermarkt workflow."
 }

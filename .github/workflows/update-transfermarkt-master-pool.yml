@@ -1,0 +1,59 @@
+name: Update Transfermarkt Master Player Pool
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '25 4 * * 1'
+  push:
+    paths:
+      - 'scripts/build_transfermarkt_master_pool.py'
+      - 'scripts/build_xox_master_pool.py'
+      - 'scripts/build_career_twin_pool.py'
+      - 'scripts/validate_side_game_pools.py'
+      - 'scripts/test_side_game_pool_builders.py'
+      - 'side-games/data/master/xox-rules.json'
+      - 'side-games/data/master/master-schema.json'
+      - '.github/workflows/update-transfermarkt-master-pool.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: transfermarkt-master-player-pool
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install data dependencies
+        run: pip install --disable-pip-version-check duckdb requests
+      - name: Test master and derived pool contracts
+        run: python scripts/test_side_game_pool_builders.py
+      - name: Build canonical dcaribou Transfermarkt pool
+        run: python scripts/build_transfermarkt_master_pool.py
+      - name: Derive XOX pool without changing XOX rules
+        run: python scripts/build_xox_master_pool.py
+      - name: Publish Career Twin metric availability
+        run: python scripts/build_career_twin_pool.py
+      - name: Validate master and derived pools
+        run: python scripts/validate_side_game_pools.py
+      - name: Commit generated player pools
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add side-games/data/master/transfermarkt-players.json
+          git add side-games/data/master/transfermarkt-meta.json
+          git add side-games/data/master/xox-players.json
+          git add side-games/data/master/xox-meta.json
+          git add side-games/career-twin/data/meta.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Refresh dcaribou Transfermarkt master player pool"
+          git push

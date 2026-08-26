@@ -1,0 +1,6 @@
+.tmp-transfermarkt.duckdb
+.tmp-transfermarkt.duckdb.part
+.test-deps/
+.browser-test/
+__pycache__/
+*.pyc

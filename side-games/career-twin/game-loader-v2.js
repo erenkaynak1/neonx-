@@ -1,13 +1,13 @@
 'use strict';
 (async()=>{
-  const res=await fetch('./game.js?v=20260825-1',{cache:'no-store'});
+  const res=await fetch('./game.js?v=20260825-transfermarkt-master',{cache:'no-store'});
   if(!res.ok) throw new Error('Career Twin core could not load');
   const src=await res.text();
-  if(!src.includes('SEARCH_PLAYERS')||!src.includes("fetch('./data/candidates.json'")){
-    throw new Error('Expanded Career Twin pool build is missing');
+  if(!src.includes('configureMetrics')||!src.includes('transfermarkt-players.json')){
+    throw new Error('Transfermarkt master pool build is missing');
   }
   new Function(src);
-  (0,eval)(src+'\n//# sourceURL=career-twin/game-expanded-pool-v4.js');
+  (0,eval)(src+'\n//# sourceURL=career-twin/game-transfermarkt-master-v1.js');
 })().catch(err=>{
   console.error(err);
   const app=document.getElementById('app');
