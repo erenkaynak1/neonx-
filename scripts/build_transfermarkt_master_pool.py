@@ -30,8 +30,8 @@ UPSTREAM_REPOSITORY = "dcaribou/transfermarkt-datasets"
 UPSTREAM_COMMIT_API = (
     "https://api.github.com/repos/dcaribou/transfermarkt-datasets/commits/master"
 )
-DEFAULT_MIN_PLAYERS = 25_000
-DEFAULT_MAX_PLAYERS = 50_000
+DEFAULT_MIN_PLAYERS = 50_000
+DEFAULT_MAX_PLAYERS = 0  # 0 keeps the complete upstream player table.
 BIG_THREE_CLUB_IDS = {36, 141, 114}
 
 
@@ -151,7 +151,7 @@ def recognition_score(profile: dict[str, Any], history: dict[str, Any], latest: 
 
 
 def build(args: argparse.Namespace) -> dict[str, Any]:
-    if args.max_players < args.min_players:
+    if args.max_players > 0 and args.max_players < args.min_players:
         raise ValueError("--max-players must be greater than or equal to --min-players")
     if args.database == DEFAULT_DB:
         download_database(args.database)
@@ -283,7 +283,8 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
         records.append(record)
 
     records.sort(key=lambda row: (-float(row["recognition_score"]), row["name"], row["id"]))
-    records = records[: args.max_players]
+    if args.max_players > 0:
+        records = records[: args.max_players]
     if len(records) < args.min_players:
         raise RuntimeError(
             f"master pool contains {len(records)} players; minimum is {args.min_players}"
@@ -311,8 +312,8 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
         "status_counts": status_counts,
         "historical_player_count": status_counts["recent"] + status_counts["legend"],
         "minimum_required": args.min_players,
-        "maximum_runtime_players": args.max_players,
-        "selection_policy": "All upstream players are retained up to the 50,000-player safety limit.",
+        "maximum_runtime_players": args.max_players or None,
+        "selection_policy": "The complete upstream player table is retained without a recognition cap.",
         "primary_key": "Transfermarkt player_id",
         "career_scope": (
             "Official senior-club appearances present in dcaribou/transfermarkt-datasets; "

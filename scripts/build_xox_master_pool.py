@@ -14,8 +14,8 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 MASTER_DIR = ROOT / "side-games" / "data" / "master"
-DEFAULT_MIN_PLAYERS = 10_000
-DEFAULT_MAX_PLAYERS = 50_000
+DEFAULT_MIN_PLAYERS = 30_000
+DEFAULT_MAX_PLAYERS = 0  # 0 keeps every matching master player.
 MIN_PLAYERS_PER_CONDITION = 12
 
 
@@ -162,7 +162,9 @@ def balanced_runtime_pool(
     conditions: list[tuple[str, str]],
     maximum: int,
 ) -> list[dict[str, Any]]:
-    """Retain every match up to the safety limit without starving a condition."""
+    """Retain every match, or protect conditions when an explicit cap is set."""
+    if maximum <= 0:
+        return records
     selected: list[dict[str, Any]] = []
     selected_ids: set[int] = set()
     for condition_type, value in conditions:
@@ -246,8 +248,8 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
         "status_counts": status_counts,
         "historical_player_count": status_counts["recent"] + status_counts["legend"],
         "minimum_required": args.min_players,
-        "maximum_runtime_players": args.max_players,
-        "selection_policy": "Every rule-matching master player is retained up to 50,000 players.",
+        "maximum_runtime_players": args.max_players or None,
+        "selection_policy": "Every rule-matching master player is retained without a recognition cap.",
         "minimum_players_per_available_condition": MIN_PLAYERS_PER_CONDITION,
         "master_pool": "side-games/data/master/transfermarkt-players.json",
         "master_provider": master_meta.get("provider"),

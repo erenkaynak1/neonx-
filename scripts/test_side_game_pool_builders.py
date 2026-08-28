@@ -134,7 +134,7 @@ class SideGamePoolPipelineTest(unittest.TestCase):
                         output=master_path,
                         meta=master_meta_path,
                         min_players=100,
-                        max_players=300,
+                        max_players=0,
                     )
                 )
             finally:
@@ -147,7 +147,7 @@ class SideGamePoolPipelineTest(unittest.TestCase):
                     output=xox_path,
                     meta=xox_meta_path,
                     min_players=100,
-                    max_players=300,
+                    max_players=0,
                 )
             )
             career_builder.build(

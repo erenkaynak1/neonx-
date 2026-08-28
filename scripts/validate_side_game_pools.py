@@ -13,8 +13,8 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 MASTER_DIR = ROOT / "side-games" / "data" / "master"
 CAREER_DATA = ROOT / "side-games" / "career-twin" / "data"
-MIN_MASTER = 25_000
-MIN_XOX = 10_000
+MIN_MASTER = 50_000
+MIN_XOX = 30_000
 MIN_CAREER_TARGETS = 100
 CAREER_METRICS = {
     "height_cm",

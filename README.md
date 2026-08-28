@@ -7,9 +7,9 @@ instagram: @erenkaynak_
 
 Career Twin ve Futbol XOX aynı master oyuncu evreninden türetilir. Master kaynak,
 haftalık güncellenen `dcaribou/transfermarkt-datasets` DuckDB dağıtımıdır ve
-Transfermarkt `player_id` kalıcı kimlik olarak kullanılır. Master havuz 50.000
-oyunculuk güvenlik sınırına kadar güncel ve tarihî tüm upstream oyuncuları tutar;
-Futbol XOX da kurallara uyan oyuncuları tanınırlık nedeniyle kesmez.
+Transfermarkt `player_id` kalıcı kimlik olarak kullanılır. Master havuz güncel
+ve tarihî upstream oyuncu tablosunun tamamını sınır koymadan tutar; Futbol XOX
+da bu masterdan kurallara uyan alanları ayıklayıp tüm eşleşen oyuncuları korur.
 
 - `scripts/build_transfermarkt_master_pool.py` canonical master havuzu üretir.
 - `scripts/build_xox_master_pool.py` mevcut `xox-rules.json` kurallarını master
