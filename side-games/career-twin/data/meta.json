@@ -1,10 +1,10 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-08-26T14:13:12.852441+00:00",
+  "generated_at": "2026-08-28T14:24:25.809336+00:00",
   "master_pool": "side-games/data/master/transfermarkt-players.json",
   "provider": "dcaribou/transfermarkt-datasets",
   "provider_revision": "154367dfa6d6eb0b86332e332f9df0a080c7ddce",
-  "player_count": 50000,
+  "player_count": 50149,
   "target_eligible_count": 26678,
   "metric_minimum_players": 100,
   "active_metrics": [
@@ -21,9 +21,9 @@
     "trophies"
   ],
   "metric_coverage": {
-    "height_cm": 45673,
+    "height_cm": 45771,
     "weight_kg": 0,
-    "birth_date": 49953,
+    "birth_date": 50100,
     "club_count": 28487,
     "trophies": 0,
     "career_goals": 28487,
