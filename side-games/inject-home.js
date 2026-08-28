@@ -37,7 +37,32 @@
     #bootHome .nxPulse{position:absolute;width:12px;height:12px;border:1px solid rgba(198,255,214,.9);border-radius:50%;pointer-events:none;transform:translate(-50%,-50%) scale(.2);animation:nxPulse .55s ease-out forwards;box-shadow:0 0 12px var(--nx-green)}
     @keyframes nxCurrent{from{background-position:-60% 0}to{background-position:160% 0}}@keyframes nxMist{from{transform:translate3d(-8%,2%,0) scale(.9)}to{transform:translate3d(9%,-5%,0) scale(1.18)}}@keyframes nxVapor{from{transform:translate3d(-5%,2%,0) rotate(-2deg)}to{transform:translate3d(6%,-3%,0) rotate(3deg)}}@keyframes nxPulse{to{opacity:0;transform:translate(-50%,-50%) scale(9)}}
     @media(max-width:760px){#bootHome .neonHomeTopbar{padding:8px 12px 0!important}#bootHome .neonTopLang{display:none!important}#bootHome .neonHomeCenterWrap{padding:0 11px 13px!important;overflow:auto}#bootHome .neonHomeLogo{width:min(67vw,320px)!important;max-height:76px;margin:0 auto -7px}#bootHome .neonHomeSubtitle{font-size:7px!important;margin-bottom:3px}#bootHome .neonHomeSubtitle span{width:38px!important}#bootHome .nxHomeHub{grid-template-columns:1fr;grid-template-rows:auto auto;gap:10px}#bootHome .nxZone{border-radius:19px}#bootHome .nxDraftZone,#bootHome .nxSideZone{padding:17px}#bootHome .nxZoneHead{margin-bottom:13px}#bootHome .nxZone h2{font-size:31px}#bootHome .nxSideZone h2{font-size:27px}#bootHome .nxZoneCopy{font-size:10px;margin-top:8px;line-height:1.4}#bootHome .nxZoneIndex{font-size:38px}#bootHome .nxDraftModes{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}#bootHome .nxDraftModes .neonHomeAction{display:flex!important;flex-direction:column;align-items:flex-start!important;min-height:98px!important;padding:10px!important;gap:7px!important}#bootHome .nxDraftModes .neonHomeActionIcon{width:34px!important;height:34px!important}#bootHome .nxDraftModes .neonHomeActionIcon svg{width:19px!important;height:19px!important}#bootHome .nxDraftModes .neonHomeActionText strong{font-size:10px!important}#bootHome .nxDraftModes .neonHomeActionText small{font-size:7px!important;line-height:1.2}#bootHome .nxDraftModes .neonHomeActionArrow{display:none}#bootHome .nxDraftUtility{margin-top:8px;padding-top:8px}#bootHome .nxSideGrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}#bootHome .nxSideGame,#bootHome .nxSideGame:first-child{grid-column:auto;min-height:100px;padding:11px;border-radius:13px}#bootHome .nxSideIcon{width:29px;height:29px;margin-bottom:9px;font-size:14px}#bootHome .nxSideGame strong{font-size:10px;line-height:1.1}#bootHome .nxSideGame small{font-size:7px;line-height:1.2}#bootHome .nxSideCode{font-size:16px;top:10px;right:10px}#bootHome .nxAllGames{margin-top:9px;font-size:8px}}
-    @media(max-width:430px){#bootHome .nxZoneCopy{display:none}#bootHome .nxZoneHead{margin-bottom:10px}#bootHome .nxDraftUtility>span{display:none}}@media(prefers-reduced-motion:reduce){#bootHome .nxZone::before,#bootHome .nxZone::after,#bootHome .neonHomeMist{animation:none!important}#bootHome .nxPressable{transition:none!important}}
+    @media(max-width:760px){
+      #bootHome .neonHomeCenterWrap{padding-bottom:10px!important}
+      #bootHome .nxHomeHub{min-height:calc(100dvh - 140px);grid-template-rows:minmax(0,1fr) minmax(0,1fr);gap:11px}
+      #bootHome .nxDraftZone,#bootHome .nxSideZone{padding:18px 17px}
+      #bootHome .nxZoneHead{margin-bottom:14px}
+      #bootHome .nxEyebrow{font-size:9px;letter-spacing:.16em}
+      #bootHome .nxZone h2{font-size:33px}
+      #bootHome .nxSideZone h2{font-size:29px}
+      #bootHome .nxZoneCopy{display:block;font-size:10px;line-height:1.4;margin-top:7px;max-width:310px}
+      #bootHome .nxDraftModes .neonHomeAction{min-height:112px!important;padding:12px 10px!important;gap:9px!important}
+      #bootHome .nxDraftModes .neonHomeActionIcon{width:38px!important;height:38px!important}
+      #bootHome .nxDraftModes .neonHomeActionIcon svg{width:21px!important;height:21px!important}
+      #bootHome .nxDraftModes .neonHomeActionText strong{font-size:11px!important;line-height:1.1!important}
+      #bootHome .nxDraftModes .neonHomeActionText small{font-size:8px!important;line-height:1.25!important}
+      #bootHome .nxDraftUtility{margin-top:10px;padding-top:10px}
+      #bootHome .nxTournament{font-size:11px;padding:8px 0}
+      #bootHome .nxSideGame,#bootHome .nxSideGame:first-child{min-height:122px;padding:12px}
+      #bootHome .nxSideIcon{width:34px;height:34px;margin-bottom:11px;font-size:16px}
+      #bootHome .nxSideGame strong{font-size:11px;line-height:1.15}
+      #bootHome .nxSideGame small{font-size:8px;line-height:1.3;margin-top:6px}
+      #bootHome .nxSideCode{font-size:18px}
+      #bootHome .nxAllGames{font-size:9px;margin-top:11px}
+    }
+    @media(max-width:430px){#bootHome .nxDraftUtility>span{display:none}}
+    @media(max-height:720px) and (max-width:760px){#bootHome .nxHomeHub{min-height:560px;grid-template-rows:auto auto}#bootHome .nxZoneCopy{display:none}#bootHome .nxDraftModes .neonHomeAction{min-height:102px!important}#bootHome .nxSideGame,#bootHome .nxSideGame:first-child{min-height:108px}}
+    @media(prefers-reduced-motion:reduce){#bootHome .nxZone::before,#bootHome .nxZone::after,#bootHome .neonHomeMist{animation:none!important}#bootHome .nxPressable{transition:none!important}}
   `;
   const addStyles=()=>{if(document.getElementById(STYLE_ID))return;const style=document.createElement('style');style.id=STYLE_ID;style.textContent=styles;document.head.appendChild(style)};
   const card=(href,code,icon,title,subtitle)=>`<a class="nxSideGame nxPressable" href="${href}"><span class="nxSideCode">${code}</span><span class="nxSideIcon" aria-hidden="true">${icon}</span><strong>${title}</strong><small>${subtitle}</small></a>`;
