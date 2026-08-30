@@ -45,7 +45,7 @@
 'use strict';
 const MAX_GUESSES=6;
 const OVERRIDES={
-  'Lionel Messi':'MESSI','Cristiano Ronaldo':'RONALDO','Kevin De Bruyne':'DEBRUYNE','Virgil van Dijk':'VANDIJK','Frenkie de Jong':'DEJONG','Donny van de Beek':'VANDEBEEK','Marc-Andre ter Stegen':'TERSTEGEN','Vinicius Junior':'VINICIUS','Ronaldo Nazario':'RONALDO','Emile Smith Rowe':'SMITHROWE','Park Ji-sung':'PARK','Van Persie':'VANPERSIE','Van Nistelrooy':'VANNISTELROOY','Van Basten':'VANBASTEN','Van der Vaart':'VANDERVAART','De Ligt':'DELIGT','De Jong':'DEJONG','De Paul':'DEPAUL','De Rossi':'DEROSSI','De Ketelaere':'DEKETELAERE','De Gea':'DEGEA','Lo Celso':'LOCELSO','El Shaarawy':'ELSHAARAWY','Abedi Pele':'ABEDI','Alisson Becker':'ALISSON','Joao Pedro':'JOAOPEDRO','Ruben Dias':'DIAS','Joško Gvardiol':'GVARDIOL','Sadio Mane':'MANE','Riyad Mahrez':'MAHREZ','Jay-Jay Okocha':'OKOCHA',"Samuel Eto'o":'ETOO','Pierre-Emerick Aubameyang':'AUBAMEYANG','Eric Maxim Choupo-Moting':'CHOUPOMOTING','DaMarcus Beasley':'BEASLEY','Rustü Recber':'RECBER','Ugürcan Cakir':'CAKIR'
+  'Lionel Messi':'MESSI','Cristiano Ronaldo':'RONALDO','Kevin De Bruyne':'DEBRUYNE','De Bruyne':'DEBRUYNE','Virgil van Dijk':'VANDIJK','Van Dijk':'VANDIJK','Frenkie de Jong':'DEJONG','De Jong':'DEJONG','Donny van de Beek':'VANDEBEEK','Marc-Andre ter Stegen':'TERSTEGEN','Ter Stegen':'TERSTEGEN','Vinicius Junior':'VINICIUS','Ronaldo Nazario':'RONALDO','Emile Smith Rowe':'SMITHROWE','Park Ji-sung':'PARK','Van Persie':'VANPERSIE','Van Nistelrooy':'VANNISTELROOY','Van Basten':'VANBASTEN','Van der Vaart':'VANDERVAART','De Ligt':'DELIGT','De Paul':'DEPAUL','De Rossi':'DEROSSI','De Ketelaere':'DEKETELAERE','De Gea':'DEGEA','Lo Celso':'LOCELSO','El Shaarawy':'ELSHAARAWY','Abedi Pele':'ABEDI','Alisson Becker':'ALISSON','Joao Pedro':'JOAOPEDRO','Ruben Dias':'DIAS','Joško Gvardiol':'GVARDIOL','Sadio Mane':'MANE','Riyad Mahrez':'MAHREZ','Jay-Jay Okocha':'OKOCHA',"Samuel Eto'o":'ETOO','Pierre-Emerick Aubameyang':'AUBAMEYANG','Eric Maxim Choupo-Moting':'CHOUPOMOTING','DaMarcus Beasley':'BEASLEY','Rustü Recber':'RECBER','Ugürcan Cakir':'CAKIR','Mac Allister':'MACALLISTER','Van de Ven':'VANDEVEN'
 };
 const board=document.getElementById('board');
 const keyboard=document.getElementById('keyboard');
@@ -57,7 +57,9 @@ const poolCount=document.getElementById('poolCount');
 let target=null,row=0,current=[],ended=false,cells=[],keyStates=new Map();
 function normalize(text){return String(text||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Za-z]/g,'').toUpperCase()}
 function answerFor(name){if(OVERRIDES[name])return OVERRIDES[name];const parts=String(name).trim().split(/\s+/);return normalize(parts[parts.length-1])}
-const pool=(window.NX_WORDLE_PLAYERS||[]).map(name=>({name,answer:answerFor(name)})).filter(p=>p.answer.length>=4&&p.answer.length<=13);
+const rawPool=(window.NX_WORDLE_PLAYERS||[]).map(name=>({name,answer:answerFor(name)})).filter(p=>p.answer.length>=3&&p.answer.length<=13);
+const seenAnswers=new Set();
+const pool=rawPool.filter(p=>{if(seenAnswers.has(p.answer))return false;seenAnswers.add(p.answer);return true});
 poolCount.textContent=pool.length;
 function randomItem(list){if(!list.length)return null;if(window.crypto&&crypto.getRandomValues){const a=new Uint32Array(1);crypto.getRandomValues(a);return list[a[0]%list.length]}return list[Math.floor(Math.random()*list.length)]}
 function buildBoard(){board.replaceChildren();cells=[];board.style.setProperty('--cols',target.answer.length);board.dataset.long=target.answer.length>=9?'1':'0';for(let r=0;r<MAX_GUESSES;r++){const rowEl=document.createElement('div');rowEl.className='guessRow';rowEl.style.setProperty('--cols',target.answer.length);const rowCells=[];for(let c=0;c<target.answer.length;c++){const tile=document.createElement('div');tile.className='tile';tile.setAttribute('aria-label',`${r+1}. tahmin ${c+1}. harf`);rowEl.appendChild(tile);rowCells.push(tile)}board.appendChild(rowEl);cells.push(rowCells)}}
