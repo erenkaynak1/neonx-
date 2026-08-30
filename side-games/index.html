@@ -2,48 +2,116 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>NEON XI — Yan Oyunlar</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#020705">
+<title>NEON XI — Neon Arcade</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Rajdhani:wght@500;600;700&display=swap');
-:root{--bg:#03070a;--panel:#07120f;--green:#49f6b1;--cyan:#00f6ff;--yellow:#f4bf00;--text:#f7fbff;--dim:#8fb8aa}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;min-height:100%;background:radial-gradient(circle at 50% -10%,rgba(73,246,177,.13),transparent 38%),linear-gradient(180deg,#06100d,#020507 72%);color:var(--text);font-family:'Rajdhani',sans-serif}body{min-height:100vh;padding:max(22px,env(safe-area-inset-top)) 18px max(28px,env(safe-area-inset-bottom));overflow-x:hidden}body:before{content:"";position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(rgba(73,246,177,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(73,246,177,.025) 1px,transparent 1px);background-size:36px 36px}.shell{position:relative;z-index:1;width:min(100%,520px);margin:0 auto}.back{display:inline-flex;align-items:center;gap:8px;color:#bfffd8;text-decoration:none;font-weight:700;letter-spacing:.08em;font-size:13px;margin-bottom:28px}.eyebrow{font-family:'Orbitron',sans-serif;font-size:11px;letter-spacing:.32em;color:var(--green);text-shadow:0 0 14px rgba(73,246,177,.5);margin-bottom:8px}.title{font-family:'Orbitron',sans-serif;font-size:clamp(30px,9vw,46px);font-weight:900;line-height:1;letter-spacing:.04em}.title span{color:var(--green);text-shadow:0 0 22px rgba(73,246,177,.35)}.sub{color:var(--dim);font-size:15px;margin:12px 0 28px;line-height:1.45}.games{display:grid;gap:14px}.game{display:block;position:relative;overflow:hidden;text-decoration:none;color:inherit;border:1px solid rgba(73,246,177,.55);border-radius:24px;background:linear-gradient(180deg,rgba(11,24,37,.95),rgba(7,16,27,.98)),radial-gradient(circle at 18% 0%,rgba(73,246,177,.16),transparent 48%);padding:22px 78px 22px 22px;min-height:118px;box-shadow:0 0 0 1px rgba(73,246,177,.08) inset,0 0 30px rgba(73,246,177,.09),0 18px 40px rgba(0,0,0,.3)}.game:active{transform:scale(.985)}.game.twin{border-color:rgba(0,246,255,.48);background:linear-gradient(180deg,rgba(8,26,27,.96),rgba(5,15,18,.98)),radial-gradient(circle at 18% 0%,rgba(0,246,255,.13),transparent 48%)}.game.xox{border-color:rgba(73,246,177,.52);background:linear-gradient(180deg,rgba(10,28,21,.97),rgba(4,15,11,.99)),radial-gradient(circle at 82% 0%,rgba(0,246,255,.12),transparent 48%)}.game.wordle{border-color:rgba(244,191,0,.52);background:linear-gradient(180deg,rgba(30,20,49,.97),rgba(12,15,29,.99)),radial-gradient(circle at 82% 0%,rgba(244,191,0,.13),transparent 48%)}.tag{font-size:10px;letter-spacing:.18em;color:var(--green);font-weight:700;margin-bottom:8px}.twin .tag{color:var(--cyan)}.wordle .tag{color:#ffd84f}.game h2{font-family:'Orbitron',sans-serif;font-size:19px;margin:0 0 7px;letter-spacing:.04em}.game p{margin:0;color:#a5c7ba;font-size:14px;line-height:1.35}.icon{position:absolute;right:20px;top:50%;transform:translateY(-50%);width:48px;height:48px;border-radius:15px;display:grid;place-items:center;border:1px solid rgba(73,246,177,.35);color:var(--green);font-size:22px;box-shadow:0 0 18px rgba(73,246,177,.1) inset}.twin .icon{border-color:rgba(0,246,255,.35);color:var(--cyan)}.xox .icon{font-family:'Orbitron',sans-serif;font-size:15px;letter-spacing:-.06em}.wordle .icon{border-color:rgba(244,191,0,.38);color:#ffd84f;font:900 20px 'Orbitron',sans-serif}.coming{margin-top:14px;border:1px dashed rgba(255,255,255,.1);border-radius:20px;padding:18px;color:#617a70;text-align:center;font-size:13px;letter-spacing:.08em}.foot{text-align:center;color:#557065;font-size:11px;letter-spacing:.12em;margin-top:24px}
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Rajdhani:wght@500;600;700&display=swap');
+:root{
+  --lime:#cfff35;--lime-hot:#eaff78;--lime-dim:#8bae2b;--ink:#020705;--panel:#06100c;
+  --line:rgba(207,255,53,.68);--line-soft:rgba(207,255,53,.23);--text:#f4f7ef;--muted:#a4b795;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:#020705;color:var(--text);font-family:'Rajdhani',system-ui,sans-serif}
+body{position:relative;min-height:100vh;padding:max(15px,env(safe-area-inset-top)) 12px max(24px,env(safe-area-inset-bottom));overflow-x:hidden}
+body::before{content:"";position:fixed;inset:-22px;z-index:0;pointer-events:none;background:url('./assets/premium-home/home-city-v2.webp') center/cover no-repeat;filter:blur(5px) brightness(.3) saturate(.9);transform:scale(1.04)}
+body::after{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background:linear-gradient(180deg,rgba(0,5,4,.36),rgba(0,6,4,.83)),radial-gradient(circle at 50% 9%,rgba(189,255,46,.13),transparent 34%),repeating-linear-gradient(0deg,rgba(208,255,61,.018) 0 1px,transparent 1px 6px)}
+.shell{position:relative;z-index:1;width:min(100%,900px);margin:0 auto}
+.topbar{display:grid;grid-template-columns:48px 1fr 48px;align-items:center;gap:10px;margin-bottom:14px}
+.back,.status-btn{width:46px;height:46px;display:grid;place-items:center;border:1px solid var(--line);border-radius:14px;background:linear-gradient(180deg,rgba(13,31,20,.88),rgba(2,10,7,.95));color:var(--lime-hot);text-decoration:none;box-shadow:inset 0 0 0 1px rgba(236,255,151,.06),0 0 18px rgba(168,255,32,.08);transition:transform .15s ease,box-shadow .2s ease,background .2s ease}
+.back svg,.status-btn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.back:hover,.status-btn:hover{background:rgba(28,56,16,.76);box-shadow:0 0 24px rgba(184,255,46,.18),inset 0 0 18px rgba(194,255,53,.08)}
+.back:active,.status-btn:active{transform:scale(.94)}
+.brand{text-align:center;min-width:0}
+.brand-main{font:900 clamp(27px,7.4vw,50px)/.9 'Orbitron',sans-serif;letter-spacing:.04em;color:transparent;-webkit-text-stroke:1.4px var(--lime-hot);text-shadow:0 0 8px rgba(199,255,46,.76),0 0 22px rgba(91,255,13,.28)}
+.brand-sub{margin-top:7px;font:700 9px/1 'Orbitron',sans-serif;letter-spacing:.37em;color:#f1f7e7;white-space:nowrap}
+.arcade-panel{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:27px;background:linear-gradient(180deg,rgba(3,14,10,.93),rgba(1,8,5,.96));box-shadow:inset 0 0 0 1px rgba(210,255,67,.08),inset 0 0 46px rgba(63,108,9,.12),0 18px 70px rgba(0,0,0,.56),0 0 30px rgba(143,255,28,.07);padding:19px 16px 17px}
+.arcade-panel::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.21;background-image:linear-gradient(120deg,transparent 0 44%,rgba(210,255,59,.13) 45%,transparent 46% 100%),radial-gradient(circle,rgba(210,255,59,.42) 1px,transparent 1.4px);background-size:100% 100%,22px 22px;background-position:0 0,7px 8px;mask-image:linear-gradient(180deg,#000,transparent 52%)}
+.panel-head{position:relative;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:end;margin:3px 4px 16px}
+.kicker{display:flex;align-items:center;gap:10px;color:var(--lime);font:800 11px/1 'Orbitron',sans-serif;letter-spacing:.19em;margin-bottom:9px}.kicker::before{content:"";display:block;width:34px;height:2px;background:var(--lime);box-shadow:0 0 11px rgba(197,255,47,.65)}
+h1{margin:0;font:900 clamp(34px,9.3vw,66px)/.92 'Orbitron',sans-serif;letter-spacing:-.025em;text-shadow:0 4px 0 rgba(255,255,255,.05),0 0 28px rgba(255,255,255,.08)}
+.panel-index{font:500 clamp(58px,16vw,100px)/.8 'Orbitron',sans-serif;color:transparent;-webkit-text-stroke:1px var(--lime);opacity:.9;text-shadow:0 0 20px rgba(191,255,37,.11)}
+.lead{position:relative;margin:0 4px 18px;color:#aebca8;font-size:14px;line-height:1.35;max-width:620px}
+.games{position:relative;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.game{--card-accent:207,255,53;position:relative;display:grid;grid-template-columns:74px 1fr;align-items:center;gap:14px;min-height:154px;padding:15px;border:1px solid rgba(var(--card-accent),.62);border-radius:23px;overflow:hidden;text-decoration:none;color:inherit;background:linear-gradient(145deg,rgba(8,22,14,.96),rgba(1,10,7,.985));box-shadow:inset 0 0 0 1px rgba(var(--card-accent),.05),inset 0 -24px 40px rgba(0,0,0,.25),0 12px 32px rgba(0,0,0,.27);transform:translateZ(0);transition:transform .17s ease,border-color .2s ease,box-shadow .22s ease,filter .2s ease}
+.game::before{content:"";position:absolute;z-index:0;top:-60%;bottom:-60%;left:-38%;width:21%;opacity:0;transform:skewX(-17deg);background:linear-gradient(90deg,transparent,rgba(242,255,191,.37),transparent);pointer-events:none}
+.game::after{content:"";position:absolute;inset:7px;z-index:0;border:1px solid rgba(var(--card-accent),.11);border-radius:17px;pointer-events:none;clip-path:polygon(0 0,24% 0,24% 1px,1px 1px,1px 26%,0 26%,0 0,100% 0,100% 100%,76% 100%,76% calc(100% - 1px),calc(100% - 1px) calc(100% - 1px),calc(100% - 1px) 74%,100% 74%)}
+.game:hover{transform:translateY(-2px);border-color:rgba(var(--card-accent),.92);box-shadow:inset 0 0 31px rgba(var(--card-accent),.075),0 0 25px rgba(var(--card-accent),.12),0 17px 36px rgba(0,0,0,.34)}
+.game:hover::before{animation:cardSweep .72s ease-out}
+.game:active{transform:scale(.978);filter:brightness(1.13)}
+.game:focus-visible{outline:2px solid #efffbd;outline-offset:3px}
+.game-no{position:absolute;right:14px;top:11px;z-index:1;font:700 12px/1 'Orbitron',sans-serif;color:rgba(var(--card-accent),.7);letter-spacing:.13em}
+.icon{position:relative;z-index:1;width:72px;aspect-ratio:1;border:1px solid rgba(var(--card-accent),.72);clip-path:polygon(24% 0,76% 0,100% 24%,100% 76%,76% 100%,24% 100%,0 76%,0 24%);display:grid;place-items:center;color:rgb(var(--card-accent));background:radial-gradient(circle,rgba(var(--card-accent),.13),rgba(0,8,5,.94) 69%);box-shadow:inset 0 0 22px rgba(var(--card-accent),.12);text-shadow:0 0 13px rgba(var(--card-accent),.58)}
+.icon svg{width:39px;height:39px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}.icon.word{font:900 27px/1 'Orbitron',sans-serif}
+.copy{position:relative;z-index:1;min-width:0}.tag{margin-bottom:5px;color:rgb(var(--card-accent));font:700 9px/1 'Orbitron',sans-serif;letter-spacing:.16em}.game h2{margin:0 0 5px;font:800 clamp(17px,4.8vw,24px)/1 'Orbitron',sans-serif;letter-spacing:-.02em}.game p{margin:0;color:#a6b89f;font-size:13px;line-height:1.25}.launch{display:inline-flex;align-items:center;gap:7px;margin-top:9px;color:#d9ff68;font:700 10px/1 'Orbitron',sans-serif;letter-spacing:.08em}.launch span{transition:transform .18s ease}.game:hover .launch span{transform:translateX(4px)}
+.game.xox{--card-accent:200,255,49}.game.twin{--card-accent:178,255,64}.game.imposter{--card-accent:213,255,70}.game.wordle{--card-accent:230,255,80}
+.bottom-rail{position:relative;display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:13px;padding:12px 15px;border:1px solid var(--line-soft);border-radius:17px;background:rgba(3,14,9,.72);color:#90a384;font-size:11px;letter-spacing:.09em}.system-live{display:flex;align-items:center;gap:8px;color:#cfff52;font-weight:700}.system-live i{display:block;width:7px;height:7px;border-radius:50%;background:var(--lime);box-shadow:0 0 12px var(--lime);animation:livePulse 1.9s ease-in-out infinite}
+@keyframes cardSweep{0%{left:-38%;opacity:0}20%{opacity:.85}100%{left:126%;opacity:0}}
+@keyframes livePulse{0%,100%{opacity:.55;transform:scale(.84)}50%{opacity:1;transform:scale(1.15)}}
+@media(max-width:640px){.games{grid-template-columns:1fr}.arcade-panel{border-radius:23px;padding:17px 12px 14px}.game{min-height:132px;grid-template-columns:64px 1fr;padding:13px;gap:12px}.icon{width:62px}.icon svg{width:34px;height:34px}.panel-head{margin-inline:2px}.lead{margin-inline:2px}.brand-sub{letter-spacing:.25em}}
+@media(max-width:360px){body{padding-inline:7px}.topbar{grid-template-columns:43px 1fr 43px}.back,.status-btn{width:42px;height:42px}.game{grid-template-columns:55px 1fr}.icon{width:54px}.game p{font-size:12px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
 <main class="shell">
-<a class="back" href="../index.html">← NEON XI</a>
-<div class="eyebrow">SIDE GAMES</div>
-<div class="title">YAN <span>OYUNLAR</span></div>
-<p class="sub">NEON XI evrenindeki kısa futbol oyunları. Dört yan oyun oynanabilir durumda.</p>
-<div class="games">
-<a class="game" href="./futbol-imposter.html">
-  <div class="tag">1. YAN OYUN</div>
-  <h2>FUTBOL IMPOSTER</h2>
-  <p>Gizli futbolcuyu öğren, ipucu ver ve aranızdaki imposteri bul.</p>
-  <span class="icon">◈</span>
-</a>
-<a class="game twin" href="./career-twin/index.html">
-  <div class="tag">2. YAN OYUN</div>
-  <h2>KARİYER İKİZİ</h2>
-  <p>Transfermarkt verisi bulunan kariyer parametrelerinde hedefe en yakın oyuncuları seç ve rakibini geç.</p>
-  <span class="icon">⇄</span>
-</a>
-<a class="game xox" href="./football-xox/index.html">
-  <div class="tag">3. YAN OYUN · PROTOTİP</div>
-  <h2>FUTBOL XOX</h2>
-  <p>Güncel ve tarihî geniş havuzdan kulüp, lig ve milliyet kesişimlerine doğru futbolcuları yerleştir.</p>
-  <span class="icon">X/O</span>
-</a>
-<a class="game wordle" href="./football-wordle/index.html">
-  <div class="tag">4. YAN OYUN · YENİ</div>
-  <h2>FOOTBALL WORDLE</h2>
-  <p>Gizli futbolcu adını harf harf çöz. Serbest harf girişi, kalıcı tahmin satırları ve Wordle renk mantığı.</p>
-  <span class="icon">W</span>
-</a>
-</div>
-<div class="coming">YENİ YAN OYUNLAR İÇİN AYRILDI</div>
-<div class="foot">NEON XI · SIDE GAMES</div>
+  <header class="topbar">
+    <a class="back" href="../index.html" aria-label="NEON XI ana menüsüne dön">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 5 8.5 12l7 7"/></svg>
+    </a>
+    <div class="brand" aria-label="NEON XI Futbol Yönetimi">
+      <div class="brand-main">NEON XI</div>
+      <div class="brand-sub">FUTBOL YÖNETİMİ</div>
+    </div>
+    <div class="status-btn" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M4 17V9M8 17V6M12 17v-4M16 17V8M20 17V4"/></svg>
+    </div>
+  </header>
+
+  <section class="arcade-panel" aria-labelledby="arcade-title">
+    <div class="panel-head">
+      <div>
+        <div class="kicker">YAN OYUNLAR</div>
+        <h1 id="arcade-title">NEON ARCADE</h1>
+      </div>
+      <div class="panel-index" aria-hidden="true">02</div>
+    </div>
+    <p class="lead">NEON XI evrenindeki bütün yan oyunlar tek merkezde. Bir oyun seç ve doğrudan başla.</p>
+
+    <div class="games">
+      <a class="game xox" href="./football-xox/index.html">
+        <span class="game-no">01</span>
+        <span class="icon" aria-hidden="true">
+          <svg viewBox="0 0 48 48"><path d="M9 9l11 11M20 9 9 20"/><circle cx="34" cy="14" r="7"/><path d="M9 30l11 11M20 30 9 41"/><circle cx="34" cy="35" r="7"/></svg>
+        </span>
+        <span class="copy"><span class="tag">KESİŞİM OYUNU</span><h2>FUTBOL XOX</h2><p>Kulüp, lig ve milliyet kesişimlerini doğru futbolcularla kap.</p><span class="launch">OYNA <span>›</span></span></span>
+      </a>
+
+      <a class="game twin" href="./career-twin/index.html">
+        <span class="game-no">02</span>
+        <span class="icon" aria-hidden="true">
+          <svg viewBox="0 0 48 48"><path d="M8 34c2-7 7-10 13-10s11 3 13 10"/><circle cx="21" cy="15" r="7"/><path d="M29 11c3-2 7-2 10 1 3 4 2 9-2 12M36 29c3 1 5 3 6 6"/><path d="M27 37h14M37 33l4 4-4 4"/></svg>
+        </span>
+        <span class="copy"><span class="tag">KARİYER EŞLEŞTİRME</span><h2>CAREER TWIN</h2><p>Kariyer parametrelerini oku, hedef oyuncunun en yakın ikizini keşfet.</p><span class="launch">OYNA <span>›</span></span></span>
+      </a>
+
+      <a class="game imposter" href="./futbol-imposter.html">
+        <span class="game-no">03</span>
+        <span class="icon" aria-hidden="true">
+          <svg viewBox="0 0 48 48"><circle cx="14" cy="17" r="6"/><circle cx="34" cy="17" r="6"/><circle cx="24" cy="13" r="7"/><path d="M5 38c1-7 5-11 11-11M43 38c-1-7-5-11-11-11M13 39c1-9 5-14 11-14s10 5 11 14"/><path d="M24 29v7M20.5 32.5h7"/></svg>
+        </span>
+        <span class="copy"><span class="tag">SOSYAL TAHMİN</span><h2>FUTBOL IMPOSTER</h2><p>İpucu ver, oyuncuları oku ve aranızdaki sahteyi ortaya çıkar.</p><span class="launch">OYNA <span>›</span></span></span>
+      </a>
+
+      <a class="game wordle" href="./football-wordle/index.html">
+        <span class="game-no">04</span>
+        <span class="icon word" aria-hidden="true">W</span>
+        <span class="copy"><span class="tag">HARF TAHMİNİ · YENİ</span><h2>FOOTBALL WORDLE</h2><p>Serbest harf girişiyle gizli futbolcu adını adım adım çöz.</p><span class="launch">OYNA <span>›</span></span></span>
+      </a>
+    </div>
+
+    <div class="bottom-rail"><span class="system-live"><i></i> NEON GAMES ONLINE</span><span>4 OYUN AKTİF</span></div>
+  </section>
 </main>
 </body>
 </html>
