@@ -1,70 +1,55 @@
-# Design QA — NEON XI Raster Home Integration
+# Design QA — Career Twin approved mobile screen
 
 ## Comparison target
 
-- Source visual truth: `../design-reference/NEON-XI-PREMIUM-HOME/index.html`
-- Source foreground asset: `../design-reference/NEON-XI-PREMIUM-HOME/assets/neon-xi-menu-foreground.webp`
-- Source background asset: `../design-reference/NEON-XI-PREMIUM-HOME/assets/home-city-v2.webp`
-- Implementation: `http://127.0.0.1:4173/`
-- State: initial NEON XI home menu, scroll position at the top.
-- Reference screenshot: `qa/reference-560x876.png`
-- Implementation screenshot: `qa/implementation-560x876.png`
-- Side-by-side evidence: `qa/compare-560x876.png` (reference left, implementation right).
-- Viewport: 560 × 876 CSS px.
-- Source pixels: 560 × 876.
-- Implementation pixels: 560 × 876.
-- Device pixel ratio: 1.0; no density normalization was required.
+- Source visual truth: `side-games/career-twin/assets/career-twin-approved.png`.
+- Source dimensions: 941 × 1672 RGB PNG.
+- Implementation route: `/side-games/career-twin/?qa=career-twin`.
+- Captured state: `TEK TELEFON`, first pick, round 1, deterministic Michael Frey QA target.
+- Browser viewport: 1363 × 936 CSS px at DPR 1.
+- App stage: 941 × 1672 CSS px, preserving the source's exact 941:1672 ratio.
+- Density normalization: 1 source pixel = 1 CSS pixel on the QA stage.
+
+## Full-view comparison evidence
+
+- Header, title, scores, and metric: `qa/career-twin-compare-top.png` (source left, browser implementation right).
+- Score, metric, progress, and player arena: `qa/career-twin-compare-middle.png` (source left, browser implementation right).
+- Player arena and complete search panel: `qa/career-twin-compare-bottom.png` (source left, browser implementation right).
+- Browser captures: `qa/career-twin-browser-final.jpg`, `qa/career-twin-browser-middle.jpg`, and `qa/career-twin-browser-bottom-crop.jpg`.
+- Source comparison slices: `qa/career-twin-source-top.png`, `qa/career-twin-source-middle.png`, and `qa/career-twin-source-bottom.png`.
+- Normalized RMSE: top 0.0219, middle 0.0259, lower 0.0247; residual difference is browser JPEG compression.
+- The lower capture uses `capture=bottom` only in QA mode to expose the portrait screen's lower region in the fixed browser viewport; production URLs are unaffected.
 
 ## Findings
 
 - P0: none.
 - P1: none.
 - P2: none.
-- P3: the menu copy, typography, and icons are intentionally baked into the supplied foreground artwork. Future localization would require a replacement foreground asset or a separate later conversion to live text.
+- P3: the browser evidence is JPEG-compressed by the capture surface. The committed source asset remains the original PNG without recompression.
 
 ## Required fidelity surfaces
 
-- Fonts and typography: the exact supplied foreground raster is rendered, so family, weight, hierarchy, line height, letter spacing, wrapping, and antialiasing match the source pixel-for-pixel at the normalized viewport.
-- Spacing and layout rhythm: the supplied 941:1672 aspect ratio and hotspot geometry are preserved. The reference and implementation use the same 560 × 876 crop and top state with no material margin, padding, radius, or density drift.
-- Colors and visual tokens: the foreground and city assets are byte-identical to the ZIP sources. The implementation adds only transparent semantic hit targets plus focus/pressed feedback and does not recolor the source artwork.
-- Image quality and asset fidelity: both source images are copied without recompression. Foreground SHA-256 is `F3F652AD752EEC3BD6312B7C9E7507AA8808C71088C9ADBA273498E7155F6C29`; background SHA-256 is `6BA5593AF8C078506775ED35C187F19877EEB12194EA96EE8E9EFB16F81C12C8` in both source and repository copies.
-- Copy and content: all visible menu copy and icons come from the exact source artwork. Invisible accessible names accurately describe each control. Side-game destinations intentionally use the repository's live routes (`football-xox/index.html` and `career-twin/index.html`) instead of the ZIP's stale filenames.
-- Accessibility and states: every visual control has a semantic button or link, an accessible label, a visible keyboard focus state, practical touch geometry, pressed feedback, and reduced-motion support.
-
-## Responsive evidence
-
-- Landscape screenshot: `qa/implementation-landscape-844x390.png`.
-- Landscape viewport: 844 × 390 CSS px at DPR 1.0.
-- No horizontal overflow: document `scrollWidth` and `clientWidth` are both 844 px.
-- The 406.4 × 722.1 px menu stage remains centered in a 418 px-wide scroller. Vertical scrolling is intentional because the selected source is portrait-first.
-- The bottom “Tüm yan oyunları aç” target was reached and activated successfully in landscape, confirming that no persistent control is clipped or unreachable.
+- Typography: the approved title, labels, helper copy, and initial player name are rendered directly from the supplied artwork, retaining the exact family, weight, tracking, wrapping, and antialiasing.
+- Spacing and layout rhythm: the 941 × 1672 portrait canvas, panel geometry, margins, gaps, radii, and search-area placement are preserved. Transparent DOM controls are aligned over the artwork's slots.
+- Colors and visual tokens: the black, acid-lime, green glow, gray text, honeycomb, stadium, and city treatments come directly from the approved asset. Dynamic overlays use the same lime token (`#baff18`).
+- Image quality and asset fidelity: the repository copy is the original 941 × 1672 PNG. No generated emoji, pseudo-icon approximation, or CSS recreation replaces the approved visual.
+- Copy and content: the approved initial screen is exact, including `NEON XI · SIDE GAME`, `KARİYER İKİZİ`, `Tek telefon · sırayla seçim`, `OYUNCU 1`, `OYUNCU 2`, `BEKLİYOR`, `PARAMETRE`, `BOY`, `HEDEF`, `Michael Frey`, `FUTBOLCU ARA`, and the search helper copy. Live text appears only after the player interacts.
+- Responsive behavior: below 941 px the stage scales to the mobile viewport width while preserving the exact aspect ratio; it never stretches or rearranges the approved composition.
 
 ## Functional verification
 
-- Settings opens and closes the existing settings overlay.
-- Tek Oyunculu hides the boot shell and opens the existing draft screen.
-- Bota Karşı opens the existing bot setup and returns to the redesigned home.
-- Online opens the existing multiplayer choice screen and returns to the redesigned home.
-- Turnuva Modu opens the existing tournament view and loads its iframe.
-- Futbol XOX navigates to `side-games/football-xox/index.html`.
-- “Tüm yan oyunları aç” navigates to `side-games/index.html`, including from the landscape layout.
-- Root, core, integration script, both raster assets, and every linked side-game route returned HTTP 200 locally.
-- Browser console errors checked after the interaction pass: none.
-
-## Focused comparison evidence
-
-A separate crop was not required. The implementation renders the exact byte-identical 941 × 1672 foreground asset, and the 1120 × 876 side-by-side comparison is readable enough to inspect typography, icons, borders, spacing, and image treatment together. The semantic controls are transparent overlays and do not replace or redraw any visible source detail.
+- Opened the Career Twin menu and activated `TEK TELEFON`.
+- Confirmed the approved game screen appears with the deterministic QA target.
+- Entered `Messi` in the transparent search field; matching live player results appeared.
+- Selected Lionel Messi; the pick locked and the `DEVAM · OYUNCU 2` pass state appeared.
+- Back navigation remains a semantic link aligned over the approved back control.
+- Reduced-motion behavior is preserved.
+- Browser console: no application errors. Chrome-extension metadata warnings were unrelated to the page.
 
 ## Comparison history
 
-- Pass 1: reference and implementation were captured at the same 560 × 876 viewport and combined into `qa/compare-560x876.png`. No actionable P0/P1/P2 differences were found, so no visual-fix iteration was required.
-
-## Implementation checklist
-
-- Exact source foreground and background assets present.
-- Current NEON XI control nodes reused, preserving the existing game handlers.
-- Side-game routes mapped to the repository's current paths.
-- Mobile portrait and mobile landscape behavior verified.
-- Primary interactions and console state verified in the browser.
+- Pass 1 — P1: the previous version recreated the screen with generic CSS shapes, emoji-like symbols, a different background, and mismatched type. Fixed by using the supplied approved artwork as the exact visual source and overlaying the existing interactive DOM.
+- Pass 2 — P2: the live round-zero progress DOM briefly overlaid the artwork's baked seven-pip progress row. Fixed by letting the approved progress artwork remain visible for the initial state and reserving the live progress overlay for later rounds.
+- Final pass: top, middle, and lower browser captures were compared against source slices at 1:1 density. No remaining actionable P0/P1/P2 mismatch was found.
 
 final result: passed
