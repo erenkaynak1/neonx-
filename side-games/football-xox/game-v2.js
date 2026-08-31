@@ -9,15 +9,47 @@
   const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
   const E=(tag,cls,html)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(html!==undefined)e.innerHTML=html;return e};
   const B=(txt,primary,fn)=>{const b=E('button','btn'+(primary?' primary':''),esc(txt));b.type='button';b.onclick=fn;return b};
+  const MENU_ICONS={
+    gamepad:'<path d="M7.5 7.5h9c2.7 0 4.2 1.8 4.7 4.6l.6 3.2c.4 2.4-2.2 3.8-3.8 2l-2.1-2.2H8.1L6 17.3c-1.6 1.8-4.2.4-3.8-2l.6-3.2c.5-2.8 2-4.6 4.7-4.6Z"/><path d="M7.1 10.1v4M5.1 12.1h4M16.8 10.8h.01M18.7 13h.01"/>',
+    mobile:'<rect x="6.3" y="2.2" width="11.4" height="19.6" rx="1.8"/><path d="M10 4h4M10.6 19.3h2.8"/>',
+    home:'<path d="m3 11.2 9-8 9 8M5.3 9.8v10.4h5v-6.3h3.4v6.3h5V9.8M3.6 20.2h16.8"/>',
+    users:'<circle cx="12" cy="7.1" r="3.1"/><circle cx="5.2" cy="9.2" r="2.3"/><circle cx="18.8" cy="9.2" r="2.3"/><path d="M7.1 20.5v-3.3c0-3.2 2-5.2 4.9-5.2s4.9 2 4.9 5.2v3.3H7.1ZM7 13.5a4.6 4.6 0 0 0-5 4.7v2.3h5M17 13.5a4.6 4.6 0 0 1 5 4.7v2.3h-5"/>',
+    chevron:'<path d="m8 4 8 8-8 8"/>',
+    ball:'<circle cx="12" cy="12" r="9.2"/><path d="m12 7.2 3.3 2.4-1.2 3.9H9.9L8.7 9.6 12 7.2ZM12 7.2V2.8M15.3 9.6l4.2-1.5M14.1 13.5l2.6 3.6M9.9 13.5l-2.6 3.6M8.7 9.6 4.5 8.1M7.3 17.1l-3.7.2M16.7 17.1l3.7.2"/>',
+    trophy:'<path d="M7.5 3.2h9v5.2c0 4-1.8 6.2-4.5 6.2S7.5 12.4 7.5 8.4V3.2ZM7.5 5H3.8v2.3c0 2.5 1.5 4.1 4.2 4.5M16.5 5h3.7v2.3c0 2.5-1.5 4.1-4.2 4.5M12 14.6v4.1M8.2 21h7.6M9.4 18.7h5.2"/>',
+    info:'<circle cx="12" cy="12" r="9.3"/><path d="M12 10.3v6.2M12 7.2h.01"/>',
+    settings:'<circle cx="12" cy="12" r="3.2"/><path d="M9.4 3.3 10 1.8h4l.6 1.5 1.8.8 1.5-.7 2.8 2.8-.7 1.5.8 1.8 1.5.6v4l-1.5.6-.8 1.8.7 1.5-2.8 2.8-1.5-.7-1.8.8-.6 1.5h-4l-.6-1.5-1.8-.8-1.5.7-2.8-2.8.7-1.5-.8-1.8-1.5-.6v-4l1.5-.6.8-1.8-.7-1.5 2.8-2.8 1.5.7 1.8-.8Z"/>'
+  };
+  function menuIcon(name,cls){const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('class',cls||'menuIcon');svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('aria-hidden','true');svg.setAttribute('focusable','false');svg.innerHTML=MENU_ICONS[name]||'';return svg}
+  function modeButton(label,iconName,primary,fn){const b=E('button','menuMode'+(primary?' isPrimary':'')),inside=E('span','menuModeInside'),iconBox=E('span','menuModeIcon'),copy=E('span','menuModeCopy',esc(label)),arrow=E('span','menuModeArrow');b.type='button';b.setAttribute('aria-label',label);b.onclick=fn;iconBox.appendChild(menuIcon(iconName));arrow.appendChild(menuIcon('chevron'));inside.append(iconBox,copy,arrow);b.appendChild(inside);return b}
+  function navItem(label,iconName,active){const b=E('button','menuNavItem'+(active?' isActive':'')),iconBox=E('span','menuNavIcon'),copy=E('span','menuNavCopy',esc(label));b.type='button';iconBox.appendChild(menuIcon(iconName));b.append(iconBox,copy);if(active)b.setAttribute('aria-current','page');return b}
   const norm=s=>String(s||'').toLocaleLowerCase('tr-TR').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
   const markName=m=>m==='X'?'OYUNCU 1':'OYUNCU 2';
 
-  function shell(){app.innerHTML='';const top=E('div','top');top.innerHTML='<a class="back" href="../index.html">← YAN OYUNLAR</a><div class="brandMini">NEON XI</div>';app.appendChild(top)}
-  function brand(sub='İki koşulu aynı anda sağlayan futbolcuyu bul.'){const h=E('section','hero');h.innerHTML='<div class="eyebrow">NEON XI · SIDE GAME</div><h1>FUTBOL <span>XOX</span></h1><div class="desc">'+esc(sub)+'</div>';app.appendChild(h)}
+  function shell(){app.innerHTML='';const top=E('div','top topbar'),back=E('a','back'),copy=E('span','backCopy','YAN OYUNLAR');back.href='../index.html';back.setAttribute('aria-label','Yan oyunlara dön');back.append(menuIcon('gamepad','backIcon'),copy);top.append(back,E('div','brandMini','NEON XI'));app.appendChild(top)}
+  function brand(sub='İki koşulu aynı anda sağlayan futbolcuyu bul.'){const h=E('section','hero brand');h.innerHTML='<div class="eyebrow">NEON XI · SIDE GAME</div><h1>FUTBOL <span>XOX</span></h1><div class="desc subtitle">'+esc(sub)+'</div>';app.appendChild(h)}
   function field(label,placeholder,value,max){const w=E('div','fieldWrap');w.appendChild(E('div','label',esc(label)));const i=E('input','field');i.placeholder=placeholder;i.value=value||'';if(max)i.maxLength=max;w.appendChild(i);return[w,i]}
-  function render(){shell();if(S.screen==='boot')return renderBoot();if(S.screen==='menu')return renderMenu();if(S.screen==='create')return renderCreate();if(S.screen==='join')return renderJoin();if(S.screen==='lobby')return renderLobby();if(S.screen==='game')return renderGame()}
+  function render(){window.scrollTo(0,0);document.body.dataset.ctScreen=S.screen;document.body.dataset.ctRole=S.role||'';shell();if(S.screen==='boot')return renderBoot();if(S.screen==='menu')return renderMenu();if(S.screen==='create')return renderCreate();if(S.screen==='join')return renderJoin();if(S.screen==='lobby')return renderLobby();if(S.screen==='game')return renderGame()}
   function renderBoot(){brand('Oyuncu havuzu ve online sistem yükleniyor…');app.appendChild(E('div','card center','<div class="spinner"></div><div class="hint">NEON XI gerçek zamanlı oda servisi hazırlanıyor.</div>'))}
-  function renderMenu(){brand();const c=E('div','card');c.append(E('div','label','OYUN MODU'),B('TEK TELEFON',true,()=>startLocal()),B('ONLINE · ODA KUR',false,()=>{S.screen='create';S.error='';render()}),B('ONLINE · KODLA KATIL',false,()=>{S.screen='join';S.error='';render()}));app.appendChild(c);app.appendChild(E('div','card','<div class="label">ONLINE</div><div class="hint">Odalar artık merkezi NEON XI backend üzerinden senkronize edilir. Farklı Wi‑Fi veya mobil internet bağlantılarıyla oynanabilir.</div>'))}
+  function renderMenu(){
+    brand();
+    const panel=E('section','menuPanel'),title=E('h2','menuPanelTitle'),slashes=E('span','menuSlashes','//'),grid=E('div','modeGrid');
+    title.append(document.createTextNode('OYUN MODU '),slashes);
+    grid.append(
+      modeButton('TEK TELEFON','mobile',true,startLocal),
+      modeButton('ONLINE · ODA KUR','home',false,()=>{S.screen='create';S.error='';render()}),
+      modeButton('ONLINE · KODLA KATIL','users',false,()=>{S.screen='join';S.error='';render()})
+    );
+    panel.append(title,grid);app.appendChild(panel);
+
+    const how=E('section','howPanel'),ball=E('div','howBall'),copy=E('div','howCopy'),howTitle=E('h2','howTitle'),howSlashes=E('span','menuSlashes','//'),body=E('p','howText');
+    ball.appendChild(menuIcon('ball'));
+    howTitle.append(document.createTextNode('NASIL OYNANIR? '),howSlashes);
+    body.textContent='Satır ve sütun koşullarını aynı anda sağlayan futbolcuyu seçin. Doğru cevap hücreyi X veya O ile kapatır. Yatay, dikey ya da çapraz üç hücreyi tamamlayan oyuncu kazanır. Aynı futbolcu bir tahtada yalnızca bir kez kullanılır.';
+    copy.append(howTitle,body);how.append(ball,copy);app.appendChild(how);
+
+    const nav=E('nav','menuNav');nav.setAttribute('aria-label','Futbol XOX menüsü');nav.append(navItem('LİDERLİK','trophy',false),navItem('NASIL OYNANIR?','info',true),navItem('AYARLAR','settings',false));app.appendChild(nav);
+  }
   function renderCreate(){brand('Online oda oluştur');const c=E('div','card');const[w,n]=field('ADIN','Adın',S.name,24);c.append(w,B('ODAYI KUR',true,()=>createRoom(n.value.trim())),E('div','error',esc(S.error)));app.appendChild(c)}
   function renderJoin(){brand('4 haneli oda kodunu gir');const c=E('div','card');const[cw,ci]=field('ODA KODU','1234',S.code,4),[nw,ni]=field('ADIN','Adın',S.name,24);ci.inputMode='numeric';ci.oninput=()=>ci.value=ci.value.replace(/\D/g,'').slice(0,4);c.append(cw,nw,B('KATIL',true,()=>joinRoom(ci.value.trim(),ni.value.trim())),E('div','error',esc(S.error)));app.appendChild(c)}
   function renderLobby(){brand(S.role==='host'?'Oda hazır · rakip bekleniyor':'Odaya bağlanılıyor…');const c=E('div','card center');c.append(E('div','label','ODA KODU'),E('div','code',esc(S.code)),E('div','spinner'),E('div','hint',S.role==='host'?'Kodu arkadaşına gönder. Katılınca oyun otomatik başlayacak.':'Merkezi lobi servisine bağlanılıyor…'));app.appendChild(c);if(S.error)app.appendChild(E('div','error',esc(S.error)))}

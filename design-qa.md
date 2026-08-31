@@ -69,4 +69,28 @@
 - Back navigation remains a semantic link; primary controls remain semantic buttons.
 - Browser console showed no application errors during the tested core flow.
 
+## Football XOX unified mobile menu — 2026-08-31
+
+- Inputs: user-supplied current XOX screen `1784492b-c562-4ae5-b410-2e15628ed034.png` and the approved Career Twin menu target `00e85a68-b4eb-481e-a272-97f2b892c443.png`.
+- Implementation route: `/side-games/football-xox/`.
+- Browser viewport: 1363 × 936 CSS px at DPR 1; centered mobile app frame: 560 × 936 CSS px.
+- Reused fidelity system: identical city background asset and blur treatment, white/lime condensed title, clipped HUD frames, equal mode rows, instruction card, SVG icon geometry, and three-item bottom navigation.
+- Live implementation: all visible type, frames, controls, icons, and navigation are real HTML/CSS/SVG; no screenshot or raster UI overlay is used.
+
+### XOX findings and fixes
+
+- Pass 1 — P1, consistency: replaced the previous teal rounded-card menu with the approved Career Twin portrait composition and the same normalized vertical anchors: hero 21%, modes 35%, instructions 70%, navigation 90%.
+- Pass 1 — P1, function preservation: retained the existing `startLocal`, create-room, and join-room handlers; only the menu shell changed.
+- Pass 2 — P2, icon rendering: external SVG-symbol references were not painted reliably by the preview browser. Inlined the same approved path geometry so the gamepad, phone, home, users, chevrons, football, trophy, information, and settings icons render consistently.
+- Pass 2 — P2, copy fit: replaced the generic online service card with XOX-specific rules. Final measurement: instruction copy `scrollHeight` 158 px equals `clientHeight` 158 px, with no clipping or horizontal overflow.
+- P0: none. P1: none remaining. P2: none remaining.
+
+### XOX functional verification
+
+- Confirmed `ONLINE · ODA KUR` opens the existing player-name/create-room screen.
+- Confirmed `ONLINE · KODLA KATIL` opens the four-digit code and player-name fields.
+- Confirmed `TEK TELEFON` starts the live 3 × 3 board with nine cells.
+- Confirmed selecting an empty cell opens the footballer picker and displays the active row/column condition pair.
+- Confirmed zero horizontal overflow and no application console errors on the tested flows.
+
 final result: passed
