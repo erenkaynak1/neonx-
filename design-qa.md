@@ -1,55 +1,47 @@
-# Design QA — Career Twin approved mobile screen
+# Design QA — Career Twin live mobile redesign
 
 ## Comparison target
 
-- Source visual truth: `side-games/career-twin/assets/career-twin-approved.png`.
-- Source dimensions: 941 × 1672 RGB PNG.
+- Source concept: user-supplied `IMG_8638.jpeg` (1170 × 2045 px).
 - Implementation route: `/side-games/career-twin/?qa=career-twin`.
-- Captured state: `TEK TELEFON`, first pick, round 1, deterministic Michael Frey QA target.
-- Browser viewport: 1363 × 936 CSS px at DPR 1.
-- App stage: 941 × 1672 CSS px, preserving the source's exact 941:1672 ratio.
-- Density normalization: 1 source pixel = 1 CSS pixel on the QA stage.
+- Deterministic reveal state: target Viktor Gyökeres; picks Norbert Gyömbér and Eetu Vertainen.
+- Browser viewport: 1363 × 936 CSS px at DPR 1; mobile app frame: 390 × 910 CSS px.
+- Density normalization: both source and implementation were normalized to 390 px width. The source is a design-language reference, not a raster layer used by the game.
 
-## Full-view comparison evidence
+## Comparison evidence
 
-- Header, title, scores, and metric: `qa/career-twin-compare-top.png` (source left, browser implementation right).
-- Score, metric, progress, and player arena: `qa/career-twin-compare-middle.png` (source left, browser implementation right).
-- Player arena and complete search panel: `qa/career-twin-compare-bottom.png` (source left, browser implementation right).
-- Browser captures: `qa/career-twin-browser-final.jpg`, `qa/career-twin-browser-middle.jpg`, and `qa/career-twin-browser-bottom-crop.jpg`.
-- Source comparison slices: `qa/career-twin-source-top.png`, `qa/career-twin-source-middle.png`, and `qa/career-twin-source-bottom.png`.
-- Normalized RMSE: top 0.0219, middle 0.0259, lower 0.0247; residual difference is browser JPEG compression.
-- The lower capture uses `capture=bottom` only in QA mode to expose the portrait screen's lower region in the fixed browser viewport; production URLs are unaffected.
+- Full normalized comparison: `qa/career-twin-live-compare.jpg` (source left, implementation right).
+- Results-detail comparison: `qa/career-twin-live-compare-detail.jpg` (source left, implementation right).
+- Browser captures: `qa/career-twin-live-reveal-mobile.jpg` and `qa/career-twin-live-reveal-viewport.jpg`.
+- Normalized inputs: `qa/career-twin-live-source-390.jpg` and `qa/career-twin-live-reveal-mobile-683.jpg`.
 
-## Findings
+## Findings and fixes
 
-- P0: none.
-- P1: none.
-- P2: none.
-- P3: the browser evidence is JPEG-compressed by the capture surface. The committed source asset remains the original PNG without recompression.
+- Pass 1 — P1, layout/content: the previous full-screen artwork baked a player name and controls into the background while live answers were layered on top. This caused the static Frey name, invisible values, and multiple overlapping result layers. Fixed by removing the approved-reference stylesheet from the route and rebuilding every score, player, metric, search, and result surface as live HTML/CSS. Only the text-free city/stadium atmosphere remains as a background asset.
+- Pass 1 — P1, behavior: the result panel floated over the search area instead of participating in document flow. Fixed by rendering a dedicated result section after the three live player cards, with separate rows for both players and the target.
+- Pass 2 — P2, typography/responsiveness: the title wrapped at the 390 px QA width. Fixed with a mobile type scale, single-line title rule, and cache-version bump.
+- Final — P3, color/image treatment: the implementation intentionally darkens the city/stadium image more than the source so dynamic white and lime text keeps strong contrast. This preserves the concept while improving gameplay readability.
+- P0: none. P1: none remaining. P2: none remaining.
 
 ## Required fidelity surfaces
 
-- Typography: the approved title, labels, helper copy, and initial player name are rendered directly from the supplied artwork, retaining the exact family, weight, tracking, wrapping, and antialiasing.
-- Spacing and layout rhythm: the 941 × 1672 portrait canvas, panel geometry, margins, gaps, radii, and search-area placement are preserved. Transparent DOM controls are aligned over the artwork's slots.
-- Colors and visual tokens: the black, acid-lime, green glow, gray text, honeycomb, stadium, and city treatments come directly from the approved asset. Dynamic overlays use the same lime token (`#baff18`).
-- Image quality and asset fidelity: the repository copy is the original 941 × 1672 PNG. No generated emoji, pseudo-icon approximation, or CSS recreation replaces the approved visual.
-- Copy and content: the approved initial screen is exact, including `NEON XI · SIDE GAME`, `KARİYER İKİZİ`, `Tek telefon · sırayla seçim`, `OYUNCU 1`, `OYUNCU 2`, `BEKLİYOR`, `PARAMETRE`, `BOY`, `HEDEF`, `Michael Frey`, `FUTBOLCU ARA`, and the search helper copy. Live text appears only after the player interacts.
-- Responsive behavior: below 941 px the stage scales to the mobile viewport width while preserving the exact aspect ratio; it never stretches or rearranges the approved composition.
+- Typography: condensed display treatment, white/lime split title, compact tracked HUD labels, and readable body type preserve the source hierarchy without baking text into an image.
+- Spacing and layout: the portrait composition, score strip, centered metric, seven-step progress, three-column comparison, and result section retain the source ordering. Long player names remain within independent card areas and no content overlaps.
+- Colors and surfaces: black, acid-lime, restrained green glow, thin HUD borders, and translucent dark panels match the source concept. Buttons are real semantic controls with focus, hover, active, glow, and reduced-motion states.
+- Image quality: the existing text-free city/stadium asset is used only as atmosphere. No screenshot, player photo, placeholder avatar, inline SVG, or rasterized UI control is used.
+- Copy/content: player names, values, differences, scores, status, target, round, and result are all generated from the live game state. No static Frey copy remains.
+- Responsiveness: verified at a 390 px mobile app width; `scrollWidth` stays within the app frame, the title remains on one line, and cards/result rows stay separated.
+- Accessibility: semantic links, inputs, and buttons retain keyboard focus indicators; the search input has an accessible label; tap targets are at least 44 px; motion is disabled under `prefers-reduced-motion`.
 
 ## Functional verification
 
-- Opened the Career Twin menu and activated `TEK TELEFON`.
-- Confirmed the approved game screen appears with the deterministic QA target.
-- Entered `Messi` in the transparent search field; matching live player results appeared.
-- Selected Lionel Messi; the pick locked and the `DEVAM · OYUNCU 2` pass state appeared.
-- Back navigation remains a semantic link aligned over the approved back control.
-- Reduced-motion behavior is preserved.
-- Browser console: no application errors. Chrome-extension metadata warnings were unrelated to the page.
-
-## Comparison history
-
-- Pass 1 — P1: the previous version recreated the screen with generic CSS shapes, emoji-like symbols, a different background, and mismatched type. Fixed by using the supplied approved artwork as the exact visual source and overlaying the existing interactive DOM.
-- Pass 2 — P2: the live round-zero progress DOM briefly overlaid the artwork's baked seven-pip progress row. Fixed by letting the approved progress artwork remain visible for the initial state and reserving the live progress overlay for later rounds.
-- Final pass: top, middle, and lower browser captures were compared against source slices at 1:1 density. No remaining actionable P0/P1/P2 mismatch was found.
+- Opened Career Twin and selected `TEK TELEFON`.
+- Searched for and selected Norbert Gyömbér as Player 1.
+- Confirmed the pass-device state and continued as Player 2.
+- Searched for and selected Eetu Vertainen as Player 2.
+- Confirmed the reveal state shows the target and both answers with separate values and differences: 189 cm / 0 cm, 189 cm target, 188 cm / 1 cm.
+- Confirmed the correct winner and persistent `SONRAKİ PARAMETRE` control are visible without covering another section.
+- Back navigation remains a semantic link; primary controls remain semantic buttons.
+- Browser console showed no application errors during the tested core flow.
 
 final result: passed
