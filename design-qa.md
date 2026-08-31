@@ -1,4 +1,29 @@
-# Design QA — Career Twin live mobile redesign
+# Design QA — Career Twin mobile menu and live game
+
+## Menu comparison target — 2026-08-31
+
+- Source: user-supplied `00e85a68-b4eb-481e-a272-97f2b892c443.png` (940 × 1672 px).
+- Implementation route: `/side-games/career-twin/`.
+- Browser viewport: 1363 × 936 CSS px at DPR 1; centered mobile app frame: 560 × 936 CSS px.
+- Source-to-build alignment: top link 2%, hero 21%, mode panel 35%, instruction panel 70%, and bottom navigation 90% of the app height.
+- The source is used as a layout and styling reference only. All visible menu type, frames, buttons, icons, and navigation are live HTML/CSS/SVG.
+
+## Menu QA findings and fixes
+
+- Pass 1 — P1, fidelity: replaced the generic card stack with the reference's five-layer portrait composition, condensed white/lime title, clipped HUD frames, three equal mode rows, instruction card, and three-item bottom navigation.
+- Pass 1 — P1, implementation: mode controls remain semantic buttons and continue to call the existing local/create/join flows. No screenshot or rasterized button is used.
+- Pass 2 — P2, content fit: the instruction paragraph exceeded the clipped panel at the QA width. Reduced its width-relative type scale and line height; final measured text bottom is 29 px above the panel bottom.
+- Pass 2 — P2, assets: replaced improvised glyphs with a dedicated stroke SVG symbol set for the gamepad, phone, home, users, ball, trophy, information, settings, and chevron icons.
+- Final — P3, background detail: the isolated source city plate was not supplied, so the existing text-free NEON XI cyberpunk city asset is reused with the source's dark green blur treatment. Building geometry is not pixel-identical, but no duplicate UI or baked text appears behind the live interface.
+- P0: none. P1: none remaining. P2: none remaining.
+
+## Menu functional verification
+
+- Confirmed the menu loads after the Transfermarkt master pool and reports seven rounds.
+- Confirmed `ONLINE · ODA KUR` opens the existing name/create-room screen.
+- Confirmed `TEK TELEFON` starts a local game and exposes the live player search control.
+- Confirmed the three mode controls measure equally and the instruction copy remains inside its panel.
+- Confirmed no application console errors; only the cloud-browser extension emitted unrelated internal metadata errors.
 
 ## Comparison target
 

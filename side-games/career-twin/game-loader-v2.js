@@ -1,6 +1,6 @@
 'use strict';
 (async()=>{
-  const res=await fetch('./game.js?v=20260831-live-ui-2',{cache:'no-store'});
+  const res=await fetch('./game.js?v=20260831-menu-reference-1',{cache:'no-store'});
   if(!res.ok) throw new Error('Career Twin core could not load');
   const src=await res.text();
   if(!src.includes('configureMetrics')||!src.includes('transfermarkt-players.json')){

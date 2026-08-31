@@ -11,13 +11,35 @@
   const esc=s=>String(s??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[ch]));
   const E=(tag,cls,html)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(html!==undefined)e.innerHTML=html;return e};
   const btn=(txt,primary,fn)=>{const b=E('button','btn'+(primary?' primary':''),esc(txt));b.type='button';b.onclick=fn;return b};
+  function menuIcon(name,cls){const svg=document.createElementNS('http://www.w3.org/2000/svg','svg'),use=document.createElementNS('http://www.w3.org/2000/svg','use');svg.setAttribute('class',cls||'menuIcon');svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('aria-hidden','true');svg.setAttribute('focusable','false');use.setAttribute('href','./assets/menu-icons.svg#ct-'+name);svg.appendChild(use);return svg}
+  function modeButton(label,iconName,primary,fn){const b=E('button','menuMode'+(primary?' isPrimary':'')),inside=E('span','menuModeInside'),iconBox=E('span','menuModeIcon'),copy=E('span','menuModeCopy',esc(label)),arrow=E('span','menuModeArrow');b.type='button';b.setAttribute('aria-label',label);b.onclick=fn;iconBox.appendChild(menuIcon(iconName));arrow.appendChild(menuIcon('chevron'));inside.append(iconBox,copy,arrow);b.appendChild(inside);return b}
+  function navItem(label,iconName,active){const b=E('button','menuNavItem'+(active?' isActive':'')),iconBox=E('span','menuNavIcon'),copy=E('span','menuNavCopy',esc(label));b.type='button';iconBox.appendChild(menuIcon(iconName));b.append(iconBox,copy);if(active)b.setAttribute('aria-current','page');return b}
   function injectCss(){}
-  function top(){const t=E('div','topbar');const a=E('a','back','YAN OYUNLAR');a.href='../index.html';a.setAttribute('aria-label','Yan oyunlara dön');t.append(a,E('div','pool',''));app.appendChild(t)}
+  function top(){const t=E('div','topbar'),a=E('a','back'),copy=E('span','backCopy','YAN OYUNLAR');a.href='../index.html';a.setAttribute('aria-label','Yan oyunlara dön');a.append(menuIcon('gamepad','backIcon'),copy);t.append(a,E('div','pool',''));app.appendChild(t)}
   function brand(sub){const b=E('div','brand');b.innerHTML='<div class="eyebrow">NEON XI · SIDE GAME</div><h1>KARİYER <span>İKİZİ</span></h1><div class="subtitle">'+esc(sub||'Hedef futbolcuya en yakın kariyeri seç')+'</div>';app.appendChild(b)}
   function field(label,placeholder,value,max){const w=E('div');w.appendChild(E('div','label',esc(label)));const i=E('input','field');i.placeholder=placeholder;i.value=value||'';if(max)i.maxLength=max;w.appendChild(i);return[w,i]}
   function render(){const params=new URLSearchParams(location.search);window.scrollTo(0,0);document.body.dataset.ctScreen=S.screen;document.body.dataset.ctRole=S.role||'';document.body.dataset.ctCapture=params.get('capture')||'';document.body.dataset.ctQa=params.get('qa')||'';app.innerHTML='';top();if(S.screen==='boot')return renderBoot();if(S.screen==='menu')return renderMenu();if(S.screen==='create')return renderCreate();if(S.screen==='join')return renderJoin();if(S.screen==='lobby')return renderLobby();if(S.screen==='game')return renderGame()}
   function renderBoot(){brand('Oyuncu verileri yükleniyor…');app.appendChild(E('div','card center','<div class="spinner"></div><div class="hint">Transfermarkt master havuzu hazırlanıyor.</div>'))}
-  function renderMenu(){brand();const c=E('div','card');c.append(E('div','label','OYUN MODU'));const g=E('div','modeGrid');g.append(btn('TEK TELEFON',true,startLocal),btn('ONLINE · ODA KUR',false,()=>{S.screen='create';S.error='';render()}),btn('ONLINE · KODLA KATIL',false,()=>{S.screen='join';S.error='';render()}));c.appendChild(g);app.appendChild(c);app.appendChild(E('div','card','<div class="label">NASIL OYNANIR?</div><div class="hint">Aynı hedef futbolcu '+GAME_METRICS.length+' tur boyunca ortada kalır. Her tur, Transfermarkt master havuzunda verisi bulunan bir parametre için hedefe en yakın futbolcuyu seçersiniz. Tek telefonda ilk seçim gizlenir ve telefon ikinci oyuncuya verilir.</div>'))}
+  function renderMenu(){
+    brand();
+    const panel=E('section','menuPanel'),title=E('h2','menuPanelTitle'),slashes=E('span','menuSlashes','//'),grid=E('div','modeGrid');
+    title.append(document.createTextNode('OYUN MODU '),slashes);
+    grid.append(
+      modeButton('TEK TELEFON','mobile',true,startLocal),
+      modeButton('ONLINE · ODA KUR','home',false,()=>{S.screen='create';S.error='';render()}),
+      modeButton('ONLINE · KODLA KATIL','users',false,()=>{S.screen='join';S.error='';render()})
+    );
+    panel.append(title,grid);
+    app.appendChild(panel);
+
+    const how=E('section','howPanel'),ball=E('div','howBall'),copy=E('div','howCopy'),howTitle=E('h2','howTitle'),howSlashes=E('span','menuSlashes','//'),body=E('p','howText');
+    ball.appendChild(menuIcon('ball'));
+    howTitle.append(document.createTextNode('NASIL OYNANIR? '),howSlashes);
+    body.textContent='Aynı hedef futbolcu '+GAME_METRICS.length+' tur boyunca ortada kalır. Her tur, Transfermarkt master havuzunda verisi bulunan bir parametre için hedefe en yakın futbolcuyu seçersiniz. Tek telefonda ilk seçim gizlenir ve telefon ikinci oyuncuya verilir.';
+    copy.append(howTitle,body);how.append(ball,copy);app.appendChild(how);
+
+    const nav=E('nav','menuNav');nav.setAttribute('aria-label','Kariyer İkizi menüsü');nav.append(navItem('LİDERLİK','trophy',false),navItem('NASIL OYNANIR?','info',true),navItem('AYARLAR','settings',false));app.appendChild(nav);
+  }
   function renderCreate(){brand('4 haneli oda oluştur');const c=E('div','card');const[w,n]=field('ADIN','Adın',S.name,24);c.append(w,btn('ODAYI KUR',true,()=>createRoom(n.value.trim())),E('div','error',esc(S.error)));app.appendChild(c)}
   function renderJoin(){brand('Arkadaşının oda kodunu gir');const c=E('div','card');const[cw,ci]=field('ODA KODU','1234',S.code,4),[nw,ni]=field('ADIN','Adın',S.name,24);ci.inputMode='numeric';ci.oninput=()=>{ci.value=ci.value.replace(/\D/g,'').slice(0,4);S.code=ci.value};c.append(cw,nw,btn('KATIL',true,()=>joinRoom(ci.value.trim(),ni.value.trim())),E('div','error',esc(S.error)));app.appendChild(c)}
   function renderLobby(){brand(S.role==='host'?'Oda hazır · ikinci oyuncu bekleniyor':'Odaya bağlanılıyor…');const c=E('div','card center');c.append(E('div','label','ODA KODU'),E('div','code',esc(S.code)),E('div','spinner'),E('div','hint',S.role==='host'?'Bu kodu arkadaşınla paylaş. İkinci oyuncu girince oyun otomatik başlar.':'Oda sahibine bağlanılıyor…'));app.appendChild(c);if(S.error)app.appendChild(E('div','error',esc(S.error)))}

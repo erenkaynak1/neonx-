@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+  <symbol id="ct-gamepad" viewBox="0 0 24 24">
+    <path d="M7.5 7.5h9c2.7 0 4.2 1.8 4.7 4.6l.6 3.2c.4 2.4-2.2 3.8-3.8 2l-2.1-2.2H8.1L6 17.3c-1.6 1.8-4.2.4-3.8-2l.6-3.2c.5-2.8 2-4.6 4.7-4.6Z"/>
+    <path d="M7.1 10.1v4M5.1 12.1h4M16.8 10.8h.01M18.7 13h.01"/>
+  </symbol>
+  <symbol id="ct-mobile" viewBox="0 0 24 24">
+    <rect x="6.3" y="2.2" width="11.4" height="19.6" rx="1.8"/>
+    <path d="M10 4h4M10.6 19.3h2.8"/>
+  </symbol>
+  <symbol id="ct-home" viewBox="0 0 24 24">
+    <path d="m3 11.2 9-8 9 8M5.3 9.8v10.4h5v-6.3h3.4v6.3h5V9.8M3.6 20.2h16.8"/>
+  </symbol>
+  <symbol id="ct-users" viewBox="0 0 24 24">
+    <circle cx="12" cy="7.1" r="3.1"/><circle cx="5.2" cy="9.2" r="2.3"/><circle cx="18.8" cy="9.2" r="2.3"/>
+    <path d="M7.1 20.5v-3.3c0-3.2 2-5.2 4.9-5.2s4.9 2 4.9 5.2v3.3H7.1ZM7 13.5a4.6 4.6 0 0 0-5 4.7v2.3h5M17 13.5a4.6 4.6 0 0 1 5 4.7v2.3h-5"/>
+  </symbol>
+  <symbol id="ct-chevron" viewBox="0 0 24 24"><path d="m8 4 8 8-8 8"/></symbol>
+  <symbol id="ct-ball" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="9.2"/><path d="m12 7.2 3.3 2.4-1.2 3.9H9.9L8.7 9.6 12 7.2ZM12 7.2V2.8M15.3 9.6l4.2-1.5M14.1 13.5l2.6 3.6M9.9 13.5l-2.6 3.6M8.7 9.6 4.5 8.1M7.3 17.1l-3.7.2M16.7 17.1l3.7.2"/>
+  </symbol>
+  <symbol id="ct-trophy" viewBox="0 0 24 24">
+    <path d="M7.5 3.2h9v5.2c0 4-1.8 6.2-4.5 6.2S7.5 12.4 7.5 8.4V3.2ZM7.5 5H3.8v2.3c0 2.5 1.5 4.1 4.2 4.5M16.5 5h3.7v2.3c0 2.5-1.5 4.1-4.2 4.5M12 14.6v4.1M8.2 21h7.6M9.4 18.7h5.2"/>
+  </symbol>
+  <symbol id="ct-info" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="9.3"/><path d="M12 10.3v6.2M12 7.2h.01"/>
+  </symbol>
+  <symbol id="ct-settings" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="3.2"/><path d="M9.4 3.3 10 1.8h4l.6 1.5 1.8.8 1.5-.7 2.8 2.8-.7 1.5.8 1.8 1.5.6v4l-1.5.6-.8 1.8.7 1.5-2.8 2.8-1.5-.7-1.8.8-.6 1.5h-4l-.6-1.5-1.8-.8-1.5.7-2.8-2.8.7-1.5-.8-1.8-1.5-.6v-4l1.5-.6.8-1.8-.7-1.5 2.8-2.8 1.5.7 1.8-.8Z"/>
+  </symbol>
+</svg>
