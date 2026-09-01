@@ -23,12 +23,14 @@ html,body{margin:0;min-height:100%;background:#03070a;color:#bfffd8;font-family:
 <div class="boot">NEON XI YÜKLENİYOR <span class="dot">●</span></div>
 <script>
 (async()=>{
-  const VERSION='20260830-approved-home-v3';
+  const VERSION='20260901-prematch-neon-v6';
   try{
     const response=await fetch('./neon-xi-core.html?v='+encodeURIComponent(VERSION),{cache:'no-store'});
     if(!response.ok) throw new Error('NEON XI core '+response.status);
     let html=await response.text();
-    const injector='<script src="./side-games/home-raster-v2.js?v='+VERSION+'"><\/script>';
+    const injector='<script src="./side-games/home-raster-v2.js?v='+VERSION+'"><\/script>'+
+      '<link rel="stylesheet" href="./draft-mobile.css?v='+VERSION+'">'+
+      '<script src="./draft-mobile-ui.js?v='+VERSION+'"><\/script>';
     const pos=html.toLowerCase().lastIndexOf('</body>');
     html=pos>=0 ? html.slice(0,pos)+injector+html.slice(pos) : html+injector;
     document.open();

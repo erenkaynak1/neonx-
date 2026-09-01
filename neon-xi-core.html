@@ -16429,19 +16429,22 @@ window.KADRO_HARD_MATCH_SYNC = {
     const b = power("B");
     const basePosition = `${balancePosition(a.base,b.base).toFixed(2)}%`;
     const finalPosition = `${balancePosition(a.final,b.final).toFixed(2)}%`;
-    return `<section class="nx-power-balance" id="nxPowerBalance" style="--balance-base:${basePosition};--balance-final:${finalPosition}">
+    const winner = a.final >= b.final ? "A" : "B";
+    const finalEdge = Math.abs(a.final-b.final);
+    return `<section class="nx-power-balance impact-${winner.toLowerCase()}" id="nxPowerBalance" style="--balance-base:${basePosition};--balance-final:${finalPosition}">
+      <div class="nx-balance-phase"><span>GÜÇ SENKRONİZASYONU</span><b data-balance-phase>İki taraf yükleniyor</b></div>
       <div class="nx-balance-head">
-        <div class="nx-balance-side"><strong>${teamName("A")}</strong><span>Saf güç</span><b>${a.base.toFixed(1)}</b></div>
-        <div class="nx-balance-side"><strong>${teamName("B")}</strong><span>Saf güç</span><b>${b.base.toFixed(1)}</b></div>
+        <div class="nx-balance-side"><strong>${teamName("A")}</strong><span>Saf güç → kimyalı güç</span><div class="nx-power-numbers"><b>${a.base.toFixed(1)}</b><em>${a.final.toFixed(1)}</em></div></div>
+        <div class="nx-balance-side"><strong>${teamName("B")}</strong><span>Saf güç → kimyalı güç</span><div class="nx-power-numbers"><b>${b.base.toFixed(1)}</b><em>${b.final.toFixed(1)}</em></div></div>
       </div>
       <div class="nx-balance-track" role="img" aria-label="${teamName("A")} ve ${teamName("B")} güç dengesi">
         <i class="nx-balance-fill-a"></i><i class="nx-balance-fill-b"></i>
-        <i class="nx-balance-center"></i><i class="nx-balance-base-marker"></i><i class="nx-balance-cursor"></i>
+        <i class="nx-balance-center"></i><i class="nx-balance-base-marker"></i><i class="nx-balance-cursor"></i><i class="nx-balance-impact"></i>
       </div>
       <div class="nx-balance-axis"><span>${teamName("A")} üstün</span><span>eşit güç</span><span>${teamName("B")} üstün</span></div>
       <div class="nx-balance-values">
         <span>Kimya ${a.chemistry.toFixed(1)}/10</span>
-        <strong>Kimya sonrası ${a.final.toFixed(1)} · ${b.final.toFixed(1)}</strong>
+        <strong>${teamName(winner)} · +${finalEdge.toFixed(1)} nihai üstünlük</strong>
         <span>Kimya ${b.chemistry.toFixed(1)}/10</span>
       </div>
     </section>`;
@@ -16553,6 +16556,13 @@ window.KADRO_HARD_MATCH_SYNC = {
     }
     clearTimeout(botReadyTimer);
     const edge = assessment();
+    byId("draftScreen")?.classList.add("hidden");
+    byId("tacticsScreen")?.classList.add("hidden");
+    byId("tacticFooter")?.classList.add("hidden");
+    byId("handover")?.classList.add("hidden");
+    document.body.classList.add("nx-prematch-active");
+    if (typeof state !== "undefined") state.screen = "complete";
+    window.scrollTo(0,0);
     complete.classList.add("nx-prematch");
     box.innerHTML = `<div class="nx-pm-head"><span class="nx-pm-kicker">NEON XI · MAÇ ÖNCESİ ANALİZ</span><h2>Güç ve Taktik Karşılaştırması</h2><p>Orta çizgi eşitliği gösterir; denge önce saf güçte kurulur, ardından kimya etkisiyle hareket eder.</p></div>
       ${powerBalance()}
@@ -16564,12 +16574,23 @@ window.KADRO_HARD_MATCH_SYNC = {
       </div><div class="nx-ready-status" id="nxPrematchStatus"></div>
       <button class="btn primary nx-main-start" id="nxPrematchStart" type="button" disabled>İKİ TARAFIN HAZIR OLMASI BEKLENİYOR</button></div>`;
     complete.classList.remove("hidden");
+    complete.scrollTop = 0;
     requestAnimationFrame(() => requestAnimationFrame(() => {
       const balance = byId("nxPowerBalance");
       balance?.classList.add("show-base");
+      const phase = balance?.querySelector("[data-balance-phase]");
+      if (phase) phase.textContent = "Saf güç çizgisi kuruluyor";
       setTimeout(() => {
-        if (balance?.isConnected) balance.classList.add("show-final");
-      }, 950);
+        if (!balance?.isConnected) return;
+        balance.classList.add("show-final", "chemistry-hit");
+        if (phase) phase.textContent = "Kimya darbesi uygulanıyor";
+        setTimeout(() => {
+          if (!balance?.isConnected) return;
+          balance.classList.remove("chemistry-hit");
+          balance.classList.add("settled");
+          if (phase) phase.textContent = "Nihai güç dengesi";
+        }, 820);
+      }, 1550);
     }));
     updateReadyUI();
     configureReadyButtons();
