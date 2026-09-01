@@ -1,17 +1,17 @@
 {
-  "schema_version": 2,
-  "generated_at": "2026-08-31T10:58:46.199835+00:00",
-  "player_count": 34516,
+  "schema_version": 3,
+  "generated_at": "2026-09-01T15:21:06.003893+00:00",
+  "player_count": 42345,
   "status_counts": {
-    "active": 18567,
-    "recent": 12035,
-    "legend": 3914,
+    "active": 23402,
+    "recent": 14254,
+    "legend": 4689,
     "unknown": 0
   },
-  "historical_player_count": 15949,
+  "historical_player_count": 18943,
   "minimum_required": 30000,
   "maximum_runtime_players": null,
-  "selection_policy": "Every rule-matching master player is retained without a recognition cap.",
+  "selection_policy": "Every rule-matching master player is retained; Turkish-football familiarity only affects ranking.",
   "minimum_players_per_available_condition": 12,
   "master_pool": "side-games/data/master/transfermarkt-players.json",
   "master_provider": "dcaribou/transfermarkt-datasets",
@@ -20,5 +20,6 @@
   "club_rule": "At least one dcaribou senior-club appearance, plus current-club membership.",
   "league_rule": "dcaribou appearance history, plus current domestic-league membership.",
   "nationality_rule": "Senior national-team country when available, otherwise citizenship.",
+  "ranking_rule": "Base recognition plus a Turkish national-team and Big Four familiarity boost.",
   "rules": "side-games/data/master/xox-rules.json"
 }
