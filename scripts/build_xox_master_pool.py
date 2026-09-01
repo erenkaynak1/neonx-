@@ -17,6 +17,7 @@ MASTER_DIR = ROOT / "side-games" / "data" / "master"
 DEFAULT_MIN_PLAYERS = 30_000
 DEFAULT_MAX_PLAYERS = 0  # 0 keeps every matching master player.
 MIN_PLAYERS_PER_CONDITION = 12
+TURKISH_FAN_CLUB_IDS = {36, 141, 114, 449}
 
 
 COUNTRY_MAP = {
@@ -46,6 +47,32 @@ COUNTRY_MAP = {
     "Japan": "Japonya",
     "Norway": "Norveç",
     "Sweden": "İsveç",
+    "Uruguay": "Uruguay",
+    "Romania": "Romanya",
+    "Bosnia-Herzegovina": "Bosna Hersek",
+    "Bosnia and Herzegovina": "Bosna Hersek",
+    "Ghana": "Gana",
+    "Cameroon": "Kamerun",
+    "Poland": "Polonya",
+    "South Korea": "Güney Kore",
+    "Korea, South": "Güney Kore",
+    "Korea Republic": "Güney Kore",
+    "Republic of Korea": "Güney Kore",
+    "Denmark": "Danimarka",
+    "Switzerland": "İsviçre",
+    "Austria": "Avusturya",
+    "Mexico": "Meksika",
+    "United States": "ABD",
+    "United States of America": "ABD",
+    "USA": "ABD",
+    "Czech Republic": "Çekya",
+    "Czechia": "Çekya",
+    "Ukraine": "Ukrayna",
+    "Georgia": "Gürcistan",
+    "Greece": "Yunanistan",
+    "Slovakia": "Slovakya",
+    "Slovenia": "Slovenya",
+    "Wales": "Galler",
 }
 
 CLUB_ALIASES = {
@@ -151,6 +178,33 @@ def mapped_values(values: list[Any], index: dict[str, str], allowed: set[str]) -
     return sorted(mapped)
 
 
+def xox_recognition_score(player: dict[str, Any]) -> float:
+    """Favor names a Turkish football audience is especially likely to know."""
+    try:
+        base = float(player.get("recognition_score") or 0)
+    except (TypeError, ValueError):
+        base = 0.0
+
+    club_ids: set[int] = set()
+    for value in player.get("club_ids") or []:
+        try:
+            club_ids.add(int(value))
+        except (TypeError, ValueError):
+            continue
+    club_bonus = 180.0 if club_ids & TURKISH_FAN_CLUB_IDS else 0.0
+
+    national_source = player.get("national_team") or player.get("nationality")
+    turkey_bonus = 0.0
+    if COUNTRY_INDEX.get(norm(national_source)) == "Türkiye":
+        try:
+            caps = max(0, int(player.get("international_caps") or 0))
+        except (TypeError, ValueError):
+            caps = 0
+        turkey_bonus = 40.0 + min(140.0, caps * 1.5)
+
+    return round(base + club_bonus + turkey_bonus, 2)
+
+
 def condition_members(player: dict[str, Any], condition_type: str, value: str) -> bool:
     if condition_type == "nationality":
         return player.get("nationality") == value
@@ -219,7 +273,7 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
                 "clubs": sorted(clubs),
                 "leagues": leagues,
                 "status": player.get("status") or "unknown",
-                "recognitionScore": float(player.get("recognition_score") or 0),
+                "recognitionScore": xox_recognition_score(player),
             }
         )
 
@@ -242,14 +296,14 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
         for status in ("active", "recent", "legend", "unknown")
     }
     meta = {
-        "schema_version": 2,
+        "schema_version": 3,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "player_count": len(records),
         "status_counts": status_counts,
         "historical_player_count": status_counts["recent"] + status_counts["legend"],
         "minimum_required": args.min_players,
         "maximum_runtime_players": args.max_players or None,
-        "selection_policy": "Every rule-matching master player is retained without a recognition cap.",
+        "selection_policy": "Every rule-matching master player is retained; Turkish-football familiarity only affects ranking.",
         "minimum_players_per_available_condition": MIN_PLAYERS_PER_CONDITION,
         "master_pool": "side-games/data/master/transfermarkt-players.json",
         "master_provider": master_meta.get("provider"),
@@ -258,6 +312,7 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
         "club_rule": "At least one dcaribou senior-club appearance, plus current-club membership.",
         "league_rule": "dcaribou appearance history, plus current domestic-league membership.",
         "nationality_rule": "Senior national-team country when available, otherwise citizenship.",
+        "ranking_rule": "Base recognition plus a Turkish national-team and Big Four familiarity boost.",
         "rules": "side-games/data/master/xox-rules.json",
     }
     args.meta.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
