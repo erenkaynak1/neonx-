@@ -93,4 +93,42 @@
 - Confirmed selecting an empty cell opens the footballer picker and displays the active row/column condition pair.
 - Confirmed zero horizontal overflow and no application console errors on the tested flows.
 
+## Football XOX unified gameplay screen — 2026-08-31
+
+- Source visual truth: `qa/football-xox-game-before.png`, copied from user-supplied `2ab06ac3-e1e4-43f5-bc38-6f61cbdbbc96.png` (1135 × 959 px). It defines the local-game content, score strip, 3 × 3 condition grid, and empty-board state.
+- Shared style truth: user-supplied `00e85a68-b4eb-481e-a272-97f2b892c443.png` (940 × 1672 px). It defines the approved blurred-city, acid-lime, clipped-HUD visual system.
+- Implementation screenshot: `qa/football-xox-game-after.jpg` (1363 × 936 px browser capture at DPR 1); centered app frame is 560 CSS px wide.
+- Focused interaction screenshot: `qa/football-xox-picker-after.jpg` (1363 × 936 px, footballer picker with six `Messi` search results).
+- State: `TEK TELEFON`, empty 3 × 3 board, Player 1 / X active. Condition labels are randomized, so source and implementation use different teams/leagues while preserving the same information structure.
+- Density normalization: full screenshots were normalized to 560 × 474 px each for composition review. Board regions were normalized to 560 × 417 px each for equal-size detail review.
+- Full-view comparison evidence: `qa/football-xox-game-compare.jpg`.
+- Focused board comparison evidence: `qa/football-xox-board-compare.jpg`. A separate picker capture is used because the supplied source does not show that state.
+
+### Gameplay findings and comparison history
+
+- Pass 1 — P1, visual consistency: the source gameplay screen retained teal rounded cards, a plain black background, and soft rectangular cells. Replaced them with the same text-free blurred city, white/lime condensed title, clipped green HUD shells, dark glass panels, and LED edge treatment used by the approved side-game menu.
+- Pass 1 — P1, hierarchy: the player cards did not communicate the current turn strongly enough. Added turn state to the page and a bright lower LED rail/glow on the active X or O player card while retaining cyan as the secondary O identifier.
+- Pass 1 — P2, board density: rebuilt the grid tracks around a 72 px condition column and three equal live cells; long labels including `Paris Saint-Germain`, `Saudi Pro League`, and `Atlético Madrid` remain inside their header surfaces with zero horizontal overflow.
+- Pass 2 — P2, navigation icon: the gamepad SVG flex item collapsed to zero width on the gameplay header. Added a fixed 22% flex basis; post-fix measured width is 19.27 CSS px and the icon is visible in the final capture.
+- Pass 2 — P2, picker polish: the browser-default white results scrollbar broke the color system. Replaced it with a thin dark/lime scrollbar and verified six real search results render without panel overflow.
+- Final — P3, background fidelity: the supplied Career Twin city plate is not available as an isolated asset. The same text-free NEON XI city asset already approved for the shared menu is reused, so building geometry is intentionally not pixel-identical to the style image.
+- P0: none. P1: none remaining. P2: none remaining.
+
+### Required gameplay fidelity surfaces
+
+- Fonts and typography: Barlow Condensed carries display/player/condition copy; Rajdhani carries tracked system labels. The white/lime title split, compressed weights, uppercase labels, and one-line turn status match the approved hierarchy without wrapping.
+- Spacing and layout rhythm: the app is constrained to the same 560 px mobile frame as the menu. Header, title shell, 74 px player strip, clipped grid, status rail, and new-board control form one continuous portrait stack; all persistent controls remain inside the 936 px QA viewport.
+- Colors and visual tokens: acid lime remains primary; cyan is limited to the O mark for gameplay differentiation. Panels use opaque near-black green instead of the source's teal gradients, with restrained glow on active/interactive edges.
+- Image quality and assets: the existing text-free cyberpunk city remains a single sharp background asset with CSS blur/dimming. The gamepad asset uses the established menu icon geometry; no screenshot, baked player name, or rasterized button is used as live UI.
+- Copy and content: local mode, player names, X/O turn, randomized row/column conditions, nine cell controls, live success/error notice, and new-board action all remain driven by the existing game state.
+
+### Gameplay functional verification
+
+- Confirmed `TEK TELEFON` creates exactly nine live cell buttons and starts on Player 1 / X.
+- Confirmed an empty cell opens the correct row/column condition pair in the redesigned footballer picker.
+- Searched `Messi`; confirmed six real results and selected Lionel Messi in a valid LaLiga + Ligue 1 pairing.
+- Confirmed the claimed cell, success notice, and active turn moved from X to O after the valid answer.
+- Confirmed picker close works and `YENİ TAHTA` generates a new condition set with nine empty cells.
+- Confirmed no horizontal overflow and no application console errors across the tested flow.
+
 final result: passed
