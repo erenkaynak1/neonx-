@@ -1,10 +1,12 @@
 {
-  "version": 2,
-  "principle": "The master player pool remains broad. Only selectable XOX conditions are whitelisted here.",
+  "version": 3,
+  "principle": "The master player pool remains broad. XOX conditions are curated for football familiarity in Türkiye while preserving global variety.",
   "nationalities": [
     "Türkiye","Arjantin","Brezilya","Fransa","İspanya","Almanya","İtalya","İngiltere","Portekiz","Hollanda",
     "Belçika","Hırvatistan","Sırbistan","Kolombiya","Fas","Cezayir","Mısır","Nijerya","Senegal","Fildişi Sahili",
-    "Japonya","Norveç","İsveç"
+    "Japonya","Norveç","İsveç","Uruguay","Romanya","Bosna Hersek","Gana","Kamerun","Polonya","Güney Kore",
+    "Danimarka","İsviçre","Avusturya","Meksika","ABD","Çekya","Ukrayna","Gürcistan","Yunanistan","Slovakya",
+    "Slovenya","Galler"
   ],
   "leagues": [
     "Süper Lig","Premier League","LaLiga","Serie A","Bundesliga","Ligue 1","Eredivisie","Primeira Liga","Saudi Pro League","MLS"
