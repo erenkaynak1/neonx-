@@ -1,6 +1,6 @@
 {
   "schema_version": 3,
-  "generated_at": "2026-09-01T15:21:06.003893+00:00",
+  "generated_at": "2026-09-02T17:40:10.013661+00:00",
   "player_count": 42345,
   "status_counts": {
     "active": 23402,
@@ -10,6 +10,9 @@
   },
   "historical_player_count": 18943,
   "minimum_required": 30000,
+  "audience_minimum_required": 40000,
+  "audience_market": "Türkiye",
+  "audience_core_player_count": 21,
   "maximum_runtime_players": null,
   "selection_policy": "Every rule-matching master player is retained; Turkish-football familiarity only affects ranking.",
   "minimum_players_per_available_condition": 12,

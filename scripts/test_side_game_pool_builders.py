@@ -129,7 +129,11 @@ class SideGamePoolPipelineTest(unittest.TestCase):
             master_meta_path = root / "transfermarkt-meta.json"
             xox_path = root / "xox-players.json"
             xox_meta_path = root / "xox-meta.json"
+            fixture_rules_path = root / "xox-rules.json"
             career_meta_path = root / "career-meta.json"
+            fixture_rules = json.loads(RULES.read_text(encoding="utf-8"))
+            fixture_rules.pop("audience_profile", None)
+            fixture_rules_path.write_text(json.dumps(fixture_rules), encoding="utf-8")
             create_fixture(database)
             original_revision = master_builder.upstream_revision
             master_builder.upstream_revision = lambda: "f" * 40
@@ -149,7 +153,7 @@ class SideGamePoolPipelineTest(unittest.TestCase):
                 SimpleNamespace(
                     master=master_path,
                     master_meta=master_meta_path,
-                    rules=RULES,
+                    rules=fixture_rules_path,
                     output=xox_path,
                     meta=xox_meta_path,
                     min_players=100,
@@ -170,7 +174,7 @@ class SideGamePoolPipelineTest(unittest.TestCase):
             master_meta = json.loads(master_meta_path.read_text(encoding="utf-8"))
             xox = json.loads(xox_path.read_text(encoding="utf-8"))
             xox_meta = json.loads(xox_meta_path.read_text(encoding="utf-8"))
-            rules = json.loads(RULES.read_text(encoding="utf-8"))
+            rules = json.loads(fixture_rules_path.read_text(encoding="utf-8"))
             career_meta = json.loads(career_meta_path.read_text(encoding="utf-8"))
             validator.validate_master(master, master_meta, 100)
             validator.validate_xox(xox, xox_meta, rules, {row["id"] for row in master}, 100)

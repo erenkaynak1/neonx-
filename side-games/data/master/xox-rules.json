@@ -1,6 +1,33 @@
 {
   "version": 3,
   "principle": "The master player pool remains broad. XOX conditions are curated for football familiarity in Türkiye while preserving global variety.",
+  "audience_profile": {
+    "market": "Türkiye",
+    "minimum_runtime_players": 40000,
+    "core_players": [
+      {"id": 861410, "name": "Arda Güler"},
+      {"id": 126414, "name": "Hakan Çalhanoğlu"},
+      {"id": 382528, "name": "Kerem Aktürkoğlu"},
+      {"id": 401923, "name": "Victor Osimhen"},
+      {"id": 68863, "name": "Mauro Icardi"},
+      {"id": 58088, "name": "Fernando Muslera"},
+      {"id": 4673, "name": "Wesley Sneijder"},
+      {"id": 3924, "name": "Didier Drogba"},
+      {"id": 35664, "name": "Mesut Özil"},
+      {"id": 4380, "name": "Robin van Persie"},
+      {"id": 4188, "name": "Ricardo Quaresma"},
+      {"id": 6288, "name": "Mario Gómez"},
+      {"id": 28396, "name": "Edin Dzeko"},
+      {"id": 258626, "name": "Talisca"},
+      {"id": 33706, "name": "Nani"},
+      {"id": 39152, "name": "Radamel Falcao"},
+      {"id": 56416, "name": "Dries Mertens"},
+      {"id": 35537, "name": "Felipe Melo"},
+      {"id": 4010, "name": "Dirk Kuyt"},
+      {"id": 22382, "name": "Moussa Sow"},
+      {"id": 147487, "name": "Vincent Aboubakar"}
+    ]
+  },
   "nationalities": [
     "Türkiye","Arjantin","Brezilya","Fransa","İspanya","Almanya","İtalya","İngiltere","Portekiz","Hollanda",
     "Belçika","Hırvatistan","Sırbistan","Kolombiya","Fas","Cezayir","Mısır","Nijerya","Senegal","Fildişi Sahili",

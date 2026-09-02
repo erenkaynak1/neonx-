@@ -2,5 +2,6 @@
 .tmp-transfermarkt.duckdb.part
 .test-deps/
 .browser-test/
+qa/
 __pycache__/
 *.pyc

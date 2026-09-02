@@ -284,8 +284,21 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
         + [("league", value) for value in sorted(allowed_leagues)]
     )
     records = balanced_runtime_pool(records, conditions, args.max_players)
-    if len(records) < args.min_players:
-        raise RuntimeError(f"XOX pool contains {len(records)} players; minimum is {args.min_players}")
+    audience_profile = rules.get("audience_profile") or {}
+    audience_minimum = int(audience_profile.get("minimum_runtime_players") or 0)
+    required_minimum = max(args.min_players, audience_minimum)
+    if len(records) < required_minimum:
+        raise RuntimeError(f"XOX pool contains {len(records)} players; minimum is {required_minimum}")
+
+    record_by_id = {int(player["id"]): player for player in records}
+    missing_core_players = [
+        player
+        for player in audience_profile.get("core_players") or []
+        if int(player["id"]) not in record_by_id
+    ]
+    if missing_core_players:
+        missing_names = ", ".join(str(player["name"]) for player in missing_core_players)
+        raise RuntimeError(f"XOX Turkish-audience core players are missing: {missing_names}")
 
     args.output.write_text(
         json.dumps(records, ensure_ascii=False, separators=(",", ":")),
@@ -302,6 +315,9 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
         "status_counts": status_counts,
         "historical_player_count": status_counts["recent"] + status_counts["legend"],
         "minimum_required": args.min_players,
+        "audience_minimum_required": audience_minimum or None,
+        "audience_market": audience_profile.get("market"),
+        "audience_core_player_count": len(audience_profile.get("core_players") or []),
         "maximum_runtime_players": args.max_players or None,
         "selection_policy": "Every rule-matching master player is retained; Turkish-football familiarity only affects ranking.",
         "minimum_players_per_available_condition": MIN_PLAYERS_PER_CONDITION,
