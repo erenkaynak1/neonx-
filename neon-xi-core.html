@@ -1637,10 +1637,12 @@ body.nx-event-cinema-open{overflow:inherit!important}
 
 <div class="bootView" id="bootMultiplayer">
   <div class="multiplayerChoice">
-    <div class="multiplayerChoiceHead"><div class="bootKicker">ÇOK OYUNCULU</div><h2>Oyun modunu seç</h2><p>Mevcut çevrim içi oda sistemi aynen korunur. Turnuva modu aynı indeksin içinde ayrı ve güvenli bir alanda çalışır.</p></div>
+    <div class="multiplayerChoiceHead"><div class="bootKicker">ÇOK OYUNCULU</div><h2>Nasıl oynamak istersin?</h2><p>Arkadaş partinle modlar arasında birlikte geç veya aynı modu arayan uygun bir rakiple otomatik eşleş.</p></div>
     <div class="bootCards">
-      <button class="bootCard" type="button" onclick="return window.NEON_MENU.openQuickOnline(event)"><span class="bootCardTag">ÇEVRİM İÇİ</span><strong>Hızlı 1v1</strong><small>Oda oluştur, oda koduyla arkadaşına bağlan ve mevcut draft–taktik–maç akışını kullan.</small></button>
-      <button class="bootCard tournamentChoice" type="button" onclick="return window.NEON_MENU.openTournament(event)"><span class="bootCardTag">YENİ MOD</span><strong>Turnuva</strong><small>Oda oluştur veya kodla katıl; 4/8 takım, kişisel 11 ekranı, 20 saniyelik senkron draft ve eleme ağacı.</small></button>
+      <button class="bootCard" type="button" data-neon-social="party"><span class="bootCardTag">KALICI PARTİ</span><strong>Arkadaşlarla Oyna</strong><small>Arkadaşlarını isimle ekle; partiyi bir kez kur ve oyun modları arasında birlikte geç.</small></button>
+      <button class="bootCard" type="button" data-neon-social="play"><span class="bootCardTag">OTOMATİK EŞLEŞME</span><strong>Rakip Ara</strong><small>Aynı oyun modunda arama yapan uygun bir rakiple eşleş ve maç lobisine otomatik gir.</small></button>
+      <button class="bootCard" type="button" onclick="return window.NEON_MENU.openQuickOnline(event)"><span class="bootCardTag">YEDEK YÖNTEM</span><strong>Oda Kodu</strong><small>Oda oluştur veya arkadaşının altı karakterli koduyla mevcut lobiye katıl.</small></button>
+      <button class="bootCard tournamentChoice" type="button" onclick="return window.NEON_MENU.openTournament(event)"><span class="bootCardTag">TURNUVA</span><strong>Turnuva</strong><small>4/8 takım, kişisel 11 ekranı, senkron draft ve eleme ağacı.</small></button>
     </div>
     <div class="multiplayerBackRow"><button class="bootGhostBtn" type="button" onclick="return window.NEON_MENU.showHome(event)">ANA MENÜYE DÖN</button></div>
   </div>
@@ -11364,9 +11366,11 @@ import {
 
   window.KADRO_OPEN_ONLINE = goOnlineForm;
 
-  async function reserveRoomCode(teamName) {
-    for (let attempt = 0; attempt < 12; attempt++) {
-      const roomCode = generateRoomCode();
+  async function reserveRoomCode(teamName, preferredCode = "") {
+    const fixedCode = sanitizeRoomCode(preferredCode);
+    if (preferredCode && fixedCode.length !== 6) throw new Error("Geçersiz eşleştirme oda kodu.");
+    for (let attempt = 0; attempt < (fixedCode ? 1 : 12); attempt++) {
+      const roomCode = fixedCode || generateRoomCode();
       const roomReference = ref(database, `rooms/${roomCode}`);
       const result = await runTransaction(
         roomReference,
@@ -11547,9 +11551,9 @@ import {
     );
   }
 
-  async function createRoom() {
+  async function createRoom(options = {}) {
     if (operationInProgress) return;
-    const teamName = sanitizeTeamName(onlineTeamName?.value);
+    const teamName = sanitizeTeamName(options?.teamName || onlineTeamName?.value);
     if (!teamName) {
       setOnlineStatus("Lütfen önce takım adını gir.", true);
       return;
@@ -11559,7 +11563,7 @@ import {
     setOnlineStatus("Oda oluşturuluyor...");
     try {
       await ensureAnonymousUser();
-      const roomCode = await reserveRoomCode(teamName);
+      const roomCode = await reserveRoomCode(teamName, options?.roomCode || "");
       Object.assign(window.KADRO_ONLINE, {
         mode: "online",
         teamName,
@@ -11583,10 +11587,10 @@ import {
     }
   }
 
-  async function joinRoom() {
+  async function joinRoom(options = {}) {
     if (operationInProgress) return;
-    const teamName = sanitizeTeamName(onlineTeamName?.value);
-    const roomCode = sanitizeRoomCode(joinRoomCode?.value);
+    const teamName = sanitizeTeamName(options?.teamName || onlineTeamName?.value);
+    const roomCode = sanitizeRoomCode(options?.roomCode || joinRoomCode?.value);
 
     if (!teamName) {
       setOnlineStatus("Lütfen önce takım adını gir.", true);
@@ -12159,6 +12163,28 @@ import {
   signInAnonymously(auth).catch(error => {
     reportOnlineError("İlk Firebase bağlantısı kurulamadı", error, "online");
   });
+
+  window.NEON_XI_MATCHMAKING = { createRoom, joinRoom };
+  const autoMatch = new URLSearchParams(location.search);
+  if (autoMatch.get("nxAuto") === "1") {
+    const role = autoMatch.get("nxRole");
+    const roomCode = sanitizeRoomCode(autoMatch.get("nxCode"));
+    const teamName = sanitizeTeamName(autoMatch.get("nxName")) || "NEON Oyuncu";
+    if (onlineTeamName) onlineTeamName.value = teamName;
+    if (joinRoomCode) joinRoomCode.value = roomCode;
+    setBootView(bootOnline);
+    setOnlineStatus(role === "host" ? "Eşleşme bulundu. Maç lobisi kuruluyor…" : "Eşleşme bulundu. Maç lobisine bağlanılıyor…");
+    setTimeout(async () => {
+      await ensureAnonymousUser();
+      if (role === "host") return createRoom({ teamName, roomCode });
+      for (let attempt = 0; attempt < 20; attempt++) {
+        const snapshot = await get(ref(database, `rooms/${roomCode}`));
+        if (snapshot.exists()) return joinRoom({ teamName, roomCode });
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+      setOnlineStatus("Eşleşme lobisi zamanında kurulamadı. Rakip aramayı yeniden dene.", true);
+    }, 250);
+  }
 
   if (!window.KADRO_ONLINE?.mode) bootScreen?.classList.remove("hidden");
 })();
