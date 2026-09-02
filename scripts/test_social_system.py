@@ -48,6 +48,18 @@ class SocialSystemTests(unittest.TestCase):
         self.assertIn("q.get('nxAuto')==='1'", xox)
         self.assertIn("q.get('nxAuto')==='1'", twin)
 
+    def test_membership_uses_google_auth_without_anonymous_sign_in(self):
+        core = (ROOT / "neon-xi-core.html").read_text(encoding="utf-8")
+        social = (ROOT / "social/neon-social.js").read_text(encoding="utf-8")
+        combined = core + social
+        self.assertNotIn("signInAnonymously", combined)
+        self.assertIn("GoogleAuthProvider", core)
+        self.assertIn("GoogleAuthProvider", social)
+        self.assertIn("signInWithPopup", combined)
+        self.assertIn("linkWithPopup", combined)
+        self.assertIn("GOOGLE İLE GİRİŞ YAP", social)
+        self.assertIn("signOut", social)
+
 
 if __name__ == "__main__":
     unittest.main()
