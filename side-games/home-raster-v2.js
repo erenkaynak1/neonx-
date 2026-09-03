@@ -1,10 +1,17 @@
 (() => {
   "use strict";
 
-  const STYLE_ID = "nx-raster-home-v4-style";
+  const STYLE_ID = "nx-raster-home-v5-style";
   const HOME_CLASS = "nx-raster-home-v3";
-  const ASSET = "./side-games/assets/premium-home/neon-xi-home-concept-2026-09-03.webp";
-  const BOUND_VERSION = "4";
+  const BOUND_VERSION = "5";
+  const RASTER_VERSION = "20260903-raster-parts-v1";
+  const RASTER_BYTES = 29730;
+  const RASTER_FILES = [
+    "home-raster-part-0.bin",
+    "home-raster-part-1.bin",
+    "home-raster-part-2.bin",
+    "home-raster-part-3.bin"
+  ];
 
   const styles = `
   #bootScreen:has(#bootHome.${HOME_CLASS}.active){background:#020504!important}
@@ -98,6 +105,47 @@
     style.id = STYLE_ID;
     style.textContent = styles;
     document.head.appendChild(style);
+  }
+
+  function rasterBaseUrl() {
+    const sourceScript = [...document.scripts].find(script =>
+      String(script.src || "").includes("/side-games/home-raster-v2.js")
+    );
+    if (sourceScript?.src) {
+      return new URL("./assets/premium-home/", sourceScript.src);
+    }
+    return new URL("./side-games/assets/premium-home/", location.href.split("#")[0]);
+  }
+
+  async function loadRasterAsset() {
+    const base = rasterBaseUrl();
+    const parts = await Promise.all(RASTER_FILES.map(async file => {
+      const url = new URL(file, base);
+      url.searchParams.set("v", RASTER_VERSION);
+      const response = await fetch(url.href, { cache: "no-store" });
+      if (!response.ok) throw new Error(`${file}: HTTP ${response.status}`);
+      return response.arrayBuffer();
+    }));
+
+    const blob = new Blob(parts, { type: "image/webp" });
+    if (blob.size !== RASTER_BYTES) {
+      throw new Error(`Raster boyutu hatalı: ${blob.size}/${RASTER_BYTES}`);
+    }
+    return URL.createObjectURL(blob);
+  }
+
+  async function verifyRasterImage(url) {
+    const probe = new Image();
+    probe.decoding = "async";
+    probe.src = url;
+    if (typeof probe.decode === "function") {
+      await probe.decode();
+      return;
+    }
+    await new Promise((resolve, reject) => {
+      probe.onload = resolve;
+      probe.onerror = () => reject(new Error("Raster WebP çözümlenemedi"));
+    });
   }
 
   function normalizeText(value) {
@@ -201,9 +249,21 @@
     }
   }
 
-  function initialize() {
+  async function initialize() {
     const home = document.getElementById("bootHome");
-    if (!home || home.dataset.nxRasterHome === BOUND_VERSION) return;
+    if (!home || home.dataset.nxRasterHome === BOUND_VERSION || home.dataset.nxRasterLoading === BOUND_VERSION) return;
+    home.dataset.nxRasterLoading = BOUND_VERSION;
+
+    let rasterUrl;
+    try {
+      rasterUrl = await loadRasterAsset();
+      await verifyRasterImage(rasterUrl);
+    } catch (error) {
+      if (rasterUrl) URL.revokeObjectURL(rasterUrl);
+      delete home.dataset.nxRasterLoading;
+      console.error("NEON XI raster home: ana menü görseli parçaları yüklenemedi.", error);
+      return;
+    }
 
     const single = document.getElementById("singleModeBtn");
     const bot = document.getElementById("botModeBtn");
@@ -212,6 +272,8 @@
     const settings = home.querySelector("[data-open-neon-settings]");
 
     if (!single || !bot || !online || !tournament || !settings) {
+      URL.revokeObjectURL(rasterUrl);
+      delete home.dataset.nxRasterLoading;
       console.error("NEON XI raster home: gerekli mevcut oyun kontrolleri bulunamadı; ana menü korunuyor.");
       return;
     }
@@ -222,7 +284,7 @@
 
     const ambient = document.createElement("img");
     ambient.className = "nx-home-ambient";
-    ambient.src = ASSET;
+    ambient.src = rasterUrl;
     ambient.alt = "";
     ambient.setAttribute("aria-hidden", "true");
 
@@ -242,7 +304,7 @@
 
     const art = document.createElement("img");
     art.className = "nx-home-art";
-    art.src = ASSET;
+    art.src = rasterUrl;
     art.alt = "NEON XI ana menüsü";
     art.width = 941;
     art.height = 1672;
@@ -253,10 +315,6 @@
     status.className = "nx-home-status";
     status.setAttribute("role", "status");
     status.setAttribute("aria-live", "polite");
-
-    art.addEventListener("error", () => {
-      status.textContent = "Ana menü görseli yüklenemedi. Sayfayı yenileyin.";
-    });
 
     const controls = [
       makeButton("nx-hit-social", "Sosyal ekranını aç", () => openSocial("play", status)),
@@ -293,6 +351,7 @@
     home.classList.remove("nx-raster-home-v2");
     home.classList.add(HOME_CLASS);
     home.dataset.nxRasterHome = BOUND_VERSION;
+    delete home.dataset.nxRasterLoading;
   }
 
   addStyles();
