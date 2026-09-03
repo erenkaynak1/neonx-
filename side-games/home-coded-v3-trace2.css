@@ -1,0 +1,162 @@
+/* NEON XI — approved-reference trace pass 2
+   Reference canvas: 941 x 1672. UI stays HTML/CSS/SVG; this file only tightens
+   geometry, typography, borders and light treatment to the approved artwork. */
+
+#bootHome.nx-coded-home-v3 .nx3-canvas{
+  width:min(100vw,941px)!important;
+  aspect-ratio:941/1672!important;
+  background:rgba(0,4,3,.26)!important;
+}
+
+/* global neon language: thin LED edge, dark glass, controlled glow */
+#bootHome.nx-coded-home-v3 .nx3-led{
+  border-color:rgba(188,255,43,.72)!important;
+  background:linear-gradient(180deg,rgba(4,14,10,.94),rgba(1,8,6,.975))!important;
+  box-shadow:
+    inset 0 0 0 1px rgba(221,255,157,.025),
+    inset 0 0 18px rgba(111,255,32,.035),
+    0 0 7px rgba(147,255,35,.07)!important;
+}
+
+/* top */
+#bootHome.nx-coded-home-v3 .nx3-social{
+  left:3.72%!important;top:3.59%!important;width:14.66%!important;height:4.31%!important;
+  border-radius:1.48cqw!important;
+  font-size:1.72cqw!important;font-weight:780!important;letter-spacing:.015em!important;
+}
+#bootHome.nx-coded-home-v3 .nx3-settings{
+  left:85.86%!important;top:3.59%!important;width:9.15%!important;height:4.31%!important;
+  border-radius:1.45cqw!important;
+}
+#bootHome.nx-coded-home-v3 .nx3-logo{
+  left:23.7%!important;top:5.20%!important;width:52.7%!important;
+  filter:drop-shadow(0 0 .72cqw rgba(87,255,38,.50)) drop-shadow(0 0 1.45cqw rgba(82,255,29,.16))!important;
+}
+#bootHome.nx-coded-home-v3 .nx3-sub{
+  top:11.70%!important;font-size:1.67cqw!important;letter-spacing:.405em!important;font-weight:500!important;
+}
+#bootHome.nx-coded-home-v3 .nx3-sub::before,
+#bootHome.nx-coded-home-v3 .nx3-sub::after{width:5.75cqw!important;background:#b6ff2d!important}
+
+/* main master panel — exact approved proportions */
+#bootHome.nx-coded-home-v3 .nx3-shell{
+  left:4.36%!important;top:14.47%!important;width:89.91%!important;height:74.10%!important;
+  border-radius:2.02cqw!important;
+  border-color:rgba(188,255,48,.70)!important;
+  background:linear-gradient(180deg,rgba(3,11,8,.915),rgba(1,8,6,.955))!important;
+  box-shadow:
+    inset 0 0 0 1px rgba(174,255,44,.045),
+    inset 0 0 3.4cqw rgba(69,255,77,.018),
+    0 1.7cqw 4cqw rgba(0,0,0,.30),
+    0 0 1.15cqw rgba(161,255,37,.06)!important;
+}
+#bootHome.nx-coded-home-v3 .nx3-shell::before{
+  content:"";position:absolute;inset:.7cqw;border:1px solid rgba(174,255,46,.08);border-radius:1.5cqw;pointer-events:none;z-index:20;
+}
+#bootHome.nx-coded-home-v3 .nx3-kicker{
+  left:4.25%!important;top:2.43%!important;font-size:1.73cqw!important;letter-spacing:.075em!important;
+}
+
+/* hero: reference has a much richer stadium but still subdued behind copy */
+#bootHome.nx-coded-home-v3 .nx3-hero{
+  left:2.92%!important;top:5.35%!important;width:94.18%!important;height:25.55%!important;
+  border-radius:.78cqw!important;
+  background:
+    radial-gradient(ellipse at 76% 55%,rgba(154,255,45,.22),transparent 28%),
+    radial-gradient(ellipse at 81% 18%,rgba(235,255,228,.08),transparent 28%),
+    linear-gradient(90deg,rgba(0,6,4,.98) 0%,rgba(0,6,4,.92) 27%,rgba(0,6,4,.32) 52%,rgba(0,6,4,.09) 75%,rgba(0,6,4,.05))!important;
+}
+#bootHome.nx-coded-home-v3 .nx3-hero::after{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:3;
+  background:
+    linear-gradient(90deg,rgba(0,5,3,.12),transparent 56%),
+    linear-gradient(180deg,rgba(0,0,0,.03),rgba(0,0,0,.05) 64%,rgba(0,0,0,.30));
+}
+#bootHome.nx-coded-home-v3 .nx3-pitch{
+  right:1.1%!important;bottom:7.0%!important;width:58%!important;height:62%!important;
+  border-color:rgba(181,255,58,.74)!important;
+  box-shadow:0 0 2.1cqw rgba(127,255,31,.23),inset 0 0 1.7cqw rgba(126,255,31,.10)!important;
+  opacity:.90!important;
+}
+#bootHome.nx-coded-home-v3 .nx3-hero-copy{left:3.1%!important;top:16.5%!important;width:47%!important;z-index:7!important}
+#bootHome.nx-coded-home-v3 .nx3-hero h1,
+#bootHome.nx-coded-home-v3 .nx3-title{
+  font-size:7.45cqw!important;line-height:.94!important;letter-spacing:-.022em!important;font-weight:900!important;
+  text-shadow:0 .24cqw .65cqw rgba(0,0,0,.80)!important;
+}
+#bootHome.nx-coded-home-v3 .nx3-hero p,
+#bootHome.nx-coded-home-v3 .nx3-desc{
+  margin-top:2.1cqw!important;font-size:2.42cqw!important;line-height:1.38!important;color:#f0f1ef!important;
+  text-shadow:0 .18cqw .55cqw rgba(0,0,0,.85)!important;
+}
+#bootHome.nx-coded-home-v3 .nx3-start{
+  margin-top:2.6cqw!important;width:27.7cqw!important;height:6.4cqw!important;border-radius:1.15cqw!important;
+  color:#bfff32!important;font-size:2.42cqw!important;font-weight:800!important;letter-spacing:.025em!important;
+}
+#bootHome.nx-coded-home-v3 .nx3-start svg{width:3.1cqw!important;height:3.1cqw!important}
+
+/* main mode cards */
+#bootHome.nx-coded-home-v3 .nx3-mode{
+  top:28.60%!important;height:26.35%!important;border-radius:1.45cqw!important;
+  padding:2.0cqw .65cqw 1.0cqw!important;
+  border-color:rgba(185,255,45,.72)!important;
+  background:linear-gradient(180deg,rgba(4,14,10,.955),rgba(1,8,6,.985))!important;
+  box-shadow:inset 0 0 2.1cqw rgba(125,255,40,.025),0 0 .8cqw rgba(155,255,38,.035)!important;
+}
+#bootHome.nx-coded-home-v3 .nx3-mode[data-act="single"]{left:3.05%!important;width:29.45%!important}
+#bootHome.nx-coded-home-v3 .nx3-mode[data-act="bot"]{left:34.62%!important;width:30.22%!important}
+#bootHome.nx-coded-home-v3 .nx3-mode[data-act="online"]{left:66.86%!important;width:30.23%!important}
+#bootHome.nx-coded-home-v3 .nx3-hex{width:10.7cqw!important;height:10.7cqw!important;margin-top:.2cqw!important;margin-bottom:1.45cqw!important}
+#bootHome.nx-coded-home-v3 .nx3-hex svg{width:6.4cqw!important;height:6.4cqw!important;stroke-width:1.7!important}
+#bootHome.nx-coded-home-v3 .nx3-mode strong{font-size:3.18cqw!important;line-height:1.04!important;font-weight:900!important;letter-spacing:.005em!important}
+#bootHome.nx-coded-home-v3 .nx3-mode small{margin-top:1.55cqw!important;font-size:1.63cqw!important;line-height:1.35!important;letter-spacing:.095em!important;color:#c3ff36!important}
+#bootHome.nx-coded-home-v3 .nx3-mode .go{left:4.2%!important;right:4.2%!important;bottom:1.1%!important;height:4.85cqw!important;border-top-color:rgba(190,255,47,.19)!important}
+#bootHome.nx-coded-home-v3 .nx3-mode .go svg{width:2.1cqw!important;height:2.1cqw!important}
+
+/* tournament */
+#bootHome.nx-coded-home-v3 .nx3-tournament{
+  left:3.02%!important;top:56.63%!important;width:94.05%!important;height:9.38%!important;
+  border-radius:1.35cqw!important;grid-template-columns:17.5% 1fr 12.3%!important;
+  background:
+    radial-gradient(ellipse at 15% 50%,rgba(119,255,32,.08),transparent 28%),
+    linear-gradient(90deg,rgba(5,20,12,.94),rgba(1,8,6,.975))!important;
+}
+#bootHome.nx-coded-home-v3 .nx3-trophy svg{width:9.4cqw!important;height:9.4cqw!important;stroke-width:1.55!important}
+#bootHome.nx-coded-home-v3 .nx3-tournament strong{font-size:4.15cqw!important;letter-spacing:.035em!important;font-weight:830!important}
+#bootHome.nx-coded-home-v3 .nx3-tournament small{margin-top:.9cqw!important;font-size:1.77cqw!important;letter-spacing:.20em!important}
+
+/* side-games title and cards */
+#bootHome.nx-coded-home-v3 .nx3-side-title{top:67.30%!important;height:2.95%!important;font-size:1.88cqw!important;letter-spacing:.18em!important}
+#bootHome.nx-coded-home-v3 .nx3-game{
+  top:70.05%!important;height:22.05%!important;border-radius:1.55cqw!important;padding:2.0cqw .5cqw 1cqw!important;
+  background:linear-gradient(180deg,rgba(3,13,10,.955),rgba(1,8,7,.985))!important;
+}
+#bootHome.nx-coded-home-v3 .nx3-game:nth-of-type(1){left:2.10%!important;width:22.50%!important}
+#bootHome.nx-coded-home-v3 .nx3-game:nth-of-type(2){left:25.90%!important;width:22.50%!important}
+#bootHome.nx-coded-home-v3 .nx3-game:nth-of-type(3){left:49.60%!important;width:22.60%!important}
+#bootHome.nx-coded-home-v3 .nx3-game:nth-of-type(4){left:73.30%!important;width:24.20%!important}
+#bootHome.nx-coded-home-v3 .nx3-game-icon{height:10.8cqw!important}
+#bootHome.nx-coded-home-v3 .nx3-game-icon svg{width:8.75cqw!important;height:8.75cqw!important}
+#bootHome.nx-coded-home-v3 .nx3-game-name{margin-top:.95cqw!important;font-size:2.36cqw!important;line-height:1.06!important;font-weight:850!important}
+#bootHome.nx-coded-home-v3 .nx3-game .go{bottom:1.25%!important;height:3.55cqw!important}
+#bootHome.nx-coded-home-v3 .nx3-all{left:2.25%!important;top:93.15%!important;width:95.50%!important;height:5.48%!important;font-size:2.65cqw!important;border-radius:1.05cqw!important}
+
+/* footer */
+#bootHome.nx-coded-home-v3 .nx3-footer{
+  left:4.36%!important;top:89.32%!important;width:89.91%!important;height:7.82%!important;
+  border-radius:1.95cqw!important;border-color:rgba(185,255,44,.66)!important;
+  background:rgba(2,10,7,.955)!important;
+}
+#bootHome.nx-coded-home-v3 .nx3-foot{gap:.85cqw!important;font-size:1.76cqw!important;letter-spacing:.035em!important}
+#bootHome.nx-coded-home-v3 .nx3-foot svg{width:4.65cqw!important;height:4.65cqw!important}
+
+/* crisp hover/press without changing the approved appearance */
+@media (hover:hover){
+  #bootHome.nx-coded-home-v3 .nx3-btn:hover{filter:brightness(1.07)}
+}
+#bootHome.nx-coded-home-v3 .nx3-btn:active{transform:translateY(1px);filter:brightness(1.12)}
+
+/* On narrow phones keep the same composition; scale only through the 941-wide canvas. */
+@media(max-width:480px){
+  #bootHome.nx-coded-home-v3 .nx3-canvas{width:100vw!important}
+}
