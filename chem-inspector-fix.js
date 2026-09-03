@@ -38,7 +38,7 @@
 
   function findNativeClose(inspector) {
     const inspectorRect = inspector.getBoundingClientRect();
-    const candidates = [...inspector.querySelectorAll("button,[role='button'],[data-close],[aria-label],[title]")];
+    const candidates = [...inspector.querySelectorAll("button,[role='button'],[data-close],[aria-label],[title],[onclick],[class*='close'],[id*='close']")];
     let best = null;
     let bestScore = -Infinity;
 
@@ -47,7 +47,7 @@
       if (!rect.width || !rect.height) continue;
 
       const text = (el.textContent || "").trim();
-      const meta = `${text} ${el.getAttribute("aria-label") || ""} ${el.getAttribute("title") || ""} ${el.getAttribute("data-action") || ""} ${typeof el.className === "string" ? el.className : ""}`.toLocaleLowerCase("tr-TR");
+      const meta = `${text} ${el.getAttribute("aria-label") || ""} ${el.getAttribute("title") || ""} ${el.getAttribute("data-action") || ""} ${typeof el.className === "string" ? el.className : ""} ${el.id || ""}`.toLocaleLowerCase("tr-TR");
       let score = 0;
 
       if (/(kapat|close|dismiss)/.test(meta)) score += 120;
@@ -108,8 +108,10 @@
     let top = Math.max(offsetTop + 8, rect.top + gap);
     top = Math.min(top, offsetTop + viewportHeight - size - 8);
 
-    button.style.left = `${Math.round(left)}px`;
-    button.style.top = `${Math.round(top)}px`;
+    const nextLeft = `${Math.round(left)}px`;
+    const nextTop = `${Math.round(top)}px`;
+    if (button.style.left !== nextLeft) button.style.left = nextLeft;
+    if (button.style.top !== nextTop) button.style.top = nextTop;
   }
 
   function sync() {
@@ -140,7 +142,11 @@
   }
 
   installStyle();
-  const observer = new MutationObserver(sync);
+  const observer = new MutationObserver(mutations => {
+    const ownButton = document.getElementById(BUTTON_ID);
+    if (ownButton && mutations.length && mutations.every(m => m.target === ownButton || ownButton.contains(m.target))) return;
+    sync();
+  });
   observer.observe(document.documentElement, {
     subtree: true,
     childList: true,
