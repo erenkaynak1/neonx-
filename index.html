@@ -23,22 +23,21 @@ html,body{margin:0;min-height:100%;background:#03070a;color:#bfffd8;font-family:
 <div class="boot">NEON XI YÜKLENİYOR <span class="dot">●</span></div>
 <script>
 (async()=>{
-  const VERSION='20260903-home-social-off-v1';
+  const VERSION='20260903-raster-hitboxes-v1';
   const BOOT_GUARD='<style id="nx-home-boot-guard">html,body{background:#03070a!important}body{visibility:hidden!important}</style>';
-  const REVEAL_SCRIPT='<script>(()=>{const reveal=()=>{const g=document.getElementById("nx-home-boot-guard");if(g)g.remove();};const ready=()=>!!document.querySelector(".nx-stage.nx-raster-home-v3");if(ready()){requestAnimationFrame(reveal);return;}const o=new MutationObserver(()=>{if(!ready())return;o.disconnect();requestAnimationFrame(reveal);});o.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:["class"]});setTimeout(()=>{o.disconnect();reveal();},3500);})();<\/script>';
-  const SOCIAL_HOME_STYLE='<style id="nx-home-social-style">#bootHome.nx-raster-home-v3 .nx-home-friends{display:none!important}body:has(#bootHome.nx-raster-home-v3.active)>.nx-social-launch{display:none!important}</style>';
-  const SOCIAL_HOME_SCRIPT='<script>(()=>{const remove=()=>document.querySelectorAll("#bootHome.nx-raster-home-v3 .nx-home-friends").forEach(b=>b.remove());remove();const o=new MutationObserver(remove);o.observe(document.documentElement,{subtree:true,childList:true});setTimeout(()=>o.disconnect(),7000);})();<\/script>';
+  const REVEAL_SCRIPT='<script>(()=>{const reveal=()=>{const g=document.getElementById("nx-home-boot-guard");if(g)g.remove();};const ready=()=>!!document.querySelector("#bootHome.nx-raster-home-v3");if(ready()){requestAnimationFrame(reveal);return;}const o=new MutationObserver(()=>{if(!ready())return;o.disconnect();requestAnimationFrame(reveal);});o.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:["class"]});setTimeout(()=>{o.disconnect();reveal();},3500);})();<\/script>';
+  const HOME_SOCIAL_STYLE='<style id="nx-home-social-style">body:has(#bootHome.nx-raster-home-v3.active)>.nx-social-launch{display:none!important}</style>';
   try{
     const response=await fetch('./neon-xi-core.html?v='+encodeURIComponent(VERSION),{cache:'no-store'});
     if(!response.ok) throw new Error('NEON XI core '+response.status);
     let html=await response.text();
     const headPos=html.toLowerCase().lastIndexOf('</head>');
-    html=headPos>=0 ? html.slice(0,headPos)+BOOT_GUARD+SOCIAL_HOME_STYLE+html.slice(headPos) : BOOT_GUARD+SOCIAL_HOME_STYLE+html;
+    html=headPos>=0 ? html.slice(0,headPos)+BOOT_GUARD+HOME_SOCIAL_STYLE+html.slice(headPos) : BOOT_GUARD+HOME_SOCIAL_STYLE+html;
     const injector='<script src="./side-games/home-raster-v2.js?v='+VERSION+'"><\/script>'+
       '<link rel="stylesheet" href="./draft-mobile.css?v='+VERSION+'">'+
       '<script src="./draft-mobile-ui.js?v='+VERSION+'"><\/script>'+
       '<script src="./chem-inspector-fix.js?v='+VERSION+'"><\/script>'+
-      '<script type="module" src="./social/neon-social.js?v='+VERSION+'"><\/script>'+SOCIAL_HOME_SCRIPT+REVEAL_SCRIPT;
+      '<script type="module" src="./social/neon-social.js?v='+VERSION+'"><\/script>'+REVEAL_SCRIPT;
     const pos=html.toLowerCase().lastIndexOf('</body>');
     html=pos>=0 ? html.slice(0,pos)+injector+html.slice(pos) : html+injector;
     document.open();
