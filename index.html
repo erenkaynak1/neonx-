@@ -23,7 +23,7 @@ html,body{margin:0;min-height:100%;background:#03070a;color:#bfffd8;font-family:
 <div class="boot">NEON XI YÜKLENİYOR <span class="dot">●</span></div>
 <script>
 (async()=>{
-  const VERSION='20260903-party-autostart-v1';
+  const VERSION='20260903-social-leaderboard-v1';
   const BOOT_GUARD='<style id="nx-home-boot-guard">html,body{background:#03070a!important}body{visibility:hidden!important}</style>';
   const REVEAL_SCRIPT='<script>(()=>{const reveal=()=>{const g=document.getElementById("nx-home-boot-guard");if(g)g.remove();};const ready=()=>!!document.querySelector(".nx-stage.nx-raster-home-v3");if(ready()){requestAnimationFrame(reveal);return;}const o=new MutationObserver(()=>{if(!ready())return;o.disconnect();requestAnimationFrame(reveal);});o.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:["class"]});setTimeout(()=>{o.disconnect();reveal();},3500);})();<\/script>';
   try{

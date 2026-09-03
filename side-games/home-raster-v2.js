@@ -89,6 +89,13 @@
   #bootHome.${HOME_CLASS} .nx-hotspot-twin{left:35.7%;top:73.1%;width:28.2%;height:17.8%}
   #bootHome.${HOME_CLASS} .nx-hotspot-imposter{left:65.2%;top:73.1%;width:29.7%;height:17.8%}
   #bootHome.${HOME_CLASS} .nx-hotspot-all{left:5.1%;top:91.7%;width:89.5%;height:6.1%}
+  #bootHome.${HOME_CLASS} .nx-home-friends{
+    position:absolute;z-index:6;left:3.2%;top:1.65%;min-height:44px;padding:0 15px;border:1px solid rgba(211,255,94,.58);
+    border-radius:14px;background:rgba(3,14,8,.9);color:#eaffac;font:900 10px/1 system-ui,sans-serif;letter-spacing:.1em;
+    box-shadow:0 8px 24px rgba(0,0,0,.36),0 0 18px rgba(179,255,52,.12);cursor:pointer;backdrop-filter:blur(10px)
+  }
+  #bootHome.${HOME_CLASS} .nx-home-friends:hover,#bootHome.${HOME_CLASS} .nx-home-friends:focus-visible{background:#baff18;color:#071005;outline:none}
+  #bootHome.${HOME_CLASS} .nx-home-friends:active{transform:scale(.97)}
   #bootHome.${HOME_CLASS} .nx-home-status{
     position:fixed;z-index:8;left:50%;bottom:max(14px,env(safe-area-inset-bottom));
     width:min(calc(100% - 32px),430px);min-height:0;margin:0;padding:0;transform:translateX(-50%);
@@ -230,6 +237,13 @@
     status.setAttribute("role", "status");
     status.setAttribute("aria-live", "polite");
 
+    const friends = document.createElement("button");
+    friends.className = "nx-home-friends";
+    friends.type = "button";
+    friends.dataset.neonSocial = "friends";
+    friends.textContent = "ARKADAŞLAR";
+    friends.setAttribute("aria-label", "Arkadaşlar ekranını aç");
+
     foreground.addEventListener("error", () => {
       status.textContent = "Ana menü görseli yüklenemedi. Sayfayı yenileyin.";
     });
@@ -243,7 +257,8 @@
       makeLink("nx-hotspot nx-hotspot-xox", "./side-games/football-xox/index.html", "Futbol XOX"),
       makeLink("nx-hotspot nx-hotspot-twin", "./side-games/career-twin/index.html", "Career Twin"),
       makeLink("nx-hotspot nx-hotspot-imposter", "./side-games/futbol-imposter.html", "Futbol Imposter"),
-      makeLink("nx-hotspot nx-hotspot-all", "./side-games/index.html", "Tüm yan oyunları aç")
+      makeLink("nx-hotspot nx-hotspot-all", "./side-games/index.html", "Tüm yan oyunları aç"),
+      friends
     ];
 
     controls.forEach(bindPressAnimation);

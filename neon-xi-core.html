@@ -8707,6 +8707,11 @@ render();
     render();
     const scoreText=`${game.teamNames.A} ${game.score.A}–${game.score.B} ${game.teamNames.B}`;
     const result=game.score.A===game.score.B?"Karşılaşma beraberlikle sonuçlandı.":`${game.teamNames[game.score.A>game.score.B?"A":"B"]} karşılaşmayı kazandı.`;
+    const socialParams=new URLSearchParams(location.search),socialMatch=socialParams.get("nxMatch"),socialSide=window.KADRO_ONLINE?.side;
+    if(socialMatch&&(socialSide==="A"||socialSide==="B")){
+      const socialResult=game.score.A===game.score.B?"draws":(game.score[socialSide]>game.score[socialSide==="A"?"B":"A"]?"wins":"losses");
+      document.dispatchEvent(new CustomEvent("neon-match-result",{detail:{matchId:`${socialMatch}:${game.token}`,opponentUid:socialParams.get("nxOpponent")||"",mode:"draft",result:socialResult}}));
+    }
     addEvent("tactical",`Hakem son düdüğü çaldı: ${scoreText}.`,result,"Maç sonucu gerçek olay zincirinden üretildi.");
     if(window.NEON_XI_2D_DIRECTOR?.afterFinalWhistle){
       await window.NEON_XI_2D_DIRECTOR.afterFinalWhistle(token);
@@ -17723,134 +17728,9 @@ body.nx-reduced-effects #matchSimulation .nx-goal-lightning{display:none!importa
 })();
 </script>
 
-<!-- NEON XI / 100X Tactical Simulation Lab + Audit Guard v1 2026-08-17 -->
-<style id="neon-xi-sim-lab-v1-style">
-/* Source-level guard: goal popup is disabled while card/penalty event cinema remains available. */
+<style id="neon-xi-goal-popup-guard">
 #nxEventCinema.nx-event-cinema.goal,.goalCinema,.goalCinema.show,#kadroPresentationScene.kp-scene.show.goal{display:none!important;visibility:hidden!important;pointer-events:none!important}
-.nx-sim-tools{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
-.nx-sim-tools .btn{min-height:44px}
-.nx-sim-tools small{grid-column:1/-1;color:var(--muted);font-size:9px;line-height:1.45;text-align:center}
-.nxSimLab{position:fixed;inset:0;z-index:420000;display:grid;place-items:center;padding:18px;background:rgba(0,4,2,.88);backdrop-filter:blur(14px)}
-.nxSimLab.hidden{display:none!important}
-.nxSimLabPanel{width:min(980px,100%);max-height:calc(100dvh - 30px);overflow:auto;border:1px solid rgba(119,255,156,.34);border-radius:22px;background:linear-gradient(160deg,#07110c,#030706);box-shadow:0 28px 100px rgba(0,0,0,.72);padding:18px;color:var(--text)}
-.nxSimLabHead{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:13px}.nxSimLabHead h2{margin:0;font-size:24px}.nxSimLabHead p{margin:5px 0 0;color:var(--muted);font-size:10px}.nxSimClose{width:38px;height:38px;border-radius:11px;border:1px solid var(--line2);background:transparent;color:var(--text);font-size:22px;cursor:pointer}
-.nxSimProgress{margin-top:12px;border:1px solid var(--line);border-radius:12px;padding:10px}.nxSimProgressTop{display:flex;justify-content:space-between;gap:10px;font-size:10px}.nxSimProgressTop span{color:var(--muted)}.nxSimTrack{height:8px;margin-top:8px;border-radius:999px;background:rgba(255,255,255,.06);overflow:hidden}.nxSimTrack i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:width .15s ease}
-.nxSimHero{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;margin-top:14px}.nxSimTeam{text-align:center;border:1px solid var(--line);border-radius:14px;padding:13px;background:rgba(255,255,255,.018)}.nxSimTeam strong{display:block;font-size:13px}.nxSimTeam b{display:block;font-size:34px;margin-top:5px}.nxSimTeam span{display:block;color:var(--muted);font-size:9px}.nxSimDraw{text-align:center}.nxSimDraw b{display:block;font-size:28px}.nxSimDraw span{color:var(--muted);font-size:9px}
-.nxSimVerdict{margin-top:12px;padding:12px;border:1px solid rgba(119,211,156,.26);border-radius:13px;background:rgba(119,211,156,.055);text-align:center}.nxSimVerdict span{display:block;color:var(--accent);font-size:9px;letter-spacing:.12em}.nxSimVerdict strong{display:block;font-size:18px;margin-top:4px}.nxSimVerdict p{margin:4px 0 0;color:var(--muted);font-size:9px}
-.nxSimMetrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}.nxSimMetric{border:1px solid var(--line);border-radius:11px;padding:9px;background:rgba(255,255,255,.015)}.nxSimMetric span{display:block;color:var(--muted);font-size:8px}.nxSimMetric b{display:block;margin-top:4px;font-size:14px}.nxSimMetric small{display:block;margin-top:3px;color:var(--muted);font-size:7px}
-.nxSimBodyGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.nxSimSection{border:1px solid var(--line);border-radius:13px;padding:11px}.nxSimSection h3{margin:0 0 8px;font-size:11px}.nxScoreRow{display:grid;grid-template-columns:70px minmax(0,1fr) 44px;gap:8px;align-items:center;padding:5px 0;border-top:1px solid rgba(255,255,255,.05);font-size:9px}.nxScoreRow:first-of-type{border-top:0}.nxScoreBar{height:8px;border-radius:999px;background:rgba(255,255,255,.06);overflow:hidden}.nxScoreBar i{display:block;height:100%;background:var(--accent)}.nxSimFooter{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:13px}.nxSimFooter span{color:var(--muted);font-size:8px}.nxSimFooter .btn{min-height:36px}
-@media(max-width:760px){.nx-sim-tools{grid-template-columns:1fr}.nx-sim-tools small{grid-column:1}.nxSimLab{padding:8px}.nxSimLabPanel{max-height:calc(100dvh - 16px);padding:12px;border-radius:14px}.nxSimHero{grid-template-columns:1fr 72px 1fr}.nxSimMetrics{grid-template-columns:repeat(2,1fr)}.nxSimBodyGrid{grid-template-columns:1fr}.nxSimTeam b{font-size:26px}}
-@media(orientation:landscape) and (max-height:620px){.nxSimLab{padding:5px}.nxSimLabPanel{max-height:calc(100dvh - 10px);padding:10px}.nxSimLabHead h2{font-size:16px}.nxSimHero{margin-top:8px}.nxSimTeam{padding:7px}.nxSimTeam b{font-size:22px}.nxSimMetrics{grid-template-columns:repeat(8,1fr);gap:4px}.nxSimMetric{padding:5px}.nxSimBodyGrid{grid-template-columns:1fr 1fr;margin-top:7px}.nxScoreRow{padding:3px 0}.nxSimVerdict{margin-top:7px;padding:7px}.nxSimProgress{margin-top:7px;padding:6px}}
 </style>
-<script id="neon-xi-sim-lab-v1">
-(()=>{
-  'use strict';
-  if(window.NEON_XI_SIM_LAB?.version)return;
-  const byId=id=>document.getElementById(id);
-  const fmt=(n,d=2)=>Number(n||0).toFixed(d);
-  const pct=(n,total)=>total?Math.round(n/total*100):0;
-  const escapeHTML=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
-  const avg=(sum,n)=>n?sum/n:0;
-  let running=false,lastRun=null;
 
-  function ensureLab(){
-    let lab=byId('nxSimLab');
-    if(lab)return lab;
-    lab=document.createElement('div');
-    lab.id='nxSimLab';lab.className='nxSimLab hidden';lab.setAttribute('aria-hidden','true');
-    lab.innerHTML=`<div class="nxSimLabPanel" role="dialog" aria-modal="true" aria-labelledby="nxSimLabTitle">
-      <div class="nxSimLabHead"><div><h2 id="nxSimLabTitle">Taktik Simülasyon Laboratuvarı</h2><p>Aynı kadro, roller ve taktikler mevcut NEON XI maç motoruyla hızlı şekilde tekrar simüle edilir.</p></div><button class="nxSimClose" id="nxSimClose" type="button" aria-label="Kapat">×</button></div>
-      <div id="nxSimContent"></div></div>`;
-    document.body.appendChild(lab);
-    byId('nxSimClose').addEventListener('click',()=>{if(!running)close();});
-    lab.addEventListener('click',event=>{if(event.target===lab&&!running)close();});
-    return lab;
-  }
-  function open(){const lab=ensureLab();lab.classList.remove('hidden');lab.setAttribute('aria-hidden','false');}
-  function close(){const lab=byId('nxSimLab');if(!lab)return;lab.classList.add('hidden');lab.setAttribute('aria-hidden','true');}
-  function engine(){return window.KADRO_ENGINE_TESTS;}
-  function validState(){
-    /* state is script-scoped in the main game, so window.state is not a reliable readiness signal.
-       The fast-sim API is the authoritative contract; runFast() rebuilds the current squads itself. */
-    try{
-      const live=window.KADRO_MATCH_PRESENTATION;
-      const fast=window.KADRO_ENGINE_TESTS?.runFast;
-      return Boolean(live&&typeof fast==='function');
-    }catch(_){return false;}
-  }
-  function initAggregate(){return{count:0,wins:{A:0,B:0},draws:0,goals:{A:0,B:0},xG:{A:0,B:0},shots:{A:0,B:0},onTarget:{A:0,B:0},possession:{A:0,B:0},passes:{A:0,B:0},passAttempts:{A:0,B:0},dangerous:{A:0,B:0},box:{A:0,B:0},scores:new Map(),teamNames:{A:'Takım A',B:'Takım B'}};}
-  function collect(agg,result){
-    const a=Number(result.score?.A||0),b=Number(result.score?.B||0),sa=result.stats?.A||{},sb=result.stats?.B||{};
-    agg.count++;if(a>b)agg.wins.A++;else if(b>a)agg.wins.B++;else agg.draws++;
-    agg.goals.A+=a;agg.goals.B+=b;agg.xG.A+=Number(sa.xG||0);agg.xG.B+=Number(sb.xG||0);
-    agg.shots.A+=Number(sa.shots||0);agg.shots.B+=Number(sb.shots||0);agg.onTarget.A+=Number(sa.onTarget||0);agg.onTarget.B+=Number(sb.onTarget||0);
-    agg.possession.A+=Number(sa.possession||50);agg.possession.B+=Number(sb.possession||50);agg.passes.A+=Number(sa.passesCompleted||0);agg.passes.B+=Number(sb.passesCompleted||0);agg.passAttempts.A+=Number(sa.passesAttempted||0);agg.passAttempts.B+=Number(sb.passesAttempted||0);agg.dangerous.A+=Number(sa.dangerousAttacks||0);agg.dangerous.B+=Number(sb.dangerousAttacks||0);agg.box.A+=Number(sa.boxEntries||0);agg.box.B+=Number(sb.boxEntries||0);
-    const key=`${a}-${b}`;agg.scores.set(key,(agg.scores.get(key)||0)+1);agg.teamNames=result.teamNames||agg.teamNames;return agg;
-  }
-  function verdict(agg){
-    const a=pct(agg.wins.A,agg.count),b=pct(agg.wins.B,agg.count),d=pct(agg.draws,agg.count),diff=a-b;
-    if(Math.abs(diff)<6)return{title:'Dengeli eşleşme',reason:`Galibiyet farkı yalnızca ${Math.abs(diff)} puan. ${agg.count} maçlık örneklemde net bir taraf oluşmadı.`};
-    const side=diff>0?'A':'B',name=agg.teamNames?.[side]||`Takım ${side}`;
-    return{title:`${name} ağırlıklı üstün`,reason:`${name} ${Math.max(a,b)}% galibiyet oranına ulaştı; beraberlik oranı ${d}%.`};
-  }
-  function renderProgress(done,total,names){
-    const content=byId('nxSimContent');if(!content)return;
-    const percent=Math.round(done/Math.max(1,total)*100);
-    content.innerHTML=`<div class="nxSimProgress"><div class="nxSimProgressTop"><strong>${total===1?'Hızlı maç simülasyonu':'100 maçlık taktik testi'}</strong><span>${done}/${total}</span></div><div class="nxSimTrack"><i style="width:${percent}%"></i></div><div style="margin-top:7px;color:var(--muted);font-size:8px">${escapeHTML(names?.A||'Takım A')} · ${escapeHTML(names?.B||'Takım B')} · Motor olayları hesaplanıyor…</div></div>`;
-  }
-  function renderResult(agg){
-    const n=agg.count,aWin=pct(agg.wins.A,n),bWin=pct(agg.wins.B,n),draw=pct(agg.draws,n),v=verdict(agg);
-    const scores=[...agg.scores.entries()].sort((x,y)=>y[1]-x[1]||x[0].localeCompare(y[0])).slice(0,8),maxScore=Math.max(1,...scores.map(x=>x[1]));
-    const passPct=team=>agg.passAttempts[team]?agg.passes[team]/agg.passAttempts[team]*100:0;
-    const metrics=[
-      ['Ort. skor',`${fmt(avg(agg.goals.A,n),2)} – ${fmt(avg(agg.goals.B,n),2)}`,'maç başına gol'],
-      ['Ort. xG',`${fmt(avg(agg.xG.A,n),2)} – ${fmt(avg(agg.xG.B,n),2)}`,'motor xG toplamı'],
-      ['Şut',`${fmt(avg(agg.shots.A,n),1)} – ${fmt(avg(agg.shots.B,n),1)}`,'maç başına'],
-      ['İsabetli',`${fmt(avg(agg.onTarget.A,n),1)} – ${fmt(avg(agg.onTarget.B,n),1)}`,'maç başına'],
-      ['Topa sahip olma',`%${fmt(avg(agg.possession.A,n),1)} – %${fmt(avg(agg.possession.B,n),1)}`,'ortalama'],
-      ['Pas başarısı',`%${fmt(passPct('A'),1)} – %${fmt(passPct('B'),1)}`,'100 maç toplamı'],
-      ['Tehlikeli atak',`${fmt(avg(agg.dangerous.A,n),1)} – ${fmt(avg(agg.dangerous.B,n),1)}`,'maç başına'],
-      ['Ceza sahası girişi',`${fmt(avg(agg.box.A,n),1)} – ${fmt(avg(agg.box.B,n),1)}`,'maç başına']
-    ];
-    byId('nxSimContent').innerHTML=`<div class="nxSimHero"><div class="nxSimTeam"><strong>${escapeHTML(agg.teamNames.A)}</strong><b>%${aWin}</b><span>${agg.wins.A} galibiyet</span></div><div class="nxSimDraw"><b>%${draw}</b><span>${agg.draws} beraberlik</span></div><div class="nxSimTeam"><strong>${escapeHTML(agg.teamNames.B)}</strong><b>%${bWin}</b><span>${agg.wins.B} galibiyet</span></div></div>
-      <div class="nxSimVerdict"><span>${n} MAÇLIK SONUÇ</span><strong>${escapeHTML(v.title)}</strong><p>${escapeHTML(v.reason)}</p></div>
-      <div class="nxSimMetrics">${metrics.map(([l,val,s])=>`<div class="nxSimMetric"><span>${l}</span><b>${val}</b><small>${s}</small></div>`).join('')}</div>
-      <div class="nxSimBodyGrid"><section class="nxSimSection"><h3>En sık oluşan skorlar</h3>${scores.map(([score,count])=>`<div class="nxScoreRow"><b>${score}</b><div class="nxScoreBar"><i style="width:${Math.max(4,count/maxScore*100)}%"></i></div><span>${count} · %${pct(count,n)}</span></div>`).join('')}</section>
-      <section class="nxSimSection"><h3>Okuma rehberi</h3><div style="font-size:9px;line-height:1.6;color:var(--muted)"><p><b style="color:var(--text)">Ağırlıklı galip</b>, 100 maç içindeki galibiyet sıklığına göre belirlenir.</p><p><b style="color:var(--text)">Ort. skor / xG</b>, tek bir maçın şansını değil taktiklerin uzun örneklem eğilimini gösterir.</p><p>Bu test mevcut kadro, kimya, oyuncu rolleri ve taktikleri değiştirmeden aynı maç motorunu hızlı modda çalıştırır.</p></div></section></div>
-      <div class="nxSimFooter"><span>Test tamamlandı · ${new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}</span><div style="display:flex;gap:7px"><button class="btn" id="nxSimAgain1" type="button">1x tekrar</button><button class="btn primary" id="nxSimAgain100" type="button">100x tekrar</button></div></div>`;
-    byId('nxSimAgain1')?.addEventListener('click',()=>run(1));byId('nxSimAgain100')?.addEventListener('click',()=>run(100));
-  }
-  async function run(count=100){
-    count=Math.max(1,Math.min(100,Math.round(Number(count)||100)));
-    if(running)return;
-    if(!validState()){alert('Hızlı simülasyon motoru yüklenemedi. Sayfayı yenileyip maç öncesi ekrana tekrar gel.');return;}
-    const live=window.KADRO_MATCH_PRESENTATION;
-    if(live?.running&&!live.testMode){alert('Canlı maç devam ederken 100x test başlatılamaz. Maçı bitir veya prematch ekranından testi çalıştır.');return;}
-    running=true;open();const agg=initAggregate();
-    try{
-      renderProgress(0,count,live?.teamNames);
-      for(let i=0;i<count;i++){
-        const result=await engine().runFast({summaryOnly:true});collect(agg,result);
-        if(i===0||i===count-1||(i+1)%5===0){renderProgress(i+1,count,agg.teamNames);await new Promise(resolve=>setTimeout(resolve,0));}
-      }
-      lastRun=agg;renderResult(agg);
-    }catch(error){console.error('NEON XI sim lab:',error);byId('nxSimContent').innerHTML=`<div class="nxSimVerdict"><strong>Simülasyon tamamlanamadı</strong><p>${escapeHTML(error?.message||error)}</p></div>`;
-    }finally{
-      try{engine()?.reset?.();}catch(_){}
-      running=false;
-    }
-  }
-  function injectButtons(){
-    const complete=byId('complete');if(!complete||complete.classList.contains('hidden'))return;
-    const zone=complete.querySelector('.nx-ready-zone')||complete.querySelector('.handoverBox');if(!zone||zone.querySelector('.nx-sim-tools'))return;
-    const wrap=document.createElement('div');wrap.className='nx-sim-tools';wrap.innerHTML=`<button class="btn" id="nxQuickSim1" type="button">⚡ 1 MAÇI HEMEN SİMÜLE ET</button><button class="btn primary" id="nxQuickSim100" type="button">100× TAKTİK TESTİ</button><small>Maç ekranını beklemeden mevcut maç motorunu kullanır; kadro, roller ve taktikler aynen korunur.</small>`;
-    zone.appendChild(wrap);byId('nxQuickSim1').addEventListener('click',()=>run(1));byId('nxQuickSim100').addEventListener('click',()=>run(100));
-  }
-  const completeNode=byId('complete');if(completeNode){const observer=new MutationObserver(injectButtons);observer.observe(completeNode,{subtree:true,childList:true,attributes:true,attributeFilter:['class']});}
-  document.addEventListener('click',event=>{if(event.target.closest?.('[data-prematch-ready],#toTacticsBtn,#tacticReadyBtn'))setTimeout(injectButtons,0);},true);
-  setTimeout(injectButtons,0);
-  window.NEON_XI_SIM_LAB={version:'1.0.1',run,open,close,get lastRun(){return lastRun;}};
-})();
-</script>
 </body>
 </html>
