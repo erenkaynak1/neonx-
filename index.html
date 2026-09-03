@@ -23,19 +23,21 @@ html,body{margin:0;min-height:100%;background:#03070a;color:#bfffd8;font-family:
 <div class="boot">NEON XI YÜKLENİYOR <span class="dot">●</span></div>
 <script>
 (async()=>{
-  const VERSION='20260903-social-leaderboard-v1';
+  const VERSION='20260903-home-social-v2';
   const BOOT_GUARD='<style id="nx-home-boot-guard">html,body{background:#03070a!important}body{visibility:hidden!important}</style>';
   const REVEAL_SCRIPT='<script>(()=>{const reveal=()=>{const g=document.getElementById("nx-home-boot-guard");if(g)g.remove();};const ready=()=>!!document.querySelector(".nx-stage.nx-raster-home-v3");if(ready()){requestAnimationFrame(reveal);return;}const o=new MutationObserver(()=>{if(!ready())return;o.disconnect();requestAnimationFrame(reveal);});o.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:["class"]});setTimeout(()=>{o.disconnect();reveal();},3500);})();<\/script>';
+  const SOCIAL_HOME_STYLE='<style id="nx-home-social-style">#bootHome.nx-raster-home-v3 .nx-home-friends{left:4.2%!important;top:12.9%!important;min-height:34px!important;padding:0 12px!important;border-radius:11px!important;font-size:clamp(8px,2.1vw,10px)!important;letter-spacing:.12em!important;white-space:nowrap!important;background:rgba(3,14,8,.88)!important;box-shadow:0 7px 20px rgba(0,0,0,.34),0 0 15px rgba(179,255,52,.10)!important}body:has(#bootHome.nx-raster-home-v3.active)>.nx-social-launch{display:none!important}@media(max-width:380px){#bootHome.nx-raster-home-v3 .nx-home-friends{left:4%!important;top:12.7%!important;min-height:31px!important;padding:0 10px!important}}</style>';
+  const SOCIAL_HOME_SCRIPT='<script>(()=>{const sync=()=>{const b=document.querySelector("#bootHome.nx-raster-home-v3 .nx-home-friends");if(!b)return false;b.textContent="SOSYAL";b.dataset.neonSocial="friends";b.setAttribute("aria-label","Sosyal ekranını aç — arkadaşlar, giriş ve liderlik");return true;};if(!sync()){const o=new MutationObserver(()=>{if(sync())o.disconnect();});o.observe(document.documentElement,{subtree:true,childList:true});setTimeout(()=>o.disconnect(),5000);}document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("#bootHome.nx-raster-home-v3 .nx-home-friends");if(!b)return;b.dataset.neonSocial="friends";});})();<\/script>';
   try{
     const response=await fetch('./neon-xi-core.html?v='+encodeURIComponent(VERSION),{cache:'no-store'});
     if(!response.ok) throw new Error('NEON XI core '+response.status);
     let html=await response.text();
     const headPos=html.toLowerCase().lastIndexOf('</head>');
-    html=headPos>=0 ? html.slice(0,headPos)+BOOT_GUARD+html.slice(headPos) : BOOT_GUARD+html;
+    html=headPos>=0 ? html.slice(0,headPos)+BOOT_GUARD+SOCIAL_HOME_STYLE+html.slice(headPos) : BOOT_GUARD+SOCIAL_HOME_STYLE+html;
     const injector='<script src="./side-games/home-raster-v2.js?v='+VERSION+'"><\/script>'+
       '<link rel="stylesheet" href="./draft-mobile.css?v='+VERSION+'">'+
       '<script src="./draft-mobile-ui.js?v='+VERSION+'"><\/script>'+
-      '<script type="module" src="./social/neon-social.js?v='+VERSION+'"><\/script>'+REVEAL_SCRIPT;
+      '<script type="module" src="./social/neon-social.js?v='+VERSION+'"><\/script>'+SOCIAL_HOME_SCRIPT+REVEAL_SCRIPT;
     const pos=html.toLowerCase().lastIndexOf('</body>');
     html=pos>=0 ? html.slice(0,pos)+injector+html.slice(pos) : html+injector;
     document.open();
