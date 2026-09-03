@@ -1,12 +1,13 @@
 (() => {
   "use strict";
 
-  const STYLE_ID = "nx-raster-home-v3-style";
+  const STYLE_ID = "nx-raster-home-v4-style";
   const HOME_CLASS = "nx-raster-home-v3";
-  const ASSET_ROOT = "./side-games/assets/premium-home";
+  const ASSET = "./side-games/assets/premium-home/neon-xi-home-concept-2026-09-03.webp";
+  const BOUND_VERSION = "4";
 
   const styles = `
-  #bootScreen:has(#bootHome.${HOME_CLASS}.active){background:#000!important}
+  #bootScreen:has(#bootHome.${HOME_CLASS}.active){background:#020504!important}
   #bootScreen:has(#bootHome.${HOME_CLASS}.active) .bootGlow,
   #bootScreen:has(#bootHome.${HOME_CLASS}.active) .bootBrand{display:none!important}
   #bootScreen:has(#bootHome.${HOME_CLASS}.active) .bootPanel{
@@ -15,163 +16,194 @@
   }
   #bootHome.${HOME_CLASS}.active{
     position:relative!important;display:block!important;width:100%!important;height:100dvh!important;
-    min-height:100%!important;overflow:hidden!important;color:#f5ffe8!important;background:#020503!important;
-    isolation:isolate
+    min-height:100%!important;overflow:hidden!important;background:#020504!important;isolation:isolate
   }
-  #bootHome.${HOME_CLASS} .nx-raster-ambient{
-    position:absolute;inset:-4%;z-index:0;width:108%;height:108%;object-fit:cover;object-position:center;
-    filter:blur(9px) brightness(.42) saturate(1.08);transform:scale(1.035);
-    pointer-events:none;user-select:none;-webkit-user-drag:none
+  #bootHome.${HOME_CLASS} .nx-home-ambient{
+    position:fixed;inset:-26px;z-index:0;width:calc(100% + 52px);height:calc(100% + 52px);
+    object-fit:cover;object-position:center top;pointer-events:none;user-select:none;-webkit-user-drag:none;
+    filter:blur(12px) brightness(.42) saturate(.82);transform:scale(1.035)
   }
-  #bootHome.${HOME_CLASS} .nx-raster-veil{
-    position:absolute;inset:0;z-index:1;pointer-events:none;
-    background:linear-gradient(180deg,rgba(0,7,5,.18),rgba(0,3,2,.48)),radial-gradient(circle at 50% 20%,transparent 0 34%,rgba(0,0,0,.32) 88%)
+  #bootHome.${HOME_CLASS} .nx-home-ambient-shade{
+    position:fixed;inset:0;z-index:1;pointer-events:none;
+    background:linear-gradient(180deg,rgba(0,7,4,.12),rgba(0,6,4,.24) 62%,rgba(0,4,2,.34))
   }
   #bootHome.${HOME_CLASS} .nx-home-scroll{
     position:relative;z-index:2;width:100%;height:100%;overflow:auto;overscroll-behavior:contain;
-    -webkit-overflow-scrolling:touch;padding:max(7px,env(safe-area-inset-top)) 6px max(10px,env(safe-area-inset-bottom));
-    scrollbar-width:none
+    -webkit-overflow-scrolling:touch;scrollbar-width:none;padding:0 0 max(8px,env(safe-area-inset-bottom))
   }
   #bootHome.${HOME_CLASS} .nx-home-scroll::-webkit-scrollbar{display:none}
-  #bootHome.${HOME_CLASS} .nx-home-inner{width:min(100%,560px);margin:0 auto}
-  #bootHome.${HOME_CLASS} .nx-foreground-stage{
-    position:relative;width:100%;aspect-ratio:941/1672;isolation:isolate;overflow:hidden;
-    border-radius:clamp(12px,2.2vw,24px);filter:drop-shadow(0 22px 44px rgba(0,0,0,.68))
+  #bootHome.${HOME_CLASS} .nx-home-inner{width:min(100%,430px);margin:0 auto}
+  #bootHome.${HOME_CLASS} .nx-home-stage{
+    position:relative;width:100%;aspect-ratio:941/1672;overflow:hidden;isolation:isolate;
+    background:#020504;box-shadow:0 26px 70px rgba(0,0,0,.54)
   }
-  #bootHome.${HOME_CLASS} .nx-stage-city,
-  #bootHome.${HOME_CLASS} .nx-foreground-art{
-    position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover;object-position:center;
+  #bootHome.${HOME_CLASS} .nx-home-art{
+    position:absolute;inset:0;z-index:1;display:block;width:100%;height:100%;object-fit:contain;object-position:center top;
     pointer-events:none;user-select:none;-webkit-user-drag:none
   }
-  #bootHome.${HOME_CLASS} .nx-stage-city{z-index:0}
-  #bootHome.${HOME_CLASS} .nx-foreground-art{z-index:1;object-fit:contain}
-  #bootHome.${HOME_CLASS} .nx-stage-fx{
-    position:absolute;inset:0;z-index:2;pointer-events:none;opacity:.18;
-    background:linear-gradient(180deg,transparent 0 48%,rgba(205,255,63,.11) 49%,transparent 50% 100%);
-    background-size:100% 7px;mix-blend-mode:screen
-  }
   #bootHome.${HOME_CLASS} .nx-hotspot{
-    position:absolute!important;z-index:4!important;display:block!important;margin:0!important;padding:0!important;
-    min-width:0!important;min-height:0!important;border:0!important;border-radius:15px!important;
-    color:transparent!important;background:transparent!important;box-shadow:none!important;cursor:pointer!important;
-    -webkit-tap-highlight-color:transparent;overflow:hidden!important;text-decoration:none!important;
-    transform:translateZ(0);transition:background .18s ease,box-shadow .18s ease,transform .14s ease,filter .18s ease!important
+    position:absolute!important;z-index:10!important;display:block!important;margin:0!important;padding:0!important;
+    min-width:0!important;min-height:0!important;width:auto;height:auto;
+    border:0!important;border-radius:0!important;outline:0;background:transparent!important;background-image:none!important;
+    box-shadow:none!important;color:transparent!important;text-shadow:none!important;opacity:1!important;
+    cursor:pointer!important;overflow:hidden!important;text-decoration:none!important;appearance:none!important;
+    -webkit-appearance:none!important;-webkit-tap-highlight-color:transparent!important;touch-action:manipulation!important;
+    filter:none!important;transform:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important
   }
-  #bootHome.${HOME_CLASS} .nx-hotspot::before{
-    content:""!important;display:block!important;position:absolute;inset:2px;pointer-events:none;border-radius:inherit;
-    border:1px solid transparent;opacity:0;transition:opacity .18s ease,border-color .18s ease,box-shadow .18s ease
-  }
-  #bootHome.${HOME_CLASS} .nx-hotspot::after{
-    content:""!important;display:block!important;position:absolute;top:-40%;bottom:-40%;left:-46%;width:24%;pointer-events:none;
-    opacity:0;transform:skewX(-18deg);background:linear-gradient(90deg,transparent,rgba(241,255,194,.48),transparent)
-  }
-  #bootHome.${HOME_CLASS} .nx-hotspot:hover,
-  #bootHome.${HOME_CLASS} .nx-hotspot.is-activating{
-    background:rgba(190,255,53,.045)!important;
-    box-shadow:inset 0 0 28px rgba(172,255,47,.13),0 0 20px rgba(144,255,35,.13)!important
-  }
-  #bootHome.${HOME_CLASS} .nx-hotspot:hover::before,
-  #bootHome.${HOME_CLASS} .nx-hotspot.is-activating::before{
-    opacity:1;border-color:rgba(222,255,112,.46);box-shadow:inset 0 0 13px rgba(183,255,54,.13)
-  }
-  #bootHome.${HOME_CLASS} .nx-hotspot.is-activating::after{animation:nxHotspotSweep .38s ease-out}
-  #bootHome.${HOME_CLASS} .nx-hotspot:focus-visible{
-    outline:2px solid #efffb6!important;outline-offset:2px!important;background:rgba(190,255,53,.07)!important;
-    box-shadow:0 0 24px rgba(178,255,54,.34)!important
-  }
-  #bootHome.${HOME_CLASS} .nx-hotspot:active{transform:scale(.972)!important;filter:brightness(1.18)!important}
-  #bootHome.${HOME_CLASS} .nx-hotspot-settings{left:86.4%;top:1.5%;width:10.8%;height:6.5%;border-radius:18px!important}
-  #bootHome.${HOME_CLASS} .nx-hotspot-single{left:5.1%;top:33.8%;width:29.1%;height:19.5%}
-  #bootHome.${HOME_CLASS} .nx-hotspot-bot{left:35.7%;top:33.8%;width:28.2%;height:19.5%}
-  #bootHome.${HOME_CLASS} .nx-hotspot-online{left:65.2%;top:33.8%;width:29.7%;height:19.5%}
-  #bootHome.${HOME_CLASS} .nx-hotspot-tournament{left:5.1%;top:54.1%;width:89.5%;height:7.6%}
-  #bootHome.${HOME_CLASS} .nx-hotspot-xox{left:5.1%;top:73.1%;width:29.1%;height:17.8%}
-  #bootHome.${HOME_CLASS} .nx-hotspot-twin{left:35.7%;top:73.1%;width:28.2%;height:17.8%}
-  #bootHome.${HOME_CLASS} .nx-hotspot-imposter{left:65.2%;top:73.1%;width:29.7%;height:17.8%}
-  #bootHome.${HOME_CLASS} .nx-hotspot-all{left:5.1%;top:91.7%;width:89.5%;height:6.1%}
-  #bootHome.${HOME_CLASS} .nx-home-friends{
-    position:absolute;z-index:6;left:3.2%;top:1.65%;min-height:44px;padding:0 15px;border:1px solid rgba(211,255,94,.58);
-    border-radius:14px;background:rgba(3,14,8,.9);color:#eaffac;font:900 10px/1 system-ui,sans-serif;letter-spacing:.1em;
-    box-shadow:0 8px 24px rgba(0,0,0,.36),0 0 18px rgba(179,255,52,.12);cursor:pointer;backdrop-filter:blur(10px)
-  }
-  #bootHome.${HOME_CLASS} .nx-home-friends:hover,#bootHome.${HOME_CLASS} .nx-home-friends:focus-visible{background:#baff18;color:#071005;outline:none}
-  #bootHome.${HOME_CLASS} .nx-home-friends:active{transform:scale(.97)}
+  #bootHome.${HOME_CLASS} .nx-hotspot::before,
+  #bootHome.${HOME_CLASS} .nx-hotspot::after{content:none!important;display:none!important}
+  #bootHome.${HOME_CLASS} .nx-hotspot>*{opacity:0!important;visibility:hidden!important;pointer-events:none!important}
+  #bootHome.${HOME_CLASS} .nx-hotspot:active{background:transparent!important;box-shadow:none!important;filter:none!important;transform:none!important}
+  #bootHome.${HOME_CLASS} .nx-hotspot:focus{outline:0!important}
+  #bootHome.${HOME_CLASS} .nx-hotspot:focus-visible{outline:2px solid rgba(82,255,160,.82)!important;outline-offset:-2px!important}
+
+  /* Hitbox'lar onaylı 941×1672 raster ekranın gerçek piksel sınırlarından hesaplandı. */
+  #bootHome.${HOME_CLASS} .nx-hit-social{left:2.657%!important;top:1.495%!important;width:14.984%!important;height:3.469%!important}
+  #bootHome.${HOME_CLASS} .nx-hit-settings-top{left:88.523%!important;top:1.495%!important;width:7.120%!important;height:3.469%!important}
+  #bootHome.${HOME_CLASS} .nx-hit-single{left:9.458%!important;top:32.237%!important;width:25.399%!important;height:16.866%!important}
+  #bootHome.${HOME_CLASS} .nx-hit-bot{left:35.813%!important;top:32.237%!important;width:26.249%!important;height:16.866%!important}
+  #bootHome.${HOME_CLASS} .nx-hit-online{left:63.231%!important;top:32.237%!important;width:25.824%!important;height:16.866%!important}
+  #bootHome.${HOME_CLASS} .nx-hit-tournament{left:9.458%!important;top:50.179%!important;width:79.596%!important;height:6.878%!important}
+  #bootHome.${HOME_CLASS} .nx-hit-xox{left:6.164%!important;top:62.500%!important;width:19.660%!important;height:17.165%!important}
+  #bootHome.${HOME_CLASS} .nx-hit-twin{left:27.099%!important;top:62.500%!important;width:20.935%!important;height:17.165%!important}
+  #bootHome.${HOME_CLASS} .nx-hit-imposter{left:49.203%!important;top:62.500%!important;width:20.723%!important;height:17.165%!important}
+  #bootHome.${HOME_CLASS} .nx-hit-wordle{left:71.095%!important;top:62.500%!important;width:21.467%!important;height:17.165%!important}
+  #bootHome.${HOME_CLASS} .nx-hit-all{left:6.376%!important;top:80.801%!important;width:86.291%!important;height:4.904%!important}
+  #bootHome.${HOME_CLASS} .nx-hit-friends{left:6.589%!important;top:87.380%!important;width:21.041%!important;height:7.715%!important}
+  #bootHome.${HOME_CLASS} .nx-hit-how{left:27.736%!important;top:87.380%!important;width:21.467%!important;height:7.715%!important}
+  #bootHome.${HOME_CLASS} .nx-hit-settings-bottom{left:49.309%!important;top:87.380%!important;width:21.679%!important;height:7.715%!important}
+  #bootHome.${HOME_CLASS} .nx-hit-feedback{left:71.095%!important;top:87.380%!important;width:21.679%!important;height:7.715%!important}
+
   #bootHome.${HOME_CLASS} .nx-home-status{
-    position:fixed;z-index:8;left:50%;bottom:max(14px,env(safe-area-inset-bottom));
-    width:min(calc(100% - 32px),430px);min-height:0;margin:0;padding:0;transform:translateX(-50%);
-    color:#f2ffe9;font-size:11px;font-weight:700;text-align:center;pointer-events:none;text-shadow:0 2px 7px #000
+    position:fixed;z-index:60;left:50%;bottom:max(12px,env(safe-area-inset-bottom));transform:translateX(-50%);
+    width:min(calc(100% - 32px),398px);min-height:0;padding:0;margin:0;pointer-events:none;
+    color:#f3f7f5;font:700 12px/1.35 system-ui,sans-serif;text-align:center
   }
   #bootHome.${HOME_CLASS} .nx-home-status:not(:empty){
-    padding:9px 12px;border:1px solid rgba(198,255,70,.45);border-radius:12px;
-    background:rgba(2,10,5,.91);box-shadow:0 8px 28px rgba(0,0,0,.5),0 0 18px rgba(171,255,46,.14);
-    backdrop-filter:blur(12px)
-  }
-  @keyframes nxHotspotSweep{
-    0%{left:-46%;opacity:0}18%{opacity:.85}100%{left:126%;opacity:0}
+    padding:10px 12px;border:1px solid rgba(82,255,160,.28);border-radius:10px;
+    background:rgba(4,7,6,.94);box-shadow:0 10px 30px rgba(0,0,0,.55)
   }
   @media(min-width:721px){
-    #bootHome.${HOME_CLASS} .nx-home-scroll{
-      width:min(580px,calc(100% - 28px));height:min(1000px,calc(100% - 24px));margin:12px auto;
-      border:1px solid rgba(190,255,65,.2);border-radius:28px;background:rgba(0,3,1,.22);
-      box-shadow:0 28px 100px rgba(0,0,0,.75),0 0 44px rgba(135,255,26,.08)
-    }
+    #bootHome.${HOME_CLASS} .nx-home-inner{width:min(430px,calc(100% - 24px))}
+    #bootHome.${HOME_CLASS} .nx-home-stage{margin:12px 0;border-radius:14px}
   }
   @media(orientation:landscape) and (max-height:620px){
-    #bootHome.${HOME_CLASS} .nx-home-scroll{
-      width:min(420px,calc(100% - 16px));height:100%;margin:0 auto;padding:5px 5px max(8px,env(safe-area-inset-bottom));
-      border-radius:18px
-    }
-    #bootHome.${HOME_CLASS} .nx-home-inner{width:100%}
-  }
-  @media(max-width:370px){#bootHome.${HOME_CLASS} .nx-home-scroll{padding-inline:4px}}
-  @media(prefers-reduced-motion:reduce){
-    #bootHome.${HOME_CLASS} .nx-hotspot{transition:none!important}
-    #bootHome.${HOME_CLASS} .nx-hotspot.is-activating::after{animation:none!important}
-    #bootHome.${HOME_CLASS} .nx-stage-fx{display:none}
+    #bootHome.${HOME_CLASS} .nx-home-inner{width:min(330px,calc(100% - 16px))}
   }
   `;
 
   function addStyles() {
-    if (document.getElementById(STYLE_ID)) return;
+    document.getElementById(STYLE_ID)?.remove();
     const style = document.createElement("style");
     style.id = STYLE_ID;
     style.textContent = styles;
     document.head.appendChild(style);
   }
 
-  function prepareControl(node, className, label) {
-    node.className = className;
+  function normalizeText(value) {
+    return String(value || "")
+      .toLocaleLowerCase("tr-TR")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/ı/g, "i")
+      .replace(/ş/g, "s")
+      .replace(/ğ/g, "g")
+      .replace(/ü/g, "u")
+      .replace(/ö/g, "o")
+      .replace(/ç/g, "c");
+  }
+
+  function controlText(node) {
+    return normalizeText([
+      node?.textContent,
+      node?.getAttribute?.("aria-label"),
+      node?.getAttribute?.("title"),
+      node?.getAttribute?.("data-action")
+    ].filter(Boolean).join(" "));
+  }
+
+  function findExistingAction(home, needles, exclude = []) {
+    const excluded = new Set(exclude.filter(Boolean));
+    return [...home.querySelectorAll("button,a,[role='button']")].find(node => {
+      if (excluded.has(node)) return false;
+      const text = controlText(node);
+      return needles.some(needle => text.includes(needle));
+    }) || null;
+  }
+
+  function prepareExisting(node, hitClass, label) {
+    if (!node) return null;
+    node.classList.add("nx-hotspot", hitClass);
     node.setAttribute("aria-label", label);
-    node.replaceChildren();
+    node.setAttribute("data-nx-home-control", BOUND_VERSION);
     return node;
   }
 
-  function makeLink(className, href, label) {
+  function makeButton(hitClass, label, handler) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `nx-hotspot ${hitClass}`;
+    button.setAttribute("aria-label", label);
+    button.setAttribute("data-nx-home-control", BOUND_VERSION);
+    button.addEventListener("click", event => {
+      event.preventDefault();
+      event.stopPropagation();
+      handler?.();
+    });
+    return button;
+  }
+
+  function makeLink(hitClass, href, label) {
     const link = document.createElement("a");
-    link.className = className;
+    link.className = `nx-hotspot ${hitClass}`;
     link.href = href;
     link.setAttribute("aria-label", label);
+    link.setAttribute("data-nx-home-control", BOUND_VERSION);
     return link;
   }
 
-  function bindPressAnimation(node) {
-    const on = () => {
-      node.classList.remove("is-activating");
-      void node.offsetWidth;
-      node.classList.add("is-activating");
+  function openSocial(tab, status) {
+    let tries = 0;
+    const attempt = () => {
+      const api = window.NEON_SOCIAL;
+      if (api && typeof api.open === "function") {
+        api.open(tab);
+        return true;
+      }
+      return false;
     };
-    const off = () => window.setTimeout(() => node.classList.remove("is-activating"), 390);
-    node.addEventListener("pointerdown", on, { passive: true });
-    node.addEventListener("pointerup", off, { passive: true });
-    node.addEventListener("pointercancel", off, { passive: true });
-    node.addEventListener("keydown", event => {
-      if (event.key === "Enter" || event.key === " ") on();
-    });
+    if (attempt()) return;
+    const timer = window.setInterval(() => {
+      tries += 1;
+      if (attempt() || tries >= 100) {
+        window.clearInterval(timer);
+        if (tries >= 100 && status) {
+          status.textContent = "Sosyal ekran yüklenemedi. Sayfayı yenileyip tekrar deneyin.";
+          window.setTimeout(() => { status.textContent = ""; }, 2600);
+        }
+      }
+    }, 50);
+  }
+
+  function proxyAction(target, fallbackFinder, status, failureText) {
+    if (target?.isConnected) {
+      target.click();
+      return;
+    }
+    const fallback = fallbackFinder?.();
+    if (fallback && fallback.isConnected) {
+      fallback.click();
+      return;
+    }
+    if (status) {
+      status.textContent = failureText;
+      window.setTimeout(() => { status.textContent = ""; }, 2200);
+    }
   }
 
   function initialize() {
     const home = document.getElementById("bootHome");
-    if (!home || home.dataset.nxRasterHome === "3") return;
+    if (!home || home.dataset.nxRasterHome === BOUND_VERSION) return;
 
     const single = document.getElementById("singleModeBtn");
     const bot = document.getElementById("botModeBtn");
@@ -180,25 +212,23 @@
     const settings = home.querySelector("[data-open-neon-settings]");
 
     if (!single || !bot || !online || !tournament || !settings) {
-      console.error("NEON XI premium home: mevcut oyun kontrolleri bulunamadı; ana menü korunuyor.");
+      console.error("NEON XI raster home: gerekli mevcut oyun kontrolleri bulunamadı; ana menü korunuyor.");
       return;
     }
 
-    prepareControl(settings, "neonTopControl neonTopIconOnly nx-hotspot nx-hotspot-settings", "Ayarları aç");
-    prepareControl(single, "neonHomeAction nx-hotspot nx-hotspot-single", "Tek Oyunculu — Kariyer Modu");
-    prepareControl(bot, "neonHomeAction nx-hotspot nx-hotspot-bot", "Bota Karşı — Çevrimiçi veya çevrimdışı");
-    prepareControl(online, "neonHomeAction nx-hotspot nx-hotspot-online", "Online — Çok oyunculu karşılaşmalar");
-    prepareControl(tournament, "neonHomeQuickBtn nx-hotspot nx-hotspot-tournament", "Turnuva Modu — 4 takım veya 8 takım");
+    const baseExcludes = [single, bot, online, tournament, settings];
+    const howTarget = findExistingAction(home, ["nasil oynanir", "how to play"], baseExcludes);
+    const feedbackTarget = findExistingAction(home, ["sikayet", "oneri", "feedback"], [...baseExcludes, howTarget]);
 
     const ambient = document.createElement("img");
-    ambient.className = "nx-raster-ambient";
-    ambient.src = `${ASSET_ROOT}/home-city-v2.webp`;
+    ambient.className = "nx-home-ambient";
+    ambient.src = ASSET;
     ambient.alt = "";
     ambient.setAttribute("aria-hidden", "true");
 
-    const veil = document.createElement("div");
-    veil.className = "nx-raster-veil";
-    veil.setAttribute("aria-hidden", "true");
+    const shade = document.createElement("div");
+    shade.className = "nx-home-ambient-shade";
+    shade.setAttribute("aria-hidden", "true");
 
     const scroll = document.createElement("div");
     scroll.className = "nx-home-scroll";
@@ -207,69 +237,62 @@
     inner.className = "nx-home-inner";
 
     const stage = document.createElement("div");
-    stage.className = "nx-foreground-stage";
+    stage.className = "nx-home-stage";
     stage.setAttribute("aria-label", "NEON XI ana menü");
 
-    /* Arka plan ve ön plan artık AYNI 941×1672 sahnede kilitli. Böylece şehir
-       köşelere/viewport'a ayrı düşmez; kullanıcının onayladığı kompozisyon korunur. */
-    const stageCity = document.createElement("img");
-    stageCity.className = "nx-stage-city";
-    stageCity.src = `${ASSET_ROOT}/home-city-v2.webp`;
-    stageCity.alt = "";
-    stageCity.setAttribute("aria-hidden", "true");
-
-    const foreground = document.createElement("img");
-    foreground.className = "nx-foreground-art";
-    foreground.src = `${ASSET_ROOT}/neon-xi-menu-foreground.webp`;
-    foreground.alt = "NEON XI — Draft ve Neon Arcade ana menüsü";
-    foreground.width = 941;
-    foreground.height = 1672;
-    foreground.loading = "eager";
-    foreground.fetchPriority = "high";
-
-    const stageFx = document.createElement("div");
-    stageFx.className = "nx-stage-fx";
-    stageFx.setAttribute("aria-hidden", "true");
+    const art = document.createElement("img");
+    art.className = "nx-home-art";
+    art.src = ASSET;
+    art.alt = "NEON XI ana menüsü";
+    art.width = 941;
+    art.height = 1672;
+    art.loading = "eager";
+    art.fetchPriority = "high";
 
     const status = document.createElement("div");
     status.className = "nx-home-status";
-    status.id = "nxRasterHomeStatus";
     status.setAttribute("role", "status");
     status.setAttribute("aria-live", "polite");
 
-    const friends = document.createElement("button");
-    friends.className = "nx-home-friends";
-    friends.type = "button";
-    friends.dataset.neonSocial = "friends";
-    friends.textContent = "ARKADAŞLAR";
-    friends.setAttribute("aria-label", "Arkadaşlar ekranını aç");
-
-    foreground.addEventListener("error", () => {
+    art.addEventListener("error", () => {
       status.textContent = "Ana menü görseli yüklenemedi. Sayfayı yenileyin.";
     });
 
     const controls = [
-      settings,
-      single,
-      bot,
-      online,
-      tournament,
-      makeLink("nx-hotspot nx-hotspot-xox", "./side-games/football-xox/index.html", "Futbol XOX"),
-      makeLink("nx-hotspot nx-hotspot-twin", "./side-games/career-twin/index.html", "Career Twin"),
-      makeLink("nx-hotspot nx-hotspot-imposter", "./side-games/futbol-imposter.html", "Futbol Imposter"),
-      makeLink("nx-hotspot nx-hotspot-all", "./side-games/index.html", "Tüm yan oyunları aç"),
-      friends
-    ];
+      makeButton("nx-hit-social", "Sosyal ekranını aç", () => openSocial("play", status)),
+      prepareExisting(settings, "nx-hit-settings-top", "Ayarları aç"),
+      prepareExisting(single, "nx-hit-single", "Tek Oyunculu — Kariyer Modu"),
+      prepareExisting(bot, "nx-hit-bot", "Bota Karşı"),
+      prepareExisting(online, "nx-hit-online", "Online"),
+      prepareExisting(tournament, "nx-hit-tournament", "Turnuva Modu"),
+      makeLink("nx-hit-xox", "./side-games/football-xox/index.html", "Futbol XOX"),
+      makeLink("nx-hit-twin", "./side-games/career-twin/index.html", "Kariyer İkizi"),
+      makeLink("nx-hit-imposter", "./side-games/futbol-imposter.html", "Futbol Imposter"),
+      makeLink("nx-hit-wordle", "./side-games/football-wordle/index.html", "Football Wordle"),
+      makeLink("nx-hit-all", "./side-games/index.html", "Tüm Yan Oyunlar"),
+      makeButton("nx-hit-friends", "Arkadaşlar", () => openSocial("friends", status)),
+      howTarget
+        ? prepareExisting(howTarget, "nx-hit-how", "Nasıl Oynanır")
+        : makeButton("nx-hit-how", "Nasıl Oynanır", () => {
+            const candidate = findExistingAction(document, ["nasil oynanir", "how to play"], [...stage.querySelectorAll("[data-nx-home-control]")]);
+            proxyAction(candidate, null, status, "Nasıl Oynanır ekranı şu anda kullanılamıyor.");
+          }),
+      makeButton("nx-hit-settings-bottom", "Ayarlar", () => settings.click()),
+      feedbackTarget
+        ? prepareExisting(feedbackTarget, "nx-hit-feedback", "Şikayet ve Öneri")
+        : makeButton("nx-hit-feedback", "Şikayet ve Öneri", () => {
+            const candidate = findExistingAction(document, ["sikayet", "oneri", "feedback"], [...stage.querySelectorAll("[data-nx-home-control]")]);
+            proxyAction(candidate, null, status, "Şikayet ve Öneri ekranı şu anda kullanılamıyor.");
+          })
+    ].filter(Boolean);
 
-    controls.forEach(bindPressAnimation);
-    stage.append(stageCity, foreground, stageFx, ...controls);
+    stage.append(art, ...controls);
     inner.append(stage, status);
     scroll.append(inner);
-
-    home.replaceChildren(ambient, veil, scroll);
+    home.replaceChildren(ambient, shade, scroll);
     home.classList.remove("nx-raster-home-v2");
     home.classList.add(HOME_CLASS);
-    home.dataset.nxRasterHome = "3";
+    home.dataset.nxRasterHome = BOUND_VERSION;
   }
 
   addStyles();
