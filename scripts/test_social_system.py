@@ -59,6 +59,8 @@ class SocialSystemTests(unittest.TestCase):
         self.assertIn("linkWithPopup", combined)
         self.assertIn("GOOGLE İLE GİRİŞ YAP", social)
         self.assertIn("signOut", social)
+        self.assertIn("Devam etmek için benzersiz oyuncu adını seç", social)
+        self.assertIn("if(state.user&&!state.profile)", social)
 
 
 if __name__ == "__main__":
