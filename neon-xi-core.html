@@ -1340,7 +1340,7 @@ body.nx-reduced-effects #bootHome .neonHomeNoise,body.nx-reduced-effects #bootHo
   #matchSimulation #matchVisualCard.nv4-simple .nv-player{width:22px!important;height:22px!important}
   #matchSimulation #matchVisualCard.nv4-simple .nv-player .nv-core{width:18px!important;height:18px!important;font-size:6px!important}
   #matchSimulation #matchVisualCard.nv4-simple .nv-player .nv-name{top:20px!important;font-size:5.5px!important;padding:1px 4px!important}
-  #matchSimulation #matchVisualCard.nv4-simple .nv-ball{width:10px!important;height:10px!important}
+  #matchSimulation #matchVisualCard.nv4-simple .nv-ball{width:12px!important;height:12px!important}
   #matchSimulation #matchVisualCard .nv-live-action{
     flex:0 0 26px!important;min-height:26px!important;margin:0 5px 5px!important;padding:3px 5px!important;border-radius:7px!important;
   }
@@ -7535,7 +7535,7 @@ render();
         transitionAttacks:Number(s.transitionAttacks||0),shots:Number(s.shots||0),onTarget:Number(s.onTarget||0),
         xG:Number(s.xG||0),passesAttempted:Number(s.passesAttempted||0),passesCompleted:Number(s.passesCompleted||0),
         turnovers:Number(s.turnovers||0),highTurnovers:Number(s.highTurnovers||0),corners:Number(s.corners||0),
-        saves:Number(s.saves||0),fouls:Number(s.fouls||0),yellowCards:Number(s.yellowCards||0),redCards:Number(s.redCards||0)
+        saves:Number(s.saves||0),penalties:Number(s.penalties||0),fouls:Number(s.fouls||0),yellowCards:Number(s.yellowCards||0),redCards:Number(s.redCards||0)
       };
     };
     return{A:pick("A"),B:pick("B")};
@@ -7627,8 +7627,8 @@ render();
         }));
       } catch (_) {}
     }
-    if (game.testMode) return;
-    const feed = $("commentaryFeed"); if (!feed) return;
+    if (game.testMode) return visual;
+    const feed = $("commentaryFeed"); if (!feed) return visual;
     const visibleDetail=publicLiveDetail(detail);
     const payload={frameId:visual.id,minute:game.minute,kind,text,detail:visibleDetail};
     if(window.NEON_XI_2D_DIRECTOR?.enqueueCommentary){
@@ -7638,6 +7638,11 @@ render();
       el.innerHTML = `<div class="matchEventMinute">${String(Math.min(90,game.minute)).padStart(2,"0")}'</div><div class="matchEventText"><strong>${text}</strong>${visibleDetail?`<span>${visibleDetail}</span>`:""}</div>`;
       feed.appendChild(el); feed.scrollTop = feed.scrollHeight;
     }
+    return visual;
+  }
+  async function waitForVisualImpact(frame,token) {
+    if(game.testMode||!frame?.id||!window.NEON_XI_2D_DIRECTOR?.waitForImpact)return true;
+    return window.NEON_XI_2D_DIRECTOR.waitForImpact(frame.id,token);
   }
   function setReason(main) { if ($("matchReasonMain")) $("matchReasonMain").textContent=main; if ($("matchReasonSub")) $("matchReasonSub").textContent=""; }
 
@@ -7852,8 +7857,10 @@ render();
       shot.outcome="goal";game.score[shot.team]++;game.stats[shot.team].onTarget++;game.routeStats[shot.team][shot.route].goals++;if(shot.setPiece)game.stats[shot.team].setPieceGoals++;
       markDangerous(shot.team,attackCtx,"gol");adjustRating(shot.team,shooter,.75,"goals");if(creator&&creator!==shooter)adjustRating(shot.team,creator,.42,"assists");applyMicroRating(defendingTeam,keeper,"goalkeeping",false,saveExpected,.18,{shotsFaced:1,goalsConceded:1});
       recordRoleEvent(shot.team,shooter,"onTarget");recordRoleEvent(shot.team,shooter,"goals");if(creator&&creator!==shooter)recordRoleEvent(shot.team,creator,"assists");
+      const goalVisual=addEvent("goal",`GOOOL! ${shooter.footballer.name} ağları buldu.`,`${game.teamNames[shot.team]} · ${shot.xG.toFixed(2)} xG`,"Duran top veya açık oyun şutu golle sonuçlandı.");
+      await waitForVisualImpact(goalVisual,token);
       await showScene("goal",[{team:shot.team,title:`${shooter.footballer.name} vuruyor!`,sub:`${creator?.footballer?.name||"Takım arkadaşı"} pozisyonu hazırladı.`,duration:420},{team:shot.team,title:"GOOOL!",sub:`${game.teamNames[shot.team]} skoru değiştirdi.`,duration:1000}],token);
-      addEvent("goal",`GOOOL! ${shooter.footballer.name} ağları buldu.`,`${game.teamNames[shot.team]} · ${shot.xG.toFixed(2)} xG`,"Duran top veya açık oyun şutu golle sonuçlandı.");return;
+      return;
     }
     if(onTargetOutcome){
       shot.outcome="saved";game.stats[shot.team].onTarget++;game.stats[defendingTeam].saves++;incrementRatingStat(defendingTeam,keeper,"saves");applyMicroRating(defendingTeam,keeper,"goalkeeping",true,saveExpected,.18,{shotsFaced:1,difficultSaves:goalChance>.30?1:0});recordRoleEvent(shot.team,shooter,"onTarget");
@@ -7892,14 +7899,17 @@ render();
     if(roll>goalChance){const missRoll=rng();outcome=missRoll<.52?"save":missRoll<.76?"post":"miss";}
     await showScene("penalty",[
       {team:attackingTeam,title:`${taker.footballer.name} topun başında`,sub:"Kısa dramatik bekleyiş...",outcome:"",duration:650},
-      {team:attackingTeam,title:"Koşu başladı",sub:`${keeper.footballer.name} yön seçiyor.`,outcome:"run",duration:480},
-      {team:attackingTeam,title:"VURUŞ!",sub:"Top kaleye gidiyor.",outcome, duration:700},
-      {team:attackingTeam,title:outcome==="goal"?"PENALTI GOLÜ!":outcome==="save"?"PENALTI KURTARILDI!":outcome==="post"?"DİREKTEN DÖNDÜ!":"DIŞARI!",sub:outcome==="goal"?`${taker.footballer.name} soğukkanlı bitirdi.`:outcome==="save"?`${keeper.footballer.name} doğru köşeyi buldu.`:"Vuruş kaleyi bulmadı.",outcome,duration:900}
+      {team:attackingTeam,title:"Koşu başladı",sub:`${keeper.footballer.name} yön seçiyor.`,outcome:"run",duration:480}
     ],token);
     shot.outcome=outcome;
-    if(outcome==="goal"){game.score[attackingTeam]++;game.stats[attackingTeam].onTarget++;game.stats[attackingTeam].penaltyGoals++;game.stats[attackingTeam].setPieceGoals++;adjustRating(attackingTeam,taker,.65,"goals");addEvent("goal",`${taker.footballer.name} penaltıyı gole çevirdi.`,`${xG.toFixed(2)} xG`,`Kullanıcı seçimi varsa penaltıyı seçilen oyuncu kullandı.`);} 
-    else if(outcome==="save"){game.stats[attackingTeam].onTarget++;game.stats[defendingTeam].saves++;adjustRating(defendingTeam,keeper,.40,"saves");addEvent("save",`${keeper.footballer.name} penaltıyı kurtardı.`,`${xG.toFixed(2)} xG`,`Bire bir, refleks ve soğukkanlılık karşılaştırıldı.`);} 
-    else {adjustRating(attackingTeam,taker,-.30,"bigChanceMissed");addEvent("shot",`${taker.footballer.name} penaltıdan yararlanamadı.`,`${xG.toFixed(2)} xG`,outcome==="post"?"Top direkten döndü.":"Vuruş dışarı gitti.");}
+    let penaltyVisual=null;
+    if(outcome==="goal"){game.score[attackingTeam]++;game.stats[attackingTeam].onTarget++;game.stats[attackingTeam].penaltyGoals++;game.stats[attackingTeam].setPieceGoals++;adjustRating(attackingTeam,taker,.65,"goals");penaltyVisual=addEvent("goal",`${taker.footballer.name} penaltıyı gole çevirdi.`,`${xG.toFixed(2)} xG`,`Kullanıcı seçimi varsa penaltıyı seçilen oyuncu kullandı.`);}
+    else if(outcome==="save"){game.stats[attackingTeam].onTarget++;game.stats[defendingTeam].saves++;adjustRating(defendingTeam,keeper,.40,"saves");penaltyVisual=addEvent("save",`${keeper.footballer.name} penaltıyı kurtardı.`,`${xG.toFixed(2)} xG`,`Bire bir, refleks ve soğukkanlılık karşılaştırıldı.`);}
+    else {adjustRating(attackingTeam,taker,-.30,"bigChanceMissed");penaltyVisual=addEvent("shot",`${taker.footballer.name} penaltıdan yararlanamadı.`,`${xG.toFixed(2)} xG`,outcome==="post"?"Top direkten döndü.":"Vuruş dışarı gitti.");}
+    await waitForVisualImpact(penaltyVisual,token);
+    await showScene("penalty",[
+      {team:attackingTeam,title:outcome==="goal"?"PENALTI GOLÜ!":outcome==="save"?"PENALTI KURTARILDI!":outcome==="post"?"DİREKTEN DÖNDÜ!":"DIŞARI!",sub:outcome==="goal"?`${taker.footballer.name} soğukkanlı bitirdi.`:outcome==="save"?`${keeper.footballer.name} doğru köşeyi buldu.`:"Vuruş kaleyi bulmadı.",outcome,duration:900}
+    ],token);
   }
 
   async function v5MaybePenalty(attackingTeam,defendingTeam,route,token) {
@@ -8289,8 +8299,10 @@ render();
       adjustRating(attackingTeam,shooter,.75,"goals");if(creator&&creator!==shooter)adjustRating(attackingTeam,creator,.42,"assists");
       applyMicroRating(defendingTeam,keeper,"goalkeeping",false,saveExpected,.18,{shotsFaced:1,goalsConceded:1});
       recordRoleEvent(attackingTeam,shooter,"onTarget");recordRoleEvent(attackingTeam,shooter,"goals");if(creator&&creator!==shooter)recordRoleEvent(attackingTeam,creator,"assists");
+      const goalVisual=addEvent("goal",`GOOOL! ${shooter.footballer.name} ağları buldu.`,`${shot.xG.toFixed(2)} xG`,`${label||"V5 şut"} sonucunda gol geldi.`);
+      await waitForVisualImpact(goalVisual,token);
       await showScene("goal",[{team:attackingTeam,title:`${shooter.footballer.name} vuruyor!`,sub:`${Math.round(goalProbability*100)}% gol olasılığı`,duration:420},{team:attackingTeam,title:"GOOOL!",sub:`${game.teamNames[attackingTeam]} skoru değiştirdi.`,duration:950}],token);
-      addEvent("goal",`GOOOL! ${shooter.footballer.name} ağları buldu.`,`${shot.xG.toFixed(2)} xG`,`${label||"V5 şut"} sonucunda gol geldi.`);return;
+      return;
     }
     if(roll<onTarget){
       shot.outcome="saved";game.stats[attackingTeam].onTarget++;game.stats[defendingTeam].saves++;incrementRatingStat(defendingTeam,keeper,"saves");
@@ -8387,8 +8399,10 @@ render();
       shot.outcome="goal";game.score[attackingTeam]++;game.stats[attackingTeam].onTarget++;game.routeStats[attackingTeam][route].goals++;
       adjustRating(attackingTeam,target,.75,"goals");adjustRating(attackingTeam,creator,.42,"assists");applyMicroRating(defendingTeam,keeper,"goalkeeping",false,saveExpected,.18,{shotsFaced:1,goalsConceded:1});
       recordRoleEvent(attackingTeam,target,"onTarget");recordRoleEvent(attackingTeam,target,"goals");recordRoleEvent(attackingTeam,creator,"assists");
+      const goalVisual=addEvent("goal",`GOOOL! ${target.footballer.name} kafa vuruşuyla ağları buldu.`,`${goalProbability.toFixed(2)} xG`,"Yan top hücumu golle sonuçlandı.");
+      await waitForVisualImpact(goalVisual,token);
       await showScene("goal",[{team:attackingTeam,title:`${target.footballer.name} kafayı vuruyor!`,sub:`${creator.footballer.name} ortaladı.`,duration:420},{team:attackingTeam,title:"GOOOL!",sub:`${game.teamNames[attackingTeam]} yan toptan buldu.`,duration:950}],token);
-      addEvent("goal",`GOOOL! ${target.footballer.name} kafa vuruşuyla ağları buldu.`,`${goalProbability.toFixed(2)} xG`,"Yan top hücumu golle sonuçlandı.");return;
+      return;
     }
     if(roll<onTarget){shot.outcome="saved";game.stats[attackingTeam].onTarget++;game.stats[defendingTeam].saves++;incrementRatingStat(defendingTeam,keeper,"saves");applyMicroRating(defendingTeam,keeper,"goalkeeping",true,saveExpected,.18,{shotsFaced:1,difficultSaves:conditionalGoal>.38?1:0});recordRoleEvent(attackingTeam,target,"onTarget");addEvent("save",`${keeper.footballer.name} kafa vuruşunu kurtardı.`,`${goalProbability.toFixed(2)} xG`,"Kaleci doğru pozisyon aldı.");return;}
     shot.outcome="offTarget";if(goalProbability>.30)adjustRating(attackingTeam,target,-.18,"bigChanceMissed");addEvent("shot",`${target.footballer.name} kafa vuruşunda hedefi bulamadı.`,`${goalProbability.toFixed(2)} xG`,"Kafa vuruşu sonuçsuz kaldı.");
@@ -14942,13 +14956,14 @@ window.KADRO_HARD_MATCH_SYNC = {
 .matchVisualHead h2{margin:0;font-size:13.5px;font-weight:800;letter-spacing:.01em}.nvActionChip{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;border:1px solid rgba(88,212,255,.18);color:#b8efff;background:rgba(52,164,216,.08);font-size:8.5px;font-weight:800;letter-spacing:.03em;max-width:74%;text-align:right;line-height:1.3}
 .neonMiniPitchWrap{padding:12px}.neonMiniPitch{position:relative;width:100%;aspect-ratio:10/14;overflow:hidden;border-radius:16px;border:1px solid rgba(111,255,183,.18);background:radial-gradient(circle at 50% 50%,rgba(86,255,179,.055),transparent 34%),repeating-linear-gradient(180deg,rgba(24,88,57,.30) 0 38px,rgba(19,74,48,.25) 38px 76px),linear-gradient(180deg,#0f331f,#081d13 62%,#06140e);box-shadow:inset 0 0 0 1px rgba(185,255,214,.04),inset 0 0 30px rgba(65,255,177,.04),0 0 24px rgba(28,255,152,.03);contain:layout paint style}
 .neonMiniPitch::before{content:"";position:absolute;inset:10px;border:1.5px solid rgba(218,255,233,.11);border-radius:12px;pointer-events:none;z-index:1}.nv-halfLine,.nv-centerCircle,.nv-box-top,.nv-box-bottom,.nv-goal-top,.nv-goal-bottom,.nv-pen-top,.nv-pen-bottom{position:absolute;pointer-events:none;z-index:1}.nv-halfLine{left:8%;right:8%;top:50%;height:1.5px;background:rgba(225,255,239,.12);transform:translateY(-50%)}.nv-centerCircle{width:22%;aspect-ratio:1;left:50%;top:50%;transform:translate(-50%,-50%);border:1.5px solid rgba(225,255,239,.11);border-radius:50%}.nv-box-top,.nv-box-bottom{left:26%;width:48%;height:12%;border:1.5px solid rgba(225,255,239,.11)}.nv-box-top{top:8%;border-bottom-left-radius:14px;border-bottom-right-radius:14px}.nv-box-bottom{bottom:8%;border-top-left-radius:14px;border-top-right-radius:14px}.nv-pen-top,.nv-pen-bottom{left:38%;width:24%;height:5%;border:1.5px solid rgba(225,255,239,.11)}.nv-pen-top{top:8%;border-bottom-left-radius:10px;border-bottom-right-radius:10px}.nv-pen-bottom{bottom:8%;border-top-left-radius:10px;border-top-right-radius:10px}.nv-goal-top,.nv-goal-bottom{left:43%;width:14%;height:2.8%;border:1.5px solid rgba(225,255,239,.13)}.nv-goal-top{top:5.2%;border-bottom-left-radius:8px;border-bottom-right-radius:8px}.nv-goal-bottom{bottom:5.2%;border-top-left-radius:8px;border-top-right-radius:8px}
+.nv-goal-net-hit{position:absolute;left:43.4%;width:13.2%;height:3.1%;z-index:10;pointer-events:none;opacity:0;border-radius:5px;background:repeating-linear-gradient(45deg,rgba(224,255,237,.42) 0 1px,transparent 1px 5px),repeating-linear-gradient(-45deg,rgba(224,255,237,.32) 0 1px,transparent 1px 5px);filter:drop-shadow(0 0 5px rgba(98,255,166,.46));will-change:transform,opacity}.nv-goal-net-hit.top{top:4.8%;transform-origin:50% 100%}.nv-goal-net-hit.bottom{bottom:4.8%;transform-origin:50% 0}.nv-goal-net-hit.hit{animation:nvNetRipple .72s cubic-bezier(.18,.78,.24,1)}.neonMiniPitch.nv-goal-impact{animation:nvPitchGoalFlash .54s ease-out}
 .nv-route-zone{position:absolute;z-index:0;pointer-events:none;opacity:0;transition:opacity .24s ease,transform .35s ease;background:linear-gradient(180deg,rgba(82,255,178,.03),rgba(82,255,178,.13),rgba(82,255,178,.03));box-shadow:inset 0 0 30px rgba(86,255,183,.05)}.nv-route-zone.show{opacity:1}.nv-route-zone.left{left:6%;top:6%;bottom:6%;width:31%;border-right:1px solid rgba(97,255,184,.16)}.nv-route-zone.right{right:6%;top:6%;bottom:6%;width:31%;border-left:1px solid rgba(97,255,184,.16)}.nv-route-zone.center{left:34%;top:6%;bottom:6%;width:32%;border-left:1px solid rgba(97,255,184,.11);border-right:1px solid rgba(97,255,184,.11)}.nv-route-zone.transition{left:12%;right:12%;height:38%;top:31%;border-top:1px solid rgba(97,255,184,.13);border-bottom:1px solid rgba(97,255,184,.13);background:linear-gradient(90deg,transparent,rgba(82,255,178,.12),transparent)}
 .nv-svg{position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none;overflow:visible}.nv-action-path{fill:none;stroke:rgba(201,255,226,.68);stroke-width:.72;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:2.4 2.2;filter:drop-shadow(0 0 2px rgba(92,255,184,.55));opacity:.88}.nv-action-path.dribble{stroke:rgba(255,225,111,.88);stroke-width:1.05;stroke-dasharray:1.1 1.15}.nv-action-path.shot{stroke:rgba(255,128,107,.92);stroke-width:1.15;stroke-dasharray:none}.nv-action-path.cross{stroke:rgba(171,151,255,.90);stroke-width:.95;stroke-dasharray:2.1 1.5}.nv-run-path{fill:none;stroke:rgba(104,210,255,.48);stroke-width:.55;stroke-linecap:round;stroke-dasharray:1.2 2.0;opacity:.72}.nv-target-spot{fill:rgba(255,255,255,.11);stroke:rgba(215,255,234,.65);stroke-width:.5;opacity:0}.nv-target-spot.show{opacity:1}
 .nv-player{position:absolute;left:50%;top:50%;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;z-index:5;will-change:left,top,transform,opacity;transform:translate3d(-50%,-50%,0);transition:box-shadow .18s ease,opacity .18s ease,filter .18s ease}.nv-player::before{content:"";position:absolute;inset:0;border-radius:inherit;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.22),transparent 35%),currentColor;opacity:.15}.nv-player .nv-core{position:relative;z-index:2;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:10px;font-weight:800;letter-spacing:.01em;text-shadow:0 0 6px rgba(255,255,255,.15)}.nv-player .nv-name{position:absolute;top:37px;left:50%;transform:translateX(-50%);padding:3px 7px;border-radius:999px;white-space:nowrap;pointer-events:none;border:1px solid rgba(255,255,255,.06);background:rgba(6,12,10,.72);backdrop-filter:blur(7px);color:#eef8f1;font-size:8px;font-weight:700;letter-spacing:.01em}.nv-player.teamA{color:#61d2ff}.nv-player.teamA .nv-core{background:linear-gradient(180deg,rgba(80,219,255,.90),rgba(21,139,186,.92));color:#031019;box-shadow:0 0 10px rgba(93,216,255,.26),inset 0 0 0 1px rgba(255,255,255,.12)}.nv-player.teamB{color:#ff9967}.nv-player.teamB .nv-core{background:linear-gradient(180deg,rgba(255,155,105,.92),rgba(210,90,45,.92));color:#180905;box-shadow:0 0 10px rgba(255,131,82,.24),inset 0 0 0 1px rgba(255,255,255,.12)}.nv-player.gk .nv-core{box-shadow:0 0 10px rgba(194,255,87,.20),inset 0 0 0 1px rgba(255,255,255,.14);background:linear-gradient(180deg,rgba(198,255,97,.92),rgba(93,160,26,.92));color:#081004}.nv-player.active{z-index:9;filter:brightness(1.14)}.nv-player.support{z-index:7;filter:brightness(1.06)}.nv-player.runner .nv-core{box-shadow:0 0 13px rgba(99,214,255,.38),inset 0 0 0 1px rgba(255,255,255,.14)}.nv-player.carrier{z-index:10;filter:brightness(1.18)}.nv-player.carrier::after{content:"";position:absolute;inset:-7px;border:1.5px solid rgba(255,226,115,.62);border-radius:50%;animation:nvCarrierPulse .65s ease-in-out infinite alternate;box-shadow:0 0 11px rgba(255,220,104,.20)}.nv-player.pressing{z-index:9}.nv-player.pressing::after{content:"";position:absolute;inset:-6px;border:1.5px dashed rgba(255,126,103,.58);border-radius:50%;animation:nvPressSpin 1.15s linear infinite}.nv-player.beaten{opacity:.56;filter:saturate(.65)}.nv-player.winner .nv-core{box-shadow:0 0 14px rgba(131,255,168,.44),inset 0 0 0 1px rgba(255,255,255,.16)}.nv-player.dim{opacity:.67}
 .nv-ball{position:absolute;left:50%;top:50%;width:15px;height:15px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#d5ffe7 58%,#91f6bf 100%);box-shadow:0 0 11px rgba(152,255,205,.58),0 0 20px rgba(83,255,180,.16);z-index:12;will-change:left,top,transform;transform:translate3d(-50%,-50%,0)}.nv-ball::after{content:"";position:absolute;left:50%;top:50%;width:26px;height:4px;border-radius:999px;background:linear-gradient(90deg,transparent,rgba(183,255,219,.36));transform:translate(-100%,-50%);filter:blur(2px);opacity:.48}.nv-ball.dribble{box-shadow:0 0 12px rgba(255,229,125,.68),0 0 22px rgba(255,209,82,.20)}.nv-ball.goal{box-shadow:0 0 15px rgba(255,255,255,.80),0 0 32px rgba(91,255,188,.44)}.nv-ball.airborne{box-shadow:0 0 14px rgba(152,255,205,.70),0 0 26px rgba(83,255,180,.24)}.nv-ball-shadow{position:absolute;left:50%;top:50%;width:14px;height:6px;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.55),transparent 78%);z-index:11;transform:translate3d(-50%,-50%,0);will-change:left,top,transform,opacity;pointer-events:none}
 .nv-live-action{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:center;margin-top:8px;padding:8px 10px;border:1px solid rgba(255,255,255,.05);border-radius:12px;background:rgba(255,255,255,.02)}.nv-live-action span{padding:4px 7px;border-radius:8px;background:rgba(92,218,255,.08);border:1px solid rgba(92,218,255,.14);color:#bcefff;font-size:8px;font-weight:800;letter-spacing:.08em}.nv-live-action strong{min-width:0;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700}.nv-live-action em{font-style:normal;color:var(--muted);font-size:8px;text-align:right}.nv-live-action.success em{color:#94dfad}.nv-live-action.fail em{color:#e2a09a}.nv-live-action.dribble span{color:#ffe4a2;border-color:rgba(255,218,112,.22);background:rgba(255,218,112,.07)}
 .nv-radar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:8px}.nv-radar div{border:1px solid rgba(255,255,255,.05);border-radius:11px;padding:7px 9px;background:rgba(255,255,255,.02);min-width:0}.nv-radar span{display:block;color:var(--muted);font-size:7.5px;text-transform:uppercase;letter-spacing:.10em}.nv-radar b{display:block;margin-top:4px;font-size:10px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.nv-cause{margin-top:8px;border:1px solid rgba(119,211,156,.11);border-radius:12px;padding:9px 10px;background:linear-gradient(135deg,rgba(119,211,156,.045),rgba(255,255,255,.012))}.nv-cause span{display:block;color:var(--accent);font-size:7.5px;font-weight:800;letter-spacing:.11em;text-transform:uppercase}.nv-cause strong{display:block;margin-top:4px;font-size:10px;font-weight:700}.nv-cause p{margin:4px 0 0;color:var(--muted);font-size:9px;line-height:1.45}
-@keyframes nvCarrierPulse{from{transform:scale(.90);opacity:.52}to{transform:scale(1.08);opacity:1}}@keyframes nvPressSpin{to{transform:rotate(360deg)}}
+@keyframes nvCarrierPulse{from{transform:scale(.90);opacity:.52}to{transform:scale(1.08);opacity:1}}@keyframes nvPressSpin{to{transform:rotate(360deg)}}@keyframes nvNetRipple{0%{opacity:0;transform:scaleX(.82) scaleY(.72)}18%{opacity:1;transform:scaleX(1.12) scaleY(1.48)}48%{opacity:.76;transform:scaleX(.94) scaleY(.86)}100%{opacity:0;transform:scaleX(1) scaleY(1)}}@keyframes nvPitchGoalFlash{0%{box-shadow:inset 0 0 0 1px rgba(185,255,214,.04),inset 0 0 30px rgba(65,255,177,.04),0 0 24px rgba(28,255,152,.03)}28%{box-shadow:inset 0 0 48px rgba(79,255,155,.24),inset 0 0 0 2px rgba(201,255,225,.34),0 0 34px rgba(46,255,137,.22)}100%{box-shadow:inset 0 0 0 1px rgba(185,255,214,.04),inset 0 0 30px rgba(65,255,177,.04),0 0 24px rgba(28,255,152,.03)}}
 @media(max-width:980px){.matchGrid.hasVisualizer{grid-template-columns:1fr}.neonMiniPitch{aspect-ratio:11/12.5}.nvActionChip{max-width:none}}@media(max-width:560px){.nv-radar{grid-template-columns:repeat(2,minmax(0,1fr))}.nv-player{width:30px;height:30px}.nv-player .nv-core{width:25px;height:25px;font-size:9px}.nv-player .nv-name{top:33px;font-size:7px}.nv-live-action{grid-template-columns:auto minmax(0,1fr)}.nv-live-action em{grid-column:1/-1;text-align:left;padding-left:2px}}
 .matchVisualCard.nv4-focus .nv-radar,.matchVisualCard.nv4-focus .nv-cause,.matchVisualCard.nv4-focus .nv4-event-wrap{display:none!important}
 .matchVisualCard.nv4-focus .neonMiniPitchWrap{padding:12px 12px 8px}
@@ -14980,7 +14995,7 @@ window.KADRO_HARD_MATCH_SYNC = {
 @media(max-width:980px){.matchVisualCard.nv4-simple .neonMiniPitch{aspect-ratio:10/15.6}}
 @media(max-width:560px){.matchVisualCard.nv4-simple .matchVisualHead{padding:9px 10px}.matchVisualCard.nv4-simple .neonMiniPitchWrap{padding:8px}.matchVisualCard.nv4-simple .neonMiniPitch{aspect-ratio:10/15.9}.matchVisualCard.nv4-simple .nv-player{width:29px;height:29px}.matchVisualCard.nv4-simple .nv-player .nv-core{width:23px;height:23px;font-size:8px}.matchVisualCard.nv4-simple .nv-player .nv-name{top:29px;font-size:6.5px}}
 
-@media(prefers-reduced-motion:reduce){.nv-ball::after{display:none}.nv-player.carrier::after,.nv-player.pressing::after{animation:none}}
+@media(prefers-reduced-motion:reduce){.nv-ball::after{display:none}.nv-player.carrier::after,.nv-player.pressing::after,.nv-goal-net-hit.hit,.neonMiniPitch.nv-goal-impact{animation:none}}
 </style>
 <script>
 (() => {
@@ -14992,10 +15007,10 @@ window.KADRO_HARD_MATCH_SYNC = {
   const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
   const VISUAL_PACE_MULTIPLIER=2.10; /* V4.11 hız düzeltmesi: 2D kare akışı hızlandırıldı; hareket yapısı korunur. */
   const vis={
-    pitch:null,chip:null,ball:null,notice:null,pathEl:null,runEl:null,targetEl:null,routeZones:[],
-    motion:new Map(),builtFor:"",lastSeq:0,completedSeq:0,queue:[],frame:null,frameCompleted:false,
+    pitch:null,chip:null,ball:null,ballShadow:null,notice:null,pathEl:null,runEl:null,targetEl:null,routeZones:[],netHits:[],
+    motion:new Map(),builtFor:"",lastSeq:0,completedSeq:0,impactSeq:0,queue:[],frame:null,frameCompleted:false,frameCommitted:false,
     frameStarted:0,frameDuration:1650,lastSync:0,lastTimestamp:0,path:[],runPath:[],frameOrigin:new Map(),
-    carrierId:null,defenderId:null,runnerIds:[],commentaryQueue:[],
+    carrierId:null,defenderId:null,runnerIds:[],commentaryQueue:[],ballPoint:{x:50,y:50},ballAngle:0,goalImpact:false,
     lifecycle:"waitingEntrance",lifecycleStarted:0,lifecycleDuration:0
   };
   const labels={wing:"Kanat",center:"Merkez",transition:"Geçiş",setPiece:"Duran top",neutral:"Yerleşim"};
@@ -15010,6 +15025,10 @@ window.KADRO_HARD_MATCH_SYNC = {
     vis.pitch=document.getElementById("neonMiniPitch");vis.chip=document.getElementById("nvActionChip");vis.pathEl=document.getElementById("nvActionPath");vis.runEl=document.getElementById("nvRunPath");vis.targetEl=document.getElementById("nvTargetSpot");vis.routeZones=[...vis.pitch.querySelectorAll(".nv-route-zone")];
     if(!vis.ballShadow&&vis.pitch){vis.ballShadow=document.createElement("div");vis.ballShadow.id="nvBallShadow";vis.ballShadow.className="nv-ball-shadow";vis.pitch.appendChild(vis.ballShadow)}
     if(!vis.ball&&vis.pitch){vis.ball=document.createElement("div");vis.ball.id="nvBall";vis.ball.className="nv-ball";vis.pitch.appendChild(vis.ball)}
+    if(vis.pitch&&!vis.pitch.querySelector(".nv-goal-net-hit")){
+      for(const side of ["top","bottom"]){const net=document.createElement("div");net.className=`nv-goal-net-hit ${side}`;net.setAttribute("aria-hidden","true");vis.pitch.appendChild(net)}
+    }
+    vis.netHits=vis.pitch?[...vis.pitch.querySelectorAll(".nv-goal-net-hit")]:[];
     if(vis.pitch&&!vis.pitch.querySelector(".nv-tunnel-mark")){const tunnel=document.createElement("div");tunnel.className="nv-tunnel-mark";tunnel.setAttribute("aria-hidden","true");vis.pitch.appendChild(tunnel)}
     if(!vis.notice&&vis.pitch){vis.notice=document.createElement("div");vis.notice.className="nv-match-notice";vis.notice.setAttribute("aria-live","polite");vis.notice.innerHTML="<strong></strong>";vis.pitch.appendChild(vis.notice)}
     return !!vis.pitch;
@@ -15060,6 +15079,8 @@ window.KADRO_HARD_MATCH_SYNC = {
   function pointOnPath(path,t){
     if(!path?.length)return{x:50,y:50};
     if(path.length===1)return path[0];
+    if(t<=0)return path[0];
+    if(t>=1)return path.at(-1);
     const travel=smootherStep(t);
     if(path.length===2)return{x:lerp(path[0].x,path[1].x,travel),y:lerp(path[0].y,path[1].y,travel)};
     const scaled=clamp(travel,0,.9999)*(path.length-1),i=Math.floor(scaled),local=scaled-i;
@@ -15068,12 +15089,23 @@ window.KADRO_HARD_MATCH_SYNC = {
   }
   function pathHeight(frame,t){
     if(!frame)return 0;
-    const tt=clamp(t,0,1),arc=Math.sin(Math.PI*tt);
+    const tt=smootherStep(clamp(t,0,1)),arc=Math.sin(Math.PI*tt);
     if(frame.action==="corner"||frame.stage==="cross")return arc*1;
-    if(frame.stage==="transition"||(frame.stage==="entry"&&frame.action==="workBall"))return arc*.42;
-    if((frame.stage==="finish"||frame.stage==="goal")&&frame.outcome!=="blocked"&&!(frame.stage==="finish"&&!frame.eventKind&&!frame.outcome))return arc*.30;
+    if(frame.action==="header")return arc*.58;
+    if(frame.stage==="transition"||(frame.stage==="entry"&&frame.action==="workBall"))return arc*.52;
     if(frame.action==="penalty"&&frame.stage!=="setPiece")return arc*.10;
+    if((frame.stage==="finish"||frame.stage==="goal")&&frame.outcome!=="blocked"&&!(frame.stage==="finish"&&!frame.eventKind&&!frame.outcome))return arc*(frame.outcome==="offTarget"?.38:.28);
     return 0
+  }
+  function continuousPath(path,frame){
+    const raw=(path||[]).map(point=>({x:Number(point.x),y:Number(point.y)}));
+    if(!raw.length)return[{...vis.ballPoint}];
+    if(frame.stage==="restart"||frame.action==="kickoff")return[{x:50,y:50}];
+    const current={...vis.ballPoint},target=raw.at(-1),distance=Math.hypot(current.x-raw[0].x,current.y-raw[0].y);
+    if(distance<1.2)return raw;
+    if(raw.length===1)return[current,target];
+    const next=raw[1],bridge={x:lerp(current.x,next.x,.38),y:lerp(current.y,next.y,.38)};
+    return[current,bridge,...raw.slice(1)]
   }
   function curvedShotPath(start,target,frame){
     const dx=target.x-start.x,dy=target.y-start.y,len=Math.hypot(dx,dy)||1;
@@ -15087,20 +15119,21 @@ window.KADRO_HARD_MATCH_SYNC = {
   function chooseDefender(frame,carrierId){if(frame?.defenderId&&vis.motion.has(frame.defenderId))return frame.defenderId;const candidates=(frame?.focusIds||[]).filter(id=>id!==carrierId&&vis.motion.get(id)?.team!==frame.team);if(candidates.length)return candidates[0];const c=pointOf(carrierId);let best=null,dist=Infinity;for(const [id,m] of vis.motion){if(m.team===frame.team||positionOf(m.member)==="GK")continue;const d=Math.hypot(m.x-c.x,m.y-c.y);if(d<dist){dist=d;best=id}}return best}
   function framePath(g,frame){
     const team=frame.team||"A",dir=team==="A"?-1:1,focus=(frame.focusIds||[]).map(id=>pointOf(id,null)).filter(Boolean),carrier=chooseCarrier(frame),start=pointOf(carrier,focus[0]||{x:50,y:50});
-    const gk=memberByPositions(g,team,["GK"]),cb=memberByPositions(g,team,["CB","LB","RB"]),mid=memberByPositions(g,team,["DM","CM","AM"]),wide=memberByPositions(g,team,["LW","RW","LB","RB"],frame.side),st=memberByPositions(g,team,["ST","CF","LW","RW"]),p=m=>m?pointOf(m.footballer.id):{x:50,y:50},goal={x:50,y:team==="A"?6.5:93.5};
+    const goalSeed=hash(`${frame.id??frame.sourceId??""}-${frame.shotId??""}-${frame.outcome||""}`),goalLane=(goalSeed%1000)/999;
+    const gk=memberByPositions(g,team,["GK"]),cb=memberByPositions(g,team,["CB","LB","RB"]),mid=memberByPositions(g,team,["DM","CM","AM"]),wide=memberByPositions(g,team,["LW","RW","LB","RB"],frame.side),st=memberByPositions(g,team,["ST","CF","LW","RW"]),p=m=>m?pointOf(m.footballer.id):{x:50,y:50},goal={x:44.8+goalLane*10.4,y:team==="A"?5.55:94.45};
     const penaltySpot={x:50,y:team==="A"?18:82};
     const cornerSpot={x:frame.side==="left"?7:93,y:team==="A"?7.5:92.5};
     if(frame.stage==="restart"||frame.action==="kickoff")return[{x:50,y:50}];
     if(frame.action==="penalty"){
       if(frame.stage==="setPiece"&&!frame.outcome)return[penaltySpot];
       const target=frame.outcome==="miss"
-        ?{x:66,y:team==="A"?3.2:96.8}
+        ?{x:goalSeed%2?61.5:38.5,y:team==="A"?3.2:96.8}
         :frame.outcome==="post"
-          ?{x:69,y:team==="A"?6.2:93.8}
+          ?{x:goalSeed%2?57.2:42.8,y:team==="A"?7.8:92.2}
           :frame.outcome==="save"
-            ?{x:39,y:team==="A"?8.2:91.8}
-            :{x:61,y:team==="A"?6.4:93.6};
-      return[penaltySpot,target]
+            ?{x:45+goalLane*10,y:team==="A"?8.8:91.2}
+            :goal;
+      return curvedShotPath(penaltySpot,target,frame)
     }
     if(frame.action==="corner"&&frame.stage==="setPiece"&&!frame.eventKind)return[cornerSpot];
     if(frame.action==="dribble"||frame.stage==="dribble"){
@@ -15121,11 +15154,11 @@ window.KADRO_HARD_MATCH_SYNC = {
     if(frame.stage==="finish"||frame.stage==="goal"){
       if(frame.stage==="finish"&&!frame.eventKind&&!frame.outcome)return[start];
       const target=frame.outcome==="offTarget"||frame.outcome==="miss"
-        ?{x:64,y:team==="A"?3.3:96.7}
+        ?{x:goalSeed%2?62:38,y:team==="A"?3.3:96.7}
         :frame.outcome==="blocked"
           ?{x:lerp(start.x,50,.58),y:lerp(start.y,goal.y,.58)}
           :frame.outcome==="saved"
-            ?{x:42,y:team==="A"?8.2:91.8}
+            ?{x:45+goalLane*10,y:team==="A"?8.8:91.2}
             :goal;
       if(frame.outcome==="blocked")return[start,target];
       return curvedShotPath(start,target,frame)
@@ -15331,6 +15364,55 @@ window.KADRO_HARD_MATCH_SYNC = {
     vis.commentaryQueue=vis.commentaryQueue.filter(item=>item.frameId>frameId);
     ready.forEach(renderCommentary)
   }
+  function applyFrameSnapshot(frame){
+    if(!frame)return;
+    const scoreA=document.getElementById("matchScoreA"),scoreB=document.getElementById("matchScoreB");
+    if(scoreA&&frame.score?.A!=null&&scoreA.textContent!==String(frame.score.A))scoreA.textContent=String(frame.score.A);
+    if(scoreB&&frame.score?.B!=null&&scoreB.textContent!==String(frame.score.B))scoreB.textContent=String(frame.score.B);
+    for(const team of ["A","B"]){
+      const snapshot=frame.statsSnapshot?.[team];
+      if(!snapshot)continue;
+      for(const [key,value] of Object.entries(snapshot)){
+        const cell=document.querySelector(`#matchStatsBody .matchStatRow[data-stat="${key}"] b[data-team="${team}"]`);
+        if(cell&&cell.textContent!==String(value))cell.textContent=String(value)
+      }
+    }
+    const clock=document.getElementById("matchClock");
+    if(clock&&frame.minute!=null)clock.textContent=`${String(Math.min(90,Number(frame.minute)||0)).padStart(2,"0")}:00`;
+    const timeline=document.getElementById("matchTimelineFill");
+    if(timeline&&frame.minute!=null)timeline.style.width=`${clamp((Number(frame.minute)||0)/90*100,0,100)}%`
+  }
+  function eventMoment(frame){
+    if(frame?.stage==="goal")return .78;
+    if(frame?.action==="penalty"&&frame?.outcome)return .76;
+    if(frame?.stage==="finish")return frame.outcome==="blocked"?.62:.73;
+    if(frame?.stage==="cross")return .70;
+    if(frame?.stage==="turnover")return .66;
+    return .58
+  }
+  function triggerGoalImpact(frame){
+    if(vis.goalImpact||frame?.stage!=="goal")return;
+    vis.goalImpact=true;
+    const target=vis.netHits.find(net=>net.classList.contains(frame.team==="A"?"top":"bottom"));
+    if(target){target.classList.remove("hit");void target.offsetWidth;target.classList.add("hit")}
+    if(vis.pitch){vis.pitch.classList.remove("nv-goal-impact");void vis.pitch.offsetWidth;vis.pitch.classList.add("nv-goal-impact")}
+  }
+  function commitFrame(g,frame){
+    if(!frame||vis.frameCommitted)return;
+    vis.frameCommitted=true;
+    if(frame.stage==="goal")triggerGoalImpact(frame);
+    applyFrameSnapshot(frame);
+    const source=Number(frame.sourceId??frame.id);
+    if(Number.isFinite(source)){
+      vis.impactSeq=Math.max(vis.impactSeq,source);
+      flushCommentary(source)
+    }
+    if(frame.shotId!=null&&frame.team){
+      window.NEON_XI_PULSE_STAT?.(frame.team,"shots");
+      if(frame.outcome==="goal"||frame.outcome==="saved"||frame.outcome==="save")window.NEON_XI_PULSE_STAT?.(frame.team,"onTarget")
+    }
+    if(frame.eventKind==="penalty"&&frame.team)window.NEON_XI_PULSE_STAT?.(frame.team,"penalties")
+  }
   function consumeFrames(g){
     const fresh=(g.visualTimeline||[]).filter(f=>f.id>vis.lastSeq);
     if(!fresh.length)return;
@@ -15364,23 +15446,26 @@ window.KADRO_HARD_MATCH_SYNC = {
   }
   function completeFrame(frame){
     if(!frame||vis.frameCompleted)return;
+    commitFrame(game(),frame);
     if(frame.stage==="goal"&&vis.queue[0]?.stage==="restart"&&vis.queue[0]?.sourceId===frame.id)return;
     const source=Number(frame.sourceId??frame.id);
     if(Number.isFinite(source))vis.completedSeq=Math.max(vis.completedSeq,source);
-    if(frame.shotId!=null&&frame.team){
-      window.NEON_XI_PULSE_STAT?.(frame.team,"shots");
-      if(frame.outcome==="goal"||frame.outcome==="saved")window.NEON_XI_PULSE_STAT?.(frame.team,"onTarget")
-    }
     vis.frameCompleted=true
   }
   function activateFrame(g,frame,now){
     vis.frame=frame;
     vis.frameCompleted=false;
+    vis.frameCommitted=false;
+    vis.goalImpact=false;
     vis.frameStarted=now;
     vis.frameOrigin=new Map([...vis.motion].map(([id,m])=>[id,{x:m.x,y:m.y}]));
     vis.carrierId=chooseCarrier(frame);
     vis.defenderId=chooseDefender(frame,vis.carrierId);
-    vis.path=framePath(g,frame);
+    if(frame.stage==="restart"||frame.action==="kickoff"){
+      vis.ballPoint={x:50,y:50};
+      if(vis.ball){vis.ball.dataset.x=50;vis.ball.dataset.y=50;vis.ball.dataset.vx=0;vis.ball.dataset.vy=0}
+    }
+    vis.path=continuousPath(framePath(g,frame),frame);
     vis.runPath=[];
     const base=frame.stage==="restart"?3600:
       frame.action==="penalty"?(frame.stage==="setPiece"?2300:1800):
@@ -15391,7 +15476,6 @@ window.KADRO_HARD_MATCH_SYNC = {
       frame.stage==="turnover"?1450:1650;
     vis.frameDuration=clamp(base/(VISUAL_PACE_MULTIPLIER*Math.sqrt(Math.max(1,g.speed||1))),280,1800);
     setNotice(frame.stage==="goal"?"GOL":"");
-    flushCommentary(Number(frame.sourceId??frame.id)||0);
     updateInfo(g)
   }
   function activateNext(g,now){
@@ -15403,14 +15487,14 @@ window.KADRO_HARD_MATCH_SYNC = {
     if(!ensureElements())return;
     const newestId=g.visualTimeline?.at(-1)?.id||0;
     if(newestId<vis.lastSeq){
-      vis.lastSeq=0;vis.completedSeq=0;vis.queue=[];vis.frame=null;vis.frameCompleted=false;
+      vis.lastSeq=0;vis.completedSeq=0;vis.impactSeq=0;vis.queue=[];vis.frame=null;vis.frameCompleted=false;vis.frameCommitted=false;
       vis.carrierId=null;vis.defenderId=null;vis.commentaryQueue=[];
       vis.lifecycle=g.minute===0&&!g.entryShown?"waitingEntrance":"live";
       setNotice("")
     }
     const sig=signature(g);
     if(sig&&sig!==vis.builtFor){
-      rebuild(g);vis.queue=[];vis.frame=null;vis.frameCompleted=false;vis.lastSeq=0;vis.completedSeq=0
+      rebuild(g);vis.queue=[];vis.frame=null;vis.frameCompleted=false;vis.frameCommitted=false;vis.lastSeq=0;vis.completedSeq=0;vis.impactSeq=0
     }
     consumeFrames(g);
     if(!vis.frame){
@@ -15482,49 +15566,45 @@ window.KADRO_HARD_MATCH_SYNC = {
       }
       if(vis.ball&&vis.frame){
         const lifecycleBall=["waitingEntrance","walkIn","walkOut","offPitch"].includes(vis.lifecycle);
-        const progress=ease(sceneProgress(now));
+        const progress=sceneProgress(now),travel=smootherStep(progress);
         const base=lifecycleBall?{x:50,y:50}:pointOnPath(vis.path,progress);
+        const ahead=lifecycleBall?base:pointOnPath(vis.path,clamp(progress+.008,0,1));
         const dir=vis.frame.team==="A"?-1:1;
-        const touch=vis.frame.action==="dribble"?Math.sin(progress*Math.PI*8)*.42:0;
-        const bx=Number(vis.ball.dataset.x||base.x),by=Number(vis.ball.dataset.y||base.y);
-        const bvx=Number(vis.ball.dataset.vx||0),bvy=Number(vis.ball.dataset.vy||0);
-        const targetX=base.x+touch*(vis.frame.side==="left"?-1:1);
-        const targetY=base.y+(vis.frame.action==="dribble"?dir*.46:0);
-        const ballSpeedScale=VISUAL_PACE_MULTIPLIER*Math.sqrt(Math.max(1,g.speed||1));
-        const stage=vis.frame.stage,isShot=(stage==="finish"||stage==="goal")&&vis.frame.outcome!=="blocked"&&!(stage==="finish"&&!vis.frame.eventKind&&!vis.frame.outcome);
-        const isGround=stage==="build"||stage==="progress"||(stage==="entry"&&vis.frame.action!=="workBall");
-        const isLofted=stage==="cross"||vis.frame.action==="corner";
-        const isLongBall=stage==="transition"||(stage==="entry"&&vis.frame.action==="workBall");
-        const shotVariance=isShot?(hash(`${vis.frame.id??vis.frame.sourceId??""}-shotpace`)%13)/13:0;
-        const ballSmooth=vis.frame.action==="dribble"?.14:isShot?.062:isLofted?.115:isLongBall?.10:isGround?.082:.095;
-        const ballMaxSpeed=(vis.frame.action==="dribble"?72:isShot?150+shotVariance*22:isLofted?96:isLongBall?126:isGround?122:112)*ballSpeedScale;
-        const nextBallX=smoothDampAxis(bx,targetX,bvx,ballSmooth/ballSpeedScale,ballMaxSpeed,deltaSeconds);
-        const nextBallY=smoothDampAxis(by,targetY,bvy,ballSmooth/ballSpeedScale,ballMaxSpeed,deltaSeconds);
-        const nx=nextBallX.value,ny=nextBallY.value;
+        const touch=vis.frame.action==="dribble"?Math.sin(travel*Math.PI*8)*.42:0;
+        const nx=base.x+touch*(vis.frame.side==="left"?-1:1);
+        const ny=base.y+(vis.frame.action==="dribble"?dir*.46:0);
+        const previous=vis.ballPoint||base;
+        const velocityX=(nx-previous.x)/Math.max(deltaSeconds,.001),velocityY=(ny-previous.y)/Math.max(deltaSeconds,.001);
+        vis.ballPoint={x:nx,y:ny};
         vis.ball.dataset.x=nx;vis.ball.dataset.y=ny;
-        vis.ball.dataset.vx=nextBallX.velocity;vis.ball.dataset.vy=nextBallY.velocity;
-        const speedMag=Math.hypot(nextBallX.velocity,nextBallY.velocity);
-        if(speedMag>1.2){
-          const targetAngle=Math.atan2(nextBallY.velocity,nextBallX.velocity)*180/Math.PI;
+        vis.ball.dataset.vx=velocityX;vis.ball.dataset.vy=velocityY;
+        const pathVelocityX=ahead.x-base.x,pathVelocityY=ahead.y-base.y;
+        const angleX=Math.abs(pathVelocityX)+Math.abs(pathVelocityY)>.0001?pathVelocityX:velocityX;
+        const angleY=Math.abs(pathVelocityX)+Math.abs(pathVelocityY)>.0001?pathVelocityY:velocityY;
+        const speedMag=Math.hypot(angleX,angleY);
+        if(speedMag>.0005){
+          const targetAngle=Math.atan2(angleY,angleX)*180/Math.PI;
           const prevAngle=vis.ballAngle??targetAngle;
           const diff=((targetAngle-prevAngle+540)%360)-180;
-          vis.ballAngle=prevAngle+diff*clamp(deltaSeconds*10,0,1)
+          vis.ballAngle=prevAngle+diff*clamp(deltaSeconds*14,0,1)
         }
         const ballAngle=vis.ballAngle||0;
         const h=lifecycleBall?0:pathHeight(vis.frame,progress);
-        const liftPx=h*30,shadowScale=clamp(1-h*.62,.34,1);
+        const liftPx=h*clamp((vis.pitch?.clientHeight||560)*.056,20,38),shadowScale=clamp(1-h*.68,.28,1);
         vis.ball.style.left=nx+"%";vis.ball.style.top=ny+"%";
         vis.ball.style.opacity=vis.lifecycle==="offPitch"?"0":"1";
-        const ballScale=(vis.frame.stage==="goal"?1.16:vis.frame.action==="dribble"?1.04:1)+h*.16;
+        const ballScale=(vis.frame.stage==="goal"?1.16:vis.frame.action==="dribble"?1.04:1)+h*.30;
         vis.ball.style.transform=`translate3d(-50%,calc(-50% - ${liftPx}px),0) scale(${ballScale}) rotate(${ballAngle}deg)`;
         vis.ball.classList.toggle("goal",vis.frame.stage==="goal");
         vis.ball.classList.toggle("dribble",vis.frame.action==="dribble");
         vis.ball.classList.toggle("airborne",h>.08);
         if(vis.ballShadow){
           vis.ballShadow.style.left=nx+"%";vis.ballShadow.style.top=ny+"%";
-          vis.ballShadow.style.opacity=vis.lifecycle==="offPitch"?"0":String(.16+.42*shadowScale);
-          vis.ballShadow.style.transform=`translate3d(-50%,-50%,0) scale(${shadowScale})`
+          vis.ballShadow.style.opacity=vis.lifecycle==="offPitch"?"0":String(.12+.46*shadowScale);
+          vis.ballShadow.style.filter=`blur(${(.6+h*2.4).toFixed(2)}px)`;
+          vis.ballShadow.style.transform=`translate3d(-50%,-50%,0) scaleX(${(.74+shadowScale*.36).toFixed(3)}) scaleY(${shadowScale.toFixed(3)})`
         }
+        if(!lifecycleBall&&!vis.frameCommitted&&progress>=eventMoment(vis.frame))commitFrame(g,vis.frame)
       }
     }
     requestAnimationFrame(animate)
@@ -15545,9 +15625,10 @@ window.KADRO_HARD_MATCH_SYNC = {
       const g=game();
       if(!g)return;
       ensureElements();
-      vis.queue=[];vis.commentaryQueue=[];vis.frame=null;vis.frameCompleted=false;
+      vis.queue=[];vis.commentaryQueue=[];vis.frame=null;vis.frameCompleted=false;vis.frameCommitted=false;
       vis.lastSeq=options.replayFrame?Math.max(0,Number(g.visualSeq||0)-1):Number(g.visualSeq||0);
       vis.completedSeq=vis.lastSeq;
+      vis.impactSeq=vis.lastSeq;
       vis.carrierId=null;vis.defenderId=null;vis.runnerIds=[];
       const restoredLifecycle=g.finished?"offPitch":Number(g.minute||0)>0?"live":"waitingEntrance";
       if(signature(g)!==vis.builtFor)rebuild(g);
@@ -15561,12 +15642,28 @@ window.KADRO_HARD_MATCH_SYNC = {
         vis.ball.dataset.x=50;vis.ball.dataset.y=50;vis.ball.dataset.vx=0;vis.ball.dataset.vy=0;
         vis.ball.style.left="50%";vis.ball.style.top="50%";vis.ball.style.opacity="1"
       }
+      vis.ballPoint={x:50,y:50};vis.ballAngle=0;
       setNotice("")
     },
     enqueueCommentary(payload){
       if(!payload)return;
-      if(payload.frameId<=vis.completedSeq)renderCommentary(payload);
+      if(payload.frameId<=Math.max(vis.completedSeq,vis.impactSeq))renderCommentary(payload);
       else vis.commentaryQueue.push(payload)
+    },
+    waitForImpact(seq,token){
+      if(overlay.classList.contains("hidden")||seq<=vis.impactSeq)return Promise.resolve(true);
+      return new Promise(resolve=>{
+        const started=Date.now();
+        const check=()=>{
+          const g=game();
+          if(!g||token!==g.token||overlay.classList.contains("hidden")||vis.impactSeq>=seq||Date.now()-started>12000){
+            resolve(Boolean(g&&token===g.token));
+            return
+          }
+          setTimeout(check,32)
+        };
+        check()
+      })
     },
     waitForFrame(seq,token){
       if(overlay.classList.contains("hidden")||seq<=vis.completedSeq)return Promise.resolve(true);
@@ -15595,6 +15692,7 @@ window.KADRO_HARD_MATCH_SYNC = {
         m.el.style.left=point.x+"%";m.el.style.top=point.y+"%";m.el.style.opacity="1"
       }
       if(vis.ball){vis.ball.dataset.x=50;vis.ball.dataset.y=50;vis.ball.dataset.vx=0;vis.ball.dataset.vy=0}
+      vis.ballPoint={x:50,y:50};vis.ballAngle=0;
       setNotice("SAHAYA ÇIKIŞ");
       await lifecycleWait(292,token);
       if(token!==game()?.token)return false;
@@ -15631,11 +15729,12 @@ window.KADRO_HARD_MATCH_SYNC = {
     if(!g||!overlay.classList.contains("hidden"))return;
     if(!ensureElements())return;
     const sig=signature(g);
-    if(sig&&sig!==vis.builtFor){rebuild(g);vis.queue=[];vis.frame=null;vis.frameCompleted=false;vis.lastSeq=0;vis.completedSeq=0}
+    if(sig&&sig!==vis.builtFor){rebuild(g);vis.queue=[];vis.frame=null;vis.frameCompleted=false;vis.frameCommitted=false;vis.lastSeq=0;vis.completedSeq=0;vis.impactSeq=0}
     consumeFrames(g);
     if(vis.queue.length){
       flushCommentary(Number(vis.queue.at(-1).sourceId??vis.queue.at(-1).id)||0);
       vis.completedSeq=Math.max(vis.completedSeq,vis.lastSeq);
+      vis.impactSeq=Math.max(vis.impactSeq,vis.lastSeq);
       vis.queue=[];vis.frame=null;vis.frameCompleted=true
     }
   }
