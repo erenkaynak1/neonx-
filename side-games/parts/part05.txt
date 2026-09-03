@@ -426,13 +426,21 @@ async function joinLobby(code, name){
 /* ---------- ONLINE: LOBBY ---------- */
 function renderOnlineLobby(app){
   const O = state.online;
+  const partyAuto = new URLSearchParams(location.search).get('nxAuto') === '1' && !!new URLSearchParams(location.search).get('nxParty');
+  const expectedPartySize = Number(new URLSearchParams(location.search).get('nxPartySize')) || 0;
   backBar(app, 'Lobiden Ayrıl', () => leaveLobby());
-  header(app, O.isHost ? 'LOBİ SAHİBİSİN' : 'LOBİDESİN', 'BEKLEME SALONU', 'Arkadaşların kodu girsin');
+  header(app, O.isHost ? 'LOBİ SAHİBİSİN' : 'LOBİDESİN', partyAuto ? 'PARTİ BAĞLANIYOR' : 'BEKLEME SALONU', partyAuto ? 'Oda arka planda hazırlanıyor' : 'Arkadaşların kodu girsin');
 
   const card = el('div','card center-txt');
-  card.appendChild(el('div','section-title','Lobi kodu'));
-  card.appendChild(el('div','code-display', O.code));
-  card.appendChild(el('div','info-text','Bu kodu diğer oyunculara paylaş. Onlar "Kodla Katıl" ile girecek.'));
+  if(partyAuto){
+    card.appendChild(el('div','section-title','OTOMATİK PARTİ BAĞLANTISI'));
+    card.appendChild(el('div','spinner'));
+    card.appendChild(el('div','info-text','Partideki herkes bağlanınca oyun kendiliğinden başlayacak.'));
+  } else {
+    card.appendChild(el('div','section-title','Lobi kodu'));
+    card.appendChild(el('div','code-display', O.code));
+    card.appendChild(el('div','info-text','Bu kodu diğer oyunculara paylaş. Onlar "Kodla Katıl" ile girecek.'));
+  }
   app.appendChild(card);
 
   const listCard = el('div','card');
@@ -450,17 +458,21 @@ function renderOnlineLobby(app){
   if(O.err) app.appendChild(el('div','error-text',O.err));
 
   if(O.isHost){
-    const startBtn = el('button','btn solid','OYUNU BAŞLAT');
-    startBtn.disabled = O.players.length < 3;
-    startBtn.onclick = () => startOnlineRound();
-    app.appendChild(startBtn);
-    if(O.players.length < 3){
-      app.appendChild(el('div','info-text','Başlamak için en az 3 oyuncu gerekiyor.'));
+    if(partyAuto){
+      app.appendChild(el('div','info-text',O.players.length+' / '+expectedPartySize+' parti üyesi bağlandı.'));
+    } else {
+      const startBtn = el('button','btn solid','OYUNU BAŞLAT');
+      startBtn.disabled = O.players.length < 3;
+      startBtn.onclick = () => startOnlineRound();
+      app.appendChild(startBtn);
+      if(O.players.length < 3){
+        app.appendChild(el('div','info-text','Başlamak için en az 3 oyuncu gerekiyor.'));
+      }
     }
   } else {
     const wait = el('div','card center-txt');
     wait.appendChild(el('div','spinner'));
-    wait.appendChild(el('div','info-text','Lobi sahibinin oyunu başlatması bekleniyor...'));
+    wait.appendChild(el('div','info-text',partyAuto?'Diğer parti üyeleri bağlanınca oyun otomatik başlayacak.':'Lobi sahibinin oyunu başlatması bekleniyor...'));
     app.appendChild(wait);
   }
 }

@@ -11211,6 +11211,9 @@ import {
   const lobbyTeamA = document.getElementById("lobbyTeamA");
   const lobbyTeamB = document.getElementById("lobbyTeamB");
   const lobbyStatusText = document.getElementById("lobbyStatusText");
+  const onlineLaunchParams = new URLSearchParams(location.search);
+  const partyAutoLaunch = onlineLaunchParams.get("nxParty") || "";
+  const automaticRoomLaunch = onlineLaunchParams.get("nxAuto") === "1";
 
   let currentUser = null;
   let roomUnsubscribe = null;
@@ -11499,7 +11502,7 @@ import {
         const bothConnected = Boolean(playerA?.connected && playerB?.connected);
 
         window.KADRO_ONLINE.room = room;
-        lobbyRoomCode.textContent = roomCode;
+        lobbyRoomCode.textContent = automaticRoomLaunch ? "OTOMATİK" : roomCode;
         lobbyTeamA.textContent = playerA?.name || "Bekleniyor...";
         lobbyTeamB.textContent = playerB?.name || "Rakip bekleniyor...";
 
@@ -11537,7 +11540,7 @@ import {
         } else if (bothPresent) {
           setLobbyStatus("Rakip odada ancak bağlantısı şu anda çevrim dışı görünüyor.");
         } else if (window.KADRO_ONLINE.isHost) {
-          setLobbyStatus("Rakip oyuncu bu oda kodu ile katılabilir.");
+          setLobbyStatus(automaticRoomLaunch ? (partyAutoLaunch ? "Parti arkadaşın otomatik bağlanıyor..." : "Eşleşen rakip otomatik bağlanıyor...") : "Rakip oyuncu bu oda kodu ile katılabilir.");
         } else {
           setLobbyStatus("Ev sahibi bağlantısı bekleniyor...");
         }
@@ -11571,10 +11574,10 @@ import {
         connected: true
       });
       await registerDisconnect(roomCode, "A");
-      lobbyRoomCode.textContent = roomCode;
+      lobbyRoomCode.textContent = automaticRoomLaunch ? "OTOMATİK" : roomCode;
       lobbyTeamA.textContent = teamName;
       lobbyTeamB.textContent = "Rakip bekleniyor...";
-      setLobbyStatus("Rakip oyuncu bu oda kodu ile katılabilir.");
+      setLobbyStatus(automaticRoomLaunch ? (partyAutoLaunch ? "Parti arkadaşın otomatik bağlanıyor..." : "Eşleşen rakip otomatik bağlanıyor...") : "Rakip oyuncu bu oda kodu ile katılabilir.");
       setBootView(bootLobby);
       watchRoom(roomCode);
     } catch (error) {
@@ -11677,7 +11680,7 @@ import {
       });
 
       await registerDisconnect(roomCode, "B");
-      lobbyRoomCode.textContent = roomCode;
+      lobbyRoomCode.textContent = automaticRoomLaunch ? "OTOMATİK" : roomCode;
       lobbyTeamA.textContent = "Ev sahibi okunuyor...";
       lobbyTeamB.textContent = teamName;
       setLobbyStatus("Odaya bağlanıldı. Lobi güncelleniyor...");
@@ -11824,7 +11827,7 @@ import {
 
       await registerDisconnect(roomCode, side);
 
-      lobbyRoomCode.textContent = roomCode;
+      lobbyRoomCode.textContent = automaticRoomLaunch ? "OTOMATİK" : roomCode;
       lobbyTeamA.textContent = host?.name || "Bekleniyor...";
       lobbyTeamB.textContent = guest?.name || "Rakip bekleniyor...";
       setLobbyStatus("Oturum geri yükleniyor...");
@@ -12165,7 +12168,10 @@ import {
     const teamName = sanitizeTeamName(autoMatch.get("nxName")) || "NEON Oyuncu";
     if (onlineTeamName) onlineTeamName.value = teamName;
     if (joinRoomCode) joinRoomCode.value = roomCode;
-    setBootView(bootOnline);
+    if (lobbyRoomCode) lobbyRoomCode.textContent = automaticRoomLaunch ? "OTOMATİK" : roomCode;
+    if (lobbyTeamA) lobbyTeamA.textContent = role === "host" ? teamName : "Parti lideri";
+    if (lobbyTeamB) lobbyTeamB.textContent = role === "guest" ? teamName : "Parti arkadaşı";
+    setBootView(bootLobby);
     setOnlineStatus(role === "host" ? "Eşleşme bulundu. Maç lobisi kuruluyor…" : "Eşleşme bulundu. Maç lobisine bağlanılıyor…");
     setTimeout(async () => {
       await ensurePlayerUser();
