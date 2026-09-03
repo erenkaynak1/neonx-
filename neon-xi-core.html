@@ -11158,11 +11158,8 @@ render();
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import {
-  GoogleAuthProvider,
   getAuth,
-  linkWithPopup,
-  onAuthStateChanged,
-  signInWithPopup
+  onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import {
   getDatabase,
@@ -11192,8 +11189,6 @@ import {
   const firebaseApp = initializeApp(firebaseConfig);
   const auth = getAuth(firebaseApp);
   const database = getDatabase(firebaseApp);
-  const googleProvider = new GoogleAuthProvider();
-  googleProvider.setCustomParameters({ prompt: "select_account" });
 
   const bootScreen = document.getElementById("bootScreen");
   const bootHome = document.getElementById("bootHome");
@@ -11334,25 +11329,15 @@ import {
 
   window.NEON_XI_ONLINE_ERROR = reportOnlineError;
 
-  async function ensureGoogleUser() {
-    if (currentUser && !currentUser.isAnonymous) return currentUser;
-    if (auth.currentUser && !auth.currentUser.isAnonymous) {
+  async function ensurePlayerUser() {
+    if (currentUser) return currentUser;
+    if (auth.currentUser) {
       currentUser = auth.currentUser;
       window.KADRO_ONLINE.uid = currentUser.uid;
       return currentUser;
     }
-    let credentials;
-    try {
-      credentials = auth.currentUser?.isAnonymous
-        ? await linkWithPopup(auth.currentUser, googleProvider)
-        : await signInWithPopup(auth, googleProvider);
-    } catch (error) {
-      if (error?.code !== "auth/credential-already-in-use" && error?.code !== "auth/email-already-in-use") throw error;
-      credentials = await signInWithPopup(auth, googleProvider);
-    }
-    currentUser = credentials.user;
-    window.KADRO_ONLINE.uid = currentUser.uid;
-    return currentUser;
+    window.NEON_SOCIAL?.open?.("friends");
+    throw new Error("Önce Google hesabınla giriş yap veya misafir olarak devam et.");
   }
 
   function startSingleMode() {
@@ -11365,7 +11350,7 @@ import {
     setBootView(bootOnline);
     setOnlineStatus("Firebase bağlantısı hazırlanıyor...");
     try {
-      await ensureGoogleUser();
+      await ensurePlayerUser();
       window.KADRO_ONLINE.connected = true;
       setOnlineStatus(
         "Bağlantı hazır. Takım adını girip oda oluşturabilir veya mevcut bir odaya katılabilirsin."
@@ -11574,7 +11559,7 @@ import {
     setBusy(true);
     setOnlineStatus("Oda oluşturuluyor...");
     try {
-      await ensureGoogleUser();
+      await ensurePlayerUser();
       const roomCode = await reserveRoomCode(teamName, options?.roomCode || "");
       Object.assign(window.KADRO_ONLINE, {
         mode: "online",
@@ -11616,7 +11601,7 @@ import {
     setBusy(true);
     setOnlineStatus("Odaya bağlanılıyor...");
     try {
-      await ensureGoogleUser();
+      await ensurePlayerUser();
       const roomReference = ref(database, `rooms/${roomCode}`);
       const initialSnapshot = await get(roomReference);
       if (!initialSnapshot.exists()) {
@@ -11797,7 +11782,7 @@ import {
     if (roomCode.length !== 6) return false;
 
     try {
-      await ensureGoogleUser();
+      await ensurePlayerUser();
 
       const roomReference = ref(database, `rooms/${roomCode}`);
       const roomSnapshot = await get(roomReference);
@@ -12183,7 +12168,7 @@ import {
     setBootView(bootOnline);
     setOnlineStatus(role === "host" ? "Eşleşme bulundu. Maç lobisi kuruluyor…" : "Eşleşme bulundu. Maç lobisine bağlanılıyor…");
     setTimeout(async () => {
-      await ensureGoogleUser();
+      await ensurePlayerUser();
       if (role === "host") return createRoom({ teamName, roomCode });
       for (let attempt = 0; attempt < 20; attempt++) {
         const snapshot = await get(ref(database, `rooms/${roomCode}`));
@@ -17302,20 +17287,19 @@ window.KADRO_HARD_MATCH_SYNC = {
 
 <script type="module" id="neon-xi-tournament-online-transport">
 import { getApp, getApps, initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-import { GoogleAuthProvider, getAuth, linkWithPopup, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import { getDatabase, get, onDisconnect, onValue, ref, remove, runTransaction, serverTimestamp, set, update, push } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
 (() => {
   "use strict";
   const config={apiKey:"AIzaSyBLpXHGGTHXykKrnu8_Hv1i71oc3tpTNvY",authDomain:"neonxi.firebaseapp.com",databaseURL:"https://neonxi-default-rtdb.europe-west1.firebasedatabase.app",projectId:"neonxi",storageBucket:"neonxi.firebasestorage.app",messagingSenderId:"667191549799",appId:"1:667191549799:web:1e40feacbee09ed7f3d9c2"};
-  const app=getApps().length?getApp():initializeApp(config),auth=getAuth(app),db=getDatabase(app),googleProvider=new GoogleAuthProvider();
-  googleProvider.setCustomParameters({prompt:'select_account'});
+  const app=getApps().length?getApp():initializeApp(config),auth=getAuth(app),db=getDatabase(app);
   const session={uid:'',roomCode:'',isHost:false,unsub:null,disconnect:null,seen:new Set()};
   const iframe=()=>document.getElementById('neonTournamentFrame');
   const post=(type,payload={})=>iframe()?.contentWindow?.postMessage({type,...payload},'*');
   const cleanName=v=>String(v||'').replace(/[<>]/g,'').replace(/\s+/g,' ').trim().slice(0,22);
   const cleanCode=v=>String(v||'').toUpperCase().replace(/[^A-HJ-NP-Z2-9]/g,'').slice(0,6);
   const code=()=>{const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<6;i++)s+=c[Math.floor(Math.random()*c.length)];return s;};
-  async function user(){if(auth.currentUser&&!auth.currentUser.isAnonymous){session.uid=auth.currentUser.uid;return auth.currentUser;}let c;try{c=auth.currentUser?.isAnonymous?await linkWithPopup(auth.currentUser,googleProvider):await signInWithPopup(auth,googleProvider);}catch(e){if(e?.code!=='auth/credential-already-in-use'&&e?.code!=='auth/email-already-in-use')throw e;c=await signInWithPopup(auth,googleProvider);}session.uid=c.user.uid;return c.user;}
+  async function user(){if(auth.currentUser){session.uid=auth.currentUser.uid;return auth.currentUser;}window.NEON_SOCIAL?.open?.('friends');throw new Error('Önce Google hesabınla giriş yap veya misafir olarak devam et.');}
   function err(error){const c=error?.code||'';if(c.includes('permission-denied'))return 'Firebase oda izinleri bu işleme izin vermedi.';if(c.includes('network'))return 'İnternet bağlantısı kurulamadı.';return error?.message||'Beklenmeyen oda hatası.';}
   async function disconnect(roomCode){try{if(session.disconnect)await session.disconnect.cancel();const r=ref(db,`rooms/${roomCode}/players/${session.uid}/connected`);session.disconnect=onDisconnect(r);await session.disconnect.set(false);}catch(e){}}
   function stop(){if(typeof session.unsub==='function')session.unsub();session.unsub=null;session.seen.clear();}

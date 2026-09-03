@@ -48,19 +48,26 @@ class SocialSystemTests(unittest.TestCase):
         self.assertIn("q.get('nxAuto')==='1'", xox)
         self.assertIn("q.get('nxAuto')==='1'", twin)
 
-    def test_membership_uses_google_auth_without_anonymous_sign_in(self):
+    def test_membership_supports_google_and_explicit_guest_auth(self):
         core = (ROOT / "neon-xi-core.html").read_text(encoding="utf-8")
         social = (ROOT / "social/neon-social.js").read_text(encoding="utf-8")
         combined = core + social
-        self.assertNotIn("signInAnonymously", combined)
-        self.assertIn("GoogleAuthProvider", core)
+        self.assertIn("signInAnonymously", social)
+        self.assertNotIn("signInAnonymously", core)
+        self.assertNotIn("GoogleAuthProvider", core)
         self.assertIn("GoogleAuthProvider", social)
         self.assertIn("signInWithPopup", combined)
         self.assertIn("linkWithPopup", combined)
         self.assertIn("GOOGLE İLE GİRİŞ YAP", social)
+        self.assertIn("MİSAFİR OLARAK DEVAM ET", social)
+        self.assertIn("GOOGLE’A BAĞLA", social)
+        self.assertIn("Yalnızca bu tarayıcıda korunur", social)
         self.assertIn("signOut", social)
         self.assertIn("Devam etmek için benzersiz oyuncu adını seç", social)
         self.assertIn("if(state.user&&!state.profile)", social)
+        self.assertIn("if(user)bindUser(user)", social)
+        self.assertIn("ensurePlayerUser", core)
+        self.assertNotIn("ensureGoogleUser", core)
 
 
 if __name__ == "__main__":
