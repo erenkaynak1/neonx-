@@ -1,6 +1,6 @@
 'use strict';
 (async()=>{
-  const res=await fetch('./game.js?v=20260904-career-twin-firebase-v1',{cache:'no-store'});
+  const res=await fetch('./game.js?v=20260904-career-twin-firebase-v5',{cache:'no-store'});
   if(!res.ok) throw new Error('Career Twin core could not load');
   let src=await res.text();
   if(!src.includes('configureMetrics')||!src.includes('transfermarkt-players.json')){
@@ -15,6 +15,13 @@
     if(from<0||to<0) throw new Error('Career Twin performance patch mismatch: '+label);
     src=src.slice(0,from)+replacement+'\n'+src.slice(to);
   };
+
+  replaceBlock(
+    'room-create',
+    "  async function createRoom(name,forcedCode=''){",
+    "  function tryHost(attempt,forcedCode=''){",
+    `  async function createRoom(name,forcedCode=''){if(!name){S.error='Önce adını yaz.';render();return}cleanup();S.name=name;S.role='host';S.screen='lobby';S.error='';render();try{await loadPeer();await tryHost(0,forcedCode)}catch(e){console.error('Career Twin room create failed',e);const code=String(e?.code||'').toLowerCase(),detail=String(e?.message||'').trim(),low=detail.toLowerCase();if(code.includes('permission')||low.includes('permission'))S.error='Oda kurulamadı · Firebase erişimi reddetti.';else if(code.includes('network')||low.includes('network'))S.error='Oda kurulamadı · Ağ bağlantısı kurulamadı.';else if(low.includes('room-code-in-use'))S.error='Oda kodu kullanımda · Partiyi yeniden başlat.';else S.error='Oda kurulamadı · '+(detail||code||'Bilinmeyen bağlantı hatası.').slice(0,96);render()}}`
+  );
 
   replaceBlock(
     'picker',
@@ -34,7 +41,7 @@
     'init',
     '  async function init(){',
     "  window.addEventListener('beforeunload',cleanup);",
-    `  async function init(){injectCss();render();try{const response=await fetch('../data/master/transfermarkt-players.json',{cache:'no-store'});if(!response.ok)throw new Error('data');const master=await response.json(),all=new Map();master.forEach(p=>{if(p&&p.id&&p.name)all.set(Number(p.id),p)});PLAYERS=[...all.values()];BY_ID=all;const configured=configureMetrics(PLAYERS);GAME_METRICS=configured.metrics;TARGET_PLAYERS=configured.targets;SEARCH_PLAYERS=PLAYERS.map(p=>{p._ctSearchName=normName(p.name);p._ctRecognition=Number(p.recognition_score)||0;p._ctMetricMask=GAME_METRICS.reduce((mask,m,idx)=>hasMetric(p,m.key)?mask|(1<<idx):mask,0);return p}).sort((a,b)=>b._ctRecognition-a._ctRecognition);if(GAME_METRICS.length<5||TARGET_PLAYERS.length<20||SEARCH_PLAYERS.length<100)throw new Error('empty');S.screen='menu';render();const q=new URLSearchParams(location.search);if(q.get('nxAuto')==='1'){const name=String(q.get('nxName')||'NEON Oyuncu').slice(0,24),code=String(q.get('nxCode')||'');if(window.NXCareerTwinFirebaseReady)await window.NXCareerTwinFirebaseReady;if(q.get('nxRole')==='host')await createRoom(name,code);else{S.screen='lobby';S.name=name;S.code=code;render();let joined=false;for(let i=0;i<24&&!joined;i++){await new Promise(r=>setTimeout(r,i?450:650));try{await joinRoom(code,name);joined=true}catch(e){console.warn('Career Twin auto join retry',e)}}}}}catch(e){console.error(e);app.innerHTML='';top();brand('Oyuncu verileri yüklenemedi');app.appendChild(E('div','card center','<div class="error">Transfermarkt master havuzu açılamadı. Biraz sonra tekrar dene.</div>'))}}`
+    `  async function init(){injectCss();render();try{const response=await fetch('../data/master/transfermarkt-players.json',{cache:'no-store'});if(!response.ok)throw new Error('data');const master=await response.json(),all=new Map();master.forEach(p=>{if(p&&p.id&&p.name)all.set(Number(p.id),p)});PLAYERS=[...all.values()];BY_ID=all;const configured=configureMetrics(PLAYERS);GAME_METRICS=configured.metrics;TARGET_PLAYERS=configured.targets;SEARCH_PLAYERS=PLAYERS.map(p=>{p._ctSearchName=normName(p.name);p._ctRecognition=Number(p.recognition_score)||0;p._ctMetricMask=GAME_METRICS.reduce((mask,m,idx)=>hasMetric(p,m.key)?mask|(1<<idx):mask,0);return p}).sort((a,b)=>b._ctRecognition-a._ctRecognition);if(GAME_METRICS.length<5||TARGET_PLAYERS.length<20||SEARCH_PLAYERS.length<100)throw new Error('empty');S.screen='menu';render();const q=new URLSearchParams(location.search);if(q.get('nxAuto')==='1'){const name=String(q.get('nxName')||'NEON Oyuncu').slice(0,24),code=String(q.get('nxCode')||'');if(q.get('nxRole')==='host')await createRoom(name,code);else{S.screen='lobby';S.name=name;S.code=code;render();await new Promise(r=>setTimeout(r,350));await joinRoom(code,name)}}}catch(e){console.error(e);app.innerHTML='';top();brand('Oyuncu verileri yüklenemedi');app.appendChild(E('div','card center','<div class="error">Transfermarkt master havuzu açılamadı. Biraz sonra tekrar dene.</div>'))}}`
   );
 
   new Function(src);
