@@ -187,13 +187,17 @@
     }
 
     const timeline = Array.isArray(g.visualTimeline) ? g.visualTimeline : [];
-    for (let i = Math.max(0, timeline.length - 8); i < timeline.length; i++) {
+    const stageText = `${document.getElementById('nvStageText')?.textContent || ''} ${document.getElementById('nvActionType')?.textContent || ''}`.toLocaleUpperCase('tr-TR');
+    if (!stageText.includes('GOL')) return;
+
+    for (let i = timeline.length - 1; i >= Math.max(0, timeline.length - 8); i--) {
       const frame = timeline[i];
       if (!frame || frame.stage !== 'goal') continue;
       const id = String(frame.id ?? frame.sourceId ?? `${frame.team}-${frame.minute}-${i}`);
       if (seenGoalFrames.has(id)) continue;
       seenGoalFrames.add(id);
       playGoalFlight(frame);
+      break;
     }
   }
 
