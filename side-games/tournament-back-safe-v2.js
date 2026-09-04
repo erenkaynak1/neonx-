@@ -24,5 +24,13 @@
     if(b)return;
     b=document.createElement('button');b.type='button';b.className='nx-tournament-back-safe';b.textContent='← ANA MENÜ';b.onclick=goHome;document.body.appendChild(b);
   }
+  document.addEventListener('click',event=>{
+    const target=event.target?.closest?.('#bootHome.nx-approved-home-v1 .h-how');
+    if(!target)return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    location.href='./side-games/how-to-play.html';
+  },true);
   addStyle();setInterval(sync,700);sync();
 })();
