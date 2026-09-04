@@ -23,7 +23,7 @@ html,body{margin:0;min-height:100%;background:#03070a;color:#bfffd8;font-family:
 <div class="boot">NEON XI YÜKLENİYOR <span class="dot">●</span></div>
 <script>
 (async()=>{
-  const VERSION='20260904-party-draft-room-hotfix-v1';
+  const VERSION='20260904-party-draft-room-hotfix-v2';
   // Do not hide the entire document: the splash masks legacy/core rendering while the approved home initializes.
   const BOOT_GUARD='<style id="nx-home-boot-guard">html,body{background:#03070a!important}</style>';
   const REVEAL_SCRIPT='<script>(()=>{const reveal=()=>{const g=document.getElementById("nx-home-boot-guard");if(g)g.remove();};const ready=()=>!!document.querySelector("#bootHome.nx-approved-home-v1");if(ready()){requestAnimationFrame(reveal);return;}const o=new MutationObserver(()=>{if(!ready())return;o.disconnect();requestAnimationFrame(reveal);});o.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:["class"]});setTimeout(()=>{o.disconnect();reveal();},9000);})();<\/script>';
@@ -33,6 +33,13 @@ html,body{margin:0;min-height:100%;background:#03070a;color:#bfffd8;font-family:
     const response=await fetch('./neon-xi-core.html?v='+encodeURIComponent(VERSION),{cache:'no-store'});
     if(!response.ok) throw new Error('NEON XI core '+response.status);
     let html=await response.text();
+
+    // Party Draft v2: the social layer creates the room before redirecting. When the core opens,
+    // reuse that waiting room instead of trying to reserve the same fixed code a second time.
+    const roomReserveNeedle='const roomReference = ref(database, `rooms/${roomCode}`);\n      const result = await runTransaction(';
+    const roomReserveReplacement='const roomReference = ref(database, `rooms/${roomCode}`);\n      if (fixedCode) {\n        const existingPartyRoom = (await get(roomReference)).val();\n        if (existingPartyRoom?.hostUid === currentUser.uid && existingPartyRoom?.status === "waiting") return roomCode;\n      }\n      const result = await runTransaction(';
+    html=html.split(roomReserveNeedle).join(roomReserveReplacement);
+
     const headPos=html.toLowerCase().lastIndexOf('</head>');
     html=headPos>=0 ? html.slice(0,headPos)+BOOT_GUARD+HOME_SOCIAL_STYLE+DRAFT_SELECTION_GUARD_STYLE+html.slice(headPos) : BOOT_GUARD+HOME_SOCIAL_STYLE+DRAFT_SELECTION_GUARD_STYLE+html;
     const injector='<script src="./side-games/neon-splash-safe-v1.js?v='+VERSION+'"><\/script>'+ 
