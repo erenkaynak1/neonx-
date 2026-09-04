@@ -71,12 +71,13 @@ class FirebasePeer extends Emitter{
     const c=this._ctx,t=Date.now(),roomRef=c.ref(c.db,`rooms/${this._roomKey()}`);
     const result=await c.runTransaction(roomRef,current=>{
       const stale=current&&current.gameType===GAME_TYPE&&Number(current.expiresAt||0)<t;
-      if(current&&!stale)return;
-      return {version:'career-twin-firebase-v2',gameType:GAME_TYPE,status:'waiting',hostPeerId:this.id,hostUid:this._user.uid,createdAt:t,updatedAt:t,expiresAt:t+TTL_MS,hostConnected:true,actions:{}};
+      const mine=current&&current.gameType===GAME_TYPE&&current.hostUid===this._user.uid&&current.status==='waiting';
+      if(current&&!stale&&!mine)return;
+      return {version:'career-twin-firebase-v3',gameType:GAME_TYPE,status:'waiting',hostPeerId:this.id,hostUid:this._user.uid,createdAt:mine?Number(current.createdAt||t):t,updatedAt:t,expiresAt:t+TTL_MS,hostConnected:true,actions:{}};
     },{applyLocally:false});
     if(!result.committed){const err=new Error('room-code-in-use');err.type='unavailable-id';throw err}
     this._roomRef=roomRef;this._actionsRef=c.ref(c.db,`rooms/${this._roomKey()}/actions`);
-    this._disconnect=c.onDisconnect(roomRef);await this._disconnect.remove();
+    try{this._disconnect=c.onDisconnect(roomRef);await this._disconnect.remove()}catch(e){console.warn('Career Twin disconnect cleanup registration skipped',e)}
     this._watchActions();
   }
   connect(targetId){
@@ -138,6 +139,6 @@ class FirebasePeer extends Emitter{
 }
 
 window.Peer=FirebasePeer;
-window.NXCareerTwinTransport='firebase-realtime-v2';
+window.NXCareerTwinTransport='firebase-realtime-v3';
 window.NXCareerTwinFirebaseReady=firebaseReady;
 })();
