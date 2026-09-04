@@ -6,6 +6,7 @@ const ROOM_PREFIX='CT-';
 const TTL_MS=3*60*60*1000;
 const CONFIG={apiKey:'AIzaSyBLpXHGGTHXykKrnu8_Hv1i71oc3tpTNvY',authDomain:'neonxi.firebaseapp.com',databaseURL:'https://neonxi-default-rtdb.europe-west1.firebasedatabase.app',projectId:'neonxi',storageBucket:'neonxi.firebasestorage.app',messagingSenderId:'667191549799',appId:'1:667191549799:web:1e40feacbee09ed7f3d9c2'};
 const later=fn=>setTimeout(fn,0);
+const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const makeId=()=>{try{return crypto.randomUUID()}catch{return 'ct-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,10)}};
 
 const firebaseReady=Promise.all([
@@ -71,14 +72,14 @@ class FirebasePeer extends Emitter{
     const result=await c.runTransaction(roomRef,current=>{
       const stale=current&&current.gameType===GAME_TYPE&&Number(current.expiresAt||0)<t;
       if(current&&!stale)return;
-      return {version:'career-twin-firebase-v1',gameType:GAME_TYPE,status:'waiting',hostPeerId:this.id,hostUid:this._user.uid,createdAt:t,updatedAt:t,expiresAt:t+TTL_MS,hostConnected:true,actions:{}};
+      return {version:'career-twin-firebase-v2',gameType:GAME_TYPE,status:'waiting',hostPeerId:this.id,hostUid:this._user.uid,createdAt:t,updatedAt:t,expiresAt:t+TTL_MS,hostConnected:true,actions:{}};
     },{applyLocally:false});
     if(!result.committed){const err=new Error('room-code-in-use');err.type='unavailable-id';throw err}
     this._roomRef=roomRef;this._actionsRef=c.ref(c.db,`rooms/${this._roomKey()}/actions`);
     this._disconnect=c.onDisconnect(roomRef);await this._disconnect.remove();
     this._watchActions();
   }
-  async connect(targetId){
+  connect(targetId){
     const target=String(targetId||''),conn=new FirebaseConnection(this,target);this._connections.set(target,conn);
     (async()=>{
       try{
@@ -86,8 +87,14 @@ class FirebasePeer extends Emitter{
         const code=target.startsWith(PREFIX)?target.slice(PREFIX.length):'';
         if(!code)throw Object.assign(new Error('peer-unavailable'),{type:'peer-unavailable'});
         this._code=code;
-        const roomRef=this._ctx.ref(this._ctx.db,`rooms/${this._roomKey(code)}`),snap=await this._ctx.get(roomRef),room=snap.val();
-        if(!room||room.gameType!==GAME_TYPE||room.status==='closed'||Number(room.expiresAt||0)<Date.now())throw Object.assign(new Error('peer-unavailable'),{type:'peer-unavailable'});
+        const roomRef=this._ctx.ref(this._ctx.db,`rooms/${this._roomKey(code)}`);
+        let room=null;
+        for(let attempt=0;attempt<30&&!room&&!this.destroyed;attempt++){
+          const snap=await this._ctx.get(roomRef),candidate=snap.val();
+          if(candidate&&candidate.gameType===GAME_TYPE&&candidate.status!=='closed'&&Number(candidate.expiresAt||0)>=Date.now())room=candidate;
+          else if(attempt<29)await wait(400);
+        }
+        if(!room)throw Object.assign(new Error('peer-unavailable'),{type:'peer-unavailable'});
         this._roomRef=roomRef;this._actionsRef=this._ctx.ref(this._ctx.db,`rooms/${this._roomKey(code)}/actions`);
         this._watchActions();this._watchRoom();
         await this._sendEnvelope(target,'connect',null);conn._markOpen();
@@ -131,6 +138,6 @@ class FirebasePeer extends Emitter{
 }
 
 window.Peer=FirebasePeer;
-window.NXCareerTwinTransport='firebase-realtime-v1';
+window.NXCareerTwinTransport='firebase-realtime-v2';
 window.NXCareerTwinFirebaseReady=firebaseReady;
 })();
