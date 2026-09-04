@@ -1,6 +1,6 @@
 import {initializeApp,getApp,getApps} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js';
 import {getAuth,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js';
-import {getDatabase,get,ref,remove,runTransaction,serverTimestamp,set} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js';
+import {getDatabase,get,ref,remove,serverTimestamp,set} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js';
 
 const CONFIG={apiKey:'AIzaSyBLpXHGGTHXykKrnu8_Hv1i71oc3tpTNvY',authDomain:'neonxi.firebaseapp.com',databaseURL:'https://neonxi-default-rtdb.europe-west1.firebasedatabase.app',projectId:'neonxi',storageBucket:'neonxi.firebasestorage.app',messagingSenderId:'667191549799',appId:'1:667191549799:web:1e40feacbee09ed7f3d9c2'};
 const app=getApps().length?getApp():initializeApp(CONFIG);
@@ -36,25 +36,27 @@ async function reserveDraftRoom(user,teamName){
   for(let attempt=0;attempt<30;attempt++){
     const roomCode=randomDraftCode();
     const roomReference=ref(db,`rooms/${roomCode}`);
-    const result=await runTransaction(roomReference,currentRoom=>{
-      if(currentRoom!==null)return;
-      return {
-        version:'1.19-online-match-sync',
-        status:'waiting',
-        createdAt:serverTimestamp(),
-        updatedAt:serverTimestamp(),
-        hostUid:user.uid,
-        players:{
-          A:{
-            uid:user.uid,
-            name:teamName||'NEON Oyuncu',
-            connected:true,
-            joinedAt:serverTimestamp()
-          }
+    const before=await get(roomReference);
+    if(before.exists())continue;
+
+    await set(roomReference,{
+      version:'1.19-online-match-sync',
+      status:'waiting',
+      createdAt:serverTimestamp(),
+      updatedAt:serverTimestamp(),
+      hostUid:user.uid,
+      players:{
+        A:{
+          uid:user.uid,
+          name:teamName||'NEON Oyuncu',
+          connected:true,
+          joinedAt:serverTimestamp()
         }
-      };
-    },{applyLocally:false});
-    if(result.committed)return roomCode;
+      }
+    });
+
+    const verified=(await get(roomReference)).val();
+    if(verified?.hostUid===user.uid&&verified?.players?.A?.uid===user.uid)return roomCode;
   }
   throw new Error('Draft odası oluşturulamadı. Lütfen tekrar dene.');
 }
@@ -106,7 +108,8 @@ async function launchDraftPartySafely(button){
       try{await remove(ref(db,`rooms/${createdRoomCode}`));}catch(cleanupError){console.warn('[NEON XI] failed to clean reserved room',cleanupError)}
     }
     console.error('[NEON XI] safe party Draft launch failed',error);
-    status(error?.message||'Parti Draft odası kurulamadı.',true);
+    const detail=String(error?.message||error||'Parti Draft odası kurulamadı.');
+    status(detail,true);
     button.disabled=false;
   }
 }
