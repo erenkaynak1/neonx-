@@ -1,6 +1,6 @@
 import {initializeApp,getApp,getApps} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js';
 import {getAuth,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js';
-import {getDatabase,get,ref,remove,serverTimestamp,set} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js';
+import {getDatabase,get,ref,remove,runTransaction,serverTimestamp,set} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js';
 
 const CONFIG={apiKey:'AIzaSyBLpXHGGTHXykKrnu8_Hv1i71oc3tpTNvY',authDomain:'neonxi.firebaseapp.com',databaseURL:'https://neonxi-default-rtdb.europe-west1.firebasedatabase.app',projectId:'neonxi',storageBucket:'neonxi.firebasestorage.app',messagingSenderId:'667191549799',appId:'1:667191549799:web:1e40feacbee09ed7f3d9c2'};
 const app=getApps().length?getApp():initializeApp(CONFIG);
@@ -32,13 +32,31 @@ async function currentPartyContext(){
   return {user,partyId,party};
 }
 
-async function findUnusedDraftRoomCode(){
+async function reserveDraftRoom(user,teamName){
   for(let attempt=0;attempt<30;attempt++){
     const roomCode=randomDraftCode();
-    const room=await get(ref(db,`rooms/${roomCode}`));
-    if(!room.exists())return roomCode;
+    const roomReference=ref(db,`rooms/${roomCode}`);
+    const result=await runTransaction(roomReference,currentRoom=>{
+      if(currentRoom!==null)return;
+      return {
+        version:'1.19-online-match-sync',
+        status:'waiting',
+        createdAt:serverTimestamp(),
+        updatedAt:serverTimestamp(),
+        hostUid:user.uid,
+        players:{
+          A:{
+            uid:user.uid,
+            name:teamName||'NEON Oyuncu',
+            connected:true,
+            joinedAt:serverTimestamp()
+          }
+        }
+      };
+    },{applyLocally:false});
+    if(result.committed)return roomCode;
   }
-  throw new Error('Boş Draft odası üretilemedi. Tekrar dene.');
+  throw new Error('Draft odası oluşturulamadı. Lütfen tekrar dene.');
 }
 
 async function clearStaleLaunchForLeader(user){
@@ -57,17 +75,19 @@ async function clearStaleLaunchForLeader(user){
 
 async function launchDraftPartySafely(button){
   button.disabled=true;
-  status('Parti için boş Draft odası hazırlanıyor…');
+  status('Parti için Draft odası oluşturuluyor…');
+  let createdRoomCode='';
   try{
     const {user,partyId,party}=await currentPartyContext();
     if(party.leaderUid!==user.uid)throw new Error('Oyunu yalnızca parti lideri başlatabilir.');
     const members=Object.keys(party.members||{});
     if(members.length!==2)throw new Error('Draft 1v1 için partide tam iki oyuncu olmalı.');
 
-    // Eski launch verisini yeni oyuna taşımıyoruz. Yeni deneme her zaman yeni nonce + yeni oda kodu alır.
     if(party.launch)await remove(ref(db,`social/parties/${partyId}/launch`));
 
-    const roomCode=await findUnusedDraftRoomCode();
+    const teamName=party.members?.[user.uid]?.username||'NEON Oyuncu';
+    const roomCode=await reserveDraftRoom(user,teamName);
+    createdRoomCode=roomCode;
     const nonce=`${Date.now()}_${Math.random().toString(36).slice(2,8)}`;
     const launch={
       mode:'draft',
@@ -80,16 +100,17 @@ async function launchDraftPartySafely(button){
     };
 
     await set(ref(db,`social/parties/${partyId}/launch`),launch);
-    status('Boş oda bulundu. İki oyuncu da Draft lobisine aktarılıyor…');
-    // neon-social.js parti launch dinleyicisi iki oyuncuyu da aynı nxCode ile otomatik yönlendirir.
+    status('Draft odası hazır. İki oyuncu da aynı lobiye aktarılıyor…');
   }catch(error){
+    if(createdRoomCode){
+      try{await remove(ref(db,`rooms/${createdRoomCode}`));}catch(cleanupError){console.warn('[NEON XI] failed to clean reserved room',cleanupError)}
+    }
     console.error('[NEON XI] safe party Draft launch failed',error);
     status(error?.message||'Parti Draft odası kurulamadı.',true);
     button.disabled=false;
   }
 }
 
-// Base social handler hedef butonda çalışmadan önce Draft parti başlatmasını güvenli akışa al.
 document.addEventListener('click',event=>{
   const button=event.target.closest('.nx-social-shade [data-act="launch-party"]');
   if(!button)return;
