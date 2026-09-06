@@ -56,6 +56,15 @@ class SocialSystemTests(unittest.TestCase):
         self.assertIn("clearQueueEntries", safe_social)
         self.assertNotIn("setInterval(()=>{patchOpen();patchPlay();ensureBadge();identity()},1200)", safe_social)
 
+    def test_party_membership_is_single_party_and_stale_pointer_safe(self):
+        social = (ROOT / "social/neon-social.js").read_text(encoding="utf-8")
+        self.assertIn("async function currentPartyMembership()", social)
+        self.assertIn("if(party?.members?.[uid])return id", social)
+        self.assertIn("await remove(pointer);return ''", social)
+        self.assertIn("if(existing)throw new Error('Zaten aktif bir partidesin.')", social)
+        self.assertIn("runTransaction(pointer,value=>!value||value===id?id:undefined", social)
+        self.assertIn("Başka bir parti üyeliği aynı anda etkinleşti", social)
+
     def test_matchmaking_adapters_accept_fixed_room_codes(self):
         core = (ROOT / "neon-xi-core.html").read_text(encoding="utf-8")
         xox = (ROOT / "side-games/football-xox/game-v2.js").read_text(encoding="utf-8")
