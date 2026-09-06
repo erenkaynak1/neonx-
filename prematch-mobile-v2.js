@@ -85,15 +85,34 @@
     header.prepend(img);
   }
 
+  function ensureBackgroundLayers(root){
+    let bg=root.querySelector(':scope > .nx-prematch-bg');
+    if(!bg){
+      bg=document.createElement('div');
+      bg.className='nx-prematch-bg';
+      bg.setAttribute('aria-hidden','true');
+      root.prepend(bg);
+    }
+
+    let overlay=root.querySelector(':scope > .nx-prematch-bg-overlay');
+    if(!overlay){
+      overlay=document.createElement('div');
+      overlay.className='nx-prematch-bg-overlay';
+      overlay.setAttribute('aria-hidden','true');
+      bg.insertAdjacentElement('afterend',overlay);
+    }
+  }
+
   function decorate(){
     const title=leaf(TITLE);
     if(!title) return false;
     const root=findRoot(title);
     if(!root) return false;
-    if(root.dataset.nxPrematchV2==='1') return true;
 
-    root.dataset.nxPrematchV2='1';
     root.classList.add('nx-prematch-v2');
+    ensureBackgroundLayers(root);
+    if(root.dataset.nxPrematchV2==='3') return true;
+    root.dataset.nxPrematchV2='3';
 
     const header=findHeader(title,root);
     if(header){
