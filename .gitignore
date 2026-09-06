@@ -5,3 +5,5 @@
 qa/
 __pycache__/
 *.pyc
+side-games/career-twin/data/pipeline-*.log
+side-games/career-twin/data/pipeline-status.json
