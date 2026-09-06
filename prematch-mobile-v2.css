@@ -1,0 +1,174 @@
+/* NEON XI — mobile-first pre-match analysis skin */
+:root{--nx-pre-a:#42ff70;--nx-pre-a2:#a7ff4d;--nx-pre-b:#ff315c;--nx-pre-b2:#ff6a8c;--nx-pre-ink:#f6fff7;--nx-pre-muted:rgba(229,242,233,.66);}
+
+.nx-prematch-v2{
+  position:relative!important;
+  isolation:isolate;
+  box-sizing:border-box!important;
+  width:100%!important;
+  max-width:1080px!important;
+  min-height:100dvh!important;
+  margin:0 auto!important;
+  padding:max(18px,env(safe-area-inset-top)) 14px max(30px,env(safe-area-inset-bottom))!important;
+  overflow-x:hidden!important;
+  background:transparent!important;
+  color:var(--nx-pre-ink)!important;
+}
+.nx-prematch-v2::before{
+  content:"";
+  position:fixed;
+  inset:-24px;
+  z-index:-2;
+  pointer-events:none;
+  background-image:url('./assets/prematch-cyber-stadium.webp');
+  background-position:center top;
+  background-size:cover;
+  background-repeat:no-repeat;
+  filter:blur(8px) brightness(.43) saturate(.92) contrast(1.06);
+  transform:scale(1.055);
+  transform-origin:center;
+}
+.nx-prematch-v2::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 18% 14%,rgba(36,255,107,.12),transparent 33%),
+    radial-gradient(circle at 84% 14%,rgba(255,49,92,.12),transparent 33%),
+    linear-gradient(180deg,rgba(0,8,7,.18) 0%,rgba(1,5,5,.44) 48%,rgba(1,4,4,.68) 100%);
+}
+.nx-prematch-v2,.nx-prematch-v2 *{box-sizing:border-box;}
+
+.nx-prematch-header{
+  width:min(100%,720px)!important;
+  margin:0 auto 18px!important;
+  padding:4px 4px 0!important;
+  text-align:center!important;
+}
+.nx-prematch-logo{
+  display:block!important;
+  width:min(72vw,300px)!important;
+  height:auto!important;
+  max-height:76px!important;
+  object-fit:contain!important;
+  margin:0 auto 9px!important;
+  filter:drop-shadow(0 0 7px rgba(89,255,37,.55)) drop-shadow(0 0 18px rgba(70,255,66,.18));
+}
+.nx-prematch-kicker{
+  margin:0 auto 7px!important;
+  color:#b8ff38!important;
+  font-size:10px!important;
+  line-height:1.2!important;
+  font-weight:900!important;
+  letter-spacing:.24em!important;
+  text-transform:uppercase!important;
+}
+.nx-prematch-title{
+  margin:0 auto 7px!important;
+  max-width:760px!important;
+  color:#f7fff5!important;
+  font-size:clamp(30px,8.6vw,48px)!important;
+  line-height:.98!important;
+  letter-spacing:-.035em!important;
+  text-align:center!important;
+  text-wrap:balance;
+  text-shadow:0 2px 20px rgba(0,0,0,.48);
+}
+.nx-prematch-subtitle{
+  margin:0 auto!important;
+  max-width:650px!important;
+  padding:0 8px!important;
+  color:rgba(238,247,240,.68)!important;
+  font-size:clamp(11px,3.2vw,14px)!important;
+  line-height:1.45!important;
+  text-align:center!important;
+}
+
+.nx-prematch-power,
+.nx-prematch-team-panel{
+  position:relative!important;
+  border-radius:18px!important;
+  background:linear-gradient(180deg,rgba(2,13,11,.77),rgba(2,7,7,.72))!important;
+  -webkit-backdrop-filter:blur(18px) saturate(1.08)!important;
+  backdrop-filter:blur(18px) saturate(1.08)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 16px 38px rgba(0,0,0,.24)!important;
+}
+.nx-prematch-power{
+  width:100%!important;
+  margin:0 auto 16px!important;
+  padding:18px 16px!important;
+  border:1px solid rgba(159,255,55,.44)!important;
+  overflow:hidden!important;
+}
+.nx-prematch-power::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(90deg,rgba(35,255,105,.055),transparent 44%,transparent 56%,rgba(255,38,86,.055));
+}
+.nx-prematch-power-title{
+  color:rgba(222,240,228,.65)!important;
+  font-size:10px!important;font-weight:900!important;letter-spacing:.18em!important;text-transform:uppercase!important;
+}
+.nx-prematch-balance{width:100%!important;max-width:100%!important;min-width:0!important;}
+
+.nx-prematch-tactics-grid{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:14px!important;
+  width:100%!important;
+  align-items:start!important;
+}
+.nx-prematch-team-panel{
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:16px!important;
+  overflow:hidden!important;
+}
+.nx-prematch-team-a{
+  border:1px solid rgba(42,255,103,.68)!important;
+  box-shadow:inset 0 1px 0 rgba(111,255,148,.05),0 0 24px rgba(0,255,95,.055),0 16px 36px rgba(0,0,0,.22)!important;
+  background:linear-gradient(145deg,rgba(2,20,14,.82),rgba(1,9,8,.75))!important;
+}
+.nx-prematch-team-b{
+  border:1px solid rgba(255,42,86,.68)!important;
+  box-shadow:inset 0 1px 0 rgba(255,116,145,.04),0 0 24px rgba(255,25,70,.05),0 16px 36px rgba(0,0,0,.22)!important;
+  background:linear-gradient(145deg,rgba(24,4,9,.80),rgba(9,3,6,.75))!important;
+}
+.nx-prematch-row{
+  width:100%!important;
+  min-width:0!important;
+  min-height:40px!important;
+  margin:7px 0 0!important;
+  padding:9px 11px!important;
+  border-radius:10px!important;
+  border:1px solid rgba(202,222,211,.12)!important;
+  background:rgba(0,5,5,.48)!important;
+  overflow:hidden!important;
+}
+.nx-prematch-team-a .nx-prematch-row{border-color:rgba(65,255,116,.12)!important;}
+.nx-prematch-team-b .nx-prematch-row{border-color:rgba(255,62,102,.14)!important;}
+.nx-prematch-row *{max-width:100%;}
+.nx-prematch-v2 [style*="font-size"]{max-width:100%;}
+.nx-prematch-v2 button,.nx-prematch-v2 select{max-width:100%;}
+
+@media (max-width:520px){
+  .nx-prematch-v2{padding-left:12px!important;padding-right:12px!important;}
+  .nx-prematch-header{margin-bottom:15px!important;}
+  .nx-prematch-logo{width:min(76vw,280px)!important;max-height:66px!important;margin-bottom:7px!important;}
+  .nx-prematch-power{padding:15px 12px!important;border-radius:16px!important;margin-bottom:13px!important;}
+  .nx-prematch-team-panel{padding:14px 12px!important;border-radius:16px!important;}
+  .nx-prematch-row{min-height:38px!important;padding:8px 9px!important;border-radius:9px!important;}
+  .nx-prematch-v2 *{min-width:0;}
+}
+
+@media (min-width:760px){
+  .nx-prematch-v2{padding-left:28px!important;padding-right:28px!important;}
+  .nx-prematch-tactics-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:16px!important;}
+  .nx-prematch-header{margin-bottom:22px!important;}
+  .nx-prematch-power{padding:20px 20px!important;}
+}
+
+@media (prefers-reduced-motion:reduce){.nx-prematch-v2 *{scroll-behavior:auto!important;}}
