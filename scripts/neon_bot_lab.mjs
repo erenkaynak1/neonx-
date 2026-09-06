@@ -63,17 +63,26 @@ async function addFriend(sender,receiver){
   for(const [bot,other] of [[sender,receiver],[receiver,sender]]){await openDrawer(bot,'friends');await bot.page.waitForFunction(name=>[...document.querySelectorAll('.nx-drawer-friend-row')].some(x=>x.textContent.includes(`@${name}`)),other.username,{timeout:TIMEOUT})}
 }
 
+async function waitForPartyMembers(bot,leader,member){
+  await openDrawer(bot,'friends');
+  await bot.page.waitForFunction(({leaderName,memberName})=>{
+    const card=document.querySelector('.nx-social-drawer-layer.open .nx-drawer-party');
+    const text=card?.textContent||'';
+    return text.includes(`@${leaderName}`)&&text.includes(`@${memberName}`);
+  },{leaderName:leader.username,memberName:member.username},{timeout:15000});
+}
+
 async function makeParty(leader,member){
   await openDrawer(leader,'friends');
   const row=leader.page.locator('.nx-drawer-friend-row').filter({hasText:`@${member.username}`}).first();await row.waitFor({state:'visible'});await row.locator('[data-nx-friend-more]').click();await row.locator('[data-nx-party-invite]').click();
   await openDrawer(member,'invites');const accept=member.page.locator('.nx-social-drawer-layer.open [data-nx-party-accept]');await accept.waitFor({state:'visible'});assert.equal(await accept.isEnabled(),true);await accept.click();
-  for(const bot of [leader,member]){await openDrawer(bot,'friends');const card=bot.page.locator('.nx-social-drawer-layer.open .nx-drawer-party');await card.waitFor({state:'visible'});const text=await card.textContent();assert.ok(text.includes(`@${leader.username}`));assert.ok(text.includes(`@${member.username}`))}
+  await Promise.all([waitForPartyMembers(leader,leader,member),waitForPartyMembers(member,leader,member)]);
 }
 
 async function leaveParty(bot){
   await openDrawer(bot,'friends');
   const card=bot.page.locator('.nx-social-drawer-layer.open .nx-drawer-party');await card.waitFor({state:'visible'});
-  const button=card.locator('[data-nx-party-leave]');await button.click();
+  await card.locator('[data-nx-party-leave]').click();
   await card.waitFor({state:'hidden',timeout:15000});
 }
 
@@ -115,6 +124,7 @@ try{
   await scenario('Eşzamanlı partiden ayrılma veri bütünlüğü',()=>Promise.all([leaveParty(botA),leaveParty(botB)]),[botA.page,botB.page]);
   await scenario('Gerçek iki oturumla Draft matchmaking handshake',()=>draftHandshake(botA,botB),[botA.page,botB.page]);
   report.observations.push('Botlar ayrı Chromium context ve ayrı Firebase misafir oturumları kullanır.');
+  report.observations.push('Parti üyeliği iki tarafta gerçek zamanlı olarak yakınsayana kadar doğrulanır.');
   report.observations.push('Parti çıkışı iki oyuncuda eşzamanlı tetiklenir; race-safe transaction sözleşmesi test edilir.');
   report.observations.push('Draft eşleşmesi gerçek ana ekran Online kartı üzerinden başlatılır.');
 }catch(error){fatal=error}
