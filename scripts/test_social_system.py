@@ -46,6 +46,16 @@ class SocialSystemTests(unittest.TestCase):
             with self.subTest(token=token):
                 self.assertIn(token, source)
 
+    def test_main_and_side_game_matchmaking_share_the_same_1v1_queue(self):
+        base_social = (ROOT / "social/neon-social.js").read_text(encoding="utf-8")
+        safe_social = (ROOT / "social/neon-social-safe-v4.js").read_text(encoding="utf-8")
+        self.assertIn("const LEGACY_MATCH_MODES=new Set(['draft','xox','twin'])", safe_social)
+        self.assertIn("`social/matchQueues/${mode}`", base_social)
+        self.assertIn("`social/matchQueues/${mode}`", safe_social)
+        self.assertIn("const queuePath=mode=>LEGACY_MATCH_MODES.has(mode)?", safe_social)
+        self.assertIn("clearQueueEntries", safe_social)
+        self.assertNotIn("setInterval(()=>{patchOpen();patchPlay();ensureBadge();identity()},1200)", safe_social)
+
     def test_matchmaking_adapters_accept_fixed_room_codes(self):
         core = (ROOT / "neon-xi-core.html").read_text(encoding="utf-8")
         xox = (ROOT / "side-games/football-xox/game-v2.js").read_text(encoding="utf-8")
