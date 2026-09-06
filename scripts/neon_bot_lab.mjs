@@ -20,7 +20,6 @@ const report = {
 };
 
 const safeName = value => String(value || 'artifact').replace(/[^a-zA-Z0-9_-]+/g, '_');
-const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 async function screenshot(page, name) {
   try {
@@ -73,14 +72,15 @@ async function makeBot(browser, label) {
 async function guestSignIn(bot) {
   const { page, username } = bot;
   await page.locator('#bootHome.nx-approved-home-v1 .h-friends').click();
-  const guest = page.locator('.nx-social-shade.open [data-act="guest-login"]');
+  const activeView = page.locator('.nx-social-shade.open .nx-social-view.active');
+  const guest = activeView.locator('[data-act="guest-login"]');
   await guest.waitFor({ state: 'visible', timeout: TIMEOUT });
   await guest.click();
 
-  const input = page.locator('.nx-social-shade.open #nxUsername');
+  const input = activeView.locator('#nxUsername');
   await input.waitFor({ state: 'visible', timeout: TIMEOUT });
   await input.fill(username);
-  await page.locator('.nx-social-shade.open [data-act="claim"]').click();
+  await activeView.locator('[data-act="claim"]').click();
 
   await page.waitForFunction(expected => document.body.textContent.includes(`@${expected}`), username, { timeout: TIMEOUT });
   bot.uid = await page.evaluate(() => window.NEON_IDENTITY?.uid || '');
@@ -189,15 +189,15 @@ async function openPlay(bot) {
   await page.locator('#bootHome.nx-approved-home-v1 .h-social').click();
   const shade = page.locator('.nx-social-shade.open');
   await shade.waitFor({ state: 'visible', timeout: TIMEOUT });
-  const mode = shade.locator('#nxMode');
+  const mode = shade.locator('.nx-social-view.active #nxMode');
   await mode.waitFor({ state: 'visible', timeout: TIMEOUT });
   await mode.selectOption('draft');
 }
 
 async function startDraftMatch(botA, botB) {
   await Promise.all([openPlay(botA), openPlay(botB)]);
-  const matchA = botA.page.locator('.nx-social-shade.open [data-act="match"]');
-  const matchB = botB.page.locator('.nx-social-shade.open [data-act="match"]');
+  const matchA = botA.page.locator('.nx-social-shade.open .nx-social-view.active [data-act="match"]');
+  const matchB = botB.page.locator('.nx-social-shade.open .nx-social-view.active [data-act="match"]');
   await Promise.all([matchA.waitFor({ state: 'visible' }), matchB.waitFor({ state: 'visible' })]);
   await Promise.all([matchA.click(), matchB.click()]);
 
