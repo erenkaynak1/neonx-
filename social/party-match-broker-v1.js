@@ -1,6 +1,6 @@
 import {initializeApp,getApp,getApps} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js';
 import {getAuth,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js';
-import {getDatabase,get,onValue,ref,remove,serverTimestamp,set,update} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js';
+import {getDatabase,get,onValue,ref,remove,runTransaction,serverTimestamp,set,update} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js';
 
 const CONFIG={apiKey:'AIzaSyBLpXHGGTHXykKrnu8_Hv1i71oc3tpTNvY',authDomain:'neonxi.firebaseapp.com',databaseURL:'https://neonxi-default-rtdb.europe-west1.firebasedatabase.app',projectId:'neonxi',storageBucket:'neonxi.firebasestorage.app',messagingSenderId:'667191549799',appId:'1:667191549799:web:1e40feacbee09ed7f3d9c2'};
 const MODES={
@@ -11,7 +11,7 @@ const MODES={
 };
 const app=getApps().length?getApp():initializeApp(CONFIG),auth=getAuth(app),db=getDatabase(app),base=new URL('../',import.meta.url);
 const q=new URLSearchParams(location.search);
-const READY_TIMEOUT_MS=30000,LAUNCH_TTL_MS=60000,PENDING_TTL_MS=90000;
+const READY_TIMEOUT_MS=12000,LAUNCH_TTL_MS=60000,PENDING_TTL_MS=90000,MAX_HOST_ATTEMPTS=3;
 let currentUser=null,partyWatchOff=null,pendingWatchOff=null,booted=false;
 
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
@@ -25,6 +25,7 @@ const codeFor=mode=>{
   return out;
 };
 const modeUrl=(mode,params)=>{const u=new URL(MODES[mode].path,base);Object.entries(params).forEach(([k,v])=>u.searchParams.set(k,String(v)));return u.href};
+const leasePath=(mode,code)=>`social/partyRoomLeases/${mode}/${code}`;
 
 async function waitForUser(timeout=4000){
   if(auth.currentUser)return auth.currentUser;
@@ -65,35 +66,49 @@ function staleRoom(mode,room){
   return false;
 }
 
-async function pickFreeCode(mode){
+async function releaseLease(mode,code,matchId){
+  if(!mode||!code||!matchId)return;
+  try{
+    const leaseRef=ref(db,leasePath(mode,code)),lease=(await get(leaseRef)).val();
+    if(lease?.matchId===matchId)await remove(leaseRef);
+  }catch(e){console.warn('[NEON XI] room lease cleanup skipped',e)}
+}
+
+async function pickFreeCode(mode,matchId){
   const cfg=MODES[mode];
-  for(let attempt=0;attempt<50;attempt++){
-    const code=codeFor(mode),roomRef=ref(db,cfg.roomPath(code)),snap=await get(roomRef),room=snap.val();
+  for(let attempt=0;attempt<60;attempt++){
+    const code=codeFor(mode),now=Date.now(),leaseRef=ref(db,leasePath(mode,code));
+    const leaseTx=await runTransaction(leaseRef,current=>{
+      if(current&&Number(current.expiresAt||0)>now&&current.matchId!==matchId)return;
+      return {matchId,createdAt:now,expiresAt:now+PENDING_TTL_MS};
+    },{applyLocally:false});
+    if(!leaseTx.committed)continue;
+    const roomRef=ref(db,cfg.roomPath(code)),snap=await get(roomRef),room=snap.val();
     if(!snap.exists())return code;
     if(staleRoom(mode,room)){
       try{await remove(roomRef);return code}catch(e){console.warn('[NEON XI] stale room cleanup skipped',mode,code,e)}
     }
+    await releaseLease(mode,code,matchId);
   }
   throw new Error(`${cfg.label} için boş oda kodu bulunamadı.`);
+}
+
+function hostTarget(mode,pending,user,party,attempt=0){
+  const members=Array.isArray(pending.members)?pending.members:Object.keys(pending.roles||{}),opponent=members.find(uid=>uid!==user.uid)||'',name=party?.members?.[user.uid]?.username||q.get('nxName')||'NEON Oyuncu';
+  return modeUrl(mode,{nxParty:pending.partyId,nxLaunch:pending.nonce,nxBroker:'1',nxBrokerAttempt:attempt,nxAuto:'1',nxRole:'host',nxCode:pending.roomCode,nxPartySize:pending.partySize,nxName:name,nxUid:user.uid,nxOpponent:opponent,nxMatch:pending.matchId});
 }
 
 async function startBrokeredParty(mode,button){
   button.disabled=true;status('Parti maçı hazırlanıyor…');
   try{
     const user=currentUser||await waitForUser();if(!user)throw new Error('Önce hesabınla giriş yap.');
-    const {partyId,party}=await partyContext(user),members=validateParty(mode,party,user),roomCode=await pickFreeCode(mode),nonce=`${Date.now()}_${Math.random().toString(36).slice(2,8)}`,matchId=`pb_${partyId}_${nonce}`;
+    const {partyId,party}=await partyContext(user),members=validateParty(mode,party,user),nonce=`${Date.now()}_${Math.random().toString(36).slice(2,8)}`,matchId=`pb_${partyId}_${nonce}`,roomCode=await pickFreeCode(mode,matchId);
     const roles=Object.fromEntries(members.map(uid=>[uid,uid===user.uid?'host':'guest'])),createdMs=Date.now();
-    const pending={mode,nonce,matchId,roomCode,hostUid:user.uid,partyId,partySize:members.length,members,roles,status:'host_booting',createdAt:serverTimestamp(),createdMs,expiresAt:createdMs+PENDING_TTL_MS};
-    await update(ref(db),{
-      [`social/parties/${partyId}/launch`]:null,
-      [`social/partyPending/${partyId}`]:pending
-    });
+    const pending={mode,nonce,matchId,roomCode,hostUid:user.uid,partyId,partySize:members.length,members,roles,status:'host_booting',attempt:0,createdAt:serverTimestamp(),createdMs,expiresAt:createdMs+PENDING_TTL_MS};
+    await update(ref(db),{[`social/parties/${partyId}/launch`]:null,[`social/partyPending/${partyId}`]:pending});
     safeSession('nxPartyLaunch',nonce);safeSession('nxPartyBrokerHost',matchId);
-    const opponent=members.find(uid=>uid!==user.uid)||'';
-    const name=party.members?.[user.uid]?.username||'NEON Oyuncu';
-    const target=modeUrl(mode,{nxParty:partyId,nxLaunch:nonce,nxBroker:'1',nxAuto:'1',nxRole:'host',nxCode:roomCode,nxPartySize:members.length,nxName:name,nxUid:user.uid,nxOpponent:opponent,nxMatch:matchId});
     status('Lider odası kuruluyor. Arkadaşların oda hazır olunca otomatik bağlanacak…');
-    location.href=target;
+    location.href=hostTarget(mode,pending,user,party,0);
   }catch(e){console.error('[NEON XI] party broker start failed',e);status(e?.message||'Parti maçı hazırlanamadı.',true);button.disabled=false}
 }
 
@@ -112,11 +127,25 @@ async function markFailed(partyId,nonce,reason){
   await update(pendingRef,{status:'failed',failureReason:reason||'ROOM_NOT_READY',failedAt:serverTimestamp(),expiresAt:Date.now()+30000});
 }
 
+async function retryHost(user,pending,attempt){
+  const oldCode=pending.roomCode,mode=pending.mode,newCode=await pickFreeCode(mode,pending.matchId);
+  await releaseLease(mode,oldCode,pending.matchId);
+  const pendingRef=ref(db,`social/partyPending/${pending.partyId}`),fresh=(await get(pendingRef)).val();
+  if(!fresh||fresh.nonce!==pending.nonce)return false;
+  const nextAttempt=attempt+1,next={...fresh,roomCode:newCode,status:'host_retrying',attempt:nextAttempt,expiresAt:Date.now()+PENDING_TTL_MS};
+  await update(pendingRef,{roomCode:newCode,status:'host_retrying',attempt:nextAttempt,retryAt:serverTimestamp(),expiresAt:next.expiresAt});
+  const party=(await get(ref(db,`social/parties/${pending.partyId}`))).val();
+  status(`Oda kurulamadı; otomatik yeniden deneniyor (${nextAttempt+1}/${MAX_HOST_ATTEMPTS})…`);
+  location.replace(hostTarget(mode,next,user,party,nextAttempt));
+  return true;
+}
+
 async function publishReadyLaunch(user){
-  const partyId=q.get('nxParty')||'',nonce=q.get('nxLaunch')||'',code=q.get('nxCode')||'',role=q.get('nxRole')||'';
+  const partyId=q.get('nxParty')||'',nonce=q.get('nxLaunch')||'',code=q.get('nxCode')||'',role=q.get('nxRole')||'',attempt=Math.max(0,Number(q.get('nxBrokerAttempt'))||0);
   if(q.get('nxBroker')!=='1'||role!=='host'||!partyId||!nonce||!code)return;
   const pendingRef=ref(db,`social/partyPending/${partyId}`),pending=(await get(pendingRef)).val();
   if(!pending||pending.nonce!==nonce||pending.hostUid!==user.uid){console.warn('[NEON XI] broker pending mismatch');return}
+  if(pending.roomCode!==code){console.warn('[NEON XI] broker ignored obsolete host attempt',code);return}
   const mode=pending.mode,cfg=MODES[mode];if(!cfg)return;
   const started=Date.now();let room=null;
   while(Date.now()-started<READY_TIMEOUT_MS){
@@ -125,9 +154,9 @@ async function publishReadyLaunch(user){
     await sleep(250);
   }
   if(!roomReady(mode,room,user,code)){
-    await markFailed(partyId,nonce,'HOST_ROOM_TIMEOUT');
-    console.error('[NEON XI] host room did not become ready',mode,code);
-    return;
+    if(attempt+1<MAX_HOST_ATTEMPTS){await retryHost(user,pending,attempt);return}
+    await releaseLease(mode,code,pending.matchId);await markFailed(partyId,nonce,'HOST_ROOM_TIMEOUT');
+    console.error('[NEON XI] host room did not become ready after retries',mode,code);return;
   }
   const now=Date.now(),launch={mode,nonce,matchId:pending.matchId,at:serverTimestamp(),readyAt:serverTimestamp(),status:'ready',expiresAt:now+LAUNCH_TTL_MS,roomCode:code,partySize:pending.partySize,roles:pending.roles};
   await update(ref(db),{
@@ -153,7 +182,7 @@ async function acknowledgeArrival(user){
         const latest=(await get(pendingRef)).val();if(!latest||latest.nonce!==nonce)return;
         const launchRef=ref(db,`social/parties/${partyId}/launch`),launch=(await get(launchRef)).val();
         if(launch?.nonce===nonce)await remove(launchRef);
-        await remove(pendingRef);
+        await releaseLease(latest.mode,latest.roomCode,latest.matchId);await remove(pendingRef);
       }catch(e){console.warn('[NEON XI] broker cleanup skipped',e)}
     },2500);
   }
@@ -164,7 +193,7 @@ async function cleanupStale(user){
     const partyId=String((await get(ref(db,`social/userParty/${user.uid}`))).val()||'');if(!partyId)return;
     const now=Date.now(),pendingRef=ref(db,`social/partyPending/${partyId}`),launchRef=ref(db,`social/parties/${partyId}/launch`);
     const [pSnap,lSnap]=await Promise.all([get(pendingRef),get(launchRef)]),p=pSnap.val(),l=lSnap.val();
-    if(p?.expiresAt&&Number(p.expiresAt)<now)await remove(pendingRef);
+    if(p?.expiresAt&&Number(p.expiresAt)<now){await releaseLease(p.mode,p.roomCode,p.matchId);await remove(pendingRef)}
     if(l?.nonce&&(!l.expiresAt||Number(l.expiresAt)<now)){safeSession('nxPartyLaunch',l.nonce);await remove(launchRef)}
   }catch(e){console.warn('[NEON XI] broker stale cleanup skipped',e)}
 }
@@ -175,7 +204,7 @@ function watchPendingForStatus(user){
     const partyId=String(s.val()||'');pendingWatchOff?.();pendingWatchOff=null;if(!partyId)return;
     pendingWatchOff=onValue(ref(db,`social/partyPending/${partyId}`),p=>{
       const x=p.val();if(!x)return;
-      if(x.status==='host_booting')status('Parti lideri oyun odasını hazırlıyor…');
+      if(x.status==='host_booting'||x.status==='host_retrying')status(x.status==='host_retrying'?'Parti lideri oda bağlantısını yeniden kuruyor…':'Parti lideri oyun odasını hazırlıyor…');
       else if(x.status==='failed')status('Oyun odası kurulamadı. Parti lideri yeniden başlatabilir.',true);
     });
   });
@@ -194,4 +223,4 @@ onAuthStateChanged(auth,async user=>{
   try{await acknowledgeArrival(user)}catch(e){console.warn('[NEON XI] broker ack skipped',e)}
 });
 
-window.NEON_PARTY_BROKER={version:'1.1',modes:Object.keys(MODES)};
+window.NEON_PARTY_BROKER={version:'1.2',modes:Object.keys(MODES)};
