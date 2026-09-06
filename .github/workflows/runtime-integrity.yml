@@ -38,6 +38,8 @@ jobs:
         run: pip install --disable-pip-version-check duckdb requests
       - name: Runtime hygiene regressions
         run: python scripts/test_runtime_hygiene.py
+      - name: Core patch contracts
+        run: python scripts/test_core_patch_contracts.py
       - name: Social system regressions
         run: python scripts/test_social_system.py
       - name: Draft duplicate-player regression
