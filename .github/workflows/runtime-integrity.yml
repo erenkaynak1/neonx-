@@ -34,8 +34,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Install pool test dependency
-        run: pip install --disable-pip-version-check duckdb
+      - name: Install pool test dependencies
+        run: pip install --disable-pip-version-check duckdb requests
       - name: Runtime hygiene regressions
         run: python scripts/test_runtime_hygiene.py
       - name: Social system regressions
