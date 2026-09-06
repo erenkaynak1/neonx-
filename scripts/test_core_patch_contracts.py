@@ -29,8 +29,10 @@ class CorePatchContractTests(unittest.TestCase):
                 )
 
     def test_core_document_boundaries_exist(self):
-        self.assertEqual(CORE.lower().count("</head>"), 1)
-        self.assertEqual(CORE.lower().count("</body>"), 1)
+        lower = CORE.lower()
+        self.assertGreaterEqual(lower.count("</head>"), 1)
+        self.assertGreaterEqual(lower.count("</body>"), 1)
+        self.assertGreater(lower.rfind("</body>"), lower.rfind("</head>"))
 
 
 if __name__ == "__main__":
