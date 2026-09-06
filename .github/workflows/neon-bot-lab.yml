@@ -1,0 +1,58 @@
+name: NEON XI Bot Lab
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - bot-lab-v1
+    paths:
+      - 'scripts/neon_bot_lab.mjs'
+      - '.github/workflows/neon-bot-lab.yml'
+      - 'index.html'
+      - 'neon-xi-core.html'
+      - 'social/**'
+      - 'side-games/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: neon-bot-lab-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  bot-lab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm install --no-save --package-lock=false playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start local NEON XI server
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/neon-bot-http.log 2>&1 &
+          echo $! > /tmp/neon-bot-http.pid
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/index.html >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/neon-bot-http.log
+          exit 1
+      - name: Run two-player Bot Lab
+        env:
+          NEON_BASE_URL: http://127.0.0.1:4173/index.html
+          NEON_BOT_TIMEOUT: '45000'
+        run: node scripts/neon_bot_lab.mjs
+      - name: Upload Bot Lab report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: neon-bot-lab-${{ github.run_id }}
+          path: artifacts/neon-bot-lab
+          if-no-files-found: warn
+          retention-days: 14
