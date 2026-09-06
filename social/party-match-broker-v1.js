@@ -12,7 +12,7 @@ const MODES={
 const app=getApps().length?getApp():initializeApp(CONFIG),auth=getAuth(app),db=getDatabase(app),base=new URL('../',import.meta.url);
 const q=new URLSearchParams(location.search);
 const READY_TIMEOUT_MS=12000,LAUNCH_TTL_MS=60000,PENDING_TTL_MS=90000,MAX_HOST_ATTEMPTS=3;
-let currentUser=null,partyWatchOff=null,pendingWatchOff=null,booted=false;
+let currentUser=null,partyWatchOff=null,pendingWatchOff=null,watchedUid='',redirectingNonce='';
 
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const status=(text,error=false)=>{const el=document.querySelector('.nx-social-status');if(!el)return;el.textContent=text;el.classList.toggle('error',Boolean(error))};
@@ -93,9 +93,45 @@ async function pickFreeCode(mode,matchId){
   throw new Error(`${cfg.label} için boş oda kodu bulunamadı.`);
 }
 
+function memberTarget(mode,pending,user,party,role,attempt=0){
+  const members=Array.isArray(pending.members)?pending.members:Object.keys(pending.roles||{});
+  const opponent=members.find(uid=>uid!==user.uid)||'';
+  const name=party?.members?.[user.uid]?.username||window.NEON_SOCIAL?.profile?.username||q.get('nxName')||'NEON Oyuncu';
+  return modeUrl(mode,{
+    nxParty:pending.partyId,
+    nxLaunch:pending.nonce,
+    nxBroker:'1',
+    nxBrokerAttempt:attempt,
+    nxAuto:'1',
+    nxRole:role,
+    nxCode:pending.roomCode,
+    nxPartySize:pending.partySize,
+    nxName:name,
+    nxUid:user.uid,
+    nxOpponent:opponent,
+    nxMatch:pending.matchId
+  });
+}
+
 function hostTarget(mode,pending,user,party,attempt=0){
-  const members=Array.isArray(pending.members)?pending.members:Object.keys(pending.roles||{}),opponent=members.find(uid=>uid!==user.uid)||'',name=party?.members?.[user.uid]?.username||q.get('nxName')||'NEON Oyuncu';
-  return modeUrl(mode,{nxParty:pending.partyId,nxLaunch:pending.nonce,nxBroker:'1',nxBrokerAttempt:attempt,nxAuto:'1',nxRole:'host',nxCode:pending.roomCode,nxPartySize:pending.partySize,nxName:name,nxUid:user.uid,nxOpponent:opponent,nxMatch:pending.matchId});
+  return memberTarget(mode,pending,user,party,'host',attempt);
+}
+
+async function pullReadyMember(user,partyId,pending){
+  if(!pending||pending.status!=='ready'||!pending.nonce||!pending.roomCode||!MODES[pending.mode])return;
+  const members=Array.isArray(pending.members)?pending.members:Object.keys(pending.roles||{});
+  if(!members.includes(user.uid)||pending.hostUid===user.uid)return;
+  if(q.get('nxLaunch')===pending.nonce&&q.get('nxAuto')==='1')return;
+  if(redirectingNonce===pending.nonce)return;
+  const party=(await get(ref(db,`social/parties/${partyId}`))).val();
+  if(!party?.members?.[user.uid])return;
+  const role=pending.roles?.[user.uid]||'guest';
+  const target=memberTarget(pending.mode,pending,user,party,role,Number(pending.attempt)||0);
+  redirectingNonce=pending.nonce;
+  safeSession('nxPartyLaunch',pending.nonce);
+  status(`${MODES[pending.mode].label} odası hazır. Partinle oyuna giriyorsun…`);
+  console.info('[NEON XI] broker pulling party member',user.uid,pending.mode,pending.roomCode);
+  location.replace(target);
 }
 
 async function startBrokeredParty(mode,button){
@@ -201,10 +237,13 @@ async function cleanupStale(user){
 function watchPendingForStatus(user){
   partyWatchOff?.();pendingWatchOff?.();
   partyWatchOff=onValue(ref(db,`social/userParty/${user.uid}`),s=>{
-    const partyId=String(s.val()||'');pendingWatchOff?.();pendingWatchOff=null;if(!partyId)return;
+    const partyId=String(s.val()||'');
+    pendingWatchOff?.();pendingWatchOff=null;
+    if(!partyId)return;
     pendingWatchOff=onValue(ref(db,`social/partyPending/${partyId}`),p=>{
       const x=p.val();if(!x)return;
       if(x.status==='host_booting'||x.status==='host_retrying')status(x.status==='host_retrying'?'Parti lideri oda bağlantısını yeniden kuruyor…':'Parti lideri oyun odasını hazırlıyor…');
+      else if(x.status==='ready')pullReadyMember(user,partyId,x).catch(e=>{console.error('[NEON XI] party member pull failed',e);redirectingNonce='';status('Parti odası hazır ama otomatik geçiş başarısız oldu.',true)});
       else if(x.status==='failed')status('Oyun odası kurulamadı. Parti lideri yeniden başlatabilir.',true);
     });
   });
@@ -217,10 +256,15 @@ document.addEventListener('click',event=>{
 },true);
 
 onAuthStateChanged(auth,async user=>{
-  currentUser=user||null;if(!user)return;
-  if(!booted){booted=true;cleanupStale(user).catch(()=>{});watchPendingForStatus(user)}
+  currentUser=user||null;
+  if(!user){watchedUid='';partyWatchOff?.();partyWatchOff=null;pendingWatchOff?.();pendingWatchOff=null;return}
+  if(watchedUid!==user.uid){
+    watchedUid=user.uid;
+    cleanupStale(user).catch(()=>{});
+    watchPendingForStatus(user);
+  }
   try{await publishReadyLaunch(user)}catch(e){console.error('[NEON XI] broker readiness failed',e);const partyId=q.get('nxParty'),nonce=q.get('nxLaunch');if(partyId&&nonce)await markFailed(partyId,nonce,e?.message||'BROKER_ERROR')}
   try{await acknowledgeArrival(user)}catch(e){console.warn('[NEON XI] broker ack skipped',e)}
 });
 
-window.NEON_PARTY_BROKER={version:'1.2',modes:Object.keys(MODES)};
+window.NEON_PARTY_BROKER={version:'1.3',modes:Object.keys(MODES)};
