@@ -53,11 +53,35 @@ function validateParty(mode,party,user){
   return members;
 }
 
+function staleRoom(mode,room){
+  if(!room)return true;
+  if(room.status==='closed')return true;
+  const now=Date.now(),expiry=Number(room.expires_ms||room.expiresAt||0);
+  if(expiry&&expiry<now)return true;
+  if(mode==='draft'){
+    const updated=Number(room.updatedAt||room.createdAt||0),connected=Object.values(room.players||{}).some(p=>p?.connected===true);
+    if(updated&&now-updated>15*60*1000&&!connected)return true;
+  }
+  return false;
+}
+
+async function pickFreeCode(mode){
+  const cfg=MODES[mode];
+  for(let attempt=0;attempt<50;attempt++){
+    const code=codeFor(mode),roomRef=ref(db,cfg.roomPath(code)),snap=await get(roomRef),room=snap.val();
+    if(!snap.exists())return code;
+    if(staleRoom(mode,room)){
+      try{await remove(roomRef);return code}catch(e){console.warn('[NEON XI] stale room cleanup skipped',mode,code,e)}
+    }
+  }
+  throw new Error(`${cfg.label} için boş oda kodu bulunamadı.`);
+}
+
 async function startBrokeredParty(mode,button){
   button.disabled=true;status('Parti maçı hazırlanıyor…');
   try{
     const user=currentUser||await waitForUser();if(!user)throw new Error('Önce hesabınla giriş yap.');
-    const {partyId,party}=await partyContext(user),members=validateParty(mode,party,user),roomCode=codeFor(mode),nonce=`${Date.now()}_${Math.random().toString(36).slice(2,8)}`,matchId=`pb_${partyId}_${nonce}`;
+    const {partyId,party}=await partyContext(user),members=validateParty(mode,party,user),roomCode=await pickFreeCode(mode),nonce=`${Date.now()}_${Math.random().toString(36).slice(2,8)}`,matchId=`pb_${partyId}_${nonce}`;
     const roles=Object.fromEntries(members.map(uid=>[uid,uid===user.uid?'host':'guest'])),createdMs=Date.now();
     const pending={mode,nonce,matchId,roomCode,hostUid:user.uid,partyId,partySize:members.length,members,roles,status:'host_booting',createdAt:serverTimestamp(),createdMs,expiresAt:createdMs+PENDING_TTL_MS};
     await update(ref(db),{
@@ -170,4 +194,4 @@ onAuthStateChanged(auth,async user=>{
   try{await acknowledgeArrival(user)}catch(e){console.warn('[NEON XI] broker ack skipped',e)}
 });
 
-window.NEON_PARTY_BROKER={version:'1.0',modes:Object.keys(MODES)};
+window.NEON_PARTY_BROKER={version:'1.1',modes:Object.keys(MODES)};
