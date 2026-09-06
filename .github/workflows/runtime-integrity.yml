@@ -1,0 +1,48 @@
+name: Runtime Integrity
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+    paths:
+      - 'index.html'
+      - 'neon-xi-core.html'
+      - '*.js'
+      - '*.css'
+      - 'social/**'
+      - 'side-games/**'
+      - 'scripts/**'
+      - '.github/workflows/runtime-integrity.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: runtime-integrity-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pool test dependency
+        run: pip install --disable-pip-version-check duckdb
+      - name: Runtime hygiene regressions
+        run: python scripts/test_runtime_hygiene.py
+      - name: Social system regressions
+        run: python scripts/test_social_system.py
+      - name: Draft duplicate-player regression
+        run: node scripts/test_draft_player_integrity.js
+      - name: Side-game builder contracts
+        run: python scripts/test_side_game_pool_builders.py
+      - name: Validate committed player pools
+        run: python scripts/validate_side_game_pools.py
