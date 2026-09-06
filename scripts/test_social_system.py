@@ -46,6 +46,25 @@ class SocialSystemTests(unittest.TestCase):
             with self.subTest(token=token):
                 self.assertIn(token, source)
 
+    def test_main_and_side_game_matchmaking_share_the_same_1v1_queue(self):
+        base_social = (ROOT / "social/neon-social.js").read_text(encoding="utf-8")
+        safe_social = (ROOT / "social/neon-social-safe-v4.js").read_text(encoding="utf-8")
+        self.assertIn("const LEGACY_MATCH_MODES=new Set(['draft','xox','twin'])", safe_social)
+        self.assertIn("`social/matchQueues/${mode}`", base_social)
+        self.assertIn("`social/matchQueues/${mode}`", safe_social)
+        self.assertIn("const queuePath=mode=>LEGACY_MATCH_MODES.has(mode)?", safe_social)
+        self.assertIn("clearQueueEntries", safe_social)
+        self.assertNotIn("setInterval(()=>{patchOpen();patchPlay();ensureBadge();identity()},1200)", safe_social)
+
+    def test_party_membership_is_single_party_and_stale_pointer_safe(self):
+        social = (ROOT / "social/neon-social.js").read_text(encoding="utf-8")
+        self.assertIn("async function currentPartyMembership()", social)
+        self.assertIn("if(party?.members?.[uid])return id", social)
+        self.assertIn("await remove(pointer);return ''", social)
+        self.assertIn("if(existing)throw new Error('Zaten aktif bir partidesin.')", social)
+        self.assertIn("runTransaction(pointer,value=>!value||value===id?id:undefined", social)
+        self.assertIn("Başka bir parti üyeliği aynı anda etkinleşti", social)
+
     def test_matchmaking_adapters_accept_fixed_room_codes(self):
         core = (ROOT / "neon-xi-core.html").read_text(encoding="utf-8")
         xox = (ROOT / "side-games/football-xox/game-v2.js").read_text(encoding="utf-8")
@@ -113,11 +132,11 @@ class SocialSystemTests(unittest.TestCase):
                 self.assertIn("neon-match-result", source)
                 self.assertIn(token, source)
 
-    def test_main_home_has_friends_entry_and_sim_lab_is_removed(self):
-        home = (ROOT / "side-games/home-raster-v2.js").read_text(encoding="utf-8")
+    def test_main_home_uses_approved_friends_entry_and_sim_lab_is_removed(self):
+        home = (ROOT / "side-games/home-approved-v1.js").read_text(encoding="utf-8")
         core = (ROOT / "neon-xi-core.html").read_text(encoding="utf-8")
-        self.assertIn('friends.dataset.neonSocial = "friends"', home)
-        self.assertIn('friends.textContent = "ARKADAŞLAR"', home)
+        self.assertIn('const friends=hit("button","h-friends","Arkadaşlar")', home)
+        self.assertIn('friends.addEventListener("click",()=>openSocial("friends",status))', home)
         self.assertNotIn("nxQuickSim1", core)
         self.assertNotIn("nxQuickSim100", core)
         self.assertNotIn("NEON_XI_SIM_LAB", core)
@@ -128,6 +147,12 @@ class SocialSystemTests(unittest.TestCase):
         self.assertIn("OYUN İÇİ KULLANICI ADINI SEÇ", social)
         self.assertIn("if(!state.profile){open('friends')", social)
         self.assertIn("if(state.user&&!state.profile)", social)
+
+    def test_home_drawer_only_exposes_party_invite_and_remove_actions(self):
+        drawer = (ROOT / "social/neon-social-drawer-v1.js").read_text(encoding="utf-8")
+        self.assertIn("PARTİYE DAVET ET", drawer)
+        self.assertIn("ARKADAŞLIKTAN ÇIKAR", drawer)
+        self.assertNotIn("OYUNA DAVET ET", drawer)
 
 
 if __name__ == "__main__":

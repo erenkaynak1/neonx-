@@ -1,8 +1,8 @@
 import {getApp,getApps} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js';
 import {getAuth,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js';
-import {getDatabase,get,onValue,ref,remove,serverTimestamp,set,update} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js';
+import {getDatabase,get,onValue,ref,remove,runTransaction,serverTimestamp,set,update} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js';
 
-const VERSION='20260906-social-drawer-v1';
+const VERSION='20260906-social-drawer-integrity-v2';
 const MODES={
   draft:{label:'NEON XI Draft',code:'alpha6',matchable:true},
   xox:{label:'Futbol XOX',code:'numeric4',matchable:true},
@@ -16,7 +16,7 @@ const state={
   offs:[],presenceOffs:[],partyOff:null,originalOpen:null,patched:false
 };
 
-const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
 const norm=s=>String(s||'').toLocaleLowerCase('tr-TR').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ı/g,'i').replace(/[^a-z0-9_]/g,'').slice(0,20);
 const connections=p=>Object.keys(p?.connections||{}).length;
 const codeFor=mode=>MODES[mode]?.code==='numeric4'?String(Math.floor(1000+Math.random()*9000)):[...Array(MODES[mode]?.code==='alpha5'?5:6)].map(()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*32)]).join('');
@@ -217,10 +217,26 @@ async function sendFriend(uid,username){await set(ref(state.db,`social/friendReq
 async function acceptFriend(uid){const req=state.requests?.[uid];if(!req)throw new Error('Arkadaşlık isteği artık mevcut değil.');await update(ref(state.db),{[`social/friends/${state.user.uid}/${uid}`]:{username:req.username,since:serverTimestamp()},[`social/friends/${uid}/${state.user.uid}`]:{username:state.profile.username,since:serverTimestamp()},[`social/friendRequests/${state.user.uid}/${uid}`]:null});status(`@${req.username} arkadaşlara eklendi.`)}
 async function removeFriend(uid){const name=state.friends?.[uid]?.username||'Oyuncu';await update(ref(state.db),{[`social/friends/${state.user.uid}/${uid}`]:null,[`social/friends/${uid}/${state.user.uid}`]:null});state.menuUid='';status(`@${name} arkadaş listesinden çıkarıldı.`)}
 
-async function currentPartyId(){if(state.partyId)return state.partyId;return String((await get(ref(state.db,`social/userParty/${state.user.uid}`))).val()||'')}
-async function createParty(){const id=`p_${state.user.uid.slice(0,8)}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,6)}`;await update(ref(state.db),{[`social/parties/${id}`]:{leaderUid:state.user.uid,createdAt:serverTimestamp(),members:{[state.user.uid]:{username:state.profile.username,joinedAt:serverTimestamp()}}},[`social/userParty/${state.user.uid}`]:id});return id}
+async function currentPartyId(){
+  if(!state.user)return '';
+  const uid=state.user.uid,pointer=ref(state.db,`social/userParty/${uid}`),id=String(state.partyId||(await get(pointer)).val()||'');
+  if(!id)return '';
+  const party=(await get(ref(state.db,`social/parties/${id}`))).val();
+  if(party?.members?.[uid])return id;
+  await remove(pointer);state.partyId='';state.party=null;return '';
+}
+async function createParty(){const existing=await currentPartyId();if(existing)return existing;const id=`p_${state.user.uid.slice(0,8)}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,6)}`;await update(ref(state.db),{[`social/parties/${id}`]:{leaderUid:state.user.uid,createdAt:serverTimestamp(),members:{[state.user.uid]:{username:state.profile.username,joinedAt:serverTimestamp()}}},[`social/userParty/${state.user.uid}`]:id});return id}
 async function inviteFriend(uid){if(!state.user||!state.profile)throw new Error('Önce oyuncu profiline giriş yap.');let id=await currentPartyId();if(!id)id=await createParty();await set(ref(state.db,`social/partyInvites/${uid}/${id}`),{fromUid:state.user.uid,fromName:state.profile.username,createdAt:serverTimestamp()});state.menuUid='';render();status(`@${state.friends?.[uid]?.username||'Oyuncu'} partiye davet edildi.`)}
-async function acceptParty(id){if(state.partyId)throw new Error('Zaten aktif bir partidesin.');const p=(await get(ref(state.db,`social/parties/${id}`))).val();if(!p)throw new Error('Parti artık mevcut değil.');await update(ref(state.db),{[`social/parties/${id}/members/${state.user.uid}`]:{username:state.profile.username,joinedAt:serverTimestamp()},[`social/userParty/${state.user.uid}`]:id,[`social/partyInvites/${state.user.uid}/${id}`]:null});status('Partiye katıldın.');state.tab='friends'}
+async function acceptParty(id){
+  const uid=state.user.uid,existing=await currentPartyId();
+  if(existing===id){await remove(ref(state.db,`social/partyInvites/${uid}/${id}`));status('Zaten bu partidesin.');return}
+  if(existing)throw new Error('Zaten aktif bir partidesin.');
+  const partyRef=ref(state.db,`social/parties/${id}`),party=(await get(partyRef)).val();if(!party)throw new Error('Parti artık mevcut değil.');
+  const pointer=ref(state.db,`social/userParty/${uid}`),claim=await runTransaction(pointer,value=>!value||value===id?id:undefined,{applyLocally:false});
+  if(!claim.committed)throw new Error('Başka bir parti üyeliği aynı anda etkinleşti.');
+  const fresh=(await get(partyRef)).val();if(!fresh){await runTransaction(pointer,value=>value===id?null:value,{applyLocally:false});throw new Error('Parti artık mevcut değil.');}
+  await update(ref(state.db),{[`social/parties/${id}/members/${uid}`]:{username:state.profile.username,joinedAt:serverTimestamp()},[`social/partyInvites/${uid}/${id}`]:null});status('Partiye katıldın.');state.tab='friends'
+}
 async function leaveParty(){if(!state.partyId)return;const id=state.partyId,p=state.party||{},members=Object.keys(p.members||{}).filter(uid=>uid!==state.user.uid),changes={[`social/userParty/${state.user.uid}`]:null,[`social/parties/${id}/members/${state.user.uid}`]:null};if(p.leaderUid===state.user.uid&&members.length)changes[`social/parties/${id}/leaderUid`]=members[0];if(!members.length)changes[`social/parties/${id}`]=null;await update(ref(state.db),changes);status('Partiden ayrıldın.')}
 async function launchParty(mode){if(!state.party||state.party.leaderUid!==state.user.uid)throw new Error('Oyunu yalnızca parti lideri başlatabilir.');const members=Object.keys(state.party.members||{}),config=MODES[mode];if(config.matchable&&members.length!==2)throw new Error('Bu 1v1 mod için partide tam iki oyuncu olmalı.');if(config.minParty&&members.length<config.minParty)throw new Error(`${config.label} için en az ${config.minParty} oyuncu gerekli.`);if(config.maxParty&&members.length>config.maxParty)throw new Error(`${config.label} en fazla ${config.maxParty} oyuncuyu destekliyor.`);const nonce=`${Date.now()}_${Math.random().toString(36).slice(2,7)}`,launch={mode,nonce,matchId:`p_${state.partyId}_${nonce}`,at:serverTimestamp(),roomCode:codeFor(mode),partySize:members.length,roles:Object.fromEntries(members.map(uid=>[uid,uid===state.party.leaderUid?'host':'guest']))};await set(ref(state.db,`social/parties/${state.partyId}/launch`),launch);status('Oyun başlatılıyor…')}
 
@@ -261,12 +277,15 @@ function bindHomeClicks(){
 
 function boot(){
   addStyle();bindHomeClicks();
-  const timer=setInterval(()=>{
+  const initialize=()=>{
     ensureShell();patchOpen();
-    if(!getApps().length||state.auth)return;
+    if(!window.NEON_SOCIAL||!getApps().length||state.auth)return Boolean(state.auth);
     state.auth=getAuth(getApp());state.db=getDatabase(getApp());
     onAuthStateChanged(state.auth,user=>{clearBindings();state.user=user;state.profile=window.NEON_SOCIAL?.profile||null;state.friends={};state.requests={};state.invites={};if(user)bindUser(user);else closeDrawer()});
-  },100);
+    return true;
+  };
+  if(initialize())return;
+  const timer=setInterval(()=>{if(initialize())clearInterval(timer)},100);
   window.addEventListener('beforeunload',()=>clearInterval(timer),{once:true});
 }
 

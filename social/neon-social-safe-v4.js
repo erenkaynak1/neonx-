@@ -9,6 +9,7 @@ const MODES={
   imposter:{label:'Futbol Imposter',path:'side-games/futbol-imposter.html',players:3},
   wordle:{label:'Football Wordle',path:'side-games/football-wordle/online.html',players:2}
 };
+const LEGACY_MATCH_MODES=new Set(['draft','xox','twin']);
 const base=new URL('../',import.meta.url);
 const state={
   auth:null,db:null,user:null,
@@ -16,9 +17,10 @@ const state={
   room:null,roomOff:null,
   requestOff:null,inviteOff:null,
   requestCount:0,inviteCount:0,
-  patchedOpen:false
+  patchedOpen:false,badgeObserver:null
 };
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
+const queuePath=mode=>LEGACY_MATCH_MODES.has(mode)?`social/matchQueues/${mode}`:`social/universalQueuesV2/${mode}`;
 
 function profile(){return window.NEON_SOCIAL?.profile||null}
 function identity(){
@@ -54,32 +56,39 @@ function toast(title,text,tab='play',ttl=6500){
   stack.appendChild(item);setTimeout(()=>item.remove(),ttl);
 }
 function ensureBadge(){
-  const canvas=document.querySelector('#bootHome.nx-approved-home-v1 .nx-approved-canvas');if(!canvas)return;
+  const canvas=document.querySelector('#bootHome.nx-approved-home-v1 .nx-approved-canvas');if(!canvas)return false;
   let b=canvas.querySelector('.nx-safe-home-badge');
   if(!b){b=document.createElement('div');b.className='nx-safe-home-badge';canvas.appendChild(b)}
   const count=state.requestCount+state.inviteCount;
   const text=count>99?'99+':String(count);
   if(b.textContent!==text)b.textContent=text;
   b.classList.toggle('show',count>0);
+  return true;
+}
+function ensureBadgeTarget(){
+  if(ensureBadge()){state.badgeObserver?.disconnect();state.badgeObserver=null;return}
+  if(state.badgeObserver)return;
+  state.badgeObserver=new MutationObserver(()=>{if(ensureBadge()){state.badgeObserver?.disconnect();state.badgeObserver=null}});
+  state.badgeObserver.observe(document.documentElement,{subtree:true,childList:true});
 }
 function seen(type,uid,key){const k=`nxSeenV4:${type}:${uid}:${key}`;if(sessionStorage.getItem(k))return true;sessionStorage.setItem(k,'1');return false}
 function bindNotifications(user){
   state.requestOff?.();state.inviteOff?.();
   state.requestOff=onValue(ref(state.db,`social/friendRequests/${user.uid}`),s=>{
-    const data=s.val()||{};state.requestCount=Object.keys(data).length;ensureBadge();
+    const data=s.val()||{};state.requestCount=Object.keys(data).length;ensureBadgeTarget();
     for(const [fromUid,x] of Object.entries(data)){if(seen('friend',user.uid,fromUid))continue;toast('ARKADAŞLIK İSTEĞİ',`${x?.username||'Bir oyuncu'} arkadaşın olmak istiyor.`,'friends')}
   });
   state.inviteOff=onValue(ref(state.db,`social/partyInvites/${user.uid}`),s=>{
-    const data=s.val()||{};state.inviteCount=Object.keys(data).length;ensureBadge();
+    const data=s.val()||{};state.inviteCount=Object.keys(data).length;ensureBadgeTarget();
     for(const [partyId,x] of Object.entries(data)){if(seen('party',user.uid,partyId))continue;toast('PARTİ DAVETİ',`${x?.fromName||'Bir oyuncu'} seni partisine çağırıyor.`,'party')}
   });
 }
 function code(){return [...Array(6)].map(()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*32)]).join('')}
 function targetUrl(mode,data,me){
   const c=MODES[mode];if(!c)return null;
-  const u=new URL(c.path,base),members=Array.isArray(data.members)?data.members:[];
-  const others=members.filter(x=>x!==me.uid);
-  const params={nxAuto:'1',nxRole:data.hostUid===me.uid?'host':'guest',nxCode:data.roomCode||data.code||'',nxName:me.username,nxUid:me.uid,nxOpponent:others[0]||'',nxMatch:data.matchId||'',nxPartySize:String(members.length||c.players),nxPlayers:members.join(',')};
+  const members=Array.isArray(data.members)?data.members:[me.uid,data.opponentUid].filter(Boolean),others=members.filter(x=>x!==me.uid);
+  const u=new URL(c.path,base),role=data.role||(data.hostUid===me.uid?'host':'guest');
+  const params={nxAuto:'1',nxRole:role,nxCode:data.roomCode||data.code||'',nxName:me.username,nxUid:me.uid,nxOpponent:data.opponentUid||others[0]||'',nxMatch:data.matchId||'',nxPartySize:String(members.length||c.players),nxPlayers:members.join(',')};
   Object.entries(params).forEach(([k,v])=>u.searchParams.set(k,String(v)));
   return u.href;
 }
@@ -90,20 +99,36 @@ function searchingMarkup(mode){
   v.innerHTML=`<div class="nx-social-searching"><b>${esc(c.label)}</b><div>${c.players===2?'Rakip':'Oyuncular'} aranıyor…</div><small style="display:block;margin:7px 0 13px;color:#91a397">Arkadaş olmanız gerekmez${c.players>2?` · ${c.players} oyuncu olduğunda oyun başlayacak.`:'.'}</small><button class="nx-social-btn nx-social-danger" type="button" data-nx-safe-cancel>ARAMAYI İPTAL ET</button></div>`;
   v.querySelector('[data-nx-safe-cancel]').onclick=()=>cancelSearch(true);
 }
+async function clearQueueEntries(mode,uid){
+  if(!state.db||!mode||!uid)return;
+  await Promise.allSettled([
+    remove(ref(state.db,`social/matchQueues/${mode}/${uid}`)),
+    remove(ref(state.db,`social/universalQueuesV2/${mode}/${uid}`))
+  ]);
+}
 async function cancelSearch(reopen=false){
   const q=state.queue;state.queue=null;state.queueOff?.();state.queueOff=null;
-  if(q&&state.db){try{await remove(ref(state.db,`social/universalQueuesV2/${q.mode}/${q.uid}`))}catch{}}
+  if(q)await clearQueueEntries(q.mode,q.uid);
   if(reopen){status('Eşleşme araması iptal edildi.');window.NEON_SOCIAL?.open?.('play');setTimeout(patchPlay,0)}
 }
 async function startSearch(mode){
   const c=MODES[mode],me=identity();if(!c)return;if(!me){window.NEON_SOCIAL?.open?.('friends');return}
   await cancelSearch(false);
-  const path=`social/universalQueuesV2/${mode}`,self=ref(state.db,`${path}/${me.uid}`),joinedAt=Date.now();
-  state.queue={mode,uid:me.uid};await set(self,{uid:me.uid,username:me.username,status:'waiting',joinedAt});onDisconnect(self).remove().catch(()=>{});
+  const path=queuePath(mode),self=ref(state.db,`${path}/${me.uid}`),joinedAt=Date.now(),legacy=LEGACY_MATCH_MODES.has(mode);
+  state.queue={mode,uid:me.uid,path};await clearQueueEntries(mode,me.uid);await set(self,{uid:me.uid,username:me.username,status:'waiting',joinedAt});onDisconnect(self).remove().catch(()=>{});
   searchingMarkup(mode);status(`${c.label}: eşleşme aranıyor…`);
   await runTransaction(ref(state.db,path),q=>{
     q=q||{};if(q[me.uid]?.status!=='waiting')return q;
-    const now=Date.now(),waiting=Object.values(q).filter(x=>x&&x.status==='waiting'&&now-Number(x.joinedAt||0)<120000).sort((a,b)=>Number(a.joinedAt||0)-Number(b.joinedAt||0));
+    const now=Date.now();
+    if(legacy){
+      const other=Object.values(q).filter(x=>x&&x.uid!==me.uid&&x.status==='waiting'&&now-Number(x.joinedAt||0)<120000).sort((a,b)=>Number(a.joinedAt||0)-Number(b.joinedAt||0))[0];
+      if(!other)return q;
+      const host=Number(other.joinedAt||joinedAt)<=joinedAt?other.uid:me.uid,matchId=`m_${Math.min(joinedAt,Number(other.joinedAt||joinedAt))}_${host.slice(0,7)}`,roomCode=code();
+      q[me.uid]={...q[me.uid],status:'matched',matchId,roomCode,role:me.uid===host?'host':'guest',opponentUid:other.uid};
+      q[other.uid]={...q[other.uid],status:'matched',matchId,roomCode,role:other.uid===host?'host':'guest',opponentUid:me.uid};
+      return q;
+    }
+    const waiting=Object.values(q).filter(x=>x&&x.status==='waiting'&&now-Number(x.joinedAt||0)<120000).sort((a,b)=>Number(a.joinedAt||0)-Number(b.joinedAt||0));
     if(waiting.length<c.players)return q;
     const group=waiting.slice(0,c.players),members=group.map(x=>x.uid);if(!members.includes(me.uid))return q;
     const hostUid=members[0],stamp=Math.min(...group.map(x=>Number(x.joinedAt||now))),matchId=`m2_${mode}_${stamp}_${hostUid.slice(0,7)}`,roomCode=code();
@@ -172,6 +197,7 @@ async function leaveParty(){
 }
 function patchPlay(){
   const v=document.querySelector('.nx-social-view[data-view="play"]');if(!v||!v.classList.contains('active'))return;
+  identity();
   if(state.queue){if(!v.dataset.nxSafeSearching)searchingMarkup(state.queue.mode);return}
   const select=v.querySelector('#nxMode');if(!select)return;
   for(const [key,c] of Object.entries(MODES))if(!select.querySelector(`option[value="${key}"]`)){const o=document.createElement('option');o.value=key;o.textContent=c.label;select.appendChild(o)}
@@ -200,13 +226,12 @@ function patchOpen(){
   window.NEON_SOCIAL.open=(tab='play')=>{original(tab);if(tab==='play')setTimeout(patchPlay,0)};state.patchedOpen=true;
 }
 function boot(){
-  addStyle();bindClicks();
+  addStyle();bindClicks();ensureBadgeTarget();
   const wait=setInterval(()=>{
     if(!window.NEON_SOCIAL||!getApps().length)return;
-    clearInterval(wait);state.auth=getAuth(getApp());state.db=getDatabase(getApp());patchOpen();
-    onAuthStateChanged(state.auth,user=>{state.user=user;state.requestOff?.();state.inviteOff?.();state.requestCount=0;state.inviteCount=0;ensureBadge();if(user)bindNotifications(user)});
-    setInterval(()=>{patchOpen();patchPlay();ensureBadge();identity()},1200);
+    clearInterval(wait);state.auth=getAuth(getApp());state.db=getDatabase(getApp());patchOpen();patchPlay();
+    onAuthStateChanged(state.auth,user=>{state.user=user;state.requestOff?.();state.inviteOff?.();state.requestCount=0;state.inviteCount=0;ensureBadgeTarget();if(user){identity();bindNotifications(user)}});
   },80);
 }
-window.addEventListener('beforeunload',()=>{if(state.queue)remove(ref(state.db,`social/universalQueuesV2/${state.queue.mode}/${state.queue.uid}`)).catch(()=>{});state.roomOff?.()});
+window.addEventListener('beforeunload',()=>{if(state.queue)clearQueueEntries(state.queue.mode,state.queue.uid);state.roomOff?.();state.badgeObserver?.disconnect()});
 boot();

@@ -3,6 +3,16 @@
 
   if(window.NEON_PUBLIC_SOURCE_UI_GUARD?.version) return;
 
+  const INTEGRITY_ID='nx-draft-player-integrity-loader';
+  if(!window.NEON_DRAFT_PLAYER_INTEGRITY&&!document.getElementById(INTEGRITY_ID)){
+    const script=document.createElement('script');
+    script.id=INTEGRITY_ID;
+    script.src='./draft-player-integrity-v1.js?v=20260906-deep-integrity-v1';
+    script.async=false;
+    script.onerror=()=>console.error('[NEON XI] Draft player integrity layer could not load.');
+    document.head.appendChild(script);
+  }
+
   const SOURCE_RE=/(?:transfermarkt|fm\s*inside|fminside|football\s*manager|futbol\s*manager|\bfm\s*26(?:\.\d+)?\b)/i;
   const POOL_LOADING_RE=/oyuncu\s+havuzu[^\n]{0,60}(?:yükleniyor|yükleniyor\.\.\.|yüklenmekte|hazırlanıyor)/i;
   const ATTRS=['title','aria-label','placeholder','data-tooltip'];
@@ -43,7 +53,7 @@
       }
     });
     observer.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:ATTRS});
-    window.NEON_PUBLIC_SOURCE_UI_GUARD={version:'2026-09-06-v1',scrub:()=>scrubElement(document.body)};
+    window.NEON_PUBLIC_SOURCE_UI_GUARD={version:'2026-09-06-v2',scrub:()=>scrubElement(document.body)};
   }
 
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot,{once:true});
