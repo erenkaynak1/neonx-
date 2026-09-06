@@ -31,8 +31,8 @@
   background-position:center center!important;
   background-size:cover!important;
   background-repeat:no-repeat!important;
-  filter:blur(4px) brightness(.42) saturate(.98) contrast(1.04)!important;
-  transform:scale(1.045)!important;
+  filter:blur(2px) brightness(.43) saturate(.99) contrast(1.035)!important;
+  transform:scale(1.035)!important;
   transform-origin:center!important;
 }
 .nx-prematch-bg-overlay{
@@ -166,7 +166,7 @@
 
 @media (max-width:520px){
   .nx-prematch-v2{padding-left:12px!important;padding-right:12px!important;}
-  .nx-prematch-bg{filter:blur(3px) brightness(.44) saturate(1) contrast(1.03)!important;transform:scale(1.05)!important;}
+  .nx-prematch-bg{filter:blur(1.5px) brightness(.45) saturate(1) contrast(1.025)!important;transform:scale(1.035)!important;}
   .nx-prematch-header{margin-bottom:15px!important;}
   .nx-prematch-logo{width:min(76vw,280px)!important;max-height:66px!important;margin-bottom:7px!important;}
   .nx-prematch-power{padding:15px 12px!important;border-radius:16px!important;margin-bottom:13px!important;}
