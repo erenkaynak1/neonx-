@@ -42,6 +42,8 @@ jobs:
         run: python scripts/test_core_patch_contracts.py
       - name: Social system regressions
         run: python scripts/test_social_system.py
+      - name: Social drawer integrity
+        run: python scripts/test_social_drawer_integrity.py
       - name: Draft duplicate-player regression
         run: node scripts/test_draft_player_integrity.js
       - name: Side-game builder contracts
