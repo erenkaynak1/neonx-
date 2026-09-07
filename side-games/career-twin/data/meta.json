@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-02T17:51:29.477859+00:00",
+  "generated_at": "2026-09-07T09:29:48.863100+00:00",
   "master_pool": "side-games/data/master/transfermarkt-players.json",
   "provider": "dcaribou/transfermarkt-datasets",
-  "provider_revision": "154367dfa6d6eb0b86332e332f9df0a080c7ddce",
+  "provider_revision": "e44f186d6f06dd8452aaf54c7921ba66c961f637",
   "player_count": 50149,
   "target_eligible_count": 26678,
   "metric_minimum_players": 100,

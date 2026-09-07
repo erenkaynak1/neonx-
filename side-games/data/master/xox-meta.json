@@ -1,6 +1,6 @@
 {
   "schema_version": 3,
-  "generated_at": "2026-09-02T17:51:28.808495+00:00",
+  "generated_at": "2026-09-07T09:29:48.068277+00:00",
   "player_count": 42345,
   "status_counts": {
     "active": 23402,
@@ -18,7 +18,7 @@
   "minimum_players_per_available_condition": 12,
   "master_pool": "side-games/data/master/transfermarkt-players.json",
   "master_provider": "dcaribou/transfermarkt-datasets",
-  "master_provider_revision": "154367dfa6d6eb0b86332e332f9df0a080c7ddce",
+  "master_provider_revision": "e44f186d6f06dd8452aaf54c7921ba66c961f637",
   "identity": "Transfermarkt player_id",
   "club_rule": "At least one dcaribou senior-club appearance, plus current-club membership.",
   "league_rule": "dcaribou appearance history, plus current domestic-league membership.",
