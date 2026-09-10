@@ -1,0 +1,27 @@
+const fs = require('node:fs');
+const vm = require('node:vm');
+const assert = require('node:assert/strict');
+const path = require('node:path');
+const root=path.resolve(__dirname,'..');
+let code=fs.readFileSync(path.join(root,'match-2d-compositor-v2.js'),'utf8');
+code=code.replace('  requestAnimationFrame(loop);\n})();','  this.test={createRecord,sampleTarget,fixedUpdate};\n})();');
+const context={window:{},document:{createElement:()=>({}),head:{appendChild(){} }},performance:{now:()=>0},requestAnimationFrame(){},setTimeout(){}};
+vm.createContext(context);vm.runInContext(code,context);
+const el={id:'p1',style:{left:'50%',top:'50%',transform:'',setProperty(){}},classList:{contains:()=>false}};
+const r=context.test.createRecord(el,600,500,0);
+el.style.left='60%';context.test.sampleTarget(el,r,600,500,16,false);
+assert.ok(r.targetVX>0);
+for(let i=2;i<100;i++){context.test.sampleTarget(el,r,600,500,i*16,false);context.test.fixedUpdate(el,r,600,500)}
+assert.ok(Math.abs(r.simX-360)<1,'Settled player must remain at the simulation target');
+assert.ok(Math.abs(r.targetVX)<.01,'Stale target velocity must decay');
+context.test.sampleTarget(el,r,900,800,2000,true);
+assert.equal(r.simX,540);assert.equal(r.simY,400);
+console.log('PASS: 2D settled positions, stale velocity decay, viewport resize snap.');
+const coreForTiming=fs.readFileSync(path.join(root,'neon-xi-core.html'),'utf8');
+const timingSource=coreForTiming.match(/function presentationWait\(ms,token\) \{([\s\S]*?)\n  \}/)[0];
+let delay;
+const timing={game:{speed:1,testMode:false},MATCH_PACE_MULTIPLIER:.6,Promise,setTimeout:(f,ms)=>{delay=ms}};
+vm.createContext(timing);vm.runInContext(timingSource+';this.wait=presentationWait;',timing);
+timing.wait(2000,1);const normalDelay=delay;timing.game.speed=4;timing.wait(2000,1);
+assert.equal(normalDelay/delay,4);
+console.log('PASS: presentation 4x uses a linear speed factor.');

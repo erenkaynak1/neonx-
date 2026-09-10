@@ -112,7 +112,9 @@ class SocialSystemTests(unittest.TestCase):
         self.assertIn("Yalnızca bu tarayıcıda korunur", social)
         self.assertIn("signOut", social)
         self.assertIn("Devam etmek için benzersiz oyuncu adını seç", social)
-        self.assertIn("if(state.user&&!state.profile)", social)
+        self.assertIn("function requireProfile()", social)
+        self.assertIn("if(state.profile)return true", social)
+        self.assertIn("function close(){shade.classList.remove('open')", social)
         self.assertIn("if(user)bindUser(user)", social)
         self.assertIn("ensurePlayerUser", core)
         self.assertNotIn("ensureGoogleUser", core)
@@ -142,11 +144,13 @@ class SocialSystemTests(unittest.TestCase):
         self.assertNotIn("NEON_XI_SIM_LAB", core)
         self.assertNotIn("100X Tactical Simulation Lab", core)
 
-    def test_google_login_forces_username_gate(self):
+    def test_profile_gate_keeps_offline_menu_accessible(self):
         social = (ROOT / "social/neon-social.js").read_text(encoding="utf-8")
         self.assertIn("OYUN İÇİ KULLANICI ADINI SEÇ", social)
-        self.assertIn("if(!state.profile){open('friends')", social)
-        self.assertIn("if(state.user&&!state.profile)", social)
+        self.assertNotIn("if(!state.profile){open('friends')", social)
+        self.assertIn("function requireProfile()", social)
+        self.assertIn("if(state.profile)return true", social)
+        self.assertIn("function close(){shade.classList.remove('open')", social)
 
     def test_home_drawer_only_exposes_party_invite_and_remove_actions(self):
         drawer = (ROOT / "social/neon-social-drawer-v1.js").read_text(encoding="utf-8")

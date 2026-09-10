@@ -6,6 +6,14 @@
 
 <html lang="tr">
 <head>
+<script id="nx-core-entry-guard">
+// The core is loaded by index.html, which also installs the current UI.
+if (/\/neon-xi-core\.html$/i.test(window.location.pathname)) {
+  document.documentElement.style.visibility = 'hidden';
+  window.location.replace('./index.html' + window.location.search + window.location.hash);
+}
+</script>
+
 <!-- NEON XI CLUB DATA: Transfermarkt · 2026-08-16 · active clubs + former clubs -->
 <!-- NEON XI BUILD: v4.12-fast-simulation-single-event-cinema-2026-08-04 -->
 <meta charset="utf-8"/>
@@ -7183,7 +7191,11 @@ render();
     return values.length ? values.reduce((a,b)=>a+b,0)/values.length : fallback;
   }
   function stat(member,key,fallback=65) {
-    return baseStat(member,key,fallback) * chemistryModifier(member.team,member);
+    const base = baseStat(member,key,fallback) * chemistryModifier(member.team,member);
+    const load = window.NEON_TACTICAL_LOAD;
+    if(!load || member.footballer.pos === "GK") return base;
+    const condition = load.condition(tactic(member.team), baseStat(member,"pressingDiscipline",65), game.minute);
+    return base * load.multiplier(condition,key);
   }
   function average(team,keys,filter=()=>true) {
     const members = game.squad[team].filter(filter);
@@ -7353,7 +7365,12 @@ render();
       if(phase===3)value+=(s.cover-2.3)*.95+(s.press-1.5)*.35;
       if(phase>=4)value+=(s.restDefense-1.9)*1.10+(s.cover-2.3)*.55;
       if(action==="cross")value+=(s.aerial-.9)*1.15;
-      if(cfg.pressingPlan==="Önde Baskı")value+=phase===1?(game.minute<72?5.0:2.0):phase>=4?-2.5:1.0;
+      if(cfg.pressingPlan==="Önde Baskı"){
+        const discipline=average(team,["pressingDiscipline","teamwork"],m=>m.footballer.pos!=="GK");
+        const condition=window.NEON_TACTICAL_LOAD?.condition(cfg,discipline,game.minute) ?? 100;
+        value+=phase===1?5.0*condition/100:phase>=4?-2.5:1.0;
+        if(route==="transition")value-=clamp((80-discipline)/10,0,3);
+      }
       if(cfg.pressingPlan==="Alçak Blok")value+=phase===1?-4.0:phase>=4?4.0:1.5;
       if(cfg.transitionPlan==="Hızlı Hücum")value-=Math.max(0,s.risk-s.restDefense)*.85;
     }
@@ -7411,7 +7428,13 @@ render();
       suitability:Number(roleSuitability(member).toFixed(1)),execution:Number(roleExecution(member).toFixed(3))
     }));
   }
-  window.NEON_XI_ENGINE_V5={version:"5.0.0",roleModel:"attribute-role-tactic-context",roleScores:calculateRoleScores,teamStructure};
+  window.NEON_XI_ENGINE_V5={version:"5.0.0",roleModel:"attribute-role-tactic-context",roleScores:calculateRoleScores,teamStructure,
+    preview(team){
+      const old=game.squad[team];
+      try{game.squad[team]=getSquad(team);return {structure:teamStructure(team),roles:calculateRoleScores(team)};}
+      finally{game.squad[team]=old;}
+    }
+  };
   function averageMemberNatural(member) {
     const pos = member.position || member.footballer.pos;
     const maps = {
@@ -7731,11 +7754,11 @@ render();
   const MATCH_PACE_MULTIPLIER = 0.60; /* V4.11 hız düzeltmesi: simülasyon beklemeleri önceki sürüme göre yaklaşık %55 kısaltıldı. */
   function wait(ms,token,ignorePause=false) {
     const scaled = (ms * MATCH_PACE_MULTIPLIER) / Math.max(1,game.speed);
-    return new Promise(resolve => setTimeout(()=>resolve(token===game.token && (ignorePause || game.running)), game.testMode ? 0 : Math.max(160,scaled)));
+    return new Promise(resolve => setTimeout(()=>resolve(token===game.token && (ignorePause || game.running)), game.testMode ? 0 : Math.max(40,scaled)));
   }
   function presentationWait(ms,token) {
-    const scaled = (ms * MATCH_PACE_MULTIPLIER) / Math.sqrt(Math.max(1,game.speed));
-    return new Promise(resolve => setTimeout(()=>resolve(token===game.token), game.testMode ? 0 : Math.max(261,scaled)));
+    const scaled = (ms * MATCH_PACE_MULTIPLIER) / Math.max(1,game.speed);
+    return new Promise(resolve => setTimeout(()=>resolve(token===game.token), game.testMode ? 0 : Math.max(65,scaled)));
   }
   async function showScene(kind,steps,token) {
     if (game.testMode) return;
@@ -8407,7 +8430,13 @@ render();
     if(roll<onTarget){shot.outcome="saved";game.stats[attackingTeam].onTarget++;game.stats[defendingTeam].saves++;incrementRatingStat(defendingTeam,keeper,"saves");applyMicroRating(defendingTeam,keeper,"goalkeeping",true,saveExpected,.18,{shotsFaced:1,difficultSaves:conditionalGoal>.38?1:0});recordRoleEvent(attackingTeam,target,"onTarget");addEvent("save",`${keeper.footballer.name} kafa vuruşunu kurtardı.`,`${goalProbability.toFixed(2)} xG`,"Kaleci doğru pozisyon aldı.");return;}
     shot.outcome="offTarget";if(goalProbability>.30)adjustRating(attackingTeam,target,-.18,"bigChanceMissed");addEvent("shot",`${target.footballer.name} kafa vuruşunda hedefi bulamadı.`,`${goalProbability.toFixed(2)} xG`,"Kafa vuruşu sonuçsuz kaldı.");
   }
-  game.v3={version:"5.1.0-engine-event-sync",phaseCap:16,matchFactor:v3DefenseMatchFactor,adjustedRate:v3AdjustedRate,phaseProbability:v3PhaseProbability,directionRoute:v3DirectionRoute,workRates:v3WorkRates,crossRates:v3CrossRates,roleScores:calculateRoleScores,teamStructure};
+  game.v3={version:"5.1.0-engine-event-sync",phaseCap:16,matchFactor:v3DefenseMatchFactor,adjustedRate:v3AdjustedRate,phaseProbability:v3PhaseProbability,directionRoute:v3DirectionRoute,workRates:v3WorkRates,crossRates:v3CrossRates,roleScores:calculateRoleScores,teamStructure,
+    preview(team){
+      const old=game.squad[team];
+      try{game.squad[team]=getSquad(team);return {structure:teamStructure(team),roles:calculateRoleScores(team)};}
+      finally{game.squad[team]=old;}
+    }
+  };
   function v3NarrativeHash(value){
     const text=String(value||"");let hash=2166136261;
     for(let i=0;i<text.length;i++){hash^=text.charCodeAt(i);hash=Math.imul(hash,16777619);}
@@ -14909,7 +14938,7 @@ window.KADRO_HARD_MATCH_SYNC = {
     if(state.tacticSection==="tasks"){
       title.textContent="Oyuncu Görevleri";sub.textContent="Her saha oyuncusu için görev seç.";
       const slot=formation(t).slots.find(s=>s.id===state.selectedSlot)||formation(t).slots.find(s=>v3SlotPosition(s)!=="GK")||formation(t).slots[0],footballer=player(state.teams[t].slots[slot.id]),position=v3SlotPosition(slot),detail=details(footballer),options=ROLE_OPTIONS[position]||[],chemistry=chemMap(t)[slot.id]||0;
-      body.innerHTML=`<div class="playerPanelTop"><h4>${footballer.name} · ${position}</h4><div class="detailMeta">${footballer.nation} · ${footballer.club} · Kimya ${chemistry.toFixed(1)}/10 · V3 faz/aksiyon görevi</div><div class="boostGrid">${Object.entries(detail).slice(0,10).map(([key,value])=>`<div class="boostStat"><span>${DETAIL_LABELS[key]||key}</span><div class="boostNumbers"><b>${key==="crossing"?80:Math.round(value)}</b></div></div>`).join("")}</div></div>${options.length?`<div class="roleButtons">${options.map(option=>`<button class="roleBtn ${tac.tasks[slot.id]===option?"active":""}" data-role="${option}"><strong>${taskLabel(option)}</strong><span>${ROLE_TEXT[option]||"Bu görev oyuncunun faz ve aksiyon uyumunu değiştirir."}</span></button>`).join("")}</div>`:`<div class="noRole">Kalecinin oyuncu görevi seçimi yoktur.</div>`}`;
+      body.innerHTML=`<div class="playerPanelTop"><h4>${footballer.name} · ${position}</h4><div class="detailMeta">${footballer.nation} · ${footballer.club} · Kimya ${chemistry.toFixed(1)}/10 · Görev için temel özellikler</div><div class="boostGrid">${Object.entries(detail).slice(0,10).map(([key,value])=>`<div class="boostStat"><span>${DETAIL_LABELS[key]||key}</span><div class="boostNumbers"><b>${Math.round(value)}</b></div></div>`).join("")}</div></div>${options.length?`<div class="roleButtons">${options.map(option=>`<button class="roleBtn ${tac.tasks[slot.id]===option?"active":""}" data-role="${option}"><strong>${taskLabel(option)}</strong><span>${ROLE_TEXT[option]||"Bu görev oyuncunun faz ve aksiyon uyumunu değiştirir."}</span></button>`).join("")}</div>`:`<div class="noRole">Kalecinin oyuncu görevi seçimi yoktur.</div>`}`;
       body.querySelectorAll(".roleBtn").forEach(button=>button.onclick=()=>{tac.tasks[slot.id]=button.dataset.role;renderTactics();});return;
     }
     if(state.tacticSection==="setpieces"){
@@ -14926,7 +14955,7 @@ window.KADRO_HARD_MATCH_SYNC = {
     ensureAll();const t=state.tacticTeam,tac=normalizeTactic(state.tactics[t]);
     const teamTitle=document.getElementById("tacticTeamTitle");if(teamTitle)teamTitle.textContent=typeof getTeamName==="function"?getTeamName(t):`Takım ${t}`;
     const locked=document.getElementById("lockedFormation");if(locked)locked.textContent=`${formation(t).name} · Draftta kilitlendi`;
-    const boost=document.getElementById("teamBoostTactic");if(boost)boost.textContent="V3 Maç Motoru";
+    const boost=document.getElementById("teamBoostTactic");if(boost)boost.textContent="Taktik atölyesi";
     const ready=document.getElementById("tacticReadyBtn");if(ready&&!ready.disabled)ready.textContent=`${typeof getTeamName==="function"?getTeamName(t):`Takım ${t}`} Hazır`;
     const nav=[["general","Genel Oyun Planı"],["tasks","Oyuncu Görevleri"],["attackDirection","Hücum Yönü"],["finalAction","Son Aksiyon Tercihi"],["transitionPlan","Geçiş Planı"],["pressingPlan","Savunma Bloğu ve Pres"],["defenseDirection","Savunma Yönü"],["defenseTactic","Savunma Taktiği"],["setpieces","Duran Toplar"]];
     const side=document.getElementById("sideNav");if(side){side.innerHTML=`<div class="navTitle">Taktik menüsü</div>${nav.map(item=>`<button class="navBtn ${state.tacticSection===item[0]?"active":""}" data-s="${item[0]}">${item[1]}</button>`).join("")}<div class="lockInfo">Formasyon<br><b>${formation(t).name}</b><br><br>Rakip bu ayarları görmez.</div>`;side.querySelectorAll(".navBtn").forEach(button=>button.onclick=()=>{state.tacticSection=button.dataset.s;renderTactics();});}
@@ -15021,7 +15050,7 @@ window.KADRO_HARD_MATCH_SYNC = {
     const grid=overlay.querySelector(".matchGrid");if(!grid)return false;grid.classList.add("hasVisualizer");
     overlay.querySelectorAll("#nv4PressureRing,.nv4-pressure-panel,.nv-facing,.nv-svg,.nv-action-path,.nv-run-path").forEach(element=>element.remove());
     let card=document.getElementById("matchVisualCard");
-    if(!card){card=document.createElement("section");card.id="matchVisualCard";card.className="matchVisualCard nv4-simple";card.innerHTML=`<div class="matchVisualHead"><h2>2D Maç Görünümü</h2><div class="nvActionChip" id="nvActionChip">Motor bağlantısı hazır</div></div><div class="neonMiniPitchWrap"><div class="neonMiniPitch" id="neonMiniPitch"><div class="nv-pitch-brand" aria-hidden="true"><strong>NEON XI</strong><span>EVERY CHOICE HAS A CONSEQUENCE</span></div><div class="nv-halfLine"></div><div class="nv-centerCircle"></div><div class="nv-box-top"></div><div class="nv-box-bottom"></div><div class="nv-pen-top"></div><div class="nv-pen-bottom"></div><div class="nv-goal-top"></div><div class="nv-goal-bottom"></div></div><div class="nv-live-action" id="nvLiveAction"><span id="nvActionType">YERLEŞİM</span><strong id="nvActorText">Takımlar referans bölgelerinde</strong><em id="nvResultText">Motor bekleniyor</em></div><div class="nv-radar"><div><span>Formasyon</span><b id="nvFormationText">Başlangıç</b></div><div><span>Hücum yönü</span><b id="nvRouteText">Nötr</b></div><div><span>Faz</span><b id="nvStageText">Yerleşim</b></div><div><span>Aksiyon</span><b id="nvActionText">Pozisyon alma</b></div><div><span>Topla oyuncu</span><b id="nvCarrierText">—</b></div><div><span>Tempo</span><b id="nvTempoText">Akıcı</b></div></div><div class="nv-cause"><span>SEBEP → SONUÇ</span><strong id="nvCauseTitle">Taktik yerleşim</strong><p id="nvCauseText">Formasyon sabit bir kalıp değil, oyuncuların referans bölgeleridir.</p></div></div>`;grid.insertBefore(card,grid.firstElementChild||null)}
+    if(!card){card=document.createElement("section");card.id="matchVisualCard";card.className="matchVisualCard nv4-simple";card.innerHTML=`<div class="matchVisualHead"><h2>STADYUM · 2D</h2><div class="nvActionChip" id="nvActionChip">Motor bağlantısı hazır</div></div><div class="neonMiniPitchWrap"><div class="neonMiniPitch" id="neonMiniPitch"><div class="nv-pitch-brand" aria-hidden="true"><strong>NEON XI</strong><span>EVERY CHOICE HAS A CONSEQUENCE</span></div><div class="nv-halfLine"></div><div class="nv-centerCircle"></div><div class="nv-box-top"></div><div class="nv-box-bottom"></div><div class="nv-pen-top"></div><div class="nv-pen-bottom"></div><div class="nv-goal-top"></div><div class="nv-goal-bottom"></div></div><div class="nv-live-action" id="nvLiveAction"><span id="nvActionType">YERLEŞİM</span><strong id="nvActorText">Takımlar referans bölgelerinde</strong><em id="nvResultText">Motor bekleniyor</em></div><div class="nv-radar"><div><span>Formasyon</span><b id="nvFormationText">Başlangıç</b></div><div><span>Hücum yönü</span><b id="nvRouteText">Nötr</b></div><div><span>Faz</span><b id="nvStageText">Yerleşim</b></div><div><span>Aksiyon</span><b id="nvActionText">Pozisyon alma</b></div><div><span>Topla oyuncu</span><b id="nvCarrierText">—</b></div><div><span>Tempo</span><b id="nvTempoText">Akıcı</b></div></div><div class="nv-cause"><span>SEBEP → SONUÇ</span><strong id="nvCauseTitle">Taktik yerleşim</strong><p id="nvCauseText">Formasyon sabit bir kalıp değil, oyuncuların referans bölgeleridir.</p></div></div>`;grid.insertBefore(card,grid.firstElementChild||null)}
     vis.pitch=document.getElementById("neonMiniPitch");vis.chip=document.getElementById("nvActionChip");vis.pathEl=document.getElementById("nvActionPath");vis.runEl=document.getElementById("nvRunPath");vis.targetEl=document.getElementById("nvTargetSpot");vis.routeZones=[...vis.pitch.querySelectorAll(".nv-route-zone")];
     if(!vis.ballShadow&&vis.pitch){vis.ballShadow=document.createElement("div");vis.ballShadow.id="nvBallShadow";vis.ballShadow.className="nv-ball-shadow";vis.pitch.appendChild(vis.ballShadow)}
     if(!vis.ball&&vis.pitch){vis.ball=document.createElement("div");vis.ball.id="nvBall";vis.ball.className="nv-ball";vis.pitch.appendChild(vis.ball)}
@@ -15474,7 +15503,7 @@ window.KADRO_HARD_MATCH_SYNC = {
       frame.stage==="goal"?1900:
       frame.stage==="finish"||frame.stage==="cross"?1750:
       frame.stage==="turnover"?1450:1650;
-    vis.frameDuration=clamp(base/(VISUAL_PACE_MULTIPLIER*Math.sqrt(Math.max(1,g.speed||1))),280,1800);
+    vis.frameDuration=clamp(base/(VISUAL_PACE_MULTIPLIER*Math.max(1,g.speed||1)),70,1800);
     setNotice(frame.stage==="goal"?"GOL":"");
     updateInfo(g)
   }
@@ -15543,7 +15572,7 @@ window.KADRO_HARD_MATCH_SYNC = {
           m.vy=(m.vy+ay*dt)*Math.pow(.92,dt*VISUAL_PACE_MULTIPLIER);
           m.x+=m.vx*dt;m.y+=m.vy*dt
         }else{
-          const speedScale=VISUAL_PACE_MULTIPLIER*Math.sqrt(Math.max(1,g.speed||1));
+          const speedScale=VISUAL_PACE_MULTIPLIER*Math.max(1,g.speed||1);
           const pace=Number(m.member?.footballer?.main?.[0]??72);
           const paceFactor=clamp(.88+(pace-65)/180,.86,1.15);
           const baseSmooth=isCarrier?.34:isPress?.40:runner?.46:support?.53:active?.50:.62;

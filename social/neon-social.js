@@ -48,7 +48,7 @@ function shell(){
   shade.addEventListener('click',e=>{if(e.target===shade)close();const tab=e.target.closest('[data-tab]');if(tab)render(tab.dataset.tab)});
 }
 function open(tab='play'){shade.classList.add('open');render(tab)}
-function close(){if(state.user&&!state.profile){message('Devam etmek için benzersiz oyuncu adını seç.',true);render('friends');return}shade.classList.remove('open')}
+function close(){shade.classList.remove('open');document.querySelector('[data-neon-social],.nx-social-launch')?.focus()}
 function requireProfile(){if(!state.user){message('Önce Google hesabınla giriş yap veya misafir olarak devam et.',true);render('friends');return false}if(state.profile)return true;message('Önce benzersiz oyuncu adını oluştur.',true);render('friends');return false}
 function signedOutMarkup(){return `<div class="nx-social-card"><span class="nx-social-label">NEON XI ÜYELİĞİ</span><b>Nasıl devam etmek istersin?</b><p class="nx-social-muted">Google hesabı verilerini kalıcı tutar. Misafir hesabı yalnızca bu tarayıcıda korunur.</p><div class="nx-social-choice"><button class="nx-social-btn primary" data-act="google-login">GOOGLE İLE GİRİŞ YAP</button><button class="nx-social-btn" data-act="guest-login">MİSAFİR OLARAK DEVAM ET</button></div></div>`}
 function render(tab=state.tab){
@@ -144,7 +144,7 @@ function clearUserBindings(){state.userOffs.splice(0).forEach(off=>{try{off()}ca
 function bindUser(user){
   clearUserBindings();state.user=user;button.textContent='SOSYAL';startPresence(user);
   const watch=(path,fn)=>state.userOffs.push(onValue(ref(db,path),fn,e=>message(`Sosyal bağlantı hatası: ${e.message}`,true)));
-  watch(`social/profiles/${user.uid}`,s=>{state.profile=s.val();if(!state.profile){open('friends');message(user.isAnonymous?'Misafir moduna geçtin. Devam etmek için benzersiz oyuncu adını seç.':'Google hesabın bağlandı. Devam etmek için benzersiz oyuncu adını seç.')}else render()});
+  watch(`social/profiles/${user.uid}`,s=>{state.profile=s.val();if(!state.profile){if(shade.classList.contains('open'))render('friends');message(user.isAnonymous?'Misafir moduna geçtin. Devam etmek için benzersiz oyuncu adını seç.':'Google hesabın bağlandı. Devam etmek için benzersiz oyuncu adını seç.')}else render()});
   watch(`social/friends/${user.uid}`,s=>{state.friends=s.val()||{};bindFriendDetails();render()});
   watch(`social/friendRequests/${user.uid}`,s=>{state.requests=s.val()||{};button.dataset.count=String(Object.keys(state.requests).length+Object.keys(state.invites).length);render()});
   watch(`social/partyInvites/${user.uid}`,s=>{state.invites=s.val()||{};button.dataset.count=String(Object.keys(state.requests).length+Object.keys(state.invites).length);render()});
@@ -159,3 +159,5 @@ window.NEON_SOCIAL={open,close,signIn:signInGoogle,continueAsGuest,signOut:signO
 document.addEventListener('neon-match-result',e=>recordResult(e.detail||{}).catch(error=>{console.error('Maç sonucu kaydedilemedi',error);message('Maç sonucu liderliğe kaydedilemedi.',true)}));
 document.addEventListener('click',e=>{const b=e.target.closest('[data-neon-social]');if(b){e.preventDefault();open(b.dataset.neonSocial||'play')}});
 window.addEventListener('beforeunload',()=>{if(state.presenceConnection)remove(state.presenceConnection).catch(()=>{})});
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&shade.classList.contains('open'))close()});

@@ -147,7 +147,11 @@
     const dx = x-record.rawX;
     const dy = y-record.rawY;
     const changed = Math.abs(dx)>TARGET_EPSILON || Math.abs(dy)>TARGET_EPSILON;
-    if(!changed) return;
+    if(!changed){
+      // Stop projecting a stale velocity during pauses and settled phases.
+      if(now-record.rawTime>80){record.targetVX*=.65;record.targetVY*=.65;}
+      return;
+    }
 
     const elapsedMs = Math.max(1,now-record.rawTime);
     const rawDt = clamp(elapsedMs/1000,1/240,.14);
@@ -244,11 +248,11 @@
   function loop(now){
     refreshElements(now);
     const overlayVisible = !!(overlay && !overlay.classList.contains('hidden'));
-    if(!pitch || !overlayVisible){
+    if(!pitch || !overlayVisible || document.hidden){
       visible = false;
       lastNow = now;
       accumulator = 0;
-      requestAnimationFrame(loop);
+      setTimeout(()=>requestAnimationFrame(loop),180);
       return;
     }
 
@@ -256,6 +260,7 @@
     const height = Math.max(1,pitch.clientHeight);
     const sizeChanged = Math.abs(width-lastWidth)>.5 || Math.abs(height-lastHeight)>.5;
     const becameVisible = !visible;
+    if(becameVisible){fpsWindowStart=now;fpsFrames=0;sampledChanges=0;sampledIntervalTotal=0;}
     visible = true;
     lastWidth = width;
     lastHeight = height;
