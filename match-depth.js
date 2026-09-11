@@ -57,6 +57,10 @@
       apply();
     });
     card.querySelector('.matchVisualHead')?.after(controls);
+    const shell = document.createElement('div');
+    shell.className = 'nx-stadium-shell';
+    shell.setAttribute('aria-hidden', 'true');
+    card.querySelector('#neonMiniPitch')?.prepend(shell);
     const crowd = document.createElement('div');
     crowd.className = 'nx-crowd-celebration';
     crowd.setAttribute('aria-hidden','true');
@@ -66,7 +70,7 @@
       spark.style.setProperty('--delay', (i % 6) * .09 + 's');
       crowd.append(spark);
     }
-    card.querySelector('.neonMiniPitchWrap')?.append(crowd);
+    shell.append(crowd);
     if (location.pathname.endsWith('/design-preview.html')) {
       const demo = document.createElement('button');
       demo.type = 'button'; demo.textContent = 'Gol kutlamasını dene';
