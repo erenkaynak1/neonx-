@@ -1,0 +1,42 @@
+/* Perspective presentation only: simulation coordinates remain unchanged. */
+body #matchSimulation #matchVisualCard .nx-camera-toggle{display:flex;gap:5px;padding:8px 12px;background:#050d08;border-bottom:1px solid #baff1824}
+body #matchSimulation #matchVisualCard .nx-camera-toggle button{min-height:34px;padding:6px 13px;border:1px solid #4d652c;border-radius:6px;background:#0b170d;color:#acc98d;font:700 11px system-ui;cursor:pointer}
+body #matchSimulation #matchVisualCard .nx-camera-toggle button[aria-pressed="true"]{background:#baff18;color:#091004;border-color:#baff18}
+body #matchSimulation #matchVisualCard .nx-camera-toggle button:focus-visible{outline:2px solid #fff;outline-offset:3px}
+body #matchSimulation #matchVisualCard.nx-depth .neonMiniPitchWrap{perspective:1100px;perspective-origin:50% 35%;background:radial-gradient(ellipse at 50% 45%,#19392366,transparent 65%),#020705!important;padding-top:24px!important;padding-bottom:30px!important;overflow:hidden!important}
+body #matchSimulation #matchVisualCard.nx-depth #neonMiniPitch{transform:rotateX(29deg) scale(.88)!important;transform-origin:50% 50%!important;border-bottom:12px solid #13271a!important;box-shadow:0 10px 0 #08150d,0 12px 0 #405f22,0 28px 28px #000b,0 0 26px #baff180f!important}
+body #matchSimulation #matchVisualCard.nx-depth .nv-player .nv-core{box-shadow:0 4px 0 #020b0b,0 6px 4px #0008!important;transform:scaleY(1.13);border-bottom-width:3px!important}
+body #matchSimulation #matchVisualCard.nx-depth :is(.nv-goal-top,.nv-goal-bottom){box-shadow:0 -5px 0 #93fb6e44,0 -6px 0 #baff1877!important;background-color:#8cfc7712!important}
+body #matchSimulation #matchVisualCard.nx-depth .nv-ball{box-shadow:0 4px 2px #0009,0 0 5px #fff8!important}
+@media(max-width:720px){body #matchSimulation #matchVisualCard.nx-depth .neonMiniPitchWrap{perspective:850px;padding-top:12px!important;padding-bottom:18px!important}body #matchSimulation #matchVisualCard.nx-depth #neonMiniPitch{transform:rotateX(23deg) scale(.92)!important}}
+
+/* Stadium lighting and dimensional player silhouettes for the depth camera. */
+body #matchSimulation #matchVisualCard .nx-volume-net{display:none}
+body #matchSimulation #matchVisualCard.nx-depth #neonMiniPitch{background:radial-gradient(ellipse at 35% 25%,#56944822,transparent 60%),repeating-linear-gradient(180deg,#102d19 0 8.4%,#0c2515 8.4% 16.8%)!important;border-color:#0a180e!important;box-shadow:0 5px 0 #304330,0 13px 0 #09110c,0 15px 0 #314926,0 32px 26px #000c,inset 0 0 45px #0005!important}
+body #matchSimulation #matchVisualCard.nx-depth .neonMiniPitchWrap{background:radial-gradient(ellipse at 50% 60%,#2a492a44,transparent 68%),repeating-linear-gradient(0deg,#030906 0 7px,#112018 7px 8px)!important}
+body #matchSimulation #matchVisualCard.nx-depth #neonMiniPitch::before{border-color:#a7e397bb!important;box-shadow:0 0 4px #9bff5820!important}
+body #matchSimulation #matchVisualCard.nx-depth :is(.nv-goal-top,.nv-goal-bottom){background:none!important;border:0!important;box-shadow:none!important;overflow:visible!important;z-index:12!important}
+body #matchSimulation #matchVisualCard.nx-depth .nx-volume-net{display:block;position:absolute;left:-5%;width:110%;height:40px;bottom:0;filter:drop-shadow(3px 7px 2px #0007)}
+body #matchSimulation #matchVisualCard.nx-depth .nx-volume-net svg{width:100%;height:100%;overflow:visible}
+body #matchSimulation #matchVisualCard.nx-depth .nv-player{overflow:visible!important}
+body #matchSimulation #matchVisualCard.nx-depth .nv-player::before{display:block!important;position:absolute;inset:auto!important;left:3px;top:22px;width:29px;height:10px;transform:rotate(-22deg);background:#0009!important;opacity:.65!important;border-radius:50%;filter:blur(2px)}
+body #matchSimulation #matchVisualCard.nx-depth .nv-player .nv-core{position:relative;overflow:visible!important;transform:translateY(-7px) scaleY(1.15)!important;width:25px!important;height:25px!important;border-radius:7px 7px 5px 5px!important;border-width:1px!important;border-bottom-width:4px!important;background:linear-gradient(100deg,#092e41,#267fa0 45%,#123a53)!important;box-shadow:2px 3px 0 #03121a,4px 6px 3px #0006!important;font-size:9px!important}
+body #matchSimulation #matchVisualCard.nx-depth .nv-player.teamB .nv-core{background:linear-gradient(100deg,#482013,#c16637 45%,#673120)!important}
+body #matchSimulation #matchVisualCard.nx-depth .nv-player.gk .nv-core{background:linear-gradient(100deg,#324213,#8eaa36 45%,#435215)!important}
+body #matchSimulation #matchVisualCard.nx-depth .nv-core::before{content:'';position:absolute;left:7px;top:-10px;width:10px;height:11px;border-radius:45%;background:radial-gradient(circle at 35% 25%,#e5c7a0,#a9825d 65%,#60452d);box-shadow:1px 1px 0 #302a22}
+body #matchSimulation #matchVisualCard.nx-depth .nv-core::after{content:'';position:absolute;left:4px;bottom:-11px;width:6px;height:11px;border-radius:0 0 3px 3px;background:linear-gradient(#172325 0 45%,#d3e3df 45% 80%,#111 80%);box-shadow:9px 0 0 #bacbc6}
+body #matchSimulation #matchVisualCard.nx-depth .nv-ball{background:radial-gradient(circle at 30% 25%,#fff 0 25%,#d6e0d2 35%,#718571 85%)!important;box-shadow:3px 6px 3px #000a,0 0 2px #fff!important}
+
+/* Player proportions and goal-line anchors, revision 3. */
+body #matchSimulation #matchVisualCard.nx-depth .nv-player .nv-core{width:26px!important;height:41px!important;transform:translateY(-9px)!important;background:url('./match-player-a.svg?v=4') center/contain no-repeat!important;border:0!important;border-radius:0!important;box-shadow:none!important;color:#f0fff4!important;font-size:8px!important;line-height:1!important;align-items:end!important;padding-bottom:0!important;text-shadow:0 1px 3px #000,1px 0 3px #000!important}
+body #matchSimulation #matchVisualCard.nx-depth .nv-player.teamB .nv-core{background-image:url('./match-player-b.svg?v=4')!important}
+body #matchSimulation #matchVisualCard.nx-depth .nv-player.gk .nv-core{background-image:url('./match-player-gk.svg?v=4')!important}
+body #matchSimulation #matchVisualCard.nx-depth .nv-core::before,body #matchSimulation #matchVisualCard.nx-depth .nv-core::after{display:none!important}
+body #matchSimulation #matchVisualCard.nx-depth .nv-goal-top{top:8%!important;bottom:auto!important;height:0!important;left:43%!important;width:14%!important}
+body #matchSimulation #matchVisualCard.nx-depth .nv-goal-bottom{bottom:8%!important;top:auto!important;height:0!important;left:43%!important;width:14%!important}
+body #matchSimulation #matchVisualCard.nx-depth .nx-volume-net{left:0!important;width:100%!important;height:36px!important;bottom:0!important;top:auto!important;filter:drop-shadow(2px 3px 2px #0006)!important}
+body #matchSimulation #matchVisualCard.nx-depth .nv-goal-bottom .nx-volume-net{top:0!important;bottom:auto!important;transform:scaleY(-1);}
+body #matchSimulation #matchVisualCard.nx-depth .nv-player .nv-name{margin-top:9px!important}
+
+/* Compact contact shadows keep the smaller figures grounded. */
+body #matchSimulation #matchVisualCard.nx-depth .nv-player::before{left:5px!important;top:23px!important;width:20px!important;height:6px!important;filter:blur(1px)!important;opacity:.4!important}
