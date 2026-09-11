@@ -1,0 +1,41 @@
+name: XOX Transfer Supplement Temp
+
+on:
+  push:
+    branches:
+      - xox-data-integrity-flags-20260911
+    paths:
+      - scripts/build_xox_transfer_supplement.py
+      - .github/workflows/xox-transfer-supplement-temp.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Generate XOX transfer supplement
+        run: |
+          mkdir -p artifacts
+          python scripts/build_xox_transfer_supplement.py --output artifacts/xox-club-supplement.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('artifacts/xox-club-supplement.json')
+          data=json.loads(p.read_text(encoding='utf-8'))
+          assert data['version']==1
+          assert data['player_count'] >= 1000, data['player_count']
+          assert data['matching_transfer_rows'] >= 1000, data['matching_transfer_rows']
+          print({k:v for k,v in data.items() if k!='players'})
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: xox-club-supplement
+          path: artifacts/xox-club-supplement.json
+          if-no-files-found: error
