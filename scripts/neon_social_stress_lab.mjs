@@ -80,7 +80,9 @@ try{
   await scenario('Offline parti lideri grace sonrası çıkar ve liderlik devredilir',async()=>{
     await call(c,'leaveOwnParty');
     await befriend(a,c);
-    const aParty=(await diag(a)).partyId;await call(a,'inviteFriend',c.uid);await call(c,'acceptParty',aParty);
+    const invite=await call(a,'inviteFriend',c.uid);const aParty=String(invite?.partyId||'');assert.ok(aParty,'A-C daveti partyId üretmedi');
+    const beforeA=await diag(a);assert.equal(beforeA.partyId,aParty);assert.ok(beforeA.party?.members?.[a.uid]);
+    await call(c,'acceptParty',aParty);
     await waitUntil(async()=>{const d=await diag(c);return d.partyId===aParty&&d.party?.members?.[a.uid]&&d.party?.members?.[c.uid]},'A-C party join');
     await cloneA?.close().catch(()=>{});cloneA=null;
     await a.context.close();
