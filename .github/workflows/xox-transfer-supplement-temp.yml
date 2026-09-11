@@ -55,6 +55,14 @@ jobs:
           for pid,clubs in expected.items():
               assert clubs <= set(data['players'].get(pid,[])), (pid,data['players'].get(pid))
           print({**{k:v for k,v in data.items() if k!='players'},'enriched_existing_xox_players':enriched,'added_missing_club_links':added})
+          print('CORE_HISTORY_AUDIT_START')
+          for core in rules.get('audience_profile',{}).get('core_players',[]):
+              pid=str(core['id'])
+              row=by_id.get(pid)
+              base=set((row or {}).get('clubs') or [])
+              merged=sorted(base | set(data['players'].get(pid,[])))
+              print(json.dumps({'id':pid,'name':core['name'],'base_clubs':sorted(base),'supplement':data['players'].get(pid,[]),'merged_clubs':merged},ensure_ascii=False))
+          print('CORE_HISTORY_AUDIT_END')
           PY
       - name: Commit supplement to branch
         run: |
