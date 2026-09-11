@@ -40,13 +40,17 @@ class SocialConsistencyTests(unittest.TestCase):
         self.assertIn('partyMissingTimer', CONSISTENCY)
         self.assertIn('reconcileMissingParty(id)', CONSISTENCY)
 
-    def test_party_accept_prefetches_server_state_then_uses_transaction(self):
+    def test_party_accept_uses_pointer_claim_member_write_and_post_verify_rollback(self):
+        self.assertIn('const inviteRef=ref(state.db,`social/partyInvites/${uid}/${id}`)', CONSISTENCY)
         self.assertIn('const target=partyRef(id),serverParty=(await get(target)).val()', CONSISTENCY)
-        self.assertIn('if(!serverParty)', CONSISTENCY)
         self.assertIn('runTransaction(pointer,current=>!current||current===id?id:undefined', CONSISTENCY)
-        self.assertIn('const joined=await runTransaction(target,current=>', CONSISTENCY)
-        self.assertIn("throw new Error('Parti artık mevcut değil. Davet temizlendi.')", CONSISTENCY)
-        self.assertIn('social/partyInvites/${uid}/${id}', CONSISTENCY)
+        self.assertIn('const beforeJoin=(await get(target)).val()', CONSISTENCY)
+        self.assertIn('await set(ref(state.db,`social/parties/${id}/members/${uid}`)', CONSISTENCY)
+        self.assertIn('const verified=(await get(target)).val()', CONSISTENCY)
+        self.assertIn('async function rollbackPartyJoin(pointer,id,uid', CONSISTENCY)
+        self.assertIn('social/parties/${id}/members/${uid}', CONSISTENCY)
+        self.assertIn("throw new Error('Parti değiştiği için katılım geri alındı. Davet temizlendi.')", CONSISTENCY)
+        self.assertNotIn('const joined=await runTransaction(target,current=>', CONSISTENCY)
 
     def test_invite_rejects_same_party_and_other_active_party(self):
         self.assertIn('if(targetParty===id)', CONSISTENCY)
