@@ -56,7 +56,7 @@ body.nx-reduced-effects .nx-crowd-celebration{display:none!important}
 body #matchSimulation #matchVisualCard.nx-depth .neonMiniPitchWrap{background:radial-gradient(ellipse at center,#11241b,#020705 72%)!important}
 body #matchSimulation #matchVisualCard .nx-stadium-shell{display:none}
 body #matchSimulation #matchVisualCard.nx-depth #neonMiniPitch{overflow:visible!important;contain:layout style!important;border-radius:3px!important;transform:rotateX(29deg) scale(.76)!important}
-body #matchSimulation #matchVisualCard.nx-depth .nx-stadium-shell{display:block;position:absolute;inset:-12.5%;z-index:-1;pointer-events:none;background:url('./match-stadium.svg?v=4') center/100% 100% no-repeat;filter:drop-shadow(0 12px 5px #0008)}
+body #matchSimulation #matchVisualCard.nx-depth .nx-stadium-shell{display:block;position:absolute;inset:-12.5%;z-index:-1;pointer-events:none;background:url('./match-stadium.svg?v=5') center/100% 100% no-repeat;filter:drop-shadow(0 12px 5px #0008)}
 body #matchSimulation #matchVisualCard.nx-depth .nx-crowd-celebration{inset:0;z-index:1}
 body #matchSimulation #matchVisualCard .nx-crowd-celebration::before{inset:1%;border-radius:3%;clip-path:polygon(3% 0,97% 0,100% 3%,100% 97%,97% 100%,3% 100%,0 97%,0 3%)}
 body #matchSimulation #matchVisualCard .nx-crowd-celebration i{top:9%}
