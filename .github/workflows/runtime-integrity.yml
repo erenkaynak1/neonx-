@@ -58,5 +58,11 @@ jobs:
         run: node scripts/test_draft_player_integrity.js
       - name: Side-game builder contracts
         run: python scripts/test_side_game_pool_builders.py
+      - name: XOX data integrity regressions
+        run: python scripts/test_xox_data_integrity.py
+      - name: XOX data integrity JavaScript syntax
+        run: node --check side-games/football-xox/xox-data-integrity-v1.js
+      - name: XOX browser lab JavaScript syntax
+        run: node --check scripts/xox_ui_lab.mjs
       - name: Validate committed player pools
         run: python scripts/validate_side_game_pools.py
