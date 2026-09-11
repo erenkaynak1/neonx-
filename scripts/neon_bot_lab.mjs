@@ -54,6 +54,7 @@ async function openDrawer(bot,tab='friends'){
   return layer;
 }
 async function closeDrawer(bot){const layer=bot.page.locator('.nx-social-drawer-layer.open');if(!(await layer.isVisible().catch(()=>false)))return;await layer.locator('.nx-drawer-close').click();await layer.waitFor({state:'hidden',timeout:10000})}
+async function diagnostics(bot){return bot.page.evaluate(async()=>{const api=window.NEON_SOCIAL_CONSISTENCY;if(!api?.diagnostics)return null;return await api.diagnostics()})}
 
 async function addFriend(sender,receiver){
   await openDrawer(sender,'friends');
@@ -75,8 +76,20 @@ async function waitForPartyMembers(bot,leader,member){
 async function makeParty(leader,member){
   await openDrawer(leader,'friends');
   const row=leader.page.locator('.nx-drawer-friend-row').filter({hasText:`@${member.username}`}).first();await row.waitFor({state:'visible'});await row.locator('[data-nx-friend-more]').click();await row.locator('[data-nx-party-invite]').click();
-  await openDrawer(member,'invites');const accept=member.page.locator('.nx-social-drawer-layer.open [data-nx-party-accept]');await accept.waitFor({state:'visible'});assert.equal(await accept.isEnabled(),true);await accept.click();
+  await openDrawer(member,'invites');
+  const accept=member.page.locator('.nx-social-drawer-layer.open [data-nx-party-accept]');await accept.waitFor({state:'visible'});assert.equal(await accept.isEnabled(),true);
+  const inviteId=String(await accept.getAttribute('data-nx-party-accept')||'');assert.ok(inviteId,'Davet partyId içermiyor');
+  const [leaderBefore,memberBefore]=await Promise.all([diagnostics(leader),diagnostics(member)]);
+  report.observations.push(`Parti kabul öncesi: invite=${inviteId}, leaderPointer=${leaderBefore?.partyId||''}, memberPointer=${memberBefore?.partyId||''}`);
+  assert.equal(leaderBefore?.partyId,inviteId,`Davet aktif lider partisini göstermiyor: invite=${inviteId} leader=${leaderBefore?.partyId||''}`);
+  assert.ok(leaderBefore?.party?.members?.[leader.uid],`Lider parti düğümü bulunamadı: ${inviteId}`);
+  assert.ok(memberBefore?.invites?.[inviteId],`Üyenin Firebase daveti bulunamadı: ${inviteId}`);
+  await accept.click();
   await Promise.all([waitForPartyMembers(leader,leader,member),waitForPartyMembers(member,leader,member)]);
+  const [leaderAfter,memberAfter]=await Promise.all([diagnostics(leader),diagnostics(member)]);
+  assert.equal(leaderAfter?.partyId,inviteId);assert.equal(memberAfter?.partyId,inviteId);
+  assert.ok(leaderAfter?.party?.members?.[member.uid]);assert.ok(memberAfter?.party?.members?.[leader.uid]);
+  return {partyId:inviteId};
 }
 
 async function leaveParty(bot){
@@ -120,10 +133,11 @@ try{
   botA=await makeBot(browser,'a');botB=await makeBot(browser,'b');
   await scenario('İki bağımsız misafir hesabı oluşturma',async()=>{const [a,b]=await Promise.all([guestSignIn(botA),guestSignIn(botB)]);assert.notEqual(a.uid,b.uid);return {a,b}},[botA.page,botB.page]);
   await scenario('Arkadaş arama + istek + kabul',()=>addFriend(botA,botB),[botA.page,botB.page]);
-  await scenario('Parti daveti + iki tarafta aynı parti görünümü',()=>makeParty(botA,botB),[botA.page,botB.page]);
+  await scenario('Parti daveti + Firebase partyId bütünlüğü + iki tarafta aynı parti görünümü',()=>makeParty(botA,botB),[botA.page,botB.page]);
   await scenario('Eşzamanlı partiden ayrılma veri bütünlüğü',()=>Promise.all([leaveParty(botA),leaveParty(botB)]),[botA.page,botB.page]);
   await scenario('Gerçek iki oturumla Draft matchmaking handshake',()=>draftHandshake(botA,botB),[botA.page,botB.page]);
   report.observations.push('Botlar ayrı Chromium context ve ayrı Firebase misafir oturumları kullanır.');
+  report.observations.push('Parti daveti kabul edilmeden önce invite partyId, lider userParty pointerı ve gerçek party node aynı kimlik olarak doğrulanır.');
   report.observations.push('Parti üyeliği iki tarafta gerçek zamanlı olarak yakınsayana kadar doğrulanır.');
   report.observations.push('Parti çıkışı iki oyuncuda eşzamanlı tetiklenir; race-safe transaction sözleşmesi test edilir.');
   report.observations.push('Draft eşleşmesi gerçek ana ekran Online kartı üzerinden başlatılır.');
