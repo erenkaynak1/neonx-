@@ -42,6 +42,8 @@ jobs:
         run: python scripts/test_core_patch_contracts.py
       - name: Social system regressions
         run: python scripts/test_social_system.py
+      - name: Social integrity v3 race contracts
+        run: python scripts/test_social_integrity_v3.py
       - name: Social drawer integrity
         run: python scripts/test_social_drawer_integrity.py
       - name: Social identity synchronization
