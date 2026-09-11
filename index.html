@@ -7,6 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <title>NEON XI</title>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-GC90PB01KV"></script>
 <script>
@@ -34,7 +35,7 @@ html,body{margin:0;min-height:100%;background:#03070a;color:#bfffd8;font-family:
     return source.replace(needle,replacement);
   };
   try{
-    const response=await fetch('./neon-xi-core.html?v='+encodeURIComponent(VERSION),{cache:'no-store'});
+    const response=await fetch('./neon-xi-core.html?v='+encodeURIComponent(VERSION),{cache:'default'});
     if(!response.ok) throw new Error('NEON XI core '+response.status);
     let html=(await response.text()).replace(/\r\n?/g,'\n');
     const roomReserveNeedle='const roomReference = ref(database, `rooms/${roomCode}`);\n      const result = await runTransaction(';

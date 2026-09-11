@@ -57,6 +57,14 @@ class RuntimeHygieneTest(unittest.TestCase):
         self.assertNotIn("./game.js", xox_index)
         self.assertNotIn("approved-reference", career_index)
 
+    def test_boot_keeps_loader_fresh_but_allows_versioned_core_cache(self) -> None:
+        root_index = (ROOT / "index.html").read_text(encoding="utf-8")
+        self.assertIn('no-cache, no-store, must-revalidate', root_index)
+        self.assertIn("const VERSION='", root_index)
+        self.assertIn("fetch('./neon-xi-core.html?v='+encodeURIComponent(VERSION),{cache:'default'})", root_index)
+        self.assertNotIn("fetch('./neon-xi-core.html?v='+encodeURIComponent(VERSION),{cache:'no-store'})", root_index)
+        self.assertIn('<link rel="preconnect" href="https://www.gstatic.com" crossorigin>', root_index)
+
     def test_imposter_uses_runtime_parts_not_legacy_build_parts(self) -> None:
         loader = (ROOT / "side-games/futbol-imposter.html").read_text(encoding="utf-8")
         self.assertIn("fetch('./parts/'+n", loader)
