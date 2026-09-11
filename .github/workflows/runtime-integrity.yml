@@ -48,6 +48,12 @@ jobs:
         run: python scripts/test_social_identity_sync.py
       - name: Party membership integrity
         run: python scripts/test_party_membership_integrity.py
+      - name: Social consistency contracts
+        run: python scripts/test_social_consistency.py
+      - name: Social consistency JavaScript syntax
+        run: node --check social/neon-social-consistency-v1.js
+      - name: Social stress lab JavaScript syntax
+        run: node --check scripts/neon_social_stress_lab.mjs
       - name: Draft duplicate-player regression
         run: node scripts/test_draft_player_integrity.js
       - name: Side-game builder contracts
