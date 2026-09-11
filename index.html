@@ -25,7 +25,7 @@ html,body{margin:0;min-height:100%;background:#03070a;color:#bfffd8;font-family:
 <script>
 (async()=>{
   const VERSION='20260911-neon-arena-v10';
-  const BOOT_GUARD='<style id="nx-home-boot-guard">html,body{background:#03070a!important}</style>';
+  const BOOT_GUARD='<style id="nx-home-boot-guard">html,body{background:#03070a!important}#bootHome:not(.nx-approved-home-v1){visibility:hidden!important;opacity:0!important;pointer-events:none!important}body::before{content:"NEON XI YÜKLENİYOR";position:fixed;inset:0;z-index:2147483646;display:grid;place-items:center;background:#03070a;color:#9cff3a;font:800 12px/1.2 system-ui,sans-serif;letter-spacing:.24em;text-align:center;pointer-events:auto}</style>';
   const REVEAL_SCRIPT='<script>(()=>{const reveal=()=>{const g=document.getElementById("nx-home-boot-guard");if(g)g.remove();};const ready=()=>!!document.querySelector("#bootHome.nx-approved-home-v1");if(ready()){requestAnimationFrame(reveal);return;}const o=new MutationObserver(()=>{if(!ready())return;o.disconnect();requestAnimationFrame(reveal);});o.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:["class"]});setTimeout(()=>{o.disconnect();reveal();},9000);})();<\/script>';
   const HOME_SOCIAL_STYLE='<style id="nx-home-social-style">body:has(#bootHome.nx-approved-home-v1.active)>.nx-social-launch{display:none!important}.nx-social-launch{z-index:399999!important}.nx-social-shade{z-index:400000!important}</style>';
   const DRAFT_SELECTION_GUARD_STYLE='<style id="nx-draft-selection-guard">#draftScreen #selectedDetail{display:none!important}html.nx-draft-selection-ready #draftScreen #selectedDetail.highlight{display:block!important}</style>';
