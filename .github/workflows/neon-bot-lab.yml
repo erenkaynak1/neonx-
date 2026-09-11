@@ -7,6 +7,7 @@ on:
       - bot-lab-v1
     paths:
       - 'scripts/neon_bot_lab.mjs'
+      - 'scripts/neon_social_race_lab.mjs'
       - '.github/workflows/neon-bot-lab.yml'
       - 'index.html'
       - 'neon-xi-core.html'
@@ -43,16 +44,23 @@ jobs:
           done
           cat /tmp/neon-bot-http.log
           exit 1
-      - name: Run two-player Bot Lab
+      - name: Run two-player Bot Lab regression
         env:
           NEON_BASE_URL: http://127.0.0.1:4173/index.html
           NEON_BOT_TIMEOUT: '45000'
         run: node scripts/neon_bot_lab.mjs
-      - name: Upload Bot Lab report
+      - name: Run social race and offline lab
+        env:
+          NEON_BASE_URL: http://127.0.0.1:4173/index.html
+          NEON_BOT_TIMEOUT: '45000'
+        run: node scripts/neon_social_race_lab.mjs
+      - name: Upload Bot Lab reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: neon-bot-lab-${{ github.run_id }}
-          path: artifacts/neon-bot-lab
+          path: |
+            artifacts/neon-bot-lab
+            artifacts/neon-social-race-lab
           if-no-files-found: warn
           retention-days: 14

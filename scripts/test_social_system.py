@@ -3,6 +3,8 @@ import unittest
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
+SOCIAL_ENTRY = ROOT / "social/neon-social.js"
+SOCIAL_CORE = ROOT / "social/neon-social-core-v1.js"
 
 
 class SocialSystemTests(unittest.TestCase):
@@ -19,35 +21,26 @@ class SocialSystemTests(unittest.TestCase):
             with self.subTest(filename=filename):
                 self.assertIn(asset, (ROOT / filename).read_text(encoding="utf-8"))
 
+    def test_social_entrypoint_keeps_all_existing_pages_on_one_hardened_runtime(self):
+        entry = SOCIAL_ENTRY.read_text(encoding="utf-8")
+        self.assertIn("import './neon-social-core-v1.js'", entry)
+        self.assertIn("import './neon-social-integrity-v3.js'", entry)
+        self.assertLess(entry.index('neon-social-core-v1.js'), entry.index('neon-social-integrity-v3.js'))
+        self.assertLess(len(entry), 1000)
+
     def test_social_data_model_and_actions_exist(self):
-        source = (ROOT / "social/neon-social.js").read_text(encoding="utf-8")
+        source = SOCIAL_CORE.read_text(encoding="utf-8")
         for token in (
-            "social/usernames/",
-            "social/profiles/",
-            "social/friendRequests/",
-            "social/friends/",
-            "social/parties/",
-            "social/userParty/",
-            "social/matchQueues/",
-            "social/presence/",
-            "social/headToHead/",
-            "social/leaderboards/weekly/",
-            "social/leaderboards/allTime",
-            "social/resultReceipts/",
-            "runTransaction",
-            "ARKADAŞLARLA OYNA",
-            "RAKİP ARA",
-            "ODA KODU",
-            "Çevrimiçi",
-            "Çevrimdışı",
-            "HAFTALIK ZİRVE",
-            "ALL-TIME WINNERS",
+            "social/usernames/", "social/profiles/", "social/friendRequests/", "social/friends/",
+            "social/parties/", "social/userParty/", "social/matchQueues/", "social/presence/",
+            "social/headToHead/", "social/leaderboards/weekly/", "social/leaderboards/allTime",
+            "social/resultReceipts/", "runTransaction", "ARKADAŞLARLA OYNA", "RAKİP ARA",
+            "ODA KODU", "Çevrimiçi", "Çevrimdışı", "HAFTALIK ZİRVE", "ALL-TIME WINNERS",
         ):
-            with self.subTest(token=token):
-                self.assertIn(token, source)
+            with self.subTest(token=token): self.assertIn(token, source)
 
     def test_main_and_side_game_matchmaking_share_the_same_1v1_queue(self):
-        base_social = (ROOT / "social/neon-social.js").read_text(encoding="utf-8")
+        base_social = SOCIAL_CORE.read_text(encoding="utf-8")
         safe_social = (ROOT / "social/neon-social-safe-v4.js").read_text(encoding="utf-8")
         self.assertIn("const LEGACY_MATCH_MODES=new Set(['draft','xox','twin'])", safe_social)
         self.assertIn("`social/matchQueues/${mode}`", base_social)
@@ -57,7 +50,7 @@ class SocialSystemTests(unittest.TestCase):
         self.assertNotIn("setInterval(()=>{patchOpen();patchPlay();ensureBadge();identity()},1200)", safe_social)
 
     def test_party_membership_is_single_party_and_stale_pointer_safe(self):
-        social = (ROOT / "social/neon-social.js").read_text(encoding="utf-8")
+        social = SOCIAL_CORE.read_text(encoding="utf-8")
         self.assertIn("async function currentPartyMembership()", social)
         self.assertIn("if(party?.members?.[uid])return id", social)
         self.assertIn("await remove(pointer);return ''", social)
@@ -83,7 +76,7 @@ class SocialSystemTests(unittest.TestCase):
         self.assertIn("maybeAutoStart", imposter)
 
     def test_party_launch_reloads_same_mode_and_hides_manual_room_flow(self):
-        social = (ROOT / "social/neon-social.js").read_text(encoding="utf-8")
+        social = SOCIAL_CORE.read_text(encoding="utf-8")
         core = (ROOT / "neon-xi-core.html").read_text(encoding="utf-8")
         xox = (ROOT / "side-games/football-xox/game-v2.js").read_text(encoding="utf-8")
         twin = (ROOT / "side-games/career-twin/game.js").read_text(encoding="utf-8")
@@ -98,7 +91,7 @@ class SocialSystemTests(unittest.TestCase):
 
     def test_membership_supports_google_and_explicit_guest_auth(self):
         core = (ROOT / "neon-xi-core.html").read_text(encoding="utf-8")
-        social = (ROOT / "social/neon-social.js").read_text(encoding="utf-8")
+        social = SOCIAL_CORE.read_text(encoding="utf-8")
         combined = core + social
         self.assertIn("signInAnonymously", social)
         self.assertNotIn("signInAnonymously", core)
@@ -120,7 +113,7 @@ class SocialSystemTests(unittest.TestCase):
         self.assertNotIn("ensureGoogleUser", core)
 
     def test_results_feed_live_leaderboards(self):
-        social = (ROOT / "social/neon-social.js").read_text(encoding="utf-8")
+        social = SOCIAL_CORE.read_text(encoding="utf-8")
         result_sources = {
             "neon-xi-core.html": 'mode:"draft"',
             "side-games/football-xox/game-v2.js": "mode:'xox'",
@@ -145,7 +138,7 @@ class SocialSystemTests(unittest.TestCase):
         self.assertNotIn("100X Tactical Simulation Lab", core)
 
     def test_profile_gate_keeps_offline_menu_accessible(self):
-        social = (ROOT / "social/neon-social.js").read_text(encoding="utf-8")
+        social = SOCIAL_CORE.read_text(encoding="utf-8")
         self.assertIn("OYUN İÇİ KULLANICI ADINI SEÇ", social)
         self.assertNotIn("if(!state.profile){open('friends')", social)
         self.assertIn("function requireProfile()", social)
