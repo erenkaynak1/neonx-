@@ -6,6 +6,7 @@ on:
     paths:
       - 'scripts/neon_bot_lab.mjs'
       - 'scripts/neon_social_stress_lab.mjs'
+      - 'scripts/xox_ui_lab.mjs'
       - '.github/workflows/neon-bot-lab.yml'
       - 'index.html'
       - 'neon-xi-core.html'
@@ -17,6 +18,7 @@ on:
     paths:
       - 'scripts/neon_bot_lab.mjs'
       - 'scripts/neon_social_stress_lab.mjs'
+      - 'scripts/xox_ui_lab.mjs'
       - '.github/workflows/neon-bot-lab.yml'
       - 'index.html'
       - 'neon-xi-core.html'
@@ -67,13 +69,22 @@ jobs:
           NEON_BASE_URL: http://127.0.0.1:4173/index.html
           NEON_BOT_TIMEOUT: '45000'
         run: node scripts/neon_social_stress_lab.mjs
+      - name: Run Football XOX data and flag lab
+        id: xox
+        continue-on-error: true
+        env:
+          NEON_XOX_URL: http://127.0.0.1:4173/side-games/football-xox/index.html
+          NEON_BOT_TIMEOUT: '45000'
+        run: node scripts/xox_ui_lab.mjs
       - name: Enforce Bot Lab results
         if: always()
         run: |
           echo "baseline=${{ steps.baseline.outcome }}"
           echo "stress=${{ steps.stress.outcome }}"
+          echo "xox=${{ steps.xox.outcome }}"
           test "${{ steps.baseline.outcome }}" = "success"
           test "${{ steps.stress.outcome }}" = "success"
+          test "${{ steps.xox.outcome }}" = "success"
       - name: Upload Bot Lab reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -82,5 +93,6 @@ jobs:
           path: |
             artifacts/neon-bot-lab
             artifacts/neon-social-stress
+            artifacts/xox-ui-lab
           if-no-files-found: warn
           retention-days: 14
