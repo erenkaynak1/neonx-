@@ -9,7 +9,7 @@ const state={
   auth:null,db:null,user:null,profile:null,
   authOff:null,profileOff:null,friendsOff:null,requestsOff:null,invitesOff:null,pointerOff:null,partyOff:null,connectedOff:null,
   friends:{},requests:{},invites:{},partyId:'',party:null,
-  memberPresence:new Map(),offlineTimers:new Map(),
+  memberPresence:new Map(),offlineTimers:new Map(),joiningParties:new Set(),
   heartbeatTimer:null,connected:false,reconcileBusy:false,booted:false
 };
 
@@ -162,23 +162,32 @@ async function acceptParty(id){
     throw new Error('Parti artık mevcut değil.');
   }
   const pointer=ref(state.db,`social/userParty/${uid}`);
-  const claim=await runTransaction(pointer,value=>!value||value===id?id:undefined,{applyLocally:false});
-  if(!claim.committed)throw new Error('Başka bir parti üyeliği aynı anda etkinleşti.');
-  const profile=await loadProfile();
-  const join=await runTransaction(partyRef,current=>{
-    if(!current)return;
-    const members={...(current.members||{})};
-    members[uid]={username:profile?.username||username(),joinedAt:members[uid]?.joinedAt||now()};
-    return {...current,members,leaderUid:current.leaderUid&&members[current.leaderUid]?current.leaderUid:orderedMembers(members)[0],updatedAt:now()};
-  },{applyLocally:false});
-  if(!join.committed){
-    await runTransaction(pointer,value=>String(value||'')===id?null:value,{applyLocally:false});
-    await remove(ref(state.db,`social/partyInvites/${uid}/${id}`)).catch(()=>{});
-    throw new Error('Parti artık mevcut değil.');
+  state.joiningParties.add(id);
+  try{
+    const claim=await runTransaction(pointer,value=>!value||value===id?id:undefined,{applyLocally:false});
+    if(!claim.committed)throw new Error('Başka bir parti üyeliği aynı anda etkinleşti.');
+    const profile=await loadProfile();
+    const fresh=(await get(partyRef)).val();
+    if(!fresh||fresh.createdAt!==initial.createdAt){
+      await runTransaction(pointer,value=>String(value||'')===id?null:value,{applyLocally:false});
+      await remove(ref(state.db,`social/partyInvites/${uid}/${id}`)).catch(()=>{});
+      throw new Error('Parti artık mevcut değil.');
+    }
+    const memberRef=ref(state.db,`social/parties/${id}/members/${uid}`);
+    await set(memberRef,{username:profile?.username||username(),joinedAt:serverTimestamp()});
+    const verified=(await get(partyRef)).val();
+    if(!verified||verified.createdAt!==initial.createdAt||!verified.members?.[uid]||!verified.leaderUid){
+      await remove(memberRef).catch(()=>{});
+      await runTransaction(pointer,value=>String(value||'')===id?null:value,{applyLocally:false});
+      await remove(ref(state.db,`social/partyInvites/${uid}/${id}`)).catch(()=>{});
+      throw new Error('Parti artık mevcut değil.');
+    }
+    await clearPartyInvites(uid).catch(()=>{});
+    status('Partiye katıldın.');
+    return {partyId:id,joined:true};
+  }finally{
+    state.joiningParties.delete(id);
   }
-  await clearPartyInvites(uid).catch(()=>{});
-  status('Partiye katıldın.');
-  return {partyId:id,joined:true};
 }
 
 async function connectFriends(otherUid,request=null){
@@ -371,6 +380,7 @@ async function bindUser(user){
       const party=partySnap.val()||null;
       state.party=party;
       if(!party?.members?.[user.uid]){
+        if(state.joiningParties.has(id))return;
         runTransaction(ref(state.db,`social/userParty/${user.uid}`),value=>String(value||'')===id?null:value,{applyLocally:false}).catch(()=>{});
         clearMemberPresence();return;
       }
