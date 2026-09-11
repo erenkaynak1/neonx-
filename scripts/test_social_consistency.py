@@ -17,17 +17,26 @@ class SocialConsistencyTests(unittest.TestCase):
         self.assertLess(consistency, drawer)
 
     def test_friendship_operations_remove_crossed_and_stale_requests(self):
-        self.assertIn('[requestKey(me,uid)]:null', CONSISTENCY)
-        self.assertIn('[requestKey(uid,me)]:null', CONSISTENCY)
-        self.assertIn('const crossed=(await get(ref(state.db,requestKey(me,uid)))).val()', CONSISTENCY)
+        self.assertIn('[requestKey(user.uid,uid)]:null', CONSISTENCY)
+        self.assertIn('[requestKey(uid,user.uid)]:null', CONSISTENCY)
+        self.assertIn('const crossed=(await get(ref(state.db,requestKey(user.uid,uid)))).val()', CONSISTENCY)
         self.assertIn('if(crossed){await acceptFriend(uid)', CONSISTENCY)
         self.assertIn('if(reverse){await acceptFriend(uid)', CONSISTENCY)
+        self.assertIn('async function reconcileRequest(fromUid,request)', CONSISTENCY)
+        self.assertIn('if(already){await update(ref(state.db)', CONSISTENCY)
+
+    def test_legacy_friend_add_and_accept_clicks_are_not_intercepted(self):
+        guarded = "const guarded=button.matches('[data-act=\"create-party\"],[data-invite],[data-nx-party-invite],[data-party-accept],[data-nx-party-accept],[data-nx-confirm-remove],[data-act=\"logout\"]')"
+        self.assertIn(guarded, CONSISTENCY)
+        self.assertNotIn("const guarded=button.matches('[data-act=\"create-party\"],[data-add]", CONSISTENCY)
+        self.assertNotIn('[data-nx-friend-accept]', guarded)
 
     def test_party_creation_reserves_user_pointer_transactionally(self):
         self.assertIn('const claim=await runTransaction(pointer,current=>current||id', CONSISTENCY)
-        self.assertIn("if(claimed!==id)", CONSISTENCY)
+        self.assertIn('if(claimed!==id)', CONSISTENCY)
+        self.assertIn('for(let i=0;i<12;i++)', CONSISTENCY)
         self.assertIn('const created=await runTransaction(partyRef(id),current=>current||', CONSISTENCY)
-        self.assertIn("String(current||'')===id?null:current", CONSISTENCY)
+        self.assertIn("String(current||'')===claimed?null:current", CONSISTENCY)
 
     def test_party_accept_is_two_phase_and_rolls_back_stale_invites(self):
         self.assertIn('runTransaction(pointer,current=>!current||current===id?id:undefined', CONSISTENCY)
@@ -36,9 +45,9 @@ class SocialConsistencyTests(unittest.TestCase):
         self.assertIn('social/partyInvites/${uid}/${id}', CONSISTENCY)
 
     def test_invite_rejects_same_party_and_other_active_party(self):
-        self.assertIn("if(targetParty===id)", CONSISTENCY)
-        self.assertIn("Bu oyuncu zaten senin partinde", CONSISTENCY)
-        self.assertIn("Bu oyuncu zaten başka bir aktif partide", CONSISTENCY)
+        self.assertIn('if(targetParty===id)', CONSISTENCY)
+        self.assertIn('Bu oyuncu zaten senin partinde', CONSISTENCY)
+        self.assertIn('Bu oyuncu zaten başka bir aktif partide', CONSISTENCY)
 
     def test_offline_cleanup_has_grace_period_and_leader_failover(self):
         self.assertIn('const DEFAULT_GRACE_MS=30000', CONSISTENCY)
@@ -53,15 +62,12 @@ class SocialConsistencyTests(unittest.TestCase):
         self.assertIn('await leaveOwnParty().catch(()=>{})', CONSISTENCY)
         self.assertIn('await window.NEON_SOCIAL?.signOut?.()', CONSISTENCY)
 
-    def test_capture_guard_covers_both_legacy_and_drawer_actions(self):
-        for token in (
-            '[data-add]', '[data-accept]', '[data-invite]', '[data-party-accept]',
-            '[data-nx-friend-accept]', '[data-nx-party-invite]', '[data-nx-party-accept]',
-            '[data-nx-confirm-remove]', '[data-act="create-party"]'
-        ):
+    def test_capture_guard_only_wraps_risky_party_remove_and_logout_actions(self):
+        for token in ('[data-invite]', '[data-party-accept]', '[data-nx-party-invite]', '[data-nx-party-accept]', '[data-nx-confirm-remove]', '[data-act="create-party"]'):
             with self.subTest(token=token):
                 self.assertIn(token, CONSISTENCY)
         self.assertIn('event.stopImmediatePropagation()', CONSISTENCY)
+        self.assertIn('if(!button||!ensureRuntime()||!me())return', CONSISTENCY)
 
     def test_debug_api_exists_for_browser_stress_lab(self):
         self.assertIn('window.NEON_SOCIAL_CONSISTENCY={', CONSISTENCY)
