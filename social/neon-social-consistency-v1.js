@@ -42,15 +42,24 @@ async function reconcileRequest(fromUid,request){const user=me();if(!user||!from
 
 async function inviteFriend(uid){const user=me();if(!user||!uid)throw new Error('Oyuncu bulunamadı.');const profile=await currentProfile();if(!(await get(ref(state.db,friendKey(user.uid,uid)))).exists())throw new Error('Parti daveti yalnızca arkadaşlara gönderilebilir.');const id=await ensureParty(),targetParty=await validPartyFor(uid);if(targetParty===id){await remove(ref(state.db,`social/partyInvites/${uid}/${id}`));announce('Bu oyuncu zaten senin partinde.');return {already:true}}if(targetParty)throw new Error('Bu oyuncu zaten başka bir aktif partide.');await set(ref(state.db,`social/partyInvites/${uid}/${id}`),{fromUid:user.uid,fromName:profile?.username||'Oyuncu',createdAt:serverTimestamp()});announce('Parti daveti gönderildi.');return {sent:true,partyId:id}}
 
+async function rollbackPartyJoin(pointer,id,uid,{removeInvite=true}={}){
+  await runTransaction(pointer,current=>String(current||'')===id?null:current,{applyLocally:false}).catch(()=>{});
+  await remove(ref(state.db,`social/parties/${id}/members/${uid}`)).catch(()=>{});
+  if(removeInvite)await remove(ref(state.db,`social/partyInvites/${uid}/${id}`)).catch(()=>{});
+}
 async function acceptParty(id){
   const user=me();if(!user||!id)throw new Error('Parti daveti geçersiz.');const uid=user.uid,profile=await currentProfile(),existing=await validPartyFor(uid);
   if(existing===id){await remove(ref(state.db,`social/partyInvites/${uid}/${id}`));announce('Zaten bu partidesin.');return {already:true}}if(existing)throw new Error('Zaten aktif bir partidesin. Önce mevcut partiden ayrıl.');
+  const inviteRef=ref(state.db,`social/partyInvites/${uid}/${id}`),invite=(await get(inviteRef)).val();if(!invite)throw new Error('Parti daveti artık mevcut değil.');
   const target=partyRef(id),serverParty=(await get(target)).val();
-  if(!serverParty){await remove(ref(state.db,`social/partyInvites/${uid}/${id}`));throw new Error('Parti artık mevcut değil. Davet temizlendi.')}
+  if(!serverParty?.createdAt||!serverParty?.leaderUid||!serverParty?.members?.[serverParty.leaderUid]){await remove(inviteRef);throw new Error('Parti artık mevcut değil. Davet temizlendi.')}
   const pointer=ref(state.db,partyKey(uid)),claim=await runTransaction(pointer,current=>!current||current===id?id:undefined,{applyLocally:false});if(!claim.committed)throw new Error('Başka bir parti üyeliği aynı anda etkinleşti.');
-  const joined=await runTransaction(target,current=>{if(!current)return;const members={...(current.members||{})};members[uid]=members[uid]||{username:profile?.username||'Oyuncu',joinedAt:Date.now()};const next={...current,members};if(!next.leaderUid||!members[next.leaderUid])next.leaderUid=Object.keys(members)[0];return next},{applyLocally:false});
-  if(!joined.committed){await runTransaction(pointer,current=>String(current||'')===id?null:current,{applyLocally:false});await remove(ref(state.db,`social/partyInvites/${uid}/${id}`));throw new Error('Parti artık mevcut değil. Davet temizlendi.')}
-  await remove(ref(state.db,`social/partyInvites/${uid}/${id}`));announce('Partiye katıldın.');return {joined:true,partyId:id};
+  const beforeJoin=(await get(target)).val();
+  if(!beforeJoin?.createdAt||!beforeJoin?.leaderUid||!beforeJoin?.members?.[beforeJoin.leaderUid]){await rollbackPartyJoin(pointer,id,uid);throw new Error('Parti artık mevcut değil. Davet temizlendi.')}
+  await set(ref(state.db,`social/parties/${id}/members/${uid}`),{username:profile?.username||'Oyuncu',joinedAt:Date.now()});
+  const verified=(await get(target)).val();
+  if(!verified?.createdAt||!verified?.leaderUid||!verified?.members?.[verified.leaderUid]||!verified?.members?.[uid]){await rollbackPartyJoin(pointer,id,uid);throw new Error('Parti değiştiği için katılım geri alındı. Davet temizlendi.')}
+  await remove(inviteRef);announce('Partiye katıldın.');return {joined:true,partyId:id};
 }
 
 async function cleanupMember(id,uid,force=false){if(!id||!uid)return false;ensureRuntime();if(!force){const p=(await get(ref(state.db,`social/presence/${uid}`))).val()||{};if(connections(p)>0)return false;const last=Number(p.lastSeen||0);if(last&&Date.now()-last<graceMs())return false}const tx=await runTransaction(partyRef(id),current=>{if(!current?.members?.[uid])return current;const members={...(current.members||{})};delete members[uid];const remaining=Object.keys(members);if(!remaining.length)return null;const next={...current,members};if(next.leaderUid===uid||!members[next.leaderUid])next.leaderUid=remaining[0];return next},{applyLocally:false});await runTransaction(ref(state.db,partyKey(uid)),current=>String(current||'')===id?null:current,{applyLocally:false});await remove(ref(state.db,`social/partyInvites/${uid}/${id}`)).catch(()=>{});return Boolean(tx.committed)}
