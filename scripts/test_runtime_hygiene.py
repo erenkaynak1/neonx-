@@ -65,6 +65,14 @@ class RuntimeHygieneTest(unittest.TestCase):
         self.assertNotIn("fetch('./neon-xi-core.html?v='+encodeURIComponent(VERSION),{cache:'no-store'})", root_index)
         self.assertIn('<link rel="preconnect" href="https://www.gstatic.com" crossorigin>', root_index)
 
+    def test_boot_masks_legacy_home_until_approved_home_is_ready(self) -> None:
+        root_index = (ROOT / "index.html").read_text(encoding="utf-8")
+        self.assertIn('#bootHome:not(.nx-approved-home-v1){visibility:hidden!important', root_index)
+        self.assertIn('body::before{content:"NEON XI YÜKLENİYOR"', root_index)
+        self.assertIn('const ready=()=>!!document.querySelector("#bootHome.nx-approved-home-v1")', root_index)
+        self.assertIn('requestAnimationFrame(reveal)', root_index)
+        self.assertIn('setTimeout(()=>{o.disconnect();reveal();},9000)', root_index)
+
     def test_imposter_uses_runtime_parts_not_legacy_build_parts(self) -> None:
         loader = (ROOT / "side-games/futbol-imposter.html").read_text(encoding="utf-8")
         self.assertIn("fetch('./parts/'+n", loader)
