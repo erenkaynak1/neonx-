@@ -37,10 +37,14 @@ class SocialConsistencyTests(unittest.TestCase):
         self.assertIn('for(let i=0;i<12;i++)', CONSISTENCY)
         self.assertIn('const created=await runTransaction(partyRef(id),current=>current||', CONSISTENCY)
         self.assertIn("String(current||'')===claimed?null:current", CONSISTENCY)
+        self.assertIn('partyMissingTimer', CONSISTENCY)
+        self.assertIn('reconcileMissingParty(id)', CONSISTENCY)
 
-    def test_party_accept_is_two_phase_and_rolls_back_stale_invites(self):
+    def test_party_accept_prefetches_server_state_then_uses_transaction(self):
+        self.assertIn('const target=partyRef(id),serverParty=(await get(target)).val()', CONSISTENCY)
+        self.assertIn('if(!serverParty)', CONSISTENCY)
         self.assertIn('runTransaction(pointer,current=>!current||current===id?id:undefined', CONSISTENCY)
-        self.assertIn('const joined=await runTransaction(partyRef(id),current=>', CONSISTENCY)
+        self.assertIn('const joined=await runTransaction(target,current=>', CONSISTENCY)
         self.assertIn("throw new Error('Parti artık mevcut değil. Davet temizlendi.')", CONSISTENCY)
         self.assertIn('social/partyInvites/${uid}/${id}', CONSISTENCY)
 
