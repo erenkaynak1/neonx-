@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   generate:
@@ -20,22 +20,55 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Generate XOX transfer supplement
+      - name: Generate and audit XOX transfer supplement
         run: |
-          mkdir -p artifacts
-          python scripts/build_xox_transfer_supplement.py --output artifacts/xox-club-supplement.json
+          python scripts/build_xox_transfer_supplement.py --output side-games/data/master/xox-club-supplement.json
           python - <<'PY'
           import json
           from pathlib import Path
-          p=Path('artifacts/xox-club-supplement.json')
+          p=Path('side-games/data/master/xox-club-supplement.json')
           data=json.loads(p.read_text(encoding='utf-8'))
+          xox=json.loads(Path('side-games/data/master/xox-players.json').read_text(encoding='utf-8'))
+          rules=json.loads(Path('side-games/data/master/xox-rules.json').read_text(encoding='utf-8'))
+          allowed={club for clubs in rules['clubs'].values() for club in clubs}
           assert data['version']==1
           assert data['player_count'] >= 1000, data['player_count']
           assert data['matching_transfer_rows'] >= 1000, data['matching_transfer_rows']
-          print({k:v for k,v in data.items() if k!='players'})
+          assert all(set(clubs) <= allowed for clubs in data['players'].values())
+          by_id={str(row['id']):row for row in xox}
+          enriched=added=0
+          for pid,clubs in data['players'].items():
+              row=by_id.get(pid)
+              if not row: continue
+              missing=set(clubs)-set(row.get('clubs') or [])
+              if missing:
+                  enriched+=1
+                  added+=len(missing)
+          assert enriched >= 250, enriched
+          assert added >= 300, added
+          expected={
+              '28396':{'Fenerbahçe','Inter','Manchester City'},
+              '33706':{'Fenerbahçe','Manchester United','Sporting CP'},
+              '68863':{'Galatasaray','Inter','Paris Saint-Germain'},
+              '861410':{'Fenerbahçe','Real Madrid'},
+          }
+          for pid,clubs in expected.items():
+              assert clubs <= set(data['players'].get(pid,[])), (pid,data['players'].get(pid))
+          print({**{k:v for k,v in data.items() if k!='players'},'enriched_existing_xox_players':enriched,'added_missing_club_links':added})
           PY
+      - name: Commit supplement to branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add side-games/data/master/xox-club-supplement.json
+          if git diff --cached --quiet; then
+            echo "Supplement unchanged"
+          else
+            git commit -m "Generate XOX transfer-history supplement"
+            git push
+          fi
       - uses: actions/upload-artifact@v4
         with:
           name: xox-club-supplement
-          path: artifacts/xox-club-supplement.json
+          path: side-games/data/master/xox-club-supplement.json
           if-no-files-found: error
