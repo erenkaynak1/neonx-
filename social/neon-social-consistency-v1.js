@@ -5,7 +5,7 @@ import {getDatabase,get,onValue,ref,remove,runTransaction,serverTimestamp,set,up
 const DEFAULT_GRACE_MS=30000;
 const graceMs=()=>Math.max(250,Number(globalThis.NEON_SOCIAL_OFFLINE_GRACE_MS||DEFAULT_GRACE_MS));
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-const state={auth:null,db:null,user:null,profile:null,partyId:'',partyOff:null,userOffs:[],memberOffs:new Map(),memberTimers:new Map(),busy:new Set(),reconciling:new Set()};
+const state={auth:null,db:null,user:null,profile:null,partyId:'',partyOff:null,partyMissingTimer:null,userOffs:[],memberOffs:new Map(),memberTimers:new Map(),busy:new Set(),reconciling:new Set()};
 
 const partyKey=uid=>`social/userParty/${uid}`;
 const friendKey=(a,b)=>`social/friends/${a}/${b}`;
@@ -143,17 +143,29 @@ async function leaveOwnParty(){
 
 function clearMemberWatchers(){for(const off of state.memberOffs.values())try{off()}catch{}state.memberOffs.clear();for(const timer of state.memberTimers.values())clearTimeout(timer);state.memberTimers.clear()}
 function scheduleOfflineCleanup(id,uid,presence){const old=state.memberTimers.get(uid);if(old)clearTimeout(old);if(connections(presence)>0){state.memberTimers.delete(uid);return}const last=Number(presence?.lastSeen||Date.now()),delay=Math.max(0,graceMs()-(Date.now()-last));state.memberTimers.set(uid,setTimeout(async()=>{state.memberTimers.delete(uid);try{await cleanupMember(id,uid,false)}catch(error){console.warn('[NEON XI] offline party cleanup failed',error)}},delay+50))}
+async function reconcileMissingParty(id){
+  const user=me();if(!user||!id)return;
+  const pointer=ref(state.db,partyKey(user.uid)),currentId=String((await get(pointer)).val()||'');if(currentId!==id)return;
+  const fresh=(await get(partyRef(id))).val();if(fresh?.members?.[user.uid])return;
+  await runTransaction(pointer,current=>String(current||'')===id?null:current,{applyLocally:false});
+}
 function watchParty(id){
-  clearMemberWatchers();state.partyOff?.();state.partyOff=null;if(!id)return;
+  clearMemberWatchers();state.partyOff?.();state.partyOff=null;if(state.partyMissingTimer){clearTimeout(state.partyMissingTimer);state.partyMissingTimer=null}if(!id)return;
   state.partyOff=onValue(partyRef(id),snap=>{
-    const party=snap.val();if(!party?.members){const user=me();if(user)runTransaction(ref(state.db,partyKey(user.uid)),current=>String(current||'')===id?null:current,{applyLocally:false}).catch(()=>{});clearMemberWatchers();return}
+    const party=snap.val();
+    if(!party?.members){
+      clearMemberWatchers();if(state.partyMissingTimer)clearTimeout(state.partyMissingTimer);
+      state.partyMissingTimer=setTimeout(()=>{state.partyMissingTimer=null;reconcileMissingParty(id).catch(error=>console.warn('[NEON XI] stale party pointer cleanup failed',error))},1000);
+      return;
+    }
+    if(state.partyMissingTimer){clearTimeout(state.partyMissingTimer);state.partyMissingTimer=null}
     const active=new Set(Object.keys(party.members).filter(uid=>uid!==me()?.uid));
     for(const [uid,off] of state.memberOffs){if(active.has(uid))continue;try{off()}catch{}state.memberOffs.delete(uid);const timer=state.memberTimers.get(uid);if(timer)clearTimeout(timer);state.memberTimers.delete(uid)}
     for(const uid of active){if(state.memberOffs.has(uid))continue;state.memberOffs.set(uid,onValue(ref(state.db,`social/presence/${uid}`),s=>scheduleOfflineCleanup(id,uid,s.val()||{})))}
   });
 }
 
-function clearUserBindings(){state.userOffs.splice(0).forEach(off=>{try{off()}catch{}});state.partyOff?.();state.partyOff=null;clearMemberWatchers();state.partyId='';state.profile=null;state.reconciling.clear()}
+function clearUserBindings(){state.userOffs.splice(0).forEach(off=>{try{off()}catch{}});state.partyOff?.();state.partyOff=null;if(state.partyMissingTimer){clearTimeout(state.partyMissingTimer);state.partyMissingTimer=null}clearMemberWatchers();state.partyId='';state.profile=null;state.reconciling.clear()}
 function bindUser(user){
   clearUserBindings();state.user=user;
   state.userOffs.push(onValue(ref(state.db,`social/profiles/${user.uid}`),s=>{state.profile=s.val()||null}));
