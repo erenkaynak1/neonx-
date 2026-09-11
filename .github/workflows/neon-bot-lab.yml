@@ -2,11 +2,21 @@ name: NEON XI Bot Lab
 
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - 'scripts/neon_bot_lab.mjs'
+      - 'scripts/neon_social_stress_lab.mjs'
+      - '.github/workflows/neon-bot-lab.yml'
+      - 'index.html'
+      - 'neon-xi-core.html'
+      - 'social/**'
+      - 'side-games/**'
   push:
     branches:
       - bot-lab-v1
     paths:
       - 'scripts/neon_bot_lab.mjs'
+      - 'scripts/neon_social_stress_lab.mjs'
       - '.github/workflows/neon-bot-lab.yml'
       - 'index.html'
       - 'neon-xi-core.html'
@@ -23,7 +33,7 @@ concurrency:
 jobs:
   bot-lab:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -48,11 +58,18 @@ jobs:
           NEON_BASE_URL: http://127.0.0.1:4173/index.html
           NEON_BOT_TIMEOUT: '45000'
         run: node scripts/neon_bot_lab.mjs
-      - name: Upload Bot Lab report
+      - name: Run three-session social stress lab
+        env:
+          NEON_BASE_URL: http://127.0.0.1:4173/index.html
+          NEON_BOT_TIMEOUT: '45000'
+        run: node scripts/neon_social_stress_lab.mjs
+      - name: Upload Bot Lab reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: neon-bot-lab-${{ github.run_id }}
-          path: artifacts/neon-bot-lab
+          path: |
+            artifacts/neon-bot-lab
+            artifacts/neon-social-stress
           if-no-files-found: warn
           retention-days: 14
