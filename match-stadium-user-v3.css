@@ -1,0 +1,71 @@
+/* NEON XI user stadium v3
+   Presentation-only stadium skin. The existing pitch geometry, turf, lines,
+   players, ball, goals and simulation transforms are intentionally untouched. */
+
+body #matchSimulation #matchVisualCard .nx-stadium-shell{
+  display:none!important;
+}
+
+body #matchSimulation #matchVisualCard .nx-user-stadium-backdrop,
+body #matchSimulation #matchVisualCard .nx-user-stadium-frame{
+  display:none;
+}
+
+body #matchSimulation #matchVisualCard.nx-depth .neonMiniPitchWrap{
+  position:relative!important;
+  isolation:isolate!important;
+  overflow:hidden!important;
+  background:#010504!important;
+}
+
+/* The supplied black stadium image is represented by a black arena bed plus
+   the supplied stadium art. This layer never receives the pitch rotateX(). */
+body #matchSimulation #matchVisualCard.nx-depth .nx-user-stadium-backdrop{
+  display:block!important;
+  position:absolute!important;
+  inset:0!important;
+  z-index:0!important;
+  pointer-events:none!important;
+  background:#000 url('./assets/match-stadium-frame-user.webp?v=20260913-stadium-v3') center/100% 100% no-repeat!important;
+  transform:none!important;
+}
+
+/* Existing field remains exactly where match-depth.css puts it. Only stacking
+   order is declared here; no transform, size, turf or line rules are changed. */
+body #matchSimulation #matchVisualCard.nx-depth #neonMiniPitch{
+  position:relative!important;
+  z-index:2!important;
+}
+
+/* Transparent supplied stadium frame sits above the field. Its transparent
+   centre leaves the perspective/trapezoid pitch fully visible. */
+body #matchSimulation #matchVisualCard.nx-depth .nx-user-stadium-frame{
+  display:block!important;
+  position:absolute!important;
+  inset:0!important;
+  z-index:3!important;
+  pointer-events:none!important;
+  width:100%!important;
+  height:100%!important;
+  object-fit:fill!important;
+  object-position:center!important;
+  filter:drop-shadow(0 10px 8px #000a)!important;
+  transform:none!important;
+  max-width:none!important;
+}
+
+body #matchSimulation #matchVisualCard.nx-depth .nx-crowd-celebration{
+  z-index:4!important;
+  pointer-events:none!important;
+}
+
+body #matchSimulation #matchVisualCard:not(.nx-depth) .nx-user-stadium-backdrop,
+body #matchSimulation #matchVisualCard:not(.nx-depth) .nx-user-stadium-frame{
+  display:none!important;
+}
+
+@media(max-width:720px){
+  body #matchSimulation #matchVisualCard.nx-depth .nx-user-stadium-frame{
+    object-fit:fill!important;
+  }
+}
