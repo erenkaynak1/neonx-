@@ -7,6 +7,7 @@ on:
       - 'scripts/neon_bot_lab.mjs'
       - 'scripts/neon_social_stress_lab.mjs'
       - 'scripts/xox_ui_lab.mjs'
+      - 'scripts/party_draft_lab.mjs'
       - '.github/workflows/neon-bot-lab.yml'
       - 'index.html'
       - 'neon-xi-core.html'
@@ -19,6 +20,7 @@ on:
       - 'scripts/neon_bot_lab.mjs'
       - 'scripts/neon_social_stress_lab.mjs'
       - 'scripts/xox_ui_lab.mjs'
+      - 'scripts/party_draft_lab.mjs'
       - '.github/workflows/neon-bot-lab.yml'
       - 'index.html'
       - 'neon-xi-core.html'
@@ -35,7 +37,7 @@ concurrency:
 jobs:
   bot-lab:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -69,6 +71,13 @@ jobs:
           NEON_BASE_URL: http://127.0.0.1:4173/index.html
           NEON_BOT_TIMEOUT: '45000'
         run: node scripts/neon_social_stress_lab.mjs
+      - name: Run party to Draft XI lab
+        id: party_draft
+        continue-on-error: true
+        env:
+          NEON_BASE_URL: http://127.0.0.1:4173/index.html
+          NEON_BOT_TIMEOUT: '45000'
+        run: node scripts/party_draft_lab.mjs
       - name: Run Football XOX data and flag lab
         id: xox
         continue-on-error: true
@@ -81,9 +90,11 @@ jobs:
         run: |
           echo "baseline=${{ steps.baseline.outcome }}"
           echo "stress=${{ steps.stress.outcome }}"
+          echo "party_draft=${{ steps.party_draft.outcome }}"
           echo "xox=${{ steps.xox.outcome }}"
           test "${{ steps.baseline.outcome }}" = "success"
           test "${{ steps.stress.outcome }}" = "success"
+          test "${{ steps.party_draft.outcome }}" = "success"
           test "${{ steps.xox.outcome }}" = "success"
       - name: Upload Bot Lab reports
         if: always()
@@ -93,6 +104,7 @@ jobs:
           path: |
             artifacts/neon-bot-lab
             artifacts/neon-social-stress
+            artifacts/party-draft-lab
             artifacts/xox-ui-lab
           if-no-files-found: warn
           retention-days: 14
