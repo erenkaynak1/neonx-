@@ -158,6 +158,17 @@ class SocialSystemTests(unittest.TestCase):
         self.assertIn("ARKADAŞLIKTAN ÇIKAR", drawer)
         self.assertNotIn("OYUNA DAVET ET", drawer)
 
+    def test_home_drawer_has_a_complete_friend_lobby(self):
+        drawer = (ROOT / "social/neon-social-drawer-v1.js").read_text(encoding="utf-8")
+        broker = (ROOT / "social/party-match-broker-v1.js").read_text(encoding="utf-8")
+        tournament = (ROOT / "social/party-draft-tournament-router-v1.js").read_text(encoding="utf-8")
+        for token in ('data-nx-drawer-tab="lobby"', 'ARKADAŞ LOBİSİ', 'data-nx-confirm-kick', 'data-nx-ready', 'data-nx-lobby-mode', 'LOBİDEN AYRIL'):
+            with self.subTest(token=token):
+                self.assertIn(token, drawer)
+        self.assertIn('.nx-social-drawer-layer [data-nx-party-launch]', broker)
+        self.assertIn('.nx-social-drawer-layer [data-nx-party-launch]', tournament)
+        self.assertIn('tüm oyuncuların hazır olması gerekiyor', broker)
+
 
 if __name__ == "__main__":
     unittest.main()

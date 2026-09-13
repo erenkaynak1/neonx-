@@ -54,8 +54,18 @@ class SocialConsistencyTests(unittest.TestCase):
 
     def test_invite_rejects_same_party_and_other_active_party(self):
         self.assertIn('if(targetParty===id)', CONSISTENCY)
-        self.assertIn('Bu oyuncu zaten senin partinde', CONSISTENCY)
-        self.assertIn('Bu oyuncu zaten başka bir aktif partide', CONSISTENCY)
+        self.assertIn('Bu arkadaş zaten lobinizde', CONSISTENCY)
+        self.assertIn('Arkadaşınız başka bir lobide', CONSISTENCY)
+        self.assertIn('Bu arkadaşın bekleyen bir lobi daveti zaten var', CONSISTENCY)
+
+    def test_friend_lobby_supports_ready_mode_and_leader_kick(self):
+        self.assertIn('async function setPartyMode(mode)', CONSISTENCY)
+        self.assertIn('async function setPartyReady(ready)', CONSISTENCY)
+        self.assertIn('async function kickPartyMember(uid)', CONSISTENCY)
+        self.assertIn("current.leaderUid!==user.uid", CONSISTENCY)
+        self.assertIn("uid===user.uid", CONSISTENCY)
+        self.assertIn('readyRequired:true', CONSISTENCY)
+        self.assertIn('configRevision', CONSISTENCY)
 
     def test_offline_cleanup_has_grace_period_and_leader_failover(self):
         self.assertIn('const DEFAULT_GRACE_MS=30000', CONSISTENCY)
@@ -81,6 +91,8 @@ class SocialConsistencyTests(unittest.TestCase):
         self.assertIn('window.NEON_SOCIAL_CONSISTENCY={', CONSISTENCY)
         self.assertIn('diagnostics', CONSISTENCY)
         self.assertIn('cleanupMember', CONSISTENCY)
+        self.assertIn('kickPartyMember', CONSISTENCY)
+        self.assertIn('setPartyReady', CONSISTENCY)
         self.assertIn('get graceMs()', CONSISTENCY)
 
 
