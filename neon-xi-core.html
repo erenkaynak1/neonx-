@@ -7198,7 +7198,7 @@ render();
     return base * load.multiplier(condition,key);
   }
   function average(team,keys,filter=()=>true) {
-    const members = game.squad[team].filter(filter);
+    const members = activeSquad(team).filter(filter);
     if (!members.length) return 65;
     const vals = [];
     members.forEach(member => keys.forEach(key => vals.push(stat(member,key))));
@@ -7872,10 +7872,11 @@ render();
     const keeper=goalkeeper(defendingTeam);
     const goalChance=clamp(shot.xG*finisherModifier(shot.team,shooter,shot)*goalkeeperModifier(defendingTeam,keeper,shot),.01,.95);
     const onTargetChance=clamp(.34+shot.xG*.65+(stat(shooter,"shooting")-65)/250,.18,.86);
-    const roll=rng();const onTargetOutcome=roll<goalChance+(1-goalChance)*onTargetChance;
-    applyMicroRating(shot.team,shooter,"finishing",onTargetOutcome,onTargetChance,.105,{positionalActions:1,positionalWins:onTargetOutcome?1:0,positionalErrors:onTargetOutcome?0:1});
+    const totalOnTargetChance=goalChance+(1-goalChance)*onTargetChance;
+    const roll=rng();const onTargetOutcome=roll<totalOnTargetChance;
+    applyMicroRating(shot.team,shooter,"finishing",onTargetOutcome,totalOnTargetChance,.105,{positionalActions:1,positionalWins:onTargetOutcome?1:0,positionalErrors:onTargetOutcome?0:1});
     if(onTargetOutcome)incrementRatingStat(shot.team,shooter,"onTarget");
-    const saveExpected=clamp(1-goalChance/Math.max(.05,onTargetChance),.25,.92);
+    const saveExpected=clamp(1-goalChance/Math.max(.05,totalOnTargetChance),.25,.92);
     if(roll<goalChance){
       shot.outcome="goal";game.score[shot.team]++;game.stats[shot.team].onTarget++;game.routeStats[shot.team][shot.route].goals++;if(shot.setPiece)game.stats[shot.team].setPieceGoals++;
       markDangerous(shot.team,attackCtx,"gol");adjustRating(shot.team,shooter,.75,"goals");if(creator&&creator!==shooter)adjustRating(shot.team,creator,.42,"assists");applyMicroRating(defendingTeam,keeper,"goalkeeping",false,saveExpected,.18,{shotsFaced:1,goalsConceded:1});
@@ -7899,7 +7900,7 @@ render();
   async function simulatePenalty(attackingTeam,defendingTeam,plan,token) {
     beginVisualAttack(attackingTeam,"setPiece",{stage:"setPiece",phase:5,action:"penalty",message:"Penaltı pozisyonu hazırlanıyor"});
     const selectedId=tactic(attackingTeam).penalty;
-    let taker=game.squad[attackingTeam].find(m=>m.footballer.id===selectedId);
+    let taker=activeSquad(attackingTeam).find(m=>m.footballer.id===selectedId);
     if(!taker)taker=[...activeSquad(attackingTeam)].filter(m=>m.footballer.pos!=="GK").sort((a,b)=>(stat(b,"finishing")+stat(b,"composure"))-(stat(a,"finishing")+stat(a,"composure")))[0];
     const keeper=goalkeeper(defendingTeam); const attackCtx={route:"setPiece",dangerous:false};
     setVisualPhase("setPiece",{team:attackingTeam,route:"setPiece",phase:5,action:"penalty",focusIds:visualMemberIds(taker,keeper),ballTargetId:taker?.footballer?.id,message:`${taker?.footballer?.name||game.teamNames[attackingTeam]} penaltı için hazırlanıyor`});
@@ -7985,7 +7986,7 @@ render();
     const cardRoll=rng();
     if(cardRoll<directRedChance){game.stats[defendingTeam].redCards++;game.stats[defendingTeam].red++;rec.red=true;adjustRating(defendingTeam,fouler,-1.1);addEvent("red",`${fouler.footballer.name} doğrudan kırmızı kart gördü.`,`${game.teamNames[defendingTeam]} eksik kaldı.`,`Kontrolsüz ve yüksek şiddetli müdahale.`);}
     else if(cardRoll<yellowChance){
-      if(rec.yellow>0&&rng()<.22){game.stats[defendingTeam].redCards++;game.stats[defendingTeam].red++;rec.red=true;rec.yellow++;adjustRating(defendingTeam,fouler,-.90);addEvent("red",`${fouler.footballer.name} ikinci sarı karttan oyundan atıldı.`,`${game.teamNames[defendingTeam]} eksik kaldı.`,`Tekrarlanan riskli müdahale.`);}
+      if(rec.yellow>0){game.stats[defendingTeam].yellowCards++;game.stats[defendingTeam].yellow++;game.stats[defendingTeam].redCards++;game.stats[defendingTeam].red++;rec.red=true;rec.yellow++;adjustRating(defendingTeam,fouler,-.90);addEvent("red",`${fouler.footballer.name} ikinci sarı karttan oyundan atıldı.`,`${game.teamNames[defendingTeam]} eksik kaldı.`,`Tekrarlanan riskli müdahale.`);}
       else{game.stats[defendingTeam].yellowCards++;game.stats[defendingTeam].yellow++;rec.yellow++;adjustRating(defendingTeam,fouler,-.18);addEvent("yellow",`${fouler.footballer.name} sarı kart gördü.`,"Taktik faul.","Geç müdahale kart getirdi.");}
     }
     else addEvent("foul",`${fouler.footballer.name} faul yaptı.`,"Oyun kısa süre durdu.","Pres ve müdahale zamanlaması faul ihtimalini etkiledi.");
@@ -8008,7 +8009,7 @@ render();
     const roll=rng();
     if(roll<directRedChance){game.stats[defendingTeam].redCards++;game.stats[defendingTeam].red++;rec.red=true;adjustRating(defendingTeam,fouler,-1.05);addEvent("red",`${fouler.footballer.name} kontrolsüz müdahale sonrası kırmızı kart gördü.`,`${game.teamNames[defendingTeam]} on kişi kaldı.`,`Agresiflik ve müdahale disiplini kart kararını etkiledi.`);}
     else if(roll<yellowChance){
-      if(rec.yellow>0&&rng()<.18){game.stats[defendingTeam].redCards++;game.stats[defendingTeam].red++;rec.red=true;rec.yellow++;adjustRating(defendingTeam,fouler,-.86);addEvent("red",`${fouler.footballer.name} ikinci sarı karttan oyundan atıldı.`,`${game.teamNames[defendingTeam]} on kişi kaldı.`,`Tekrarlanan fauller ihraç getirdi.`);}
+      if(rec.yellow>0){game.stats[defendingTeam].yellowCards++;game.stats[defendingTeam].yellow++;game.stats[defendingTeam].redCards++;game.stats[defendingTeam].red++;rec.red=true;rec.yellow++;adjustRating(defendingTeam,fouler,-.86);addEvent("red",`${fouler.footballer.name} ikinci sarı karttan oyundan atıldı.`,`${game.teamNames[defendingTeam]} eksik kaldı.`,`Tekrarlanan fauller ihraç getirdi.`);}
       else{game.stats[defendingTeam].yellowCards++;game.stats[defendingTeam].yellow++;rec.yellow++;adjustRating(defendingTeam,fouler,-.14);addEvent("yellow",`${fouler.footballer.name} orta sahadaki müdahalesi sonrası sarı kart gördü.`,"Oyun yeniden başlayacak.","Pres yoğunluğu ve müdahale disiplini değerlendirildi.");}
     }
     return true;
@@ -8160,8 +8161,9 @@ render();
     const shouldCarry=phase>=2&&(route==="wing"||phase===4||rng()<centerCarryChance);
     let carryExpected=null,carrySuccess=null;
     if(shouldCarry){
-      carryExpected=clamp(probability*.64+carrierSkill*.0032+.02,.18,.90);
-      carrySuccess=success?rng()<clamp(.55+carrierSkill*.0032,.58,.86):rng()<clamp(.10+carrierSkill*.0018,.14,.34);
+      // One phase has one outcome: the visual duel cannot contradict possession.
+      carryExpected=probability;
+      carrySuccess=success;
       applyMicroRating(attackingTeam,p.carrier,"carrying",carrySuccess,carryExpected,phase===3?.074:phase===4?.086:.052,{
         dribblesAttempted:1,dribblesCompleted:carrySuccess?1:0,carries:carrySuccess?1:0,turnovers:carrySuccess?0:1
       });
@@ -8263,7 +8265,7 @@ render();
     const sum=shoot+work;if(sum>95){const k=95/sum;shoot*=k;work*=k;}
     return v3Choice({shot:shoot,workBall:work,standard:100-shoot-work});
   }
-  function v3FinalAction(attackingTeam,defendingTeam,workAttempted=false) {
+  function v3FinalAction(attackingTeam,defendingTeam,workAttempted=false,route="center") {
     const a=v3Config(attackingTeam),d=v3Config(defendingTeam);
     const [crossBase,crossTactic]=v3CrossRates(a.attackDirection);
     const [workBase,workTactic]=v3WorkRates(a.attackDirection,5);
@@ -8273,9 +8275,9 @@ render();
     if(a.finalAction==="Kaleyi Görünce Vur")weights=v3ScaleRemainder(base,"shot",v3AdjustedRate(40,65,a.finalAction,"Kaleyi Görünce Vur",d.defenseTactic));
     else if(a.finalAction==="Ortaları Artır")weights=v3ScaleRemainder(base,"cross",v3AdjustedRate(crossBase,crossTactic,a.finalAction,"Ortaları Artır",d.defenseTactic));
     else if(a.finalAction==="Ceza Sahasına Pasla Gir"&&!workAttempted)weights=v3ScaleRemainder(base,"workBall",v3AdjustedRate(workBase,workTactic,a.finalAction,"Ceza Sahasına Pasla Gir",d.defenseTactic));
-    weights.shot*=v5ActionAffordance(attackingTeam,defendingTeam,"shot",a.attackDirection==="Kanatları Kullan"?"wing":"center",5);
+    weights.shot*=v5ActionAffordance(attackingTeam,defendingTeam,"shot",route,5);
     weights.cross*=v5ActionAffordance(attackingTeam,defendingTeam,"cross","wing",5);
-    weights.workBall*=v5ActionAffordance(attackingTeam,defendingTeam,"workBall",a.attackDirection==="Kanatları Kullan"?"wing":"center",5);
+    weights.workBall*=v5ActionAffordance(attackingTeam,defendingTeam,"workBall",route,5);
     return v3Choice(weights);
   }
   function v3ChooseDefender(team,route="center") {
@@ -8586,7 +8588,7 @@ render();
       }
       if(await v5MaybePenalty(attackingTeam,defendingTeam,route,token))return;
       const discipline=await maybeDiscipline(attackingTeam,defendingTeam,route,token);if(discipline.setPiece)return;
-      const finalAction=v3FinalAction(attackingTeam,defendingTeam,workAttempted);
+      const finalAction=v3FinalAction(attackingTeam,defendingTeam,workAttempted,route);
       if(finalAction==="cross"){setVisualPhase("cross",{action:"cross",phase:5,message:"Kanatta orta açısı oluştu"});return v3ResolveCross(attackingTeam,defendingTeam,route,attackCtx,token);}
       if(finalAction==="workBall"){
         setVisualPhase("entry",{action:"workBall",phase:5,message:"Ceza sahasında ekstra pas aranıyor"});
@@ -8599,7 +8601,7 @@ render();
       return v3ResolveGroundShot(attackingTeam,defendingTeam,route,5,(workMultiplier||1)*(finalAction==="other"?.94:1),attackCtx,token,finalAction==="other"?"Bireysel son aksiyon":"Normal şut");
     }
     if(await v5MaybePenalty(attackingTeam,defendingTeam,"transition",token))return;
-    const finalAction=v3FinalAction(attackingTeam,defendingTeam,transitionWorkAttempted);
+    const finalAction=v3FinalAction(attackingTeam,defendingTeam,transitionWorkAttempted,"transition");
     if(finalAction==="cross"){setVisualPhase("cross",{action:"cross",phase:5});return v3ResolveCross(attackingTeam,defendingTeam,"transition",attackCtx,token);}
     if(finalAction==="workBall"){
       setVisualPhase("entry",{action:"workBall",phase:5,message:"Geçiş sonrası ekstra pas aranıyor"});
