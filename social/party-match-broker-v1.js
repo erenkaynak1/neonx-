@@ -15,7 +15,7 @@ const READY_TIMEOUT_MS=12000,LAUNCH_TTL_MS=60000,PENDING_TTL_MS=90000,MAX_HOST_A
 let currentUser=null,partyWatchOff=null,pendingWatchOff=null,watchedUid='',redirectingNonce='';
 
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-const status=(text,error=false)=>{const el=document.querySelector('.nx-social-status');if(!el)return;el.textContent=text;el.classList.toggle('error',Boolean(error))};
+const status=(text,error=false)=>{for(const el of document.querySelectorAll('.nx-social-status,.nx-social-drawer-layer.open .nx-drawer-status')){el.textContent=text;el.classList.toggle('error',Boolean(error));el.classList.add('show')}};
 const safeSession=(k,v)=>{try{sessionStorage.setItem(k,v)}catch{}};
 const codeFor=mode=>{
   const kind=MODES[mode]?.code;
@@ -51,6 +51,7 @@ function validateParty(mode,party,user){
   const members=Object.keys(party.members||{});
   if(members.length<cfg.min)throw new Error(`${cfg.label} için en az ${cfg.min} oyuncu gerekli.`);
   if(members.length>cfg.max)throw new Error(`${cfg.label} en fazla ${cfg.max} oyuncuyu destekliyor.`);
+  if(party.readyRequired&&members.some(uid=>uid!==party.leaderUid&&party.members?.[uid]?.ready!==true))throw new Error('Oyunu başlatmak için tüm oyuncuların hazır olması gerekiyor.');
   return members;
 }
 
@@ -250,8 +251,8 @@ function watchPendingForStatus(user){
 }
 
 document.addEventListener('click',event=>{
-  const button=event.target.closest('.nx-social-shade [data-act="launch-party"]');if(!button)return;
-  const mode=document.querySelector('.nx-social-shade #nxPartyMode')?.value;if(!MODES[mode])return;
+  const button=event.target.closest('.nx-social-shade [data-act="launch-party"],.nx-social-drawer-layer [data-nx-party-launch]');if(!button)return;
+  const mode=document.querySelector('.nx-social-drawer-layer [data-nx-lobby-mode]')?.value||document.querySelector('.nx-social-shade #nxPartyMode')?.value;if(!MODES[mode])return;
   event.preventDefault();event.stopImmediatePropagation();startBrokeredParty(mode,button);
 },true);
 

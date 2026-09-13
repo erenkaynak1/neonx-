@@ -5,7 +5,7 @@ import {getDatabase,get,ref,runTransaction,serverTimestamp,set,update} from 'htt
 const CONFIG={apiKey:'AIzaSyBLpXHGGTHXykKrnu8_Hv1i71oc3tpTNvY',authDomain:'neonxi.firebaseapp.com',databaseURL:'https://neonxi-default-rtdb.europe-west1.firebasedatabase.app',projectId:'neonxi',storageBucket:'neonxi.firebasestorage.app',messagingSenderId:'667191549799',appId:'1:667191549799:web:1e40feacbee09ed7f3d9c2'};
 const app=getApps().length?getApp():initializeApp(CONFIG),auth=getAuth(app),db=getDatabase(app),base=new URL('../',import.meta.url);
 const CHARS='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-const status=(text,error=false)=>{const el=document.querySelector('.nx-social-status');if(!el)return;el.textContent=text;el.classList.toggle('error',Boolean(error))};
+const status=(text,error=false)=>{for(const el of document.querySelectorAll('.nx-social-status,.nx-social-drawer-layer.open .nx-drawer-status')){el.textContent=text;el.classList.toggle('error',Boolean(error));el.classList.add('show')}};
 const code=()=>{let out='';for(let i=0;i<6;i++)out+=CHARS[Math.floor(Math.random()*CHARS.length)];return out};
 const safeSession=(k,v)=>{try{sessionStorage.setItem(k,v)}catch{}};
 
@@ -47,6 +47,7 @@ async function launchTournament(button){
     const members=Object.keys(party.members||{});
     if(members.length<=2)throw new Error('Turnuva yönlendirmesi için en az 3 oyuncu gerekli.');
     if(members.length>8)throw new Error('NEON XI turnuvası en fazla 8 parti oyuncusunu destekliyor.');
+    if(party.readyRequired&&members.some(uid=>uid!==party.leaderUid&&party.members?.[uid]?.ready!==true))throw new Error('Turnuvayı başlatmak için tüm oyuncuların hazır olması gerekiyor.');
     const tournamentSize=members.length<=4?4:8;
     const name=party.members?.[user.uid]?.username||window.NEON_SOCIAL?.profile?.username||'NEON Oyuncu';
     status(`${members.length} kişilik parti algılandı. ${tournamentSize}'li turnuva hazırlanıyor…`);
@@ -66,8 +67,8 @@ async function launchTournament(button){
 }
 
 document.addEventListener('click',event=>{
-  const button=event.target.closest('.nx-social-shade [data-act="launch-party"]');if(!button)return;
-  const mode=document.querySelector('.nx-social-shade #nxPartyMode')?.value;if(mode!=='draft')return;
+  const button=event.target.closest('.nx-social-shade [data-act="launch-party"],.nx-social-drawer-layer [data-nx-party-launch]');if(!button)return;
+  const mode=document.querySelector('.nx-social-drawer-layer [data-nx-lobby-mode]')?.value||document.querySelector('.nx-social-shade #nxPartyMode')?.value;if(mode!=='draft')return;
   const party=window.NEON_SOCIAL?.party,members=Object.keys(party?.members||{});
   if(members.length<=2)return;
   event.preventDefault();event.stopImmediatePropagation();

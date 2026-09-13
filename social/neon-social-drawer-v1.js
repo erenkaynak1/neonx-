@@ -2,17 +2,17 @@ import {getApp,getApps} from 'https://www.gstatic.com/firebasejs/12.16.0/firebas
 import {getAuth,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js';
 import {getDatabase,get,onValue,ref,remove,runTransaction,serverTimestamp,set,update} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js';
 
-const VERSION='20260906-social-drawer-integrity-v2';
+const VERSION='20260913-friend-lobby-v1';
 const MODES={
-  draft:{label:'NEON XI Draft',code:'alpha6',matchable:true},
-  xox:{label:'Futbol XOX',code:'numeric4',matchable:true},
-  twin:{label:'Kariyer İkizi',code:'numeric4',matchable:true},
+  draft:{label:'NEON XI Draft',code:'alpha6',minParty:2,maxParty:8},
+  xox:{label:'Futbol XOX',code:'numeric4',minParty:2,maxParty:2},
+  twin:{label:'Kariyer İkizi',code:'numeric4',minParty:2,maxParty:2},
   imposter:{label:'Futbol Imposter',code:'alpha5',minParty:3,maxParty:12}
 };
 const state={
   auth:null,db:null,user:null,profile:null,
   friends:{},requests:{},invites:{},presence:{},
-  partyId:'',party:null,tab:'friends',menuUid:'',
+  partyId:'',party:null,tab:'friends',menuUid:'',kickUid:'',
   offs:[],presenceOffs:[],partyOff:null,originalOpen:null,patched:false
 };
 
@@ -36,7 +36,7 @@ function addStyle(){
   #bootHome.nx-approved-home-v1 .nx-drawer-head-icon svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8}
   #bootHome.nx-approved-home-v1 .nx-drawer-title{font-size:13px;font-weight:950;letter-spacing:.10em;color:#dcff78;text-shadow:0 0 12px rgba(188,255,33,.16)}
   #bootHome.nx-approved-home-v1 .nx-drawer-close{display:grid;place-items:center;width:32px;height:32px;padding:0;border:1px solid rgba(255,255,255,.10);border-radius:10px;background:rgba(255,255,255,.035);color:#a8c3b1;font-size:21px;line-height:1;cursor:pointer}
-  #bootHome.nx-approved-home-v1 .nx-drawer-tabs{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:10px 12px 7px}
+  #bootHome.nx-approved-home-v1 .nx-drawer-tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding:10px 12px 7px}
   #bootHome.nx-approved-home-v1 .nx-drawer-tab{position:relative;min-height:34px;border:1px solid rgba(183,255,35,.20);border-radius:10px;background:rgba(182,255,29,.035);color:#89a899;font-size:9px;font-weight:950;letter-spacing:.07em;cursor:pointer}
   #bootHome.nx-approved-home-v1 .nx-drawer-tab.active{border-color:rgba(187,255,37,.66);background:linear-gradient(180deg,rgba(180,255,31,.16),rgba(180,255,31,.055));color:#dfff73;box-shadow:inset 0 0 15px rgba(185,255,34,.055)}
   #bootHome.nx-approved-home-v1 .nx-drawer-tab-count{display:inline-grid;place-items:center;min-width:16px;height:16px;margin-left:4px;padding:0 4px;border-radius:999px;background:#ff4e70;color:#fff;font-size:8px}
@@ -76,6 +76,15 @@ function addStyle(){
   #bootHome.nx-approved-home-v1 .nx-drawer-party-controls select{min-width:0;height:32px;border:1px solid rgba(184,255,35,.20);border-radius:9px;background:#020906;color:#dffff0;padding:0 7px;font-size:8px}
   #bootHome.nx-approved-home-v1 .nx-drawer-party-controls button{min-height:32px;border:1px solid #baff18;border-radius:9px;background:#baff18;color:#071005;padding:0 8px;font-size:7px;font-weight:950;cursor:pointer}
   #bootHome.nx-approved-home-v1 .nx-drawer-party-leave{width:100%;min-height:29px;margin-top:6px;border:1px solid rgba(255,79,112,.22);border-radius:8px;background:rgba(255,79,112,.025);color:#f28aa0;font-size:7px;font-weight:900;cursor:pointer}
+  #bootHome.nx-approved-home-v1 .nx-drawer-party-open{width:100%;min-height:30px;border:1px solid rgba(185,255,35,.24);border-radius:8px;background:rgba(185,255,35,.05);color:#d9ff72;font-size:7px;font-weight:950;cursor:pointer}
+  #bootHome.nx-approved-home-v1 .nx-lobby-hero{margin:4px 0 10px;padding:12px;border:1px solid rgba(184,255,35,.36);border-radius:13px;background:linear-gradient(145deg,rgba(181,255,31,.11),rgba(4,17,11,.65));box-shadow:inset 0 0 28px rgba(182,255,31,.035)}
+  #bootHome.nx-approved-home-v1 .nx-lobby-hero-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}.nx-lobby-hero-top strong{color:#ddff71;font-size:10px;letter-spacing:.08em}.nx-lobby-code{padding:4px 7px;border:1px solid rgba(184,255,35,.28);border-radius:999px;color:#97bfa4;font-size:7px;font-weight:900}
+  #bootHome.nx-approved-home-v1 .nx-lobby-mode{display:grid;gap:5px}.nx-lobby-mode label{color:#91ad9a;font-size:7px;font-weight:900;letter-spacing:.08em}.nx-lobby-mode select{height:36px;border:1px solid rgba(184,255,35,.24);border-radius:9px;background:#020906;color:#edfff0;padding:0 9px;font-size:9px;font-weight:800}
+  #bootHome.nx-approved-home-v1 .nx-lobby-members{display:grid;gap:6px}.nx-lobby-member{display:grid;grid-template-columns:34px minmax(0,1fr) auto;align-items:center;gap:8px;padding:8px;border:1px solid rgba(255,255,255,.07);border-radius:11px;background:rgba(255,255,255,.022)}.nx-lobby-member-copy{min-width:0;display:grid;gap:2px}.nx-lobby-member-copy b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#effff2;font-size:9px}.nx-lobby-member-copy small{color:#708a79;font-size:7px}.nx-lobby-state{padding:4px 6px;border-radius:999px;background:rgba(255,180,44,.08);color:#e9b95f;font-size:7px;font-weight:950}.nx-lobby-state.ready{background:rgba(77,244,126,.09);color:#61e68a}.nx-lobby-kick{min-height:27px;border:1px solid rgba(255,75,111,.28);border-radius:8px;background:rgba(255,75,111,.035);color:#ff8ca4;font-size:7px;font-weight:950;cursor:pointer}
+  #bootHome.nx-approved-home-v1 .nx-lobby-kick-actions{display:flex;gap:3px}.nx-lobby-kick-actions .nx-lobby-kick{padding:0 5px;font-size:6px}
+  #bootHome.nx-approved-home-v1 .nx-lobby-empty-slot{padding:9px;border:1px dashed rgba(184,255,35,.16);border-radius:10px;color:#759080;text-align:center;font-size:8px}.nx-lobby-ready{width:100%;min-height:35px;margin-top:9px;border:1px solid rgba(184,255,35,.38);border-radius:9px;background:rgba(184,255,35,.07);color:#d9ff70;font-size:8px;font-weight:950;cursor:pointer}.nx-lobby-ready.active{background:#baff18;color:#071005}
+  #bootHome.nx-approved-home-v1 .nx-lobby-launch{width:100%;min-height:38px;margin-top:9px;border:1px solid #baff18;border-radius:10px;background:#baff18;color:#071005;font-size:8px;font-weight:950;cursor:pointer}.nx-lobby-launch:disabled{border-color:rgba(255,255,255,.10);background:rgba(255,255,255,.045);color:#6d8375;cursor:not-allowed}.nx-lobby-hint{margin:6px 1px 0;color:#789181;font-size:7px;line-height:1.4;text-align:center}
+  #bootHome.nx-approved-home-v1 .nx-lobby-invite-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:7px;padding:8px;border:1px solid rgba(255,255,255,.06);border-radius:10px;background:rgba(255,255,255,.018)}.nx-lobby-invite-row b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#dffff0;font-size:8px}.nx-lobby-invite-row small{display:block;margin-top:2px;color:#718a7a;font-size:7px}.nx-lobby-invite-row button{min-height:28px;border:1px solid rgba(184,255,35,.32);border-radius:8px;background:rgba(184,255,35,.07);color:#d9ff72;font-size:7px;font-weight:950;cursor:pointer}
   #bootHome.nx-approved-home-v1 .nx-drawer-invite{padding:9px}
   #bootHome.nx-approved-home-v1 .nx-drawer-invite b{display:block;color:#effff2;font-size:9px;margin-bottom:2px}
   #bootHome.nx-approved-home-v1 .nx-drawer-invite p{margin:0 0 7px;color:#809789;font-size:8px;line-height:1.35}
@@ -109,6 +118,7 @@ function ensureShell(){
       </div>
       <div class="nx-drawer-tabs">
         <button class="nx-drawer-tab" type="button" data-nx-drawer-tab="friends">ARKADAŞLAR</button>
+        <button class="nx-drawer-tab" type="button" data-nx-drawer-tab="lobby">LOBİ</button>
         <button class="nx-drawer-tab" type="button" data-nx-drawer-tab="invites">DAVETLER</button>
       </div>
       <div class="nx-drawer-body"></div>
@@ -129,12 +139,10 @@ function status(text,error=false){
 function partyMarkup(){
   if(!state.party||!state.partyId)return '';
   const members=Object.entries(state.party.members||{}),leader=state.party.leaderUid===state.user?.uid;
-  const modeOptions=Object.entries(MODES).map(([k,v])=>`<option value="${k}">${esc(v.label)}</option>`).join('');
   return `<section class="nx-drawer-party">
     <div class="nx-drawer-party-top"><strong>AKTİF PARTİ</strong><span>${members.length} OYUNCU · ${leader?'LİDER':'ÜYE'}</span></div>
     <div class="nx-drawer-party-members">${members.map(([uid,x])=>`<span class="nx-drawer-party-member">@${esc(x?.username||'Oyuncu')}${uid===state.party.leaderUid?' · lider':''}</span>`).join('')}</div>
-    ${leader?`<div class="nx-drawer-party-controls"><select data-nx-party-mode>${modeOptions}</select><button type="button" data-nx-party-launch>OYUNU BAŞLAT</button></div>`:'<div style="color:#7f9989;font-size:7px;line-height:1.35">Parti lideri oyun seçtiğinde herkes otomatik olarak aynı oyuna alınır.</div>'}
-    <button class="nx-drawer-party-leave" type="button" data-nx-party-leave>PARTİDEN AYRIL</button>
+    <button class="nx-drawer-party-open" type="button" data-nx-open-lobby>LOBİYİ AÇ</button>
   </section>`;
 }
 
@@ -179,19 +187,47 @@ function renderInvites(body){
   body.querySelectorAll('[data-nx-friend-reject]').forEach(b=>b.addEventListener('click',()=>remove(ref(state.db,`social/friendRequests/${state.user.uid}/${b.dataset.nxFriendReject}`)).catch(e=>status(e?.message||'İstek reddedilemedi.',true))));
 }
 
+function renderLobby(body){
+  if(!state.party||!state.partyId){
+    body.innerHTML=`<section class="nx-lobby-hero"><div class="nx-lobby-hero-top"><strong>ARKADAŞ LOBİSİ</strong><span class="nx-lobby-code">HAZIR</span></div><div class="nx-drawer-empty">Henüz aktif bir lobin yok. Lobiyi kur, arkadaşlarını davet et ve oyunu birlikte başlat.</div><button class="nx-lobby-ready active" type="button" data-nx-create-lobby>LOBİ OLUŞTUR</button></section><div class="nx-drawer-status" role="status"></div>`;
+    body.querySelector('[data-nx-create-lobby]')?.addEventListener('click',async b=>{b.disabled=true;try{await (window.NEON_SOCIAL_CONSISTENCY?.ensureParty?.()||createParty());status('Arkadaş lobisi oluşturuldu.')}catch(e){status(e?.message||'Lobi oluşturulamadı.',true)}finally{if(b.isConnected)b.disabled=false}});return
+  }
+  const members=Object.entries(state.party.members||{}),leaderUid=state.party.leaderUid,isLeader=leaderUid===state.user?.uid,mode=MODES[state.party.selectedMode]?state.party.selectedMode:'draft',cfg=MODES[mode],memberCount=members.length;
+  const waiting=members.filter(([uid,x])=>uid!==leaderUid&&x?.ready!==true),validCount=memberCount>=cfg.minParty&&memberCount<=cfg.maxParty,canLaunch=isLeader&&validCount&&!waiting.length;
+  const options=Object.entries(MODES).map(([key,x])=>`<option value="${key}" ${key===mode?'selected':''}>${esc(x.label)}</option>`).join('');
+  const memberRows=members.sort((a,b)=>a[0]===leaderUid?-1:b[0]===leaderUid?1:Number(a[1]?.joinedAt||0)-Number(b[1]?.joinedAt||0)).map(([uid,x])=>{
+    const online=uid===state.user?.uid||connections(state.presence[uid])>0,ready=uid===leaderUid||x?.ready===true,name=x?.username||'Oyuncu',confirming=state.kickUid===uid;
+    return `<div class="nx-lobby-member"><span class="nx-drawer-avatar">${esc((name.trim()[0]||'N').toUpperCase())}</span><span class="nx-lobby-member-copy"><b>@${esc(name)}</b><small>${uid===leaderUid?'Lobi lideri':online?'Çevrimiçi':'Bağlantı bekleniyor'}</small></span>${isLeader&&uid!==state.user.uid?(confirming?`<span class="nx-lobby-kick-actions"><button class="nx-lobby-kick" type="button" data-nx-cancel-kick>VAZGEÇ</button><button class="nx-lobby-kick" type="button" data-nx-confirm-kick="${esc(uid)}">ÇIKAR</button></span>`:`<button class="nx-lobby-kick" type="button" data-nx-kick="${esc(uid)}">${ready?'HAZIR':'BEKLİYOR'} · AT</button>`):`<span class="nx-lobby-state ${ready?'ready':''}">${ready?'HAZIR':'BEKLİYOR'}</span>`}</div>`
+  }).join('');
+  const slots=Math.min(3,Math.max(0,cfg.maxParty-memberCount)),friends=Object.entries(state.friends||{}).sort((a,b)=>connections(state.presence[b[0]])-connections(state.presence[a[0]]));
+  const reason=!validCount?`${cfg.label} için ${cfg.minParty===cfg.maxParty?`tam ${cfg.minParty}`:`${cfg.minParty}-${cfg.maxParty}`} oyuncu gerekli.`:waiting.length?`${waiting.length} oyuncunun hazır olması bekleniyor.`:'Tüm oyuncular hazır.';
+  body.innerHTML=`<section class="nx-lobby-hero"><div class="nx-lobby-hero-top"><strong>ARKADAŞ LOBİSİ</strong><span class="nx-lobby-code">${memberCount}/${cfg.maxParty} · ${isLeader?'LİDER':'ÜYE'}</span></div><div class="nx-lobby-mode"><label>OYUN MODU</label><select data-nx-lobby-mode ${isLeader?'':'disabled'}>${options}</select></div></section>
+    <section class="nx-drawer-section"><div class="nx-drawer-section-title">OYUNCULAR (${memberCount})</div><div class="nx-lobby-members">${memberRows}${Array.from({length:slots},()=>'<div class="nx-lobby-empty-slot">＋ DAVET İÇİN BOŞ YER</div>').join('')}</div></section>
+    ${!isLeader?`<button class="nx-lobby-ready ${state.party.members?.[state.user.uid]?.ready?'active':''}" type="button" data-nx-ready>${state.party.members?.[state.user.uid]?.ready?'HAZIRIM ✓':'HAZIR OL'}</button>`:`<button class="nx-lobby-launch" type="button" data-nx-party-launch ${canLaunch?'':'disabled'}>OYUNU BAŞLAT</button>`}<p class="nx-lobby-hint">${esc(reason)}</p>
+    <section class="nx-drawer-section"><div class="nx-drawer-section-title">ARKADAŞ DAVET ET</div><div class="nx-drawer-list">${friends.length?friends.map(([uid,x])=>{const online=connections(state.presence[uid])>0;return `<div class="nx-lobby-invite-row"><span><b>@${esc(x?.username||'Oyuncu')}</b><small>${online?'Çevrimiçi':'Çevrimdışı'}</small></span><button type="button" data-nx-party-invite="${esc(uid)}">DAVET ET</button></div>`}).join(''):'<div class="nx-drawer-empty">Davet edebileceğin bir arkadaşın yok.</div>'}</div></section>
+    <button class="nx-drawer-party-leave" type="button" data-nx-party-leave>LOBİDEN AYRIL</button><div class="nx-drawer-status" role="status"></div>`;
+  body.querySelector('[data-nx-lobby-mode]')?.addEventListener('change',e=>(window.NEON_SOCIAL_CONSISTENCY?.setPartyMode?.(e.target.value)||Promise.reject(new Error('Lobi sistemi hazır değil.'))).catch(x=>status(x?.message||'Oyun modu değiştirilemedi.',true)));
+  body.querySelector('[data-nx-ready]')?.addEventListener('click',e=>{const ready=state.party?.members?.[state.user.uid]?.ready!==true;e.currentTarget.disabled=true;(window.NEON_SOCIAL_CONSISTENCY?.setPartyReady?.(ready)||Promise.reject(new Error('Lobi sistemi hazır değil.'))).catch(x=>status(x?.message||'Hazır durumu değiştirilemedi.',true))});
+  body.querySelectorAll('[data-nx-kick]').forEach(b=>b.addEventListener('click',()=>{state.kickUid=b.dataset.nxKick;render()}));
+  body.querySelector('[data-nx-cancel-kick]')?.addEventListener('click',()=>{state.kickUid='';render()});
+  body.querySelector('[data-nx-confirm-kick]')?.addEventListener('click',b=>{const uid=b.currentTarget.dataset.nxConfirmKick;(window.NEON_SOCIAL_CONSISTENCY?.kickPartyMember?.(uid)||Promise.reject(new Error('Lobi sistemi hazır değil.'))).then(()=>{state.kickUid=''}).catch(x=>status(x?.message||'Oyuncu lobiden çıkarılamadı.',true))});
+  bindShared(body);
+}
+
 function bindShared(body){
   body.querySelectorAll('[data-nx-friend-row]').forEach(row=>row.querySelector('.nx-drawer-friend-main')?.addEventListener('click',e=>{if(e.target.closest('[data-nx-friend-more]'))return;toggleMenu(row.dataset.nxFriendRow)}));
   body.querySelectorAll('[data-nx-friend-more]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();toggleMenu(b.dataset.nxFriendMore)}));
   body.querySelectorAll('[data-nx-party-invite]').forEach(b=>b.addEventListener('click',()=>inviteFriend(b.dataset.nxPartyInvite).catch(e=>status(e?.message||'Parti daveti gönderilemedi.',true))));
   body.querySelectorAll('[data-nx-friend-remove-prompt]').forEach(b=>b.addEventListener('click',()=>confirmRemove(b.dataset.nxFriendRemovePrompt)));
   body.querySelector('[data-nx-party-leave]')?.addEventListener('click',()=>leaveParty().catch(e=>status(e?.message||'Partiden ayrılamadın.',true)));
-  body.querySelector('[data-nx-party-launch]')?.addEventListener('click',()=>launchParty(body.querySelector('[data-nx-party-mode]')?.value||'draft').catch(e=>status(e?.message||'Oyun başlatılamadı.',true)));
+  body.querySelector('[data-nx-party-launch]')?.addEventListener('click',()=>launchParty(body.querySelector('[data-nx-lobby-mode]')?.value||body.querySelector('[data-nx-party-mode]')?.value||'draft').catch(e=>status(e?.message||'Oyun başlatılamadı.',true)));
+  body.querySelector('[data-nx-open-lobby]')?.addEventListener('click',()=>{state.tab='lobby';render()});
 }
 
 function render(){
   const l=ensureShell();if(!l)return;
   l.querySelectorAll('[data-nx-drawer-tab]').forEach(x=>{x.classList.toggle('active',x.dataset.nxDrawerTab===state.tab);const old=x.querySelector('.nx-drawer-tab-count');old?.remove();if(x.dataset.nxDrawerTab==='invites'){const n=Object.keys(state.requests||{}).length+Object.keys(state.invites||{}).length;if(n){const badge=document.createElement('span');badge.className='nx-drawer-tab-count';badge.textContent=n>99?'99+':String(n);x.appendChild(badge)}}});
-  const body=l.querySelector('.nx-drawer-body');if(state.tab==='invites')renderInvites(body);else renderFriends(body);
+  const body=l.querySelector('.nx-drawer-body');if(state.tab==='invites')renderInvites(body);else if(state.tab==='lobby')renderLobby(body);else renderFriends(body);
 }
 
 function toggleMenu(uid){state.menuUid=state.menuUid===uid?'':uid;render()}
@@ -225,7 +261,7 @@ async function currentPartyId(){
   if(party?.members?.[uid])return id;
   await remove(pointer);state.partyId='';state.party=null;return '';
 }
-async function createParty(){const existing=await currentPartyId();if(existing)return existing;const id=`p_${state.user.uid.slice(0,8)}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,6)}`;await update(ref(state.db),{[`social/parties/${id}`]:{leaderUid:state.user.uid,createdAt:serverTimestamp(),members:{[state.user.uid]:{username:state.profile.username,joinedAt:serverTimestamp()}}},[`social/userParty/${state.user.uid}`]:id});return id}
+async function createParty(){const existing=await currentPartyId();if(existing)return existing;const id=`p_${state.user.uid.slice(0,8)}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,6)}`;await update(ref(state.db),{[`social/parties/${id}`]:{leaderUid:state.user.uid,createdAt:serverTimestamp(),selectedMode:'draft',readyRequired:true,members:{[state.user.uid]:{username:state.profile.username,joinedAt:serverTimestamp(),ready:true}}},[`social/userParty/${state.user.uid}`]:id});return id}
 async function inviteFriend(uid){if(!state.user||!state.profile)throw new Error('Önce oyuncu profiline giriş yap.');let id=await currentPartyId();if(!id)id=await createParty();await set(ref(state.db,`social/partyInvites/${uid}/${id}`),{fromUid:state.user.uid,fromName:state.profile.username,createdAt:serverTimestamp()});state.menuUid='';render();status(`@${state.friends?.[uid]?.username||'Oyuncu'} partiye davet edildi.`)}
 async function acceptParty(id){
   const uid=state.user.uid,existing=await currentPartyId();
@@ -235,19 +271,19 @@ async function acceptParty(id){
   const pointer=ref(state.db,`social/userParty/${uid}`),claim=await runTransaction(pointer,value=>!value||value===id?id:undefined,{applyLocally:false});
   if(!claim.committed)throw new Error('Başka bir parti üyeliği aynı anda etkinleşti.');
   const fresh=(await get(partyRef)).val();if(!fresh){await runTransaction(pointer,value=>value===id?null:value,{applyLocally:false});throw new Error('Parti artık mevcut değil.');}
-  await update(ref(state.db),{[`social/parties/${id}/members/${uid}`]:{username:state.profile.username,joinedAt:serverTimestamp()},[`social/partyInvites/${uid}/${id}`]:null});status('Partiye katıldın.');state.tab='friends'
+  await update(ref(state.db),{[`social/parties/${id}/members/${uid}`]:{username:state.profile.username,joinedAt:serverTimestamp(),ready:false},[`social/partyInvites/${uid}/${id}`]:null});status('Partiye katıldın.');state.tab='lobby'
 }
 async function leaveParty(){if(!state.partyId)return;const id=state.partyId,p=state.party||{},members=Object.keys(p.members||{}).filter(uid=>uid!==state.user.uid),changes={[`social/userParty/${state.user.uid}`]:null,[`social/parties/${id}/members/${state.user.uid}`]:null};if(p.leaderUid===state.user.uid&&members.length)changes[`social/parties/${id}/leaderUid`]=members[0];if(!members.length)changes[`social/parties/${id}`]=null;await update(ref(state.db),changes);status('Partiden ayrıldın.')}
-async function launchParty(mode){if(!state.party||state.party.leaderUid!==state.user.uid)throw new Error('Oyunu yalnızca parti lideri başlatabilir.');const members=Object.keys(state.party.members||{}),config=MODES[mode];if(config.matchable&&members.length!==2)throw new Error('Bu 1v1 mod için partide tam iki oyuncu olmalı.');if(config.minParty&&members.length<config.minParty)throw new Error(`${config.label} için en az ${config.minParty} oyuncu gerekli.`);if(config.maxParty&&members.length>config.maxParty)throw new Error(`${config.label} en fazla ${config.maxParty} oyuncuyu destekliyor.`);const nonce=`${Date.now()}_${Math.random().toString(36).slice(2,7)}`,launch={mode,nonce,matchId:`p_${state.partyId}_${nonce}`,at:serverTimestamp(),roomCode:codeFor(mode),partySize:members.length,roles:Object.fromEntries(members.map(uid=>[uid,uid===state.party.leaderUid?'host':'guest']))};await set(ref(state.db,`social/parties/${state.partyId}/launch`),launch);status('Oyun başlatılıyor…')}
+async function launchParty(mode){if(!state.party||state.party.leaderUid!==state.user.uid)throw new Error('Oyunu yalnızca lobi lideri başlatabilir.');const members=Object.keys(state.party.members||{}),config=MODES[mode];if(members.length<config.minParty)throw new Error(`${config.label} için en az ${config.minParty} oyuncu gerekli.`);if(members.length>config.maxParty)throw new Error(`${config.label} en fazla ${config.maxParty} oyuncuyu destekliyor.`);if(members.some(uid=>uid!==state.party.leaderUid&&state.party.members?.[uid]?.ready!==true))throw new Error('Oyunu başlatmak için tüm oyuncuların hazır olması gerekiyor.');const nonce=`${Date.now()}_${Math.random().toString(36).slice(2,7)}`,launch={mode,nonce,matchId:`p_${state.partyId}_${nonce}`,at:serverTimestamp(),roomCode:codeFor(mode),partySize:members.length,roles:Object.fromEntries(members.map(uid=>[uid,uid===state.party.leaderUid?'host':'guest']))};await set(ref(state.db,`social/parties/${state.partyId}/launch`),launch);status('Oyun başlatılıyor…')}
 
 function openLegacy(tab='friends'){state.originalOpen?.(tab)}
 function openDrawer(tab='friends'){
   if(!state.user||!state.profile){openLegacy('friends');return}
-  state.tab=tab==='party'||tab==='invites'?'invites':'friends';state.menuUid='';const l=ensureShell();if(!l)return;render();requestAnimationFrame(()=>l.classList.add('open'));document.documentElement.classList.add('nx-social-drawer-open')
+  state.tab=tab==='party'?'lobby':tab==='invites'?'invites':'friends';state.menuUid='';state.kickUid='';const l=ensureShell();if(!l)return;render();requestAnimationFrame(()=>l.classList.add('open'));document.documentElement.classList.add('nx-social-drawer-open')
 }
 function closeDrawer(){const l=layer();if(!l)return;l.classList.remove('open');document.documentElement.classList.remove('nx-social-drawer-open');state.menuUid=''}
 
-function bindPresence(){state.presenceOffs.splice(0).forEach(off=>{try{off()}catch{}});state.presence={};for(const uid of Object.keys(state.friends||{}))state.presenceOffs.push(onValue(ref(state.db,`social/presence/${uid}`),s=>{state.presence[uid]=s.val()||{};if(isOpen()&&state.tab==='friends')render()}))}
+function bindPresence(){state.presenceOffs.splice(0).forEach(off=>{try{off()}catch{}});state.presence={};for(const uid of Object.keys(state.friends||{}))state.presenceOffs.push(onValue(ref(state.db,`social/presence/${uid}`),s=>{state.presence[uid]=s.val()||{};if(isOpen()&&(state.tab==='friends'||state.tab==='lobby'))render()}))}
 function clearBindings(){state.offs.splice(0).forEach(off=>{try{off()}catch{}});state.presenceOffs.splice(0).forEach(off=>{try{off()}catch{}});state.partyOff?.();state.partyOff=null;state.party=null;state.partyId=''}
 function bindUser(user){
   clearBindings();state.user=user;
