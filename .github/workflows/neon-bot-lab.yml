@@ -57,6 +57,13 @@ jobs:
           done
           cat /tmp/neon-bot-http.log
           exit 1
+      - name: Run party to Draft XI lab
+        id: party_draft
+        continue-on-error: true
+        env:
+          NEON_BASE_URL: http://127.0.0.1:4173/index.html
+          NEON_BOT_TIMEOUT: '45000'
+        run: node scripts/party_draft_lab.mjs
       - name: Run two-player Bot Lab
         id: baseline
         continue-on-error: true
@@ -71,13 +78,6 @@ jobs:
           NEON_BASE_URL: http://127.0.0.1:4173/index.html
           NEON_BOT_TIMEOUT: '45000'
         run: node scripts/neon_social_stress_lab.mjs
-      - name: Run party to Draft XI lab
-        id: party_draft
-        continue-on-error: true
-        env:
-          NEON_BASE_URL: http://127.0.0.1:4173/index.html
-          NEON_BOT_TIMEOUT: '45000'
-        run: node scripts/party_draft_lab.mjs
       - name: Run Football XOX data and flag lab
         id: xox
         continue-on-error: true
