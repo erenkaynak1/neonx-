@@ -1,0 +1,8 @@
+/* User-supplied NEON XI arena frame overlay. Pitch geometry, turf and simulation remain untouched. */
+body #matchSimulation #matchVisualCard.nx-depth .nx-stadium-shell{
+  background-image:url('./assets/match-stadium-frame-user.webp?v=20260911-1')!important;
+  background-position:center!important;
+  background-size:100% 100%!important;
+  background-repeat:no-repeat!important;
+  filter:drop-shadow(0 12px 5px #0008)!important;
+}
