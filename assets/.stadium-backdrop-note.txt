@@ -1,0 +1,1 @@
+NEON XI stadium backdrop placeholder marker. Binary asset is attached in the following git tree commit.
