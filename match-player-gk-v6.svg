@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 112">
+<defs>
+<linearGradient id="kit"><stop stop-color="#417235"/><stop offset=".36" stop-color="#c4ed58"/><stop offset=".68" stop-color="#c4ed58"/><stop offset="1" stop-color="#417235"/></linearGradient>
+<linearGradient id="skin"><stop stop-color="#70452f"/><stop offset=".4" stop-color="#dfaf88"/><stop offset=".7" stop-color="#dfaf88"/><stop offset="1" stop-color="#815037"/></linearGradient>
+<linearGradient id="shorts"><stop stop-color="#101b25"/><stop offset=".45" stop-color="#344454"/><stop offset="1" stop-color="#101823"/></linearGradient>
+</defs>
+<!-- Athletic silhouette: shoulders, tapered waist, separate knees and boots. -->
+<ellipse cx="32" cy="106" rx="17" ry="3.5" fill="#020805" opacity=".27"/>
+<path d="M24 62Q19 72 21 82L19 100L26 101L29 83L32 67M34 65L37 81L39 101L46 100L44 79L41 61" fill="url(#skin)" stroke="#503929" stroke-width=".6"/>
+<path d="M20 86L28 87L26 101L19 100ZM38 87L45 86L46 100L39 101Z" fill="url(#kit)"/>
+<path d="M20 88L27 89M39 89L45 88" stroke="#f6f7e9" stroke-width="1.5" opacity=".9"/>
+<path d="M19 99L26 100L28 105Q27 109 14 107L13 105ZM39 100L46 99L52 104Q54 108 40 108Z" fill="#152027" stroke="#060b0f"/>
+<path d="M15 105L25 106M42 106L51 105" stroke="#f2f2e5" stroke-width="1.5"/>
+<path d="M21 54L43 54L45 70L35 72L32 63L29 72L19 70Z" fill="url(#shorts)"/>
+<path d="M22 57L21 68M41 57L43 68" stroke="#c4ed58" stroke-width="2"/>
+<path d="M18 30L12 46L8 58Q7 64 11 65L14 62L17 49L24 34M45 30L52 43L56 56Q58 61 54 63L51 60L47 48L39 35" fill="url(#skin)" stroke="#5c3b2b" stroke-width=".7"/>
+<path d="M25 23L18 26L12 37L21 42L23 36L21 56Q31 60 43 56L41 36L45 41L52 35L46 27L39 23Z" fill="url(#kit)" stroke="#417235" stroke-width=".8"/>
+<path d="M24 24L28 29L35 30L40 24M14 36L21 39M45 38L50 35" fill="none" stroke="#edf5ee" stroke-width="2"/>
+<path d="M26 36L24 51L29 53M38 35L40 46L36 49M25 55Q32 53 40 55" fill="none" stroke="#417235" stroke-width="1" opacity=".45"/>
+<path d="M26 18L26 25Q31 30 37 25L36 18" fill="url(#skin)"/>
+<ellipse cx="31.5" cy="13" rx="8" ry="10" fill="url(#skin)" stroke="#825437" stroke-width=".6"/>
+<path d="M24 13L22.8 7Q24 1 31 1Q41 1 40 10L38 15L37 7Q29 10 26 6Z" fill="#29211e"/>
+<path d="M27 14H29M34 14H36" stroke="#35271f" stroke-width="1"/>
+<path d="M32 14L31 18H33M29 21Q32 22 35 20" fill="none" stroke="#8b553e" stroke-width=".7"/>
+<path d="M36 33L39 34L38 38L35 36Z" fill="#f4f7ec"/>
+<path d="M27 35H30" stroke="#f3f7f1" stroke-width="1.2"/>
+</svg>
