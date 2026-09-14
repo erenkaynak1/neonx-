@@ -8,16 +8,21 @@
   function alignFrame() {
     scheduled = false;
     if (!currentCard?.classList.contains('nx-depth') || !currentPitch?.isConnected) return;
-    const field = currentPitch.getBoundingClientRect();
-    const wrap = currentWrap.getBoundingClientRect();
-    if (!field.width || !field.height) return;
-    // Artwork opening: x=15–85%, y=21–84%. Only move the artwork.
-    const width = field.width / .70;
-    const height = field.height / .63;
+    const fieldWidth = currentPitch.offsetWidth;
+    const fieldHeight = currentPitch.offsetHeight;
+    if (!fieldWidth || !fieldHeight) return;
+    const cameraStyle = getComputedStyle(currentPitch);
+    const origin = cameraStyle.transformOrigin.split(' ').map(parseFloat);
+    // Fit the opening BEFORE projection, then share the pitch's camera matrix
+    // and world-space pivot. Bounding rectangles lose the trapezoid's corners.
+    const width = fieldWidth / .70;
+    const height = fieldHeight / .63;
     Object.assign(currentFrame.style, {
       width: `${width}px`, height: `${height}px`,
-      left: `${field.left - wrap.left - currentWrap.clientLeft - width * .15}px`,
-      top: `${field.top - wrap.top - currentWrap.clientTop - height * .21}px`
+      left: `${currentPitch.offsetLeft - width * .15}px`,
+      top: `${currentPitch.offsetTop - height * .21}px`,
+      transform: cameraStyle.transform,
+      transformOrigin: `${origin[0] + width * .15}px ${origin[1] + height * .21}px ${origin[2] || 0}px`
     });
   }
   function scheduleAlignment() {

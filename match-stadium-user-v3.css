@@ -20,7 +20,7 @@ body #matchSimulation #matchVisualCard.nx-depth .nx-user-stadium-frame[data-load
   z-index:1!important;
   pointer-events:none!important;
   object-fit:fill!important;
-  transform:none!important;
+  /* JS copies the pitch camera matrix and aligns its pivot with the artwork. */
   max-width:none!important;
 }
 body #matchSimulation #matchVisualCard.nx-depth .nx-crowd-celebration{
