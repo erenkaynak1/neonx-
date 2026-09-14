@@ -66,3 +66,54 @@ body #matchSimulation #matchVisualCard.nx-depth .nx-crowd-celebration{inset:0;z-
 body #matchSimulation #matchVisualCard .nx-crowd-celebration::before{inset:1%;border-radius:3%;clip-path:polygon(3% 0,97% 0,100% 3%,100% 97%,97% 100%,3% 100%,0 97%,0 3%)}
 body #matchSimulation #matchVisualCard .nx-crowd-celebration i{top:9%}
 @media(max-width:720px){body #matchSimulation #matchVisualCard.nx-depth #neonMiniPitch{transform:rotateX(23deg) scale(.78)!important}}
+
+/* Mobile match framing: keep the supplied stadium inside the viewport and make figures read at pitch scale. */
+@media(max-width:720px){
+  body #matchSimulation #matchVisualCard.nx-depth .neonMiniPitchWrap{
+    perspective:900px!important;
+    perspective-origin:50% 34%!important;
+    padding:18px 6px 24px!important;
+  }
+  body #matchSimulation #matchVisualCard.nx-depth #neonMiniPitch{
+    transform:rotateX(23deg) scale(.70)!important;
+    transform-origin:50% 50%!important;
+  }
+  body #matchSimulation #matchVisualCard.nx-depth .nv-player .nv-core{
+    width:26px!important;
+    height:42px!important;
+    transform:translateY(-11px)!important;
+  }
+  body #matchSimulation #matchVisualCard.nx-depth .nv-player::before{
+    left:5px!important;
+    top:21px!important;
+    width:17px!important;
+    height:5px!important;
+  }
+  body #matchSimulation #matchVisualCard.nx-depth .nv-player .nv-name{
+    margin-top:7px!important;
+  }
+
+  /* JS moves the existing controls here. No buttons are recreated, so match state/listeners stay intact. */
+  body #matchSimulation #matchVisualCard > .matchControls.nx-mobile-match-controls{
+    position:relative!important;
+    inset:auto!important;
+    transform:none!important;
+    width:calc(100% - 16px)!important;
+    max-width:none!important;
+    height:auto!important;
+    min-height:0!important;
+    margin:8px 8px 2px!important;
+    padding:8px!important;
+    z-index:20!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    flex-wrap:wrap!important;
+    gap:7px!important;
+    background:rgba(3,9,5,.96)!important;
+    border:1px solid rgba(119,211,156,.12)!important;
+    border-radius:12px!important;
+    box-shadow:0 8px 22px rgba(0,0,0,.22)!important;
+    overflow:visible!important;
+  }
+}
