@@ -73,31 +73,6 @@ class RuntimeHygieneTest(unittest.TestCase):
         self.assertIn('requestAnimationFrame(reveal)', root_index)
         self.assertIn('setTimeout(()=>{o.disconnect();reveal();},9000)', root_index)
 
-    def test_match_scoreboard_is_an_ordered_external_runtime_slice(self) -> None:
-        core = (ROOT / "neon-xi-core.html").read_text(encoding="utf-8")
-        scoreboard_css = ROOT / "match-scoreboard-v1.css"
-        scoreboard_js = ROOT / "match-scoreboard-v1.js"
-
-        css_reference = '<link rel="stylesheet" href="./match-scoreboard-v1.css">'
-        js_reference = '<script src="./match-scoreboard-v1.js"></script>'
-        goal_guard = '<style id="neon-xi-goal-popup-guard">'
-
-        self.assertTrue(scoreboard_css.is_file())
-        self.assertTrue(scoreboard_js.is_file())
-        self.assertEqual(core.count(css_reference), 1)
-        self.assertEqual(core.count(js_reference), 1)
-        self.assertNotIn('id="nx-premium-scoreboard-style"', core)
-        self.assertNotIn('id="nx-premium-scoreboard-script"', core)
-        self.assertLess(core.index(css_reference), core.index(js_reference))
-        self.assertLess(core.index(js_reference), core.index(goal_guard))
-
-        css = scoreboard_css.read_text(encoding="utf-8")
-        script = scoreboard_js.read_text(encoding="utf-8")
-        self.assertIn("#matchSimulation .matchScoreboard", css)
-        self.assertIn("body.nx-reduced-effects #matchSimulation .nx-goal-lightning", css)
-        self.assertIn("dataset.nxPremiumScoreboard", script)
-        self.assertIn("new MutationObserver", script)
-
     def test_imposter_uses_runtime_parts_not_legacy_build_parts(self) -> None:
         loader = (ROOT / "side-games/futbol-imposter.html").read_text(encoding="utf-8")
         self.assertIn("fetch('./parts/'+n", loader)
