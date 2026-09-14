@@ -23,8 +23,9 @@ body #matchSimulation #matchVisualCard.nx-depth .nv-ball{background:radial-gradi
 
 /* Player proportions and goal-line anchors, revision 3. */
 body #matchSimulation #matchVisualCard.nx-depth .nv-player .nv-core{width:26px!important;height:41px!important;transform:translateY(-9px)!important;background:url('./match-player-a.svg?v=5') center/contain no-repeat!important;border:0!important;border-radius:0!important;box-shadow:none!important;color:#f0fff4!important;font-size:8px!important;line-height:1!important;align-items:end!important;padding-bottom:0!important;text-shadow:0 1px 3px #000,1px 0 3px #000!important}
-body #matchSimulation #matchVisualCard.nx-depth .nv-player.teamB .nv-core{background:url('./match-player-b.svg?v=5') center/contain no-repeat!important}
-body #matchSimulation #matchVisualCard.nx-depth .nv-player.gk .nv-core{background:url('./match-player-gk.svg?v=5') center/contain no-repeat!important}
+body #matchSimulation #matchVisualCard.nx-depth .nv-player.teamA .nv-core{background:url('./match-player-a-v6.svg') center/contain no-repeat!important}
+body #matchSimulation #matchVisualCard.nx-depth .nv-player.teamB .nv-core{background:url('./match-player-b-v6.svg') center/contain no-repeat!important}
+body #matchSimulation #matchVisualCard.nx-depth .nv-player.gk .nv-core{background:url('./match-player-gk-v6.svg') center/contain no-repeat!important}
 body #matchSimulation #matchVisualCard.nx-depth .nv-core::before,body #matchSimulation #matchVisualCard.nx-depth .nv-core::after{display:none!important}
 body #matchSimulation #matchVisualCard.nx-depth .nv-goal-top{top:8%!important;bottom:auto!important;height:0!important;left:43%!important;width:14%!important}
 body #matchSimulation #matchVisualCard.nx-depth .nv-goal-bottom{bottom:8%!important;top:auto!important;height:0!important;left:43%!important;width:14%!important}
@@ -33,6 +34,10 @@ body #matchSimulation #matchVisualCard.nx-depth .nv-goal-bottom .nx-volume-net{t
 body #matchSimulation #matchVisualCard.nx-depth .nv-player .nv-name{margin-top:9px!important}
 
 /* Compact contact shadows keep the smaller figures grounded. */
+/* Taller silhouettes retain the existing foot anchor and engine-owned parent transform. */
+body #matchSimulation #matchVisualCard.nx-depth .nv-player .nv-core{width:30px!important;height:49px!important;transform:translateY(-13px)!important;background:url('./match-player-a-v6.svg') center/contain no-repeat!important}
+body #matchSimulation #matchVisualCard.nx-depth .nv-player.teamB .nv-core{background-image:url('./match-player-b-v6.svg')!important}
+body #matchSimulation #matchVisualCard.nx-depth .nv-player.gk .nv-core{background-image:url('./match-player-gk-v6.svg')!important}
 body #matchSimulation #matchVisualCard.nx-depth .nv-player::before{left:5px!important;top:23px!important;width:20px!important;height:6px!important;filter:blur(1px)!important;opacity:.4!important}
 
 /* The stadium is one static SVG layer: no crowd nodes or animation overhead. */
