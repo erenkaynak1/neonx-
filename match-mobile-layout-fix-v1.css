@@ -101,3 +101,53 @@
     line-height:1.1!important;
   }
 }
+
+/* Portrait phones need a gentler camera reduction and readable controls.
+   The control row grows naturally below the match area instead of sitting over the pitch. */
+@media (max-width:720px) and (orientation:portrait){
+  #matchSimulation .matchSimShell{
+    grid-template-rows:47px minmax(0,1fr) auto!important;
+  }
+  #matchSimulation .matchControls{
+    height:auto!important;
+    min-height:52px!important;
+    max-height:none!important;
+    padding:7px 8px!important;
+    gap:6px!important;
+    flex-wrap:wrap!important;
+    overflow:visible!important;
+  }
+  #matchSimulation .matchControls .btn{
+    height:36px!important;
+    min-height:36px!important;
+    padding:6px 10px!important;
+    font-size:11px!important;
+    line-height:1!important;
+  }
+  #matchSimulation #matchVisualCard.nx-depth .neonMiniPitchWrap{
+    padding:12px 22px 18px!important;
+  }
+  #matchSimulation #matchVisualCard.nx-depth #neonMiniPitch{
+    transform:rotateX(23deg) scale(.70)!important;
+  }
+  #matchSimulation #matchVisualCard.nx-depth .nv-player{
+    width:28px!important;
+    height:28px!important;
+  }
+  #matchSimulation #matchVisualCard.nx-depth .nv-player .nv-core{
+    width:26px!important;
+    height:42px!important;
+    transform:translateY(-11px)!important;
+    font-size:7px!important;
+  }
+  #matchSimulation #matchVisualCard.nx-depth .nv-player::before{
+    left:5px!important;
+    top:21px!important;
+    width:18px!important;
+    height:5px!important;
+  }
+  #matchSimulation #matchVisualCard.nx-depth .nv-player .nv-name{
+    top:30px!important;
+    font-size:6.5px!important;
+  }
+}
