@@ -84,3 +84,61 @@
   observer.observe(document.body, {childList:true, subtree:true});
   install();
 })();
+
+/* Mobile portrait: keep the real match controls directly below the pitch instead of letting the shell row cross the field. */
+(() => {
+  'use strict';
+  if (window.NEON_XI_MOBILE_MATCH_CONTROLS_V1) return;
+  window.NEON_XI_MOBILE_MATCH_CONTROLS_V1 = true;
+
+  const mobilePortrait = window.matchMedia('(max-width: 720px) and (orientation: portrait)');
+  let trackedControls = null;
+  let homeParent = null;
+  let homeNext = null;
+  let scheduled = false;
+
+  function restore() {
+    if (!trackedControls) return;
+    trackedControls.classList.remove('nx-mobile-match-controls');
+    if (!homeParent?.isConnected || trackedControls.parentElement === homeParent) return;
+    if (homeNext?.parentElement === homeParent) homeParent.insertBefore(trackedControls, homeNext);
+    else homeParent.appendChild(trackedControls);
+  }
+
+  function place() {
+    scheduled = false;
+    const controls = document.querySelector('#matchSimulation .matchControls');
+    const card = document.getElementById('matchVisualCard');
+    const wrap = card?.querySelector('.neonMiniPitchWrap');
+    if (!controls || !card || !wrap) return;
+
+    if (controls !== trackedControls) {
+      restore();
+      trackedControls = controls;
+      homeParent = controls.parentElement;
+      homeNext = controls.nextElementSibling;
+    }
+
+    if (!mobilePortrait.matches) {
+      restore();
+      return;
+    }
+
+    controls.classList.add('nx-mobile-match-controls');
+    if (controls.parentElement !== card || controls.previousElementSibling !== wrap) {
+      wrap.insertAdjacentElement('afterend', controls);
+    }
+  }
+
+  function schedule() {
+    if (scheduled) return;
+    scheduled = true;
+    requestAnimationFrame(place);
+  }
+
+  new MutationObserver(schedule).observe(document.documentElement, {childList:true, subtree:true});
+  if (typeof mobilePortrait.addEventListener === 'function') mobilePortrait.addEventListener('change', schedule);
+  else mobilePortrait.addListener(schedule);
+  window.addEventListener('resize', schedule, {passive:true});
+  schedule();
+})();
