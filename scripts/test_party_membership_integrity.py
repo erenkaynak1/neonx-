@@ -30,7 +30,8 @@ class PartyMembershipIntegrityTests(unittest.TestCase):
     def test_bot_lab_exercises_simultaneous_leave_race(self):
         self.assertIn('Eşzamanlı partiden ayrılma veri bütünlüğü', BOT)
         self.assertIn('Promise.all([leaveParty(botA),leaveParty(botB)])', BOT)
-        self.assertIn(".h-online", BOT)
+        self.assertIn('data-action="online"', BOT)
+        self.assertIn('ONLINE_ENTRY', BOT)
 
 
 if __name__ == '__main__':

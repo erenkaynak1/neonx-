@@ -2,6 +2,28 @@ import {getApp,getApps} from 'https://www.gstatic.com/firebasejs/12.16.0/firebas
 import {getAuth} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js';
 import {getDatabase,get,ref} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js';
 
+// The approved home is now an SVG-based screen. The social drawer still asks
+// for `.nx-approved-canvas` as its mount host, and appending HTML <div>s into
+// the SVG makes the drawer structurally present but visually hidden. Keep the
+// SVG compatibility class, but also mark its HTML stage ancestor so
+// querySelector resolves to a real HTML mount host first.
+function ensureDrawerMountHost(){
+  const home=document.querySelector('#bootHome.nx-approved-home-v1');
+  const stage=home?.querySelector('.nx-home');
+  if(!stage)return false;
+  stage.classList.add('nx-approved-canvas');
+  return true;
+}
+
+ensureDrawerMountHost();
+const mountObserver=new MutationObserver(()=>ensureDrawerMountHost());
+const observeMount=()=>{
+  const target=document.getElementById('bootHome')||document.body||document.documentElement;
+  if(target)mountObserver.observe(target,{subtree:true,childList:true});
+};
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{ensureDrawerMountHost();observeMount()},{once:true});
+else observeMount();
+
 async function openPendingNotifications(){
   const api=window.NEON_SOCIAL;
   if(!api?.open)return;

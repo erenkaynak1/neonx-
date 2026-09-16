@@ -7,6 +7,8 @@ on:
       - 'scripts/neon_bot_lab.mjs'
       - 'scripts/neon_social_stress_lab.mjs'
       - 'scripts/xox_ui_lab.mjs'
+      - 'scripts/party_draft_lab.mjs'
+      - 'scripts/party_draft_tournament_lab.mjs'
       - '.github/workflows/neon-bot-lab.yml'
       - 'index.html'
       - 'neon-xi-core.html'
@@ -19,6 +21,8 @@ on:
       - 'scripts/neon_bot_lab.mjs'
       - 'scripts/neon_social_stress_lab.mjs'
       - 'scripts/xox_ui_lab.mjs'
+      - 'scripts/party_draft_lab.mjs'
+      - 'scripts/party_draft_tournament_lab.mjs'
       - '.github/workflows/neon-bot-lab.yml'
       - 'index.html'
       - 'neon-xi-core.html'
@@ -35,7 +39,7 @@ concurrency:
 jobs:
   bot-lab:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -55,6 +59,20 @@ jobs:
           done
           cat /tmp/neon-bot-http.log
           exit 1
+      - name: Run two-member party to Draft XI lab
+        id: party_draft
+        continue-on-error: true
+        env:
+          NEON_BASE_URL: http://127.0.0.1:4173/index.html
+          NEON_BOT_TIMEOUT: '45000'
+        run: node scripts/party_draft_lab.mjs
+      - name: Run multi-member party Draft tournament lab
+        id: party_draft_tournament
+        continue-on-error: true
+        env:
+          NEON_BASE_URL: http://127.0.0.1:4173/index.html
+          NEON_BOT_TIMEOUT: '45000'
+        run: node scripts/party_draft_tournament_lab.mjs
       - name: Run two-player Bot Lab
         id: baseline
         continue-on-error: true
@@ -79,9 +97,13 @@ jobs:
       - name: Enforce Bot Lab results
         if: always()
         run: |
+          echo "party_draft=${{ steps.party_draft.outcome }}"
+          echo "party_draft_tournament=${{ steps.party_draft_tournament.outcome }}"
           echo "baseline=${{ steps.baseline.outcome }}"
           echo "stress=${{ steps.stress.outcome }}"
           echo "xox=${{ steps.xox.outcome }}"
+          test "${{ steps.party_draft.outcome }}" = "success"
+          test "${{ steps.party_draft_tournament.outcome }}" = "success"
           test "${{ steps.baseline.outcome }}" = "success"
           test "${{ steps.stress.outcome }}" = "success"
           test "${{ steps.xox.outcome }}" = "success"
@@ -91,6 +113,8 @@ jobs:
         with:
           name: neon-bot-lab-${{ github.run_id }}
           path: |
+            artifacts/party-draft-lab
+            artifacts/party-draft-tournament-lab
             artifacts/neon-bot-lab
             artifacts/neon-social-stress
             artifacts/xox-ui-lab

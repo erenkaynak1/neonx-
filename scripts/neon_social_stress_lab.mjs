@@ -67,7 +67,7 @@ try{
 
   await scenario('Başka partideki oyuncuya davet engellenir',async()=>{
     const bParty=await call(b,'ensureParty');
-    const msg=await expectReject(call(a,'inviteFriend',b.uid),/başka bir aktif partide/i);
+    const msg=await expectReject(call(a,'inviteFriend',b.uid),/başka bir (?:aktif partide|lobide)/i);
     const db=await diag(b);assert.equal(db.partyId,bParty);return {message:msg,bParty};
   });
 

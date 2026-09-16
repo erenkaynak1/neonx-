@@ -7,6 +7,9 @@ const BASE_URL=process.env.NEON_BASE_URL||'http://127.0.0.1:4173/index.html';
 const OUT_DIR=process.env.NEON_BOT_OUT||'artifacts/neon-bot-lab';
 const TIMEOUT=Number(process.env.NEON_BOT_TIMEOUT||45000);
 const runToken=`${Date.now().toString(36)}${Math.random().toString(36).slice(2,6)}`.slice(-10);
+const HOME_READY='#bootHome.nx-approved-home-v1 .nx-home-map';
+const FRIENDS_ENTRY='#bootHome.nx-approved-home-v1 .nx-hotspot[data-action="friends"]';
+const ONLINE_ENTRY='#bootHome.nx-approved-home-v1 .nx-hotspot[data-action="online"]';
 await fs.mkdir(OUT_DIR,{recursive:true});
 
 const report={runToken,baseUrl:BASE_URL,startedAt:new Date().toISOString(),scenarios:[],bots:[],observations:[]};
@@ -28,13 +31,13 @@ async function makeBot(browser,label){
   page.on('pageerror',e=>bot.pageErrors.push(String(e?.stack||e)));
   page.on('console',m=>{if(m.type()==='error')bot.consoleErrors.push(m.text())});
   await page.goto(BASE_URL,{waitUntil:'domcontentloaded',timeout:TIMEOUT});
-  await page.waitForSelector('#bootHome.nx-approved-home-v1 .nx-approved-canvas',{timeout:TIMEOUT});
+  await page.waitForSelector(HOME_READY,{timeout:TIMEOUT});
   return bot;
 }
 
 async function guestSignIn(bot){
   const {page,username}=bot;
-  await page.locator('#bootHome.nx-approved-home-v1 .h-friends').click();
+  await page.locator(FRIENDS_ENTRY).click();
   const active=page.locator('.nx-social-shade.open .nx-social-view.active');
   await active.locator('[data-act="guest-login"]').click();
   const input=active.locator('#nxUsername');await input.waitFor({state:'visible'});await input.fill(username);await active.locator('[data-act="claim"]').click();
@@ -49,8 +52,9 @@ async function guestSignIn(bot){
 
 async function openDrawer(bot,tab='friends'){
   const {page}=bot,layer=page.locator('#bootHome.nx-approved-home-v1 .nx-social-drawer-layer.open');
-  if(!(await layer.isVisible().catch(()=>false))){await page.locator('#bootHome.nx-approved-home-v1 .h-friends').click();await layer.waitFor({state:'visible'})}
-  await page.locator(`[data-nx-drawer-tab="${tab==='invites'?'invites':'friends'}"]`).click();
+  if(!(await layer.isVisible().catch(()=>false))){await page.locator(FRIENDS_ENTRY).click();await layer.waitFor({state:'visible'})}
+  const targetTab=['friends','lobby','invites'].includes(tab)?tab:'friends';
+  await page.locator(`[data-nx-drawer-tab="${targetTab}"]`).click();
   return layer;
 }
 async function closeDrawer(bot){const layer=bot.page.locator('.nx-social-drawer-layer.open');if(!(await layer.isVisible().catch(()=>false)))return;await layer.locator('.nx-drawer-close').click();await layer.waitFor({state:'hidden',timeout:10000})}
@@ -93,16 +97,29 @@ async function makeParty(leader,member){
 }
 
 async function leaveParty(bot){
-  await openDrawer(bot,'friends');
-  const card=bot.page.locator('.nx-social-drawer-layer.open .nx-drawer-party');await card.waitFor({state:'visible'});
-  await card.locator('[data-nx-party-leave]').click();
-  await card.waitFor({state:'hidden',timeout:15000});
+  await openDrawer(bot,'lobby');
+  const card=bot.page.locator('.nx-social-drawer-layer.open .nx-drawer-body');
+  const leave=card.locator('[data-nx-party-leave]');
+  if(!(await leave.isVisible().catch(()=>false)))return;
+  await leave.click().catch(async error=>{if(await leave.isVisible().catch(()=>false))throw error});
+}
+
+async function waitForBothPartyPointersToClear(a,b,timeout=15000){
+  const started=Date.now();let lastA=null,lastB=null;
+  while(Date.now()-started<timeout){
+    [lastA,lastB]=await Promise.all([diagnostics(a),diagnostics(b)]);
+    if(!lastA?.partyId&&!lastB?.partyId)return {a:lastA,b:lastB};
+    await new Promise(resolve=>setTimeout(resolve,150));
+  }
+  assert.equal(lastA?.partyId||'','','A oyuncusunun partyId pointerı temizlenmedi');
+  assert.equal(lastB?.partyId||'','','B oyuncusunun partyId pointerı temizlenmedi');
+  return {a:lastA,b:lastB};
 }
 
 async function openDraftMatchmaking(bot){
   await closeDrawer(bot);
   const {page}=bot;
-  await page.locator('#bootHome.nx-approved-home-v1 .h-online').click();
+  await page.locator(ONLINE_ENTRY).click();
   const shade=page.locator('.nx-social-shade.open');await shade.waitFor({state:'visible',timeout:15000});
   const active=shade.locator('.nx-social-view.active'),mode=active.locator('#nxMode');await mode.waitFor({state:'visible'});await mode.selectOption('draft');
   return active;
@@ -134,13 +151,13 @@ try{
   await scenario('İki bağımsız misafir hesabı oluşturma',async()=>{const [a,b]=await Promise.all([guestSignIn(botA),guestSignIn(botB)]);assert.notEqual(a.uid,b.uid);return {a,b}},[botA.page,botB.page]);
   await scenario('Arkadaş arama + istek + kabul',()=>addFriend(botA,botB),[botA.page,botB.page]);
   await scenario('Parti daveti + Firebase partyId bütünlüğü + iki tarafta aynı parti görünümü',()=>makeParty(botA,botB),[botA.page,botB.page]);
-  await scenario('Eşzamanlı partiden ayrılma veri bütünlüğü',()=>Promise.all([leaveParty(botA),leaveParty(botB)]),[botA.page,botB.page]);
+  await scenario('Eşzamanlı partiden ayrılma veri bütünlüğü',async()=>{await Promise.all([leaveParty(botA),leaveParty(botB)]);return waitForBothPartyPointersToClear(botA,botB)},[botA.page,botB.page]);
   await scenario('Gerçek iki oturumla Draft matchmaking handshake',()=>draftHandshake(botA,botB),[botA.page,botB.page]);
   report.observations.push('Botlar ayrı Chromium context ve ayrı Firebase misafir oturumları kullanır.');
   report.observations.push('Parti daveti kabul edilmeden önce invite partyId, lider userParty pointerı ve gerçek party node aynı kimlik olarak doğrulanır.');
   report.observations.push('Parti üyeliği iki tarafta gerçek zamanlı olarak yakınsayana kadar doğrulanır.');
-  report.observations.push('Parti çıkışı iki oyuncuda eşzamanlı tetiklenir; race-safe transaction sözleşmesi test edilir.');
-  report.observations.push('Draft eşleşmesi gerçek ana ekran Online kartı üzerinden başlatılır.');
+  report.observations.push('Parti çıkışı güncel LOBİ sekmesinden iki oyuncuda eşzamanlı tetiklenir; race-safe transaction sonucu partyId pointerlarının ikisinde de temizlendiği doğrulanır.');
+  report.observations.push('Draft eşleşmesi güncel SVG ana ekranındaki gerçek Online hotspot üzerinden başlatılır.');
 }catch(error){fatal=error}
 finally{
   for(const bot of [botA,botB].filter(Boolean)){report.bots.push({label:bot.label,username:bot.username,uid:bot.uid,pageErrors:bot.pageErrors,consoleErrors:bot.consoleErrors.slice(-30),finalUrl:bot.page.url()});await shot(bot.page,`final-${bot.label}`);try{await bot.context.tracing.stop({path:path.join(OUT_DIR,`trace-${bot.label}.zip`)})}catch{}try{await bot.context.close()}catch{}}
