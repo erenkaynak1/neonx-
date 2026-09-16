@@ -1,0 +1,18 @@
+/* Raster artwork bridge for Futbol XOX hybrid UI v2.
+   The city/stadium atmosphere and hero are real WebP artwork.
+   Gameplay cells and changing data remain DOM in xox-hybrid-ui-v1.css. */
+body[data-ct-screen="game"]::before{
+  background-image:url('./assets/xox-hybrid-art-v2.webp')!important;
+  background-position:top center!important;
+  background-size:min(100vw,760px) auto!important;
+  background-repeat:no-repeat!important;
+  filter:blur(2.2px) brightness(.70) saturate(.92)!important;
+  transform:scale(1.012)!important;
+  image-rendering:auto!important;
+}
+body[data-ct-screen="game"] .brand{
+  background-image:url('./assets/xox-hybrid-hero-v2.webp')!important;
+  background-size:cover!important;
+  background-position:center!important;
+  background-repeat:no-repeat!important;
+}
