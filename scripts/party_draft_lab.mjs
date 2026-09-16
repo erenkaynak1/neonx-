@@ -7,6 +7,8 @@ const BASE_URL=process.env.NEON_BASE_URL||'http://127.0.0.1:4173/index.html';
 const TIMEOUT=Number(process.env.NEON_BOT_TIMEOUT||45000);
 const OUT_DIR='artifacts/party-draft-lab';
 const token=`${Date.now().toString(36)}${Math.random().toString(36).slice(2,7)}`.slice(-10);
+const HOME_READY='#bootHome.nx-approved-home-v1 .nx-home-map';
+const FRIENDS_ENTRY='#bootHome.nx-approved-home-v1 .nx-hotspot[data-action="friends"]';
 await fs.mkdir(OUT_DIR,{recursive:true});
 
 const report={ok:false,token,startedAt:new Date().toISOString(),steps:[],bots:[],error:null};
@@ -21,13 +23,13 @@ async function makeBot(browser,label){
   page.on('pageerror',e=>bot.pageErrors.push(String(e?.stack||e)));
   page.on('console',m=>{if(m.type()==='error')bot.consoleErrors.push(m.text())});
   await page.goto(BASE_URL,{waitUntil:'domcontentloaded',timeout:TIMEOUT});
-  await page.waitForSelector('#bootHome.nx-approved-home-v1 .nx-approved-canvas',{timeout:TIMEOUT});
+  await page.waitForSelector(HOME_READY,{timeout:TIMEOUT});
   return bot;
 }
 
 async function guestSignIn(bot){
   const {page,username}=bot;
-  await page.locator('#bootHome.nx-approved-home-v1 .h-friends').click();
+  await page.locator(FRIENDS_ENTRY).click();
   const shade=page.locator('.nx-social-shade.open');await shade.waitFor({state:'visible'});
   const active=shade.locator('.nx-social-view.active');await active.locator('[data-act="guest-login"]').click();
   const input=active.locator('#nxUsername');await input.waitFor({state:'visible'});await input.fill(username);await active.locator('[data-act="claim"]').click();
