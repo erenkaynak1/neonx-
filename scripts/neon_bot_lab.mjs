@@ -50,7 +50,8 @@ async function guestSignIn(bot){
 async function openDrawer(bot,tab='friends'){
   const {page}=bot,layer=page.locator('#bootHome.nx-approved-home-v1 .nx-social-drawer-layer.open');
   if(!(await layer.isVisible().catch(()=>false))){await page.locator('#bootHome.nx-approved-home-v1 .h-friends').click();await layer.waitFor({state:'visible'})}
-  await page.locator(`[data-nx-drawer-tab="${tab==='invites'?'invites':'friends'}"]`).click();
+  const targetTab=['friends','lobby','invites'].includes(tab)?tab:'friends';
+  await page.locator(`[data-nx-drawer-tab="${targetTab}"]`).click();
   return layer;
 }
 async function closeDrawer(bot){const layer=bot.page.locator('.nx-social-drawer-layer.open');if(!(await layer.isVisible().catch(()=>false)))return;await layer.locator('.nx-drawer-close').click();await layer.waitFor({state:'hidden',timeout:10000})}
@@ -93,10 +94,23 @@ async function makeParty(leader,member){
 }
 
 async function leaveParty(bot){
-  await openDrawer(bot,'friends');
-  const card=bot.page.locator('.nx-social-drawer-layer.open .nx-drawer-party');await card.waitFor({state:'visible'});
-  await card.locator('[data-nx-party-leave]').click();
-  await card.waitFor({state:'hidden',timeout:15000});
+  await openDrawer(bot,'lobby');
+  const card=bot.page.locator('.nx-social-drawer-layer.open .nx-drawer-body');
+  const leave=card.locator('[data-nx-party-leave]');
+  if(!(await leave.isVisible().catch(()=>false)))return;
+  await leave.click().catch(async error=>{if(await leave.isVisible().catch(()=>false))throw error});
+}
+
+async function waitForBothPartyPointersToClear(a,b,timeout=15000){
+  const started=Date.now();let lastA=null,lastB=null;
+  while(Date.now()-started<timeout){
+    [lastA,lastB]=await Promise.all([diagnostics(a),diagnostics(b)]);
+    if(!lastA?.partyId&&!lastB?.partyId)return {a:lastA,b:lastB};
+    await new Promise(resolve=>setTimeout(resolve,150));
+  }
+  assert.equal(lastA?.partyId||'','','A oyuncusunun partyId pointerı temizlenmedi');
+  assert.equal(lastB?.partyId||'','','B oyuncusunun partyId pointerı temizlenmedi');
+  return {a:lastA,b:lastB};
 }
 
 async function openDraftMatchmaking(bot){
@@ -134,12 +148,12 @@ try{
   await scenario('İki bağımsız misafir hesabı oluşturma',async()=>{const [a,b]=await Promise.all([guestSignIn(botA),guestSignIn(botB)]);assert.notEqual(a.uid,b.uid);return {a,b}},[botA.page,botB.page]);
   await scenario('Arkadaş arama + istek + kabul',()=>addFriend(botA,botB),[botA.page,botB.page]);
   await scenario('Parti daveti + Firebase partyId bütünlüğü + iki tarafta aynı parti görünümü',()=>makeParty(botA,botB),[botA.page,botB.page]);
-  await scenario('Eşzamanlı partiden ayrılma veri bütünlüğü',()=>Promise.all([leaveParty(botA),leaveParty(botB)]),[botA.page,botB.page]);
+  await scenario('Eşzamanlı partiden ayrılma veri bütünlüğü',async()=>{await Promise.all([leaveParty(botA),leaveParty(botB)]);return waitForBothPartyPointersToClear(botA,botB)},[botA.page,botB.page]);
   await scenario('Gerçek iki oturumla Draft matchmaking handshake',()=>draftHandshake(botA,botB),[botA.page,botB.page]);
   report.observations.push('Botlar ayrı Chromium context ve ayrı Firebase misafir oturumları kullanır.');
   report.observations.push('Parti daveti kabul edilmeden önce invite partyId, lider userParty pointerı ve gerçek party node aynı kimlik olarak doğrulanır.');
   report.observations.push('Parti üyeliği iki tarafta gerçek zamanlı olarak yakınsayana kadar doğrulanır.');
-  report.observations.push('Parti çıkışı iki oyuncuda eşzamanlı tetiklenir; race-safe transaction sözleşmesi test edilir.');
+  report.observations.push('Parti çıkışı güncel LOBİ sekmesinden iki oyuncuda eşzamanlı tetiklenir; race-safe transaction sonucu partyId pointerlarının ikisinde de temizlendiği doğrulanır.');
   report.observations.push('Draft eşleşmesi gerçek ana ekran Online kartı üzerinden başlatılır.');
 }catch(error){fatal=error}
 finally{
