@@ -1,0 +1,1 @@
+Background-only raster source prepared from the clean cyberpunk stadium/city portion of the approved XOX reference. This marker documents that foreground UI, flags, board cells, labels and controls must remain live DOM/CSS and must never be baked into the rendered background.
