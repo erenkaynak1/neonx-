@@ -80,7 +80,7 @@
       return `<a class="nx-hotspot" ${attrs} ${zone ? `data-zone="${zone}"` : ""} aria-label="${label}" style="--light:${color}"><title>${label}</title><rect class="nx-hit" x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}"/></a>`;
     };
 
-    stage.innerHTML = `<svg class="nx-home-map" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 853 1844" width="853" height="1844" aria-label="NEON XI oyun menüsü">
+    stage.innerHTML = `<svg class="nx-home-map nx-approved-canvas" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 853 1844" width="853" height="1844" aria-label="NEON XI oyun menüsü">
       <image href="./side-games/assets/premium-home/neon-xi-home-idle-v3.webp" width="853" height="1844" preserveAspectRatio="xMidYMid meet" aria-hidden="true"/>
       ${hotspot("profile", "Profil ve giriş", 48, 43, 282, 86, 43, "#3de6ff", "", "compact")}
       ${hotspot("notifications", "Bildirimler", 711, 42, 94, 94, 47, "#3de6ff", "", "compact")}
