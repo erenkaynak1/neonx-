@@ -1,0 +1,34 @@
+@import url('./xox-raster-art-v2.css?v=20260916-background-only-v3');
+:root{--hx-green:#9cff2f;--hx-cyan:#22e5ff;--hx-panel:rgba(4,15,14,.96)}
+html,body{background:#050b0d!important}
+body[data-ct-screen="game"]{min-height:100dvh!important;padding:0 3.2vw max(8vw,env(safe-area-inset-bottom))!important;overflow-x:hidden!important;background:#050b0d!important;color:#f7faf8!important}
+body[data-ct-screen="game"]::before{content:""!important;position:fixed!important;inset:0!important;z-index:0!important;pointer-events:none!important}
+body[data-ct-screen="game"]::after{content:""!important;position:fixed!important;inset:0!important;z-index:0!important;pointer-events:none!important;background:linear-gradient(180deg,rgba(2,8,9,.06),rgba(2,8,8,.18) 48%,rgba(1,6,6,.30))!important}
+body[data-ct-screen="game"] .app{position:relative!important;z-index:1!important;width:min(100%,760px)!important;margin:0 auto!important;padding-top:max(2.5vw,env(safe-area-inset-top))!important;container-type:inline-size}
+body[data-ct-screen="game"] .topbar{height:9cqw!important;margin:0 0 2.2cqw!important;padding:0!important}
+body[data-ct-screen="game"] .back{height:8cqw!important;padding:0 4cqw!important;border:1px solid rgba(210,255,226,.25)!important;border-radius:4cqw!important;clip-path:none!important;background:rgba(4,15,15,.88)!important;backdrop-filter:blur(12px)!important;filter:none!important}
+body[data-ct-screen="game"] .back::before,body[data-ct-screen="game"] .back::after{display:none!important}
+body[data-ct-screen="game"] .backIcon{stroke:var(--hx-green)!important}.brandMini{color:var(--hx-green)!important}
+body[data-ct-screen="game"] .brand{min-height:22.5cqw!important;margin:0 0 2.4cqw!important;padding:3.2cqw 2cqw!important;border:1px solid rgba(205,255,218,.34)!important;border-radius:3.2cqw!important;clip-path:none!important;overflow:hidden!important;filter:none!important;box-shadow:0 14px 35px rgba(0,0,0,.30)!important}
+body[data-ct-screen="game"] .brand>*{visibility:visible!important}
+body[data-ct-screen="game"] .brand::before,body[data-ct-screen="game"] .brand::after{display:none!important}
+body[data-ct-screen="game"] .scorebar{display:grid!important;grid-template-columns:1fr 1.08fr 1fr!important;gap:1.2cqw!important;min-height:13.4cqw!important;margin:0 0 2.4cqw!important;padding:1.1cqw!important;border:1px solid rgba(190,255,209,.25)!important;border-radius:3cqw!important;background:rgba(4,15,14,.965)!important;backdrop-filter:blur(10px)!important}
+body[data-ct-screen="game"] .playerBox{clip-path:none!important;border:0!important;border-radius:2.2cqw!important;background:transparent!important;filter:none!important;padding:2cqw 2.4cqw!important}.playerBox::before{display:none!important}
+body[data-ct-screen="game"] .mark{font-size:5.8cqw!important}.mark.x{color:var(--hx-green)!important}.mark.o{color:var(--hx-cyan)!important}
+body[data-ct-screen="game"] .turn{border-radius:2.2cqw!important;background:#102522!important;border:1px solid rgba(180,255,202,.18)!important;padding:2cqw .5cqw!important}.turn::before,.turn::after{display:none!important}
+body[data-ct-screen="game"] .boardWrap{margin:0!important;padding:1.4cqw!important;border:1px solid rgba(191,255,209,.30)!important;border-radius:3.2cqw!important;clip-path:none!important;background:rgba(3,14,13,.985)!important;backdrop-filter:blur(8px)!important;filter:none!important;overflow:visible!important}
+body[data-ct-screen="game"] .boardWrap::before,body[data-ct-screen="game"] .boardWrap::after{display:none!important}
+body[data-ct-screen="game"] .grid{display:grid!important;grid-template-columns:19% repeat(3,1fr)!important;grid-template-rows:15.7cqw repeat(3,21cqw)!important;gap:1.15cqw!important}
+body[data-ct-screen="game"] .corner,body[data-ct-screen="game"] .head{clip-path:none!important;border:1px solid rgba(160,255,188,.22)!important;border-radius:2.2cqw!important;background:linear-gradient(180deg,#0e1f1c,#071312)!important;padding:1.2cqw!important}.corner::before,.head::before{display:none!important}
+body[data-ct-screen="game"] .head small{color:var(--hx-green)!important}.headText,.head>div{color:#f6faf7!important}
+body[data-ct-screen="game"] .cell{position:relative!important;clip-path:none!important;border:1px solid rgba(171,255,196,.20)!important;border-radius:2.25cqw!important;background:linear-gradient(180deg,#081614,#030d0c)!important;box-shadow:inset 0 1px rgba(255,255,255,.045),inset 0 0 0 .55cqw rgba(2,11,10,.45)!important;transition:.17s ease!important;overflow:hidden!important}
+body[data-ct-screen="game"] .cell:not(:disabled):active{transform:scale(.965)!important;border-color:rgba(156,255,47,.72)!important;box-shadow:0 0 1.4cqw rgba(156,255,47,.22)!important}
+body[data-ct-screen="game"] .emptyHint{color:var(--hx-green)!important;text-shadow:0 0 1.2cqw rgba(156,255,47,.55)!important}
+body[data-ct-screen="game"] .cell.claimed{animation:hxClaim .48s cubic-bezier(.18,.88,.32,1.2) both!important}.cell.claimed.x{border-color:rgba(156,255,47,.78)!important}.cell.claimed.o{border-color:rgba(34,229,255,.78)!important}
+body[data-ct-screen="game"] .cell.claimed::after{content:"";position:absolute;inset:-45%;background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.25) 49%,transparent 60%);animation:hxSweep .58s .08s ease-out both;pointer-events:none}
+@keyframes hxClaim{0%{transform:scale(.78);opacity:.35}58%{transform:scale(1.045)}100%{transform:scale(1);opacity:1}}@keyframes hxSweep{0%{transform:translateX(-75%) rotate(8deg)}100%{transform:translateX(75%) rotate(8deg)}}
+body[data-ct-screen="game"] .status,body[data-ct-screen="game"] .waitBox{background:rgba(4,15,14,.96)!important;border-radius:2.3cqw!important;backdrop-filter:blur(8px)!important}.status.good{border-color:rgba(156,255,47,.42)!important}.status.bad{border-color:rgba(255,88,112,.42)!important}
+body[data-ct-screen="game"]>.app>.btn{width:48%!important;margin:3.2cqw auto 0!important;border:1px solid rgba(156,255,47,.48)!important;border-radius:4.6cqw!important;background:linear-gradient(180deg,#183222,#061410)!important;box-shadow:0 0 2cqw rgba(156,255,47,.10)!important}
+body[data-ct-screen="game"] .modal{background:rgba(0,6,7,.68)!important;backdrop-filter:blur(10px)!important}.sheet{border:1px solid rgba(172,255,197,.26)!important;background:linear-gradient(180deg,#0b1d1a,#06110f)!important}
+@media(max-width:430px){body[data-ct-screen="game"] .grid{grid-template-rows:16cqw repeat(3,21.5cqw)!important}}
+@media(prefers-reduced-motion:reduce){body[data-ct-screen="game"] .cell.claimed,body[data-ct-screen="game"] .cell.claimed::after{animation:none!important}}

@@ -1,0 +1,21 @@
+/* Futbol XOX hybrid v3: raster is atmosphere ONLY.
+   We deliberately zoom into the clean city/stadium tail of the reference artwork,
+   so no flags, board cells, labels or controls can bleed through behind live UI. */
+body[data-ct-screen="game"]::before{
+  background-image:url('./assets/xox-hybrid-art-v2.webp')!important;
+  background-size:100% 520%!important;
+  background-position:center 100%!important;
+  background-repeat:no-repeat!important;
+  filter:blur(5px) brightness(.60) saturate(.82)!important;
+  transform:scale(1.035)!important;
+  image-rendering:auto!important;
+}
+/* Hero, score, board, labels and controls are live DOM/CSS only. */
+body[data-ct-screen="game"] .brand{
+  background:radial-gradient(circle at 84% 72%,rgba(156,255,47,.15),transparent 24%),linear-gradient(180deg,rgba(8,24,21,.96),rgba(3,12,11,.98))!important;
+}
+html body[data-ct-screen="game"] .brand>*{visibility:visible!important}
+html body[data-ct-screen="game"] .brand .eyebrow{display:block!important;color:#b9ffd2!important;font-size:2.15cqw!important;letter-spacing:.28em!important;margin:0 0 1.3cqw!important}
+html body[data-ct-screen="game"] .brand h1{display:block!important;margin:0!important;font-size:8.2cqw!important;line-height:.96!important;letter-spacing:-.045em!important;text-shadow:0 0 2.2cqw rgba(156,255,47,.08)!important}
+html body[data-ct-screen="game"] .brand h1 span{color:#9cff2f!important;text-shadow:0 0 2cqw rgba(156,255,47,.28)!important}
+html body[data-ct-screen="game"] .brand .subtitle{display:block!important;margin-top:1.25cqw!important;color:#c5d7d0!important;font-size:2.7cqw!important;letter-spacing:.12em!important;text-transform:uppercase!important}

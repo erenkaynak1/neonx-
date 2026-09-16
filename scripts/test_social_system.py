@@ -137,8 +137,10 @@ class SocialSystemTests(unittest.TestCase):
     def test_main_home_uses_approved_friends_entry_and_sim_lab_is_removed(self):
         home = (ROOT / "side-games/home-approved-v1.js").read_text(encoding="utf-8")
         core = (ROOT / "neon-xi-core.html").read_text(encoding="utf-8")
-        self.assertIn('const friends=hit("button","h-friends","Arkadaşlar")', home)
-        self.assertIn('friends.addEventListener("click",()=>openSocial("friends",status))', home)
+        self.assertIn("['friends','friends','ARKADAŞLAR']", home)
+        self.assertIn("friends:()=>openSocial('friends',status)", home)
+        self.assertIn('data-action="${action}"', home)
+        self.assertIn("nav.addEventListener('click',dispatch)", home)
         self.assertNotIn("nxQuickSim1", core)
         self.assertNotIn("nxQuickSim100", core)
         self.assertNotIn("NEON_XI_SIM_LAB", core)
