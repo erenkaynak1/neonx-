@@ -1,4 +1,4 @@
-@import url('./xox-raster-art-v2.css');
+@import url('./xox-raster-art-v2.css?v=20260916-background-only-v3');
 :root{--hx-green:#9cff2f;--hx-cyan:#22e5ff;--hx-panel:rgba(4,15,14,.96)}
 html,body{background:#050b0d!important}
 body[data-ct-screen="game"]{min-height:100dvh!important;padding:0 3.2vw max(8vw,env(safe-area-inset-bottom))!important;overflow-x:hidden!important;background:#050b0d!important;color:#f7faf8!important}
@@ -9,8 +9,8 @@ body[data-ct-screen="game"] .topbar{height:9cqw!important;margin:0 0 2.2cqw!impo
 body[data-ct-screen="game"] .back{height:8cqw!important;padding:0 4cqw!important;border:1px solid rgba(210,255,226,.25)!important;border-radius:4cqw!important;clip-path:none!important;background:rgba(4,15,15,.88)!important;backdrop-filter:blur(12px)!important;filter:none!important}
 body[data-ct-screen="game"] .back::before,body[data-ct-screen="game"] .back::after{display:none!important}
 body[data-ct-screen="game"] .backIcon{stroke:var(--hx-green)!important}.brandMini{color:var(--hx-green)!important}
-body[data-ct-screen="game"] .brand{min-height:22.5cqw!important;margin:0 0 2.4cqw!important;padding:0!important;border:1px solid rgba(205,255,218,.34)!important;border-radius:3.2cqw!important;clip-path:none!important;overflow:hidden!important;filter:none!important;box-shadow:0 14px 35px rgba(0,0,0,.30)!important}
-body[data-ct-screen="game"] .brand>*{visibility:hidden!important}
+body[data-ct-screen="game"] .brand{min-height:22.5cqw!important;margin:0 0 2.4cqw!important;padding:3.2cqw 2cqw!important;border:1px solid rgba(205,255,218,.34)!important;border-radius:3.2cqw!important;clip-path:none!important;overflow:hidden!important;filter:none!important;box-shadow:0 14px 35px rgba(0,0,0,.30)!important}
+body[data-ct-screen="game"] .brand>*{visibility:visible!important}
 body[data-ct-screen="game"] .brand::before,body[data-ct-screen="game"] .brand::after{display:none!important}
 body[data-ct-screen="game"] .scorebar{display:grid!important;grid-template-columns:1fr 1.08fr 1fr!important;gap:1.2cqw!important;min-height:13.4cqw!important;margin:0 0 2.4cqw!important;padding:1.1cqw!important;border:1px solid rgba(190,255,209,.25)!important;border-radius:3cqw!important;background:rgba(4,15,14,.965)!important;backdrop-filter:blur(10px)!important}
 body[data-ct-screen="game"] .playerBox{clip-path:none!important;border:0!important;border-radius:2.2cqw!important;background:transparent!important;filter:none!important;padding:2cqw 2.4cqw!important}.playerBox::before{display:none!important}
