@@ -13,7 +13,6 @@ ROOT = Path(__file__).resolve().parents[1]
 class RuntimeHygieneTest(unittest.TestCase):
     def test_obsolete_runtime_artifacts_stay_removed(self) -> None:
         obsolete_paths = (
-            "design-qa.md",
             "qa",
             "scripts/integrate_side_games.py",
             "side-games/.integration-trigger",

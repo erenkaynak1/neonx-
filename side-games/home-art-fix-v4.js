@@ -1,6 +1,8 @@
 (() => {
   const PARTS = Array.from({ length: 12 }, (_, i) => `./side-games/assets/premium-home/home-final-v4-${String(i).padStart(2, "0")}.b64?v=20260916-home-art-v4`);
   const apply = async () => {
+    // Layered PNG artwork is complete; never replace its background with the legacy composite.
+    if (document.querySelector('#bootHome [data-layer="background"]')) return true;
     const image = document.querySelector("#bootHome .nx-home-map image");
     if (!image) return false;
     try {
