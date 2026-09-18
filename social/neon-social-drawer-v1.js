@@ -1,3 +1,4 @@
+import {socialIcon, activateDialog, deactivateDialog} from './neon-social-presentation.js';
 import {getApp,getApps} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js';
 import {getAuth,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js';
 import {getDatabase,get,onValue,ref,remove,runTransaction,serverTimestamp,set,update} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js';
@@ -112,14 +113,14 @@ function ensureShell(){
     <div class="nx-social-drawer-scrim" data-nx-drawer-close></div>
     <aside class="nx-social-drawer" role="dialog" aria-modal="true" aria-label="NEON XI Sosyal">
       <div class="nx-drawer-head">
-        <span class="nx-drawer-head-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
-        <strong class="nx-drawer-title">SOSYAL</strong>
-        <button class="nx-drawer-close" type="button" data-nx-drawer-close aria-label="Kapat">×</button>
+        <span class="nx-drawer-head-icon" aria-hidden="true">${socialIcon('users')}</span>
+        <div class="nx-drawer-heading"><strong class="nx-drawer-title">Sosyal</strong><span class="nx-drawer-subtitle"></span></div>
+        <button class="nx-drawer-close" type="button" data-nx-drawer-close aria-label="Kapat">${socialIcon('x')}</button>
       </div>
       <div class="nx-drawer-tabs">
-        <button class="nx-drawer-tab" type="button" data-nx-drawer-tab="friends">ARKADAŞLAR</button>
-        <button class="nx-drawer-tab" type="button" data-nx-drawer-tab="lobby">LOBİ</button>
-        <button class="nx-drawer-tab" type="button" data-nx-drawer-tab="invites">DAVETLER</button>
+        <button class="nx-drawer-tab" type="button" data-nx-drawer-tab="friends">${socialIcon("users")}<span>Arkadaşlar</span></button>
+        <button class="nx-drawer-tab" type="button" data-nx-drawer-tab="lobby">${socialIcon("users")}<span>Lobi</span></button>
+        <button class="nx-drawer-tab" type="button" data-nx-drawer-tab="invites">${socialIcon("mail")}<span>Davetler</span></button>
       </div>
       <div class="nx-drawer-body"></div>
     </aside>`;
@@ -163,10 +164,10 @@ function renderFriends(body){
   const online=all.filter(x=>x.online).sort((a,b)=>(a.x.username||'').localeCompare(b.x.username||'','tr'));
   const offline=all.filter(x=>!x.online).sort((a,b)=>(a.x.username||'').localeCompare(b.x.username||'','tr'));
   body.innerHTML=`${partyMarkup()}
-    <div class="nx-drawer-search"><input data-nx-find maxlength="20" autocomplete="off" placeholder="Arkadaş ara..."><button type="button" data-nx-find-btn aria-label="Arkadaş ara ve ekle">＋</button></div>
+    <div class="nx-drawer-search"><label class="nx-drawer-search-field">${socialIcon("search")}<input aria-label="Arkadaş ara" data-nx-find maxlength="20" autocomplete="off" placeholder="Arkadaş ara..."></label><button type="button" data-nx-find-btn aria-label="Arkadaş ara ve ekle">${socialIcon("plus")}</button></div>
     <div class="nx-drawer-find-result"></div>
-    <section class="nx-drawer-section"><div class="nx-drawer-section-title"><i class="nx-drawer-dot online"></i>ÇEVRİMİÇİ (${online.length})</div><div class="nx-drawer-list">${online.length?online.map(v=>friendRow(v.uid,v.x,true)).join(''):'<div class="nx-drawer-empty">Şu anda çevrimiçi arkadaş yok.</div>'}</div></section>
-    <section class="nx-drawer-section"><div class="nx-drawer-section-title"><i class="nx-drawer-dot"></i>ÇEVRİMDIŞI (${offline.length})</div><div class="nx-drawer-list">${offline.length?offline.map(v=>friendRow(v.uid,v.x,false)).join(''):'<div class="nx-drawer-empty">Çevrimdışı arkadaş yok.</div>'}</div></section>
+    <section class="nx-drawer-section"><div class="nx-drawer-section-title"><i class="nx-drawer-dot online"></i>Çevrimiçi <span class="nx-drawer-total">${online.length}</span></div><div class="nx-drawer-list">${online.length?online.map(v=>friendRow(v.uid,v.x,true)).join(''):'<div class="nx-drawer-empty">Şu anda çevrimiçi arkadaş yok.</div>'}</div></section>
+    <section class="nx-drawer-section"><div class="nx-drawer-section-title"><i class="nx-drawer-dot"></i>Çevrimdışı <span class="nx-drawer-total">${offline.length}</span></div><div class="nx-drawer-list">${offline.length?offline.map(v=>friendRow(v.uid,v.x,false)).join(''):'<div class="nx-drawer-empty">Çevrimdışı arkadaş yok.</div>'}</div></section>
     <div class="nx-drawer-status" role="status"></div>`;
   const input=body.querySelector('[data-nx-find]');
   body.querySelector('[data-nx-find-btn]')?.addEventListener('click',()=>findPlayer(input?.value||''));
@@ -227,6 +228,7 @@ function bindShared(body){
 function render(){
   const l=ensureShell();if(!l)return;
   l.querySelectorAll('[data-nx-drawer-tab]').forEach(x=>{x.classList.toggle('active',x.dataset.nxDrawerTab===state.tab);const old=x.querySelector('.nx-drawer-tab-count');old?.remove();if(x.dataset.nxDrawerTab==='invites'){const n=Object.keys(state.requests||{}).length+Object.keys(state.invites||{}).length;if(n){const badge=document.createElement('span');badge.className='nx-drawer-tab-count';badge.textContent=n>99?'99+':String(n);x.appendChild(badge)}}});
+  l.querySelector('.nx-drawer-subtitle').textContent=Object.keys(state.friends||{}).length+' arkadaş';
   const body=l.querySelector('.nx-drawer-body');if(state.tab==='invites')renderInvites(body);else if(state.tab==='lobby')renderLobby(body);else renderFriends(body);
 }
 
@@ -279,9 +281,9 @@ async function launchParty(mode){if(!state.party||state.party.leaderUid!==state.
 function openLegacy(tab='friends'){state.originalOpen?.(tab)}
 function openDrawer(tab='friends'){
   if(!state.user||!state.profile){openLegacy('friends');return}
-  state.tab=tab==='party'?'lobby':tab==='invites'?'invites':'friends';state.menuUid='';state.kickUid='';const l=ensureShell();if(!l)return;render();requestAnimationFrame(()=>l.classList.add('open'));document.documentElement.classList.add('nx-social-drawer-open')
+  state.tab=tab==='party'?'lobby':tab==='invites'?'invites':'friends';state.menuUid='';state.kickUid='';const l=ensureShell();if(!l)return;render();requestAnimationFrame(()=>l.classList.add('open'));document.documentElement.classList.add('nx-social-drawer-open');activateDialog(l,closeDrawer)
 }
-function closeDrawer(){const l=layer();if(!l)return;l.classList.remove('open');document.documentElement.classList.remove('nx-social-drawer-open');state.menuUid=''}
+function closeDrawer(){const l=layer();if(!l)return;l.classList.remove('open');document.documentElement.classList.remove('nx-social-drawer-open');state.menuUid='';deactivateDialog(l)}
 
 function bindPresence(){state.presenceOffs.splice(0).forEach(off=>{try{off()}catch{}});state.presence={};for(const uid of Object.keys(state.friends||{}))state.presenceOffs.push(onValue(ref(state.db,`social/presence/${uid}`),s=>{state.presence[uid]=s.val()||{};if(isOpen()&&(state.tab==='friends'||state.tab==='lobby'))render()}))}
 function clearBindings(){state.offs.splice(0).forEach(off=>{try{off()}catch{}});state.presenceOffs.splice(0).forEach(off=>{try{off()}catch{}});state.partyOff?.();state.partyOff=null;state.party=null;state.partyId=''}

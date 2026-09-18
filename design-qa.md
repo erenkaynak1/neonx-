@@ -1,43 +1,44 @@
-# Layered NEON XI home — 2026-09-16
+# Social panel and sign-in design QA
 
 final result: passed
 
-## Evidence and state
+Scope: local implementation of the two approved visual references. The user subsequently authorized publication to main.
 
-- Source truth: `side-games/assets/premium-home/neon-xi-foreground-v4.png` and `neon-xi-background-v4.png` in the same directory, both 853 × 1844. The exact supplied foreground and selected background were copied unchanged.
-- Browser-rendered implementation and simultaneous source comparison: `docs/home-layer-comparison.jpg` (1363 × 936 capture).
-- Reproducible comparison: `scripts/home-visual-check.html`; the right iframe runs the real index.html, not a mocked menu.
-- Mobile viewport: 390 × 844 CSS pixels; actual SVG bounds measured in browser: 390 × 843.09375. Source normalized to 390 × 843.095 CSS pixels. The comparison screenshot displays both sides at the same scale.
-- Desktop: inspected the real menu at 1363 × 936; artwork width 520, height 1124.125, with vertical scrolling. No horizontal artwork crop.
-- State: logged out, home idle, no open panel. Source intentionally retains its original green Home button; implementation uses the approved unlit navigation as explicitly requested.
+## Evidence
 
-## Findings
+- Source drawer: `/workspace/scratch/8aa87e1b803c/generated_images/exec-3da96797-bd9e-4d1b-bb02-78e02c243886.png` (1030 × 1526).
+- Source sign-in: `/workspace/scratch/8aa87e1b803c/generated_images/exec-f37008cb-0760-4eff-a279-8b35d91b45e8.png` (1159 × 1356).
+- Actual sign-in in the application: `/workspace/scratch/8aa87e1b803c/auth-implementation.jpg` (1363 × 936 browser pixels).
+- Mobile browser evidence: `/workspace/scratch/8aa87e1b803c/mobile-social-final.jpg` (1363 × 936), two 390 × 844 iframe outer frames, 388 × 842 content viewports due to the frame border. Fixture modules are derived from actual application rendering code with Firebase imports/startup removed. Drawer uses ten explicitly local sample users; no production data is written.
+- Initial focused comparison: `/workspace/scratch/8aa87e1b803c/social-design-comparison.jpg`.
+- Final focused comparison: `/workspace/scratch/8aa87e1b803c/social-design-final-comparison.jpg`.
+- Full mobile views and focused panel crops were inspected. Panel crops are normalized to 350 pixels wide; source image resolution is not treated as a CSS viewport. Desktop sign-in is 520 pixels wide, mobile sign-in 354 pixels; mobile drawer 319.8 pixels. Neither mobile dialog has horizontal overflow.
 
-No actionable P0/P1/P2 visual differences found in the side-by-side comparison.
+## Findings and comparison history
 
-- Typography/content: supplied raster lettering retained; no reflow or alternate font substituted. Live username constrained to the profile capsule rather than a 360px opaque strip. Long-name truncation remains a small follow-up refinement; full name is exposed through the accessible label.
-- Spacing/layout: all layers and hotspots share a single 853 × 1844 viewBox. Profile hit area reduced from 460px to 205px. Quiz card and all-games outlines aligned with the actual source bounds.
-- Colors: exact source imagery preserved; only the requested unlit nav is overlaid from the existing approved idle asset. Interaction outlines are transparent until press or keyboard focus.
-- Image fidelity: foreground retains RGBA; background is opaque RGB. Full-view comparison shows no layout drift or incorrect cropping. The original cutout has slight edge artifacts; no additional raster processing was applied.
-- Copy: original Turkish labels and both background signs retained. Existing game destinations preserved.
-- Separate focused-region capture not needed: the two 390px-wide full-height views are presented at 1:1 CSS scale with labels, card boundaries, and navigation readable in the same evidence image.
+- Resolved P2: drawer section titles inherited uppercase, tightly spaced labels from the old theme. Changed to sentence case and separate count badges; recaptured the mobile view and compared again.
+- No remaining P0/P1/P2 findings within this presentation scope.
+- Typography: system sans-serif, clear heading hierarchy, readable controls, names truncate within their column. Reference stylized avatar lettering is replaced with existing real username initials, not invented player portraits.
+- Layout: left drawer and centered sign-in retain the reference structure. Mobile drawer deliberately uses 82% width for usable controls instead of shrinking a desktop screenshot to a narrow strip. Sign-in grows vertically on phones to preserve readable text and tap targets. Lists scroll within the panel.
+- Colors: slate/navy surfaces, blue-grey secondary copy and outlines, lime active tabs and add button. Panels are visually separated from the unchanged home background.
+- Assets: locally bundled Tabler SVG icons with MIT license, official Google mark, existing home artwork. UI labels and buttons are live elements, not image overlays. Icons and text remain sharp when scaled.
+- Copy: approved Turkish headings and sign-in labels used; counts, names, presence, requests and party data remain wired to existing application state.
+- P3 follow-up: source two-tone social icon and stronger top-edge light are approximated with a consistent single-color library icon and restrained border. No custom avatar art was invented.
 
-## Interaction checks
+## Verification
 
-Browser verified: Hemen Başla opens draft; Bota Karşı opens difficulty selection; Online opens multiplayer chooser; Arkadaşlar opens social login drawer; Ayarlar opens settings; Futbol XOX card navigates to its game. No login, invite, matchmaking search, or remote-account mutation performed.
-
-Static checks: all 16 hotspot rectangles lie within the shared viewBox without overlapping; scaling math checked at widths 320, 360, 390, 430, 520; both asset dimensions, foreground RGBA, and game paths checked by `scripts/test_home_hotspots.cjs`.
-
-Console inspection found only a Chrome-extension metadata reporting error, not an application script error. Other side-game journeys and authenticated username states were not exhaustively exercised.
-
-## Comparison history
-
-First simultaneous mobile comparison passed. Expected difference: Home has no baked-in green light, matching the earlier request. No P0/P1/P2 post-comparison repair loop required.
+- 29 existing social tests pass. Updated two label-dependent assertions to check stable authentication action attributes after the requested label changes.
+- JavaScript syntax checks pass for all three changed/new JS modules. `git diff --check` passes.
+- Actual app: home Friends control opens the new sign-in panel; Party tab retains the sign-in gate; Escape closes the dialog.
+- Local drawer fixture: friend menu opens, remove confirmation opens and cancels, Invitations empty state and Lobby screen open, Friends tab restores list.
+- Keyboard focus is contained within open panels and restored on close. Buttons have pressed/focus/disabled states; reduced-motion preference disables presentation motion.
+- Browser console checked: only browser-extension metadata errors observed, no application errors in these checks.
+- Not tested: actual Google OAuth, guest account creation, live friend/party writes or two-account synchronization. Existing backend functions and rules were preserved. Visual fixture verification does not establish live backend correctness.
 
 ## Implementation checklist
 
-- [x] Exact foreground and selected background connected.
-- [x] Source-coordinate SVG click regions and press/focus outlines retained.
-- [x] Shared-layer mobile alignment inspected in browser.
-- [x] Primary navigation checked and regression tests run.
-- [ ] GitHub upload/publication not performed in this turn.
+- [x] Rebuild both screens with live HTML/CSS and library SVG icons.
+- [x] Retain existing authentication, friends, presence and party functions.
+- [x] Add press/open animations, reduced-motion handling, focus containment and auth busy state.
+- [x] Check mobile render, interaction states, console and existing regression tests.
+- [x] Publication authorized by the user after preview.

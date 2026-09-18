@@ -1,3 +1,4 @@
+import {socialIcon, activateDialog, deactivateDialog} from './neon-social-presentation.js';
 import {initializeApp,getApp,getApps} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js';
 import {GoogleAuthProvider,getAuth,linkWithPopup,onAuthStateChanged,signInAnonymously,signInWithPopup,signOut} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js';
 import {getDatabase,get,onDisconnect,onValue,ref,remove,runTransaction,serverTimestamp,set,update} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js';
@@ -41,19 +42,36 @@ async function continueAsGuest(){message('Misafir hesabı hazırlanıyor…');tr
 async function signOutGoogle(){await stopPresence();await signOut(auth);message('Hesaptan çıkış yapıldı.')}
 
 function shell(){
-  document.head.insertAdjacentHTML('beforeend',`<link rel="stylesheet" href="${new URL('neon-social.css?v=20260903-social-leaderboard-v1',import.meta.url).href}">`);
+  document.head.insertAdjacentHTML('beforeend',`<link rel="stylesheet" href="${new URL('neon-social.css?v=20260918-social-polish',import.meta.url).href}">`);
   button=document.createElement('button');button.className='nx-social-launch';button.type='button';button.textContent='SOSYAL';button.dataset.count='0';button.onclick=()=>open('play');document.body.appendChild(button);
-  shade=document.createElement('div');shade.className='nx-social-shade';shade.innerHTML=`<section class="nx-social-panel" role="dialog" aria-modal="true" aria-label="NEON XI Sosyal"><div class="nx-social-head"><strong>NEON XI SOSYAL</strong><button class="nx-social-close" type="button" aria-label="Kapat">×</button></div><div class="nx-social-tabs"><button data-tab="play">OYNA</button><button data-tab="friends">ARKADAŞLAR</button><button data-tab="party">PARTİ</button><button data-tab="leaderboard">LİDERLİK</button></div><div class="nx-social-view" data-view="play"></div><div class="nx-social-view" data-view="friends"></div><div class="nx-social-view" data-view="party"></div><div class="nx-social-view" data-view="leaderboard"></div><div class="nx-social-status" role="status"></div></section>`;
+  shade=document.createElement('div');shade.className='nx-social-shade';shade.innerHTML=`<section class="nx-social-panel" role="dialog" aria-modal="true" aria-label="NEON XI Sosyal"><div class="nx-social-head"><div class="nx-social-brand">${socialIcon("users")}<span><small>NEON XI</small><strong>Sosyal</strong></span></div><button class="nx-social-close" type="button" aria-label="Kapat">${socialIcon("x")}</button></div><div class="nx-social-tabs"><button type="button" data-tab="play">${socialIcon("device-gamepad-2")}<span>Oyna</span></button><button type="button" data-tab="friends">${socialIcon("users")}<span>Arkadaşlar</span></button><button type="button" data-tab="party">${socialIcon("users")}<span>Parti</span></button><button type="button" data-tab="leaderboard">${socialIcon("chart-bar")}<span>Liderlik</span></button></div><div class="nx-social-view" data-view="play"></div><div class="nx-social-view" data-view="friends"></div><div class="nx-social-view" data-view="party"></div><div class="nx-social-view" data-view="leaderboard"></div><div class="nx-social-status" role="status"></div></section>`;
   document.body.appendChild(shade);statusEl=shade.querySelector('.nx-social-status');shade.querySelector('.nx-social-close').onclick=close;
   shade.addEventListener('click',e=>{if(e.target===shade)close();const tab=e.target.closest('[data-tab]');if(tab)render(tab.dataset.tab)});
 }
-function open(tab='play'){shade.classList.add('open');render(tab)}
-function close(){shade.classList.remove('open');document.querySelector('[data-neon-social],.nx-social-launch')?.focus()}
+function open(tab='play'){shade.classList.add('open');render(tab);activateDialog(shade,close)}
+function close(){shade.classList.remove('open');deactivateDialog(shade)}
 function requireProfile(){if(!state.user){message('Önce Google hesabınla giriş yap veya misafir olarak devam et.',true);render('friends');return false}if(state.profile)return true;message('Önce benzersiz oyuncu adını oluştur.',true);render('friends');return false}
-function signedOutMarkup(){return `<div class="nx-social-card"><span class="nx-social-label">NEON XI ÜYELİĞİ</span><b>Nasıl devam etmek istersin?</b><p class="nx-social-muted">Google hesabı verilerini kalıcı tutar. Misafir hesabı yalnızca bu tarayıcıda korunur.</p><div class="nx-social-choice"><button class="nx-social-btn primary" data-act="google-login">GOOGLE İLE GİRİŞ YAP</button><button class="nx-social-btn" data-act="guest-login">MİSAFİR OLARAK DEVAM ET</button></div></div>`}
+function signedOutMarkup(){return `<div class="nx-auth-welcome">
+  <div class="nx-auth-emblem" aria-hidden="true">${socialIcon('users')}</div>
+  <h2>Birlikte oynamaya başla</h2>
+  <p class="nx-auth-intro">Arkadaşlarını bul, partini kur ve sahaya çık.</p>
+  <button type="button" class="nx-social-btn nx-auth-google" data-act="google-login"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="24" height="24" alt="">Google ile devam et</button>
+  <p class="nx-auth-note">Google ile ilerlemen hesabında saklanır.</p>
+  <div class="nx-auth-divider"><span>veya</span></div>
+  <button type="button" class="nx-social-btn nx-auth-guest" data-act="guest-login">${socialIcon('user')}Misafir olarak devam et</button>
+  <p class="nx-auth-note">Misafir ilerlemesi yalnızca bu tarayıcıda korunur.</p>
+</div>`}
+async function runAuthAction(action){
+  if(shade.dataset.authBusy==='true')return;
+  shade.dataset.authBusy='true';
+  const buttons=[...shade.querySelectorAll('[data-act="google-login"],[data-act="guest-login"]')];
+  buttons.forEach(b=>{b.disabled=true;b.setAttribute('aria-busy','true')});
+  try{await action()}catch{}finally{delete shade.dataset.authBusy;buttons.forEach(b=>{b.disabled=false;b.removeAttribute('aria-busy')})}
+}
+
 function render(tab=state.tab){
-  state.tab=tab;shade.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x.dataset.tab===tab));shade.querySelectorAll('[data-view]').forEach(x=>x.classList.toggle('active',x.dataset.view===tab));
-  if(!state.user){shade.querySelectorAll('[data-view]').forEach(v=>{v.innerHTML=signedOutMarkup();v.querySelector('[data-act="google-login"]').onclick=()=>signInGoogle().catch(()=>{});v.querySelector('[data-act="guest-login"]').onclick=()=>continueAsGuest().catch(()=>{})});return}
+  state.tab=tab;shade.classList.toggle('nx-auth-mode',!state.user);shade.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x.dataset.tab===tab));shade.querySelectorAll('[data-view]').forEach(x=>x.classList.toggle('active',x.dataset.view===tab));
+  if(!state.user){shade.querySelectorAll('[data-view]').forEach(v=>{v.innerHTML=signedOutMarkup();v.querySelector('[data-act="google-login"]').onclick=()=>runAuthAction(signInGoogle);v.querySelector('[data-act="guest-login"]').onclick=()=>runAuthAction(continueAsGuest)});return}
   renderPlay();renderFriends();renderParty();renderLeaderboard();
 }
 function renderPlay(){
