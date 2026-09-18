@@ -1,7 +1,7 @@
 (() => {
   "use strict";
   const HOME_CLASS="nx-approved-home-v1";
-  const VERSION="20260917-layered-home-v7";
+  const VERSION="20260918-crisp-home-v8";
   const css=`
 #bootScreen:has(#bootHome.nx-approved-home-v1.active) .bootGlow,
 #bootScreen:has(#bootHome.nx-approved-home-v1.active) .bootBrand{display:none!important}
@@ -10,14 +10,17 @@
 #bootHome.nx-approved-home-v1 *{box-sizing:border-box}
 .nx-approved-legacy{display:none!important}
 #bootHome .nx-home{width:min(100%,520px);margin:0 auto;padding:max(0px,calc(env(safe-area-inset-top) - 20px)) 0 env(safe-area-inset-bottom);position:relative;background:#080d12}
-#bootHome .nx-home-map{display:block;width:100%;height:auto;overflow:visible;touch-action:pan-y;background:#080d12}
+#bootHome .nx-home-map{display:block;position:relative;width:100%;height:auto;overflow:visible;touch-action:pan-y;background:transparent}
+#bootHome .nx-raster-layer{position:absolute;top:0;left:0;width:100%;height:auto;display:block;pointer-events:none;user-select:none;image-rendering:auto}
+#bootHome .nx-foreground{clip-path:url(#nx-foreground-clip)}
+#bootHome .nx-idle-navigation{clip-path:inset(89.425% 3.4% 3.145% 3.4% round 5.6%)}
 #bootHome .nx-hotspot{cursor:pointer;outline:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 #bootHome .nx-hit{fill:rgba(255,255,255,.001);stroke:transparent;stroke-width:1.35;vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision;stroke-linejoin:round;transition:stroke .12s ease,fill .12s ease,filter .12s ease,stroke-width .12s ease;pointer-events:all}
-#bootHome .nx-hotspot:is(.nx-pressed,:focus-visible) .nx-hit{stroke:var(--light,#b6ff3c);stroke-width:1.45;fill:rgba(255,255,255,.008);filter:drop-shadow(0 0 2px var(--light,#b6ff3c)) drop-shadow(0 0 6px var(--light,#b6ff3c))}
-#bootHome .nx-hotspot[data-zone="compact"]:is(.nx-pressed,:focus-visible) .nx-hit{stroke-width:1.25;filter:drop-shadow(0 0 2px var(--light,#b6ff3c)) drop-shadow(0 0 4px var(--light,#b6ff3c))}
+#bootHome .nx-outline{fill:none;stroke:transparent;stroke-width:1.2;vector-effect:non-scaling-stroke;pointer-events:none;stroke-linejoin:round;transition:stroke .12s ease,filter .12s ease}
+#bootHome .nx-hotspot:is(.nx-pressed,:focus-visible) .nx-outline{stroke:var(--light,#b6ff3c);filter:drop-shadow(0 0 2px var(--light,#b6ff3c))}
 #bootHome .nx-approved-status{position:fixed;bottom:max(20px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:50;color:#fff;background:#101820eF;border:1px solid rgba(255,255,255,.10);border-radius:12px;font:600 13px/1.5 Arial,system-ui,sans-serif;text-align:center;width:min(90%,420px);pointer-events:none}
 #bootHome .nx-approved-status:not(:empty){padding:12px 16px}
-@media(prefers-reduced-motion:reduce){#bootHome .nx-hit{transition:none}#bootHome *{scroll-behavior:auto!important}}
+@media(prefers-reduced-motion:reduce){#bootHome .nx-hit,#bootHome .nx-outline{transition:none}#bootHome *{scroll-behavior:auto!important}}
 
 #bootHome .nx-home-art{pointer-events:none;user-select:none}
 #bootHome .nx-live-name{font:bold 24px Arial;fill:white;pointer-events:none}
@@ -65,18 +68,32 @@
     const stage=document.createElement('main');stage.className='nx-home nx-approved-canvas';stage.setAttribute('aria-label','NEON XI ana menüsü');
     // Coordinates are in source-image pixels. Image and interaction outlines share
     // one viewBox, so resizing never moves a hotspot away from its visible button.
-    const hotspot=(action,label,x,y,w,h,r=24,color='#adff27',url='')=>`<a class="nx-hotspot" ${url?`href="./side-games/${url}"`:`role="button" data-action="${action}"`} tabindex="0" aria-label="${label}" style="--light:${color}"><title>${label}</title><rect class="nx-hit" x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}"/></a>`;
-    stage.innerHTML=`<svg class="nx-home-map nx-approved-canvas" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 853 1844" width="853" height="1844" aria-label="NEON XI oyun menüsü">
+    // Touch targets stay generous; visible feedback follows the artwork independently.
+    const contours={
+      'Profil ve giriş':'<path class="nx-outline" d="M126 50 H210 Q250 50 250 88 Q250 125 210 125 H125 A44 44 0 1 1 126 50 Z"/>',
+      'Bildirimler':'<circle class="nx-outline" cx="762" cy="87" r="38"/>',
+      'Tek oyunculu':'<rect class="nx-outline" x="107" y="762" width="148" height="91" rx="12"/>',
+      'Bota karşı':'<rect class="nx-outline" x="369" y="762" width="119" height="91" rx="12"/>',
+      'Online':'<rect class="nx-outline" x="628" y="762" width="89" height="91" rx="12"/>',
+      'Turnuva modu':'<path class="nx-outline" d="M80 869 H775 M80 969 H775"/>',
+      'Ana sayfa':'<rect class="nx-outline" x="83" y="1669" width="103" height="91" rx="12"/>',
+      'Oyna':'<rect class="nx-outline" x="290" y="1669" width="72" height="91" rx="12"/>',
+      'Arkadaşlar':'<rect class="nx-outline" x="472" y="1669" width="115" height="91" rx="12"/>',
+      'Ayarlar':'<rect class="nx-outline" x="684" y="1669" width="88" height="91" rx="12"/>'
+    };
+    const hotspot=(action,label,x,y,w,h,r=24,color='#adff27',url='')=>`<a class="nx-hotspot" ${url?`href="./side-games/${url}"`:`role="button" data-action="${action}"`} tabindex="0" aria-label="${label}" style="--light:${color}"><title>${label}</title><rect class="nx-hit" x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}"/>${contours[label]||`<rect class="nx-outline" x="${x+2}" y="${y+2}" width="${w-4}" height="${h-4}" rx="${r}"/>`}</a>`;
+    stage.innerHTML=`<img class="nx-raster-layer" data-layer="background" src="./side-games/assets/premium-home/neon-xi-background-v4.png" width="853" height="1844" alt="" decoding="async"/>
+    <img class="nx-raster-layer nx-foreground" data-layer="foreground" src="./side-games/assets/premium-home/neon-xi-foreground-v4.png" width="853" height="1844" alt="" decoding="async" fetchpriority="high"/>
+    <img class="nx-raster-layer nx-idle-navigation" data-layer="idle-navigation" src="./side-games/assets/premium-home/neon-xi-home-idle-v3.png" width="853" height="1844" alt="" decoding="async"/>
+    <svg class="nx-home-map nx-approved-canvas" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 853 1844" width="853" height="1844" aria-label="NEON XI oyun menüsü">
       <defs>
-        <mask id="nx-foreground-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="853" height="1844"><rect width="853" height="1844" fill="white"/><rect x="24" y="1648" width="806" height="196" fill="black"/></mask>
-        <clipPath id="nx-idle-nav-clip"><rect x="29" y="1649" width="795" height="137" rx="48"/></clipPath>
+        <clipPath id="nx-foreground-clip" clipPathUnits="objectBoundingBox"><path clip-rule="evenodd" d="M0 0H1V0.893709H0Z M0.837 0.020H0.951V0.073H0.837Z"/></clipPath>
         <clipPath id="nx-name-clip"><rect x="142" y="52" width="101" height="34"/></clipPath>
       </defs>
       <g class="nx-home-art" aria-hidden="true">
-        <image data-layer="background" href="./side-games/assets/premium-home/neon-xi-background-v4.png" width="853" height="1844"/>
-        <image data-layer="foreground" href="./side-games/assets/premium-home/neon-xi-foreground-v4.png" width="853" height="1844" mask="url(#nx-foreground-mask)"/>
-        <!-- Reuse the already-approved unlit navigation, without editing either supplied image. -->
-        <image data-layer="idle-navigation" href="./side-games/assets/premium-home/neon-xi-home-idle-v3.png" width="853" height="1844" clip-path="url(#nx-idle-nav-clip)"/>
+        <circle cx="762" cy="87" r="44" fill="#09141b" stroke="#233b49"/>
+        <circle cx="762" cy="87" r="38" fill="#0c1820" stroke="#a6c9e2" stroke-width="1.7"/>
+        <path d="M748 96 Q752 91 752 82 Q752 74 760 73 V71 Q762 67 764 71 V73 Q772 74 772 82 Q772 91 776 96 Z M758 102 Q762 109 766 102" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
       </g>
       <g class="nx-profile-name" visibility="hidden" aria-hidden="true" clip-path="url(#nx-name-clip)"><rect x="142" y="52" width="101" height="34" fill="#101b24"/><text class="nx-live-name" x="145" y="79"></text></g>
       ${hotspot('profile','Profil ve giriş',46,46,205,82,40,'#36e9ff')}
