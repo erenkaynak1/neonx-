@@ -49,6 +49,19 @@ class SocialConsistencyTests(unittest.TestCase):
         self.assertIn('const verified=(await get(target)).val()', CONSISTENCY)
         self.assertIn('async function rollbackPartyJoin(pointer,id,uid', CONSISTENCY)
         self.assertIn('social/parties/${id}/members/${uid}', CONSISTENCY)
+        rollback_start = CONSISTENCY.index('async function rollbackPartyJoin(pointer,id,uid')
+        rollback_end = CONSISTENCY.index('async function acceptParty(id)', rollback_start)
+        rollback = CONSISTENCY[rollback_start:rollback_end]
+        self.assertLess(
+            rollback.index('remove(ref(state.db,`social/parties/${id}/members/${uid}`))'),
+            rollback.index("runTransaction(pointer,current=>String(current||'')===id?null:current"),
+            'rollback must remove membership before clearing userParty pointer',
+        )
+        self.assertNotIn(
+            "remove(ref(state.db,`social/parties/${id}/members/${uid}`)).catch(()=>{})",
+            rollback,
+            'membership rollback failures must not be swallowed',
+        )
         self.assertIn("throw new Error('Parti değiştiği için katılım geri alındı. Davet temizlendi.')", CONSISTENCY)
         self.assertNotIn('const joined=await runTransaction(target,current=>', CONSISTENCY)
 
