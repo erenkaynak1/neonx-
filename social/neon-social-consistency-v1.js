@@ -43,8 +43,10 @@ async function reconcileRequest(fromUid,request){const user=me();if(!user||!from
 async function inviteFriend(uid){const user=me();if(!user||!uid)throw new Error('Oyuncu bulunamadı.');const profile=await currentProfile();if(!(await get(ref(state.db,friendKey(user.uid,uid)))).exists())throw new Error('Lobi daveti yalnızca arkadaşlara gönderilebilir.');const id=await ensureParty(),targetParty=await validPartyFor(uid);if(targetParty===id){await remove(ref(state.db,`social/partyInvites/${uid}/${id}`));announce('Bu arkadaş zaten lobinizde.');return {already:true}}if(targetParty)throw new Error('Arkadaşınız başka bir lobide.');const inviteRef=ref(state.db,`social/partyInvites/${uid}/${id}`);if((await get(inviteRef)).exists()){announce('Bu arkadaşın bekleyen bir lobi daveti zaten var.');return {pending:true,partyId:id}}await set(inviteRef,{fromUid:user.uid,fromName:profile?.username||'Oyuncu',createdAt:serverTimestamp()});announce('Lobi daveti gönderildi.');return {sent:true,partyId:id}}
 
 async function rollbackPartyJoin(pointer,id,uid,{removeInvite=true}={}){
-  await runTransaction(pointer,current=>String(current||'')===id?null:current,{applyLocally:false}).catch(()=>{});
-  await remove(ref(state.db,`social/parties/${id}/members/${uid}`)).catch(()=>{});
+  // Remove the party membership first. Clearing userParty before this write can
+  // leave an orphan member behind when a transient Firebase write fails.
+  await remove(ref(state.db,`social/parties/${id}/members/${uid}`));
+  await runTransaction(pointer,current=>String(current||'')===id?null:current,{applyLocally:false});
   if(removeInvite)await remove(ref(state.db,`social/partyInvites/${uid}/${id}`)).catch(()=>{});
 }
 async function acceptParty(id){
