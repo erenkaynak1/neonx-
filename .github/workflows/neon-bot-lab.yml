@@ -16,6 +16,7 @@ on:
       - 'side-games/**'
   push:
     branches:
+      - main
       - bot-lab-v1
     paths:
       - 'scripts/neon_bot_lab.mjs'
