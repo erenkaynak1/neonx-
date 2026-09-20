@@ -9,7 +9,6 @@ const TIMEOUT=Number(process.env.NEON_BOT_TIMEOUT||45000);
 const runToken=`${Date.now().toString(36)}${Math.random().toString(36).slice(2,6)}`.slice(-10);
 const HOME_READY='#bootHome.nx-approved-home-v1 .nx-home-map';
 const FRIENDS_ENTRY='#bootHome.nx-approved-home-v1 .nx-hotspot[data-action="friends"]';
-const ONLINE_ENTRY='#bootHome.nx-approved-home-v1 .nx-hotspot[data-action="online"]';
 await fs.mkdir(OUT_DIR,{recursive:true});
 
 const report={runToken,baseUrl:BASE_URL,startedAt:new Date().toISOString(),scenarios:[],bots:[],observations:[]};
@@ -119,7 +118,7 @@ async function waitForBothPartyPointersToClear(a,b,timeout=15000){
 async function openDraftMatchmaking(bot){
   await closeDrawer(bot);
   const {page}=bot;
-  await page.locator(ONLINE_ENTRY).click();
+  await page.evaluate(()=>window.NEON_SOCIAL?.open?.('play'));
   const shade=page.locator('.nx-social-shade.open');await shade.waitFor({state:'visible',timeout:15000});
   const active=shade.locator('.nx-social-view.active'),mode=active.locator('#nxMode');await mode.waitFor({state:'visible'});await mode.selectOption('draft');
   return active;
@@ -157,7 +156,7 @@ try{
   report.observations.push('Parti daveti kabul edilmeden önce invite partyId, lider userParty pointerı ve gerçek party node aynı kimlik olarak doğrulanır.');
   report.observations.push('Parti üyeliği iki tarafta gerçek zamanlı olarak yakınsayana kadar doğrulanır.');
   report.observations.push('Parti çıkışı güncel LOBİ sekmesinden iki oyuncuda eşzamanlı tetiklenir; race-safe transaction sonucu partyId pointerlarının ikisinde de temizlendiği doğrulanır.');
-  report.observations.push('Draft eşleşmesi güncel SVG ana ekranındaki gerçek Online hotspot üzerinden başlatılır.');
+  report.observations.push('Draft eşleşmesi doğrudan güncel sosyal runtime Oyna ekranından başlatılır.');
 }catch(error){fatal=error}
 finally{
   for(const bot of [botA,botB].filter(Boolean)){report.bots.push({label:bot.label,username:bot.username,uid:bot.uid,pageErrors:bot.pageErrors,consoleErrors:bot.consoleErrors.slice(-30),finalUrl:bot.page.url()});await shot(bot.page,`final-${bot.label}`);try{await bot.context.tracing.stop({path:path.join(OUT_DIR,`trace-${bot.label}.zip`)})}catch{}try{await bot.context.close()}catch{}}
