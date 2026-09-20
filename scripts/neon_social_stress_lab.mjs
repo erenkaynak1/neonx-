@@ -7,6 +7,7 @@ const BASE_URL=process.env.NEON_BASE_URL||'http://127.0.0.1:4173/index.html';
 const TIMEOUT=Number(process.env.NEON_BOT_TIMEOUT||45000);
 const OUT=process.env.NEON_STRESS_OUT||'artifacts/neon-social-stress';
 const token=`${Date.now().toString(36)}${Math.random().toString(36).slice(2,7)}`.slice(-11);
+const FRIENDS_ENTRY='#bootHome.nx-approved-home-v1 .nx-hotspot[data-action="friends"]';
 await fs.mkdir(OUT,{recursive:true});
 const report={token,startedAt:new Date().toISOString(),baseUrl:BASE_URL,scenarios:[],bots:[]};
 
@@ -24,13 +25,14 @@ async function makeBot(browser,label){
   page.on('console',m=>{if(m.type()==='error')bot.errors.push(m.text())});
   await page.goto(BASE_URL,{waitUntil:'domcontentloaded',timeout:TIMEOUT});
   await page.waitForSelector('#bootHome.nx-approved-home-v1 .nx-approved-canvas',{timeout:TIMEOUT});
+  await page.waitForSelector(FRIENDS_ENTRY,{timeout:TIMEOUT});
   await page.waitForFunction(()=>Boolean(window.NEON_SOCIAL_CONSISTENCY),null,{timeout:TIMEOUT});
   return bot;
 }
 
 async function signIn(bot){
   const p=bot.page;
-  await p.locator('#bootHome.nx-approved-home-v1 .h-friends').click();
+  await p.locator(FRIENDS_ENTRY).click();
   const active=p.locator('.nx-social-shade.open .nx-social-view.active');
   await active.locator('[data-act="guest-login"]').click();
   const input=active.locator('#nxUsername');await input.waitFor({state:'visible'});await input.fill(bot.username);await active.locator('[data-act="claim"]').click();
@@ -43,7 +45,7 @@ async function signIn(bot){
 
 async function call(bot,method,...args){return bot.page.evaluate(async({method,args})=>{const api=window.NEON_SOCIAL_CONSISTENCY;if(!api||typeof api[method]!=='function')throw new Error(`Missing consistency method ${method}`);return await api[method](...args)},{method,args})}
 async function diag(bot){return call(bot,'diagnostics')}
-async function expectReject(promise,pattern){let error=null;try{await promise}catch(e){error=e}assert.ok(error,'İşlem beklenen şekilde reddedilmedi');if(pattern)assert.match(String(error?.message||error),pattern);return String(error?.message||error)}
+async function expectReject(promise,pattern){try{await promise}catch(error){if(pattern)assert.match(String(error?.message||error),pattern);return String(error?.message||error)}throw new Error('İşlem beklenen şekilde reddedilmedi')}
 async function befriend(a,b){await Promise.all([call(a,'sendFriend',b.uid,b.username),call(b,'sendFriend',a.uid,a.username)]);await waitUntil(async()=>{const [da,db]=await Promise.all([diag(a),diag(b)]);return da.friends?.[b.uid]&&db.friends?.[a.uid]&&Object.keys(da.requests||{}).length===0&&Object.keys(db.requests||{}).length===0},`${a.label}-${b.label} friendship convergence`)}
 
 const browser=await chromium.launch({headless:true});let a,b,c,cloneA,fatal=null;
