@@ -27,11 +27,12 @@ class PartyMembershipIntegrityTests(unittest.TestCase):
         self.assertIn('[data-act="leave-party"]', GUARD)
         self.assertIn('event.stopImmediatePropagation()', GUARD)
 
-    def test_bot_lab_exercises_simultaneous_leave_race(self):
+    def test_bot_lab_exercises_simultaneous_leave_race_and_current_matchmaking_entry(self):
         self.assertIn('Eşzamanlı partiden ayrılma veri bütünlüğü', BOT)
         self.assertIn('Promise.all([leaveParty(botA),leaveParty(botB)])', BOT)
-        self.assertIn('data-action="online"', BOT)
-        self.assertIn('ONLINE_ENTRY', BOT)
+        self.assertIn("window.NEON_SOCIAL?.open?.('play')", BOT)
+        self.assertIn("mode.selectOption('draft')", BOT)
+        self.assertIn('[data-act="match"]', BOT)
 
 
 if __name__ == '__main__':
