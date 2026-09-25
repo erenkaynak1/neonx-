@@ -171,6 +171,9 @@ class SocialSystemTests(unittest.TestCase):
                 self.assertIn(token, drawer)
         self.assertIn('.nx-social-drawer-layer [data-nx-party-launch]', broker)
         self.assertIn('.nx-social-drawer-layer [data-nx-party-launch]', tournament)
+        self.assertIn(".nx-lobby-member,.nx-drawer-party-member", tournament)
+        self.assertIn("version:'1.3'", tournament)
+        self.assertIn("event.stopImmediatePropagation()", tournament)
         self.assertIn('tüm oyuncuların hazır olması gerekiyor', broker)
 
 
