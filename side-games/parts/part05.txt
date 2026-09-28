@@ -211,18 +211,14 @@ function bindHostConnection(conn){
 /* ---------- ONLINE: CHOICE ---------- */
 function renderOnlineChoice(app){
   backBar(app, 'Ana Menü', () => { state.screen='menu'; render(); });
-  header(app, 'FARKLI CİHAZLAR', 'ONLİNE LOBİ', 'Bir lobi kur ya da koda katıl');
-
+  header(app, 'NEON XI · ONLINE', 'OYUN MODUNU SEÇ', 'Futbol Imposter en az üç kişiyle oynanır.');
   const card = el('div','card');
-  const b1 = el('button','btn solid','LOBİ KUR');
-  b1.onclick = () => { state.online.err=''; state.screen='online-create'; render(); };
-  card.appendChild(b1);
-  const b2 = el('button','btn','KODLA KATIL');
-  b2.onclick = () => { state.online.err=''; state.screen='online-join'; render(); };
-  card.appendChild(b2);
-  app.appendChild(card);
+  const b1 = el('button','btn solid nx-imposter-online-choice','ARKADAŞLARINLA OYNA');
+  b1.onclick = () => window.NEON_ARCADE_UI?.choose('imposter','friends');
+  const b2 = el('button','btn nx-imposter-online-choice','RAKİP ARA');
+  b2.onclick = () => window.NEON_ARCADE_UI?.choose('imposter','match');
+  card.append(b1,b2);app.appendChild(card);
 }
-
 /* ---------- ONLINE: CREATE ---------- */
 function renderOnlineCreate(app){
   backBar(app, 'Geri', () => { state.screen='online-choice'; render(); });
