@@ -37,8 +37,8 @@
     title.append(document.createTextNode('OYUN MODU '),slashes);
     grid.append(
       modeButton('TEK TELEFON','mobile',true,startLocal),
-      modeButton('ONLINE · ODA KUR','home',false,()=>{S.screen='create';S.error='';render()}),
-      modeButton('ONLINE · KODLA KATIL','users',false,()=>{S.screen='join';S.error='';render()})
+      modeButton('ARKADAŞLARINLA OYNA','users',false,()=>window.NEON_ARCADE_UI?.choose('xox','friends')),
+      modeButton('RAKİP ARA','gamepad',false,()=>window.NEON_ARCADE_UI?.choose('xox','match'))
     );
     panel.append(title,grid);app.appendChild(panel);
 
