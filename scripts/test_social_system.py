@@ -137,7 +137,7 @@ class SocialSystemTests(unittest.TestCase):
     def test_main_home_uses_approved_friends_entry_and_sim_lab_is_removed(self):
         home = (ROOT / "side-games/home-approved-v1.js").read_text(encoding="utf-8")
         core = (ROOT / "neon-xi-core.html").read_text(encoding="utf-8")
-        self.assertIn("hotspot('friends','Arkadaşlar'", home)
+        self.assertIn("navButton('friends','Arkadaşlar'", home)
         self.assertIn("friends:()=>openSocial('friends',status)", home)
         self.assertIn("profile:()=>openSocial('friends',status)", home)
         self.assertIn("notifications:()=>openSocial('invites',status)", home)
