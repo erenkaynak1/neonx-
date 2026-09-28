@@ -119,7 +119,7 @@ function submit(){if(current.length!==target.answer.length){showMessage(`${targe
 function finish(win){ended=true;showMessage(win?'Bildin!':'Hakların bitti',win?'good':'warn');resultPlayer.textContent=target.name;resultAnswer.textContent=target.answer;result.classList.add('show');result.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'nearest'})}
 function newGame(){target=randomItem(pool);if(!target){showMessage('Oyuncu havuzu yüklenemedi','warn');return}row=0;current=[];ended=false;keyStates.clear();result.classList.remove('show');showMessage(`${target.answer.length} harfli futbolcuyu bul`);buildBoard();buildKeyboard()}
 document.getElementById('newBtn').addEventListener('click',newGame);document.getElementById('againBtn').addEventListener('click',newGame);
-document.addEventListener('keydown',e=>{if(e.ctrlKey||e.metaKey||e.altKey)return;if(e.key==='Enter'){e.preventDefault();handleKey('ENTER');return}if(e.key==='Backspace'){e.preventDefault();handleKey('⌫');return}if(e.key.length===1){const n=normalize(e.key);if(n.length===1&&/[A-Z]/.test(n)){e.preventDefault();handleKey(n)}}});
+document.addEventListener('keydown',e=>{if(e.ctrlKey||e.metaKey||e.altKey||e.target.closest?.('button,a,input,textarea,select,.nx-arcade-footer,.nx-social-shade,.nx-arcade-choice-shade'))return;if(e.key==='Enter'){e.preventDefault();handleKey('ENTER');return}if(e.key==='Backspace'){e.preventDefault();handleKey('⌫');return}if(e.key.length===1){const n=normalize(e.key);if(n.length===1&&/[A-Z]/.test(n)){e.preventDefault();handleKey(n)}}});
 newGame();
 })();
 </script>
