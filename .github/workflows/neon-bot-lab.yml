@@ -60,6 +60,13 @@ jobs:
           done
           cat /tmp/neon-bot-http.log
           exit 1
+      - name: Run canonical arcade navigation mobile UI lab
+        id: arcade_nav
+        continue-on-error: true
+        env:
+          NEON_ORIGIN: http://127.0.0.1:4173
+          NEON_BOT_TIMEOUT: '45000'
+        run: node scripts/arcade_nav_ui_lab.mjs
       - name: Run two-member party to Draft XI lab
         id: party_draft
         continue-on-error: true
@@ -95,13 +102,6 @@ jobs:
           NEON_XOX_URL: http://127.0.0.1:4173/side-games/football-xox/index.html
           NEON_BOT_TIMEOUT: '45000'
         run: node scripts/xox_ui_lab.mjs
-      - name: Run canonical arcade navigation mobile UI lab
-        id: arcade_nav
-        continue-on-error: true
-        env:
-          NEON_ORIGIN: http://127.0.0.1:4173
-          NEON_BOT_TIMEOUT: '45000'
-        run: node scripts/arcade_nav_ui_lab.mjs
       - name: Enforce Bot Lab results
         if: always()
         run: |
