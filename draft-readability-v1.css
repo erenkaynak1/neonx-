@@ -173,3 +173,142 @@ body.nx-draft-active .detailMeta:nth-of-type(2) {
   body.nx-draft-active .mainStats { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
   body.nx-draft-active .selectedDetail .detailGrid { grid-template-columns: 1fr !important; }
 }
+
+/* NEON XI DRAFT TYPOGRAPHY V2
+   Give the actual player detail and mobile tab text contrast without changing
+   the layout, selected-player state, draft engine or underlying data. */
+body.nx-draft-active .selectedDetail .detailTop h3 {
+  color: #fff !important;
+  font-weight: 900 !important;
+  letter-spacing: .015em;
+  text-shadow: 0 1px 2px rgba(0,0,0,.9);
+}
+body.nx-draft-active .selectedDetail .detailMeta,
+body.nx-draft-active .selectedDetail .positionProfile,
+body.nx-draft-active .playerMeta,
+body.nx-draft-active .playerFormerMeta {
+  color: #dce9dc !important;
+  font-weight: 700 !important;
+  text-shadow: 0 1px 1px rgba(0,0,0,.72);
+}
+body.nx-draft-active .selectedDetail .mainStats .statMini b {
+  color: #fff !important;
+  font-weight: 900 !important;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.05 !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,.8);
+}
+body.nx-draft-active .selectedDetail .mainStats .statMini span {
+  color: #d1ded2 !important;
+  font-weight: 700 !important;
+  line-height: 1.15 !important;
+  text-shadow: 0 1px 1px rgba(0,0,0,.7);
+}
+body.nx-draft-active .selectedDetail .detailGrid > * {
+  color: #d5e1d6 !important;
+  font-weight: 700 !important;
+  line-height: 1.3 !important;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 1px rgba(0,0,0,.55);
+}
+body.nx-draft-active .selectedDetail .detailGrid > * :is(b, strong) {
+  color: #fff !important;
+  font-weight: 900 !important;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 2px rgba(0,0,0,.85);
+}
+body.nx-draft-active .playerRow .rowStat {
+  color: #f0f8f0 !important;
+  font-weight: 800 !important;
+  font-variant-numeric: tabular-nums;
+}
+body.nx-draft-active .playerRow .rowStat span {
+  color: #d0dfd2 !important;
+  font-weight: 700 !important;
+}
+@media (max-width: 760px) {
+  body.nx-draft-active .selectedDetail .detailTop h3 {
+    font-size: 23px !important;
+    line-height: 1.08 !important;
+  }
+  body.nx-draft-active .selectedDetail .detailMeta {
+    font-size: 12.5px !important;
+    line-height: 1.38 !important;
+  }
+  body.nx-draft-active .selectedDetail .mainStats {
+    gap: 7px !important;
+  }
+  body.nx-draft-active .selectedDetail .mainStats .statMini {
+    min-height: 59px !important;
+    padding: 9px 4px 7px !important;
+  }
+  body.nx-draft-active .selectedDetail .mainStats .statMini b {
+    font-size: 19px !important;
+  }
+  body.nx-draft-active .selectedDetail .mainStats .statMini span {
+    margin-top: 4px !important;
+    font-size: 10.5px !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+  body.nx-draft-active .selectedDetail .detailGrid {
+    gap: 7px !important;
+  }
+  body.nx-draft-active .selectedDetail .detailGrid > * {
+    min-height: 44px !important;
+    padding: 9px 8px !important;
+    font-size: 12px !important;
+    overflow-wrap: anywhere;
+  }
+  body.nx-draft-active .selectedDetail .detailGrid > * :is(b, strong) {
+    font-size: 15px !important;
+    flex-shrink: 0;
+  }
+  body.nx-draft-active .playerRow .playerName {
+    font-size: 16px !important;
+  }
+  body.nx-draft-active .playerRow .playerMeta {
+    font-size: 11px !important;
+  }
+  body.nx-draft-active .playerRow .playerFormerMeta {
+    font-size: 10px !important;
+  }
+  body.nx-draft-active .playerRow .rowStat {
+    font-size: 10px !important;
+    line-height: 1.1 !important;
+  }
+  body.nx-draft-active .nxDraftMobileNav button span {
+    color: #e4eee4;
+    font-size: 12px !important;
+    font-weight: 900 !important;
+    letter-spacing: .015em;
+  }
+  body.nx-draft-active .nxDraftMobileNav button b {
+    color: #c4d6c6 !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.15;
+  }
+  body.nx-draft-active .nxDraftMobileNav button.active span {
+    color: #061004 !important;
+  }
+  body.nx-draft-active .nxDraftMobileNav button.active b {
+    color: #253d0c !important;
+  }
+}
+@media (max-width: 360px) {
+  body.nx-draft-active .selectedDetail .mainStats .statMini b {
+    font-size: 17px !important;
+  }
+  body.nx-draft-active .selectedDetail .mainStats .statMini span {
+    font-size: 10px !important;
+  }
+  body.nx-draft-active .selectedDetail .detailGrid > * {
+    font-size: 12px !important;
+  }
+  body.nx-draft-active .nxDraftMobileNav button span {
+    font-size: 10.5px !important;
+  }
+}
