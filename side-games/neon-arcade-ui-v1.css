@@ -32,5 +32,5 @@ body.nx-arcade-has-footer>.nx-social-launch{display:none!important}
 .nx-arcade-option:active{transform:scale(.98);box-shadow:0 0 19px rgba(180,255,32,.25)}
 .nx-arcade-option:focus-visible{outline:2px solid #dcff97;outline-offset:2px}
 .nx-arcade-choice-note{font:500 11px/1.45 Arial,sans-serif;color:#8fa7b4;text-align:center;margin:14px 3px 0}
-@media(max-height:460px) and (orientation:landscape){.nx-arcade-footer{display:none}body.nx-arcade-has-footer{padding-bottom:20px!important}}
+@media(max-height:460px) and (orientation:landscape){.nx-arcade-footer{width:min(100%,110vh)}body.nx-arcade-has-footer{padding-bottom:clamp(60px,25vh,102px)!important}}
 @media(prefers-reduced-motion:reduce){.nx-arcade-footer .nx-hit,.nx-arcade-footer .nx-outline,.nx-arcade-footer .nx-nav-glyph,.nx-arcade-footer .nx-nav-label,.nx-arcade-footer .nx-nav-marker,.nx-arcade-option{transition:none!important}}
