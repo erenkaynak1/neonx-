@@ -314,10 +314,10 @@ body[data-ct-screen="menu"] .howText{
   letter-spacing:.005em;
 }
 
+
 @media(max-width:350px){
   body[data-ct-screen="menu"] .menuModeCopy{font-size:14px}
   body[data-ct-screen="menu"] .howText{font-size:9px}
-
 }
 
 @media(prefers-reduced-motion:reduce){
