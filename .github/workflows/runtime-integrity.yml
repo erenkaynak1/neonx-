@@ -38,6 +38,8 @@ jobs:
         run: pip install --disable-pip-version-check duckdb requests
       - name: Runtime hygiene regressions
         run: python scripts/test_runtime_hygiene.py
+      - name: Canonical arcade navigation and single-menu contracts
+        run: node scripts/test_arcade_navigation.cjs
       - name: Core patch contracts
         run: python scripts/test_core_patch_contracts.py
       - name: Social system regressions
