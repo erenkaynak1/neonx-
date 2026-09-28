@@ -4,7 +4,7 @@ const GAME_TYPE='futbol-imposter';
 let RT=null,room=null,unsubRoom=null,unsubActions=null,pollTimer=null,writeChain=Promise.resolve();
 const fakeGuests=new Map(),processedActions=new Set();
 let lastAppliedRemoteState='';
-const autoParams=new URLSearchParams(location.search),autoParty=autoParams.get('nxAuto')==='1'&&!!autoParams.get('nxParty'),autoPartySize=Math.max(0,Number(autoParams.get('nxPartySize'))||0);
+const autoParams=new URLSearchParams(location.search),autoParty=autoParams.get('nxAuto')==='1'&&!!(autoParams.get('nxParty')||autoParams.get('nxMatch')),autoPartySize=Math.max(0,Number(autoParams.get('nxPartySize'))||0);
 let autoStarted=false;
 const clone=v=>JSON.parse(JSON.stringify(v));
 const O=()=>state.online;
