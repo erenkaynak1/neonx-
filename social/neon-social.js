@@ -128,7 +128,7 @@ async function startMatch(mode){
   const config=MODES[mode];
   if(!config?.matchable){message('Bu mod için çevrimiçi eşleştirme henüz bulunmuyor.',true);return}
   state.preferredMode=mode;
-  const needed=mode==='imposter'?3:2,path=`social/matchQueues/${mode}`,uid=state.user.uid,joinedAt=Date.now();
+  const needed=mode==='imposter'?3:2,path=mode==='imposter'?`social/universalQueuesV2/${mode}`:`social/matchQueues/${mode}`,uid=state.user.uid,joinedAt=Date.now();
   message(needed===3?'Üç kişilik Imposter rakibi aranıyor…':'Uygun rakip aranıyor…');
   try{
     await set(ref(db,`${path}/${uid}`),{uid,username:state.profile.username,status:'waiting',joinedAt});
@@ -138,8 +138,8 @@ async function startMatch(mode){
       const others=Object.values(q).filter(x=>x&&x.uid!==uid&&x.status==='waiting'&&Math.abs(joinedAt-Number(x.joinedAt||0))<60000).sort((a,b)=>a.joinedAt-b.joinedAt).slice(0,needed-1);
       if(others.length!==needed-1)return q;
       const group=[...others,q[uid]].sort((a,b)=>a.joinedAt-b.joinedAt);
-      const host=group[0].uid,matchId=`m_${mode}_${joinedAt}_${host.slice(0,7)}`,roomCode=codeFor(mode);
-      for(const p of group)q[p.uid]={...q[p.uid],status:'matched',matchId,roomCode,role:p.uid===host?'host':'guest',opponentUid:group.find(x=>x.uid!==p.uid)?.uid||'',partySize:needed};
+      const host=group[0].uid,members=group.map(x=>x.uid),matchId=`m_${mode}_${joinedAt}_${host.slice(0,7)}`,roomCode=codeFor(mode);
+      for(const p of group)q[p.uid]={...q[p.uid],status:'matched',matchId,roomCode,role:p.uid===host?'host':'guest',hostUid:host,members,opponentUid:group.find(x=>x.uid!==p.uid)?.uid||'',partySize:needed};
       return q;
     },{applyLocally:false});
     state.queueOff?.();
@@ -147,7 +147,7 @@ async function startMatch(mode){
       const x=snapshot.val();if(x?.status!=='matched')return;
       state.queueOff?.();state.queueOff=null;
       message('Rakip bulundu. Oyun otomatik başlatılıyor…');
-      setTimeout(()=>{location.href=modeUrl(mode,{nxAuto:'1',nxRole:x.role,nxCode:x.roomCode,nxPartySize:String(x.partySize||needed),nxName:state.profile.username,nxUid:uid,nxOpponent:x.opponentUid,nxMatch:x.matchId})},350);
+      setTimeout(()=>{location.href=modeUrl(mode,{nxAuto:'1',nxRole:x.role||(x.hostUid===uid?'host':'guest'),nxCode:x.roomCode,nxPartySize:String(x.partySize||x.members?.length||needed),nxName:state.profile.username,nxUid:uid,nxOpponent:x.opponentUid||x.members?.find(member=>member!==uid)||'',nxMatch:x.matchId})},350);
     });
     renderSearching(mode);
   }catch(e){message(e?.message||'Rakip araması başlatılamadı.',true);throw e}
