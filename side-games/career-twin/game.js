@@ -13,7 +13,6 @@
   const btn=(txt,primary,fn)=>{const b=E('button','btn'+(primary?' primary':''),esc(txt));b.type='button';b.onclick=fn;return b};
   function menuIcon(name,cls){const svg=document.createElementNS('http://www.w3.org/2000/svg','svg'),use=document.createElementNS('http://www.w3.org/2000/svg','use');svg.setAttribute('class',cls||'menuIcon');svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('aria-hidden','true');svg.setAttribute('focusable','false');use.setAttribute('href','./assets/menu-icons.svg#ct-'+name);svg.appendChild(use);return svg}
   function modeButton(label,iconName,primary,fn){const b=E('button','menuMode'+(primary?' isPrimary':'')),inside=E('span','menuModeInside'),iconBox=E('span','menuModeIcon'),copy=E('span','menuModeCopy',esc(label)),arrow=E('span','menuModeArrow');b.type='button';b.setAttribute('aria-label',label);b.onclick=fn;iconBox.appendChild(menuIcon(iconName));arrow.appendChild(menuIcon('chevron'));inside.append(iconBox,copy,arrow);b.appendChild(inside);return b}
-  function navItem(label,iconName,active){const b=E('button','menuNavItem'+(active?' isActive':'')),iconBox=E('span','menuNavIcon'),copy=E('span','menuNavCopy',esc(label));b.type='button';iconBox.appendChild(menuIcon(iconName));b.append(iconBox,copy);if(active)b.setAttribute('aria-current','page');return b}
   function injectCss(){}
   function top(){const t=E('div','topbar'),a=E('a','back'),copy=E('span','backCopy','YAN OYUNLAR');a.href='../index.html';a.setAttribute('aria-label','Yan oyunlara dön');a.append(menuIcon('gamepad','backIcon'),copy);t.append(a,E('div','pool',''));app.appendChild(t)}
   function brand(sub){const b=E('div','brand');b.innerHTML='<div class="eyebrow">NEON XI · SIDE GAME</div><h1>KARİYER <span>İKİZİ</span></h1><div class="subtitle">'+esc(sub||'Hedef futbolcuya en yakın kariyeri seç')+'</div>';app.appendChild(b)}
@@ -37,8 +36,6 @@
     howTitle.append(document.createTextNode('NASIL OYNANIR? '),howSlashes);
     body.textContent='Aynı hedef futbolcu '+GAME_METRICS.length+' tur boyunca ortada kalır. Her tur, Transfermarkt master havuzunda verisi bulunan bir parametre için hedefe en yakın futbolcuyu seçersiniz. Tek telefonda ilk seçim gizlenir ve telefon ikinci oyuncuya verilir.';
     copy.append(howTitle,body);how.append(ball,copy);app.appendChild(how);
-
-    const nav=E('nav','menuNav');nav.setAttribute('aria-label','Kariyer İkizi menüsü');nav.append(navItem('LİDERLİK','trophy',false),navItem('NASIL OYNANIR?','info',true),navItem('AYARLAR','settings',false));app.appendChild(nav);
   }
   function renderCreate(){S.screen='menu';renderMenu();if(S.error)app.appendChild(E('div','error',esc(S.error)))}
 function renderJoin(){S.screen='menu';renderMenu();if(S.error)app.appendChild(E('div','error',esc(S.error)))}
