@@ -15,9 +15,12 @@ for (const [name,selector,declaration] of [
  ['nav headings', '.nxDraftMobileNav button span', 'font-size: 12px !important'],
  ['nav counts', '.nxDraftMobileNav button b', 'font-size: 11px !important'],
 ]){
- const block = css.slice(css.lastIndexOf('body.nx-draft-active '+selector));
+ const escaped = ('body.nx-draft-active '+selector).replace(/[.*+?^\$\{\}()|[\]\\]/g, '\\ const block = css.slice(css.lastIndexOf('body.nx-draft-active '+selector));
  assert(block.startsWith('body.nx-draft-active '+selector), name + ': selector missing');
- assert(block.slice(0,420).includes(declaration), name + ': expected size missing');
+ assert(block.slice(0,420).includes(declaration), name + ': expected size missing');');
+ const blocks = [...css.matchAll(new RegExp(escaped+'\\s*\\{([^}]*)\\}', 'g'))].map(match=>match[1]);
+ assert(blocks.length > 0, name + ': selector missing');
+ assert(blocks.some(block=>block.includes(declaration)), name + ': expected size missing');
 }
 assert(css.includes('font-variant-numeric: tabular-nums'), 'Numeric alignment missing');
 assert(css.includes('body.nx-draft-active .nxDraftMobileNav button.active span'), 'Selected nav contrast missing');
