@@ -4,9 +4,9 @@ import {GoogleAuthProvider,getAuth,linkWithPopup,onAuthStateChanged,signInAnonym
 import {getDatabase,get,onDisconnect,onValue,ref,remove,runTransaction,serverTimestamp,set,update} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js';
 
 const CONFIG={apiKey:'AIzaSyBLpXHGGTHXykKrnu8_Hv1i71oc3tpTNvY',authDomain:'neonxi.firebaseapp.com',databaseURL:'https://neonxi-default-rtdb.europe-west1.firebasedatabase.app',projectId:'neonxi',storageBucket:'neonxi.firebasestorage.app',messagingSenderId:'667191549799',appId:'1:667191549799:web:1e40feacbee09ed7f3d9c2'};
-const MODES={draft:{label:'NEON XI Draft',path:'index.html',code:'alpha6',matchable:true},xox:{label:'Futbol XOX',path:'side-games/football-xox/index.html',code:'numeric4',matchable:true},twin:{label:'Career Twin',path:'side-games/career-twin/index.html',code:'numeric4',matchable:true},imposter:{label:'Futbol Imposter',path:'side-games/futbol-imposter.html',code:'alpha5',matchable:false,minParty:3,maxParty:12}};
+const MODES={draft:{label:'NEON XI Draft',path:'index.html',code:'alpha6',matchable:true},xox:{label:'Futbol XOX',path:'side-games/football-xox/index.html',code:'numeric4',matchable:true},twin:{label:'Career Twin',path:'side-games/career-twin/index.html',code:'numeric4',matchable:true},imposter:{label:'Futbol Imposter',path:'side-games/futbol-imposter.html',code:'alpha5',matchable:true,minParty:3,maxParty:12}};
 const base=new URL('../',import.meta.url),app=getApps().length?getApp():initializeApp(CONFIG),auth=getAuth(app),db=getDatabase(app);
-const state={user:null,profile:null,friends:{},requests:{},invites:{},party:null,partyId:'',queueOff:null,partyOff:null,userOffs:[],friendOffs:[],presenceOff:null,presenceConnection:null,friendPresence:{},headToHead:{},weekly:{},allTime:{},launchNonce:'',tab:'play'};
+const state={user:null,profile:null,friends:{},requests:{},invites:{},party:null,partyId:'',queueOff:null,partyOff:null,userOffs:[],friendOffs:[],presenceOff:null,presenceConnection:null,friendPresence:{},headToHead:{},weekly:{},allTime:{},launchNonce:'',tab:'play',preferredMode:'draft'};
 let statusEl,shade,button;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm=s=>String(s||'').toLocaleLowerCase('tr-TR').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ı/g,'i').replace(/[^a-z0-9_]/g,'').slice(0,20);
@@ -76,8 +76,8 @@ function render(tab=state.tab){
 }
 function renderPlay(){
   const v=shade.querySelector('[data-view="play"]');
-  v.innerHTML=`<div class="nx-social-choice"><button class="nx-social-btn primary" data-act="party-play">ARKADAŞLARLA OYNA</button><button class="nx-social-btn" data-act="match">RAKİP ARA</button></div><div class="nx-social-card"><label class="nx-social-label">OYUN MODU</label><select class="nx-social-select" id="nxMode">${Object.entries(MODES).map(([k,m])=>`<option value="${k}">${m.label}</option>`).join('')}</select></div><div class="nx-social-card"><span class="nx-social-label">ODA KODU · YEDEK YÖNTEM</span><div class="nx-social-muted">Her oyunun mevcut “oda oluştur / kodla katıl” ekranı korunuyor.</div><button class="nx-social-btn" data-act="room-code">ODA KODU EKRANINA GİT</button></div>`;
-  v.querySelector('[data-act="party-play"]').onclick=()=>{if(!requireProfile())return;render('party')};v.querySelector('[data-act="match"]').onclick=()=>startMatch(v.querySelector('#nxMode').value);v.querySelector('[data-act="room-code"]').onclick=()=>{const mode=v.querySelector('#nxMode').value;close();location.href=modeUrl(mode,{nxRoomCode:'1'})};
+  v.innerHTML=`<div class="nx-social-choice"><button class="nx-social-btn primary" data-act="party-play">ARKADAŞLARLA OYNA</button><button class="nx-social-btn" data-act="match">RAKİP ARA</button></div><div class="nx-social-card"><label class="nx-social-label">OYUN MODU</label><select class="nx-social-select" id="nxMode">${Object.entries(MODES).map(([k,m])=>`<option value="${k}" ${k===state.preferredMode?'selected':''}>${m.label}</option>`).join('')}</select></div>`;
+  v.querySelector('[data-act="party-play"]').onclick=()=>{if(!requireProfile())return;render('party')};v.querySelector('[data-act="match"]').onclick=()=>startMatch(v.querySelector('#nxMode').value);v.querySelector('#nxMode').onchange=e=>{state.preferredMode=e.target.value};
 }
 function renderFriends(){
   const v=shade.querySelector('[data-view="friends"]'),guest=state.user.isAnonymous,accountLabel=guest?'MİSAFİR HESABI':'GOOGLE HESABI',accountText=guest?'Yalnızca bu tarayıcıda korunur':(state.user.email||state.user.displayName||'Bağlı'),connect=guest?'<button class="nx-social-btn primary" data-act="connect-google">GOOGLE’A BAĞLA</button>':'';
@@ -99,7 +99,7 @@ function renderParty(){
   const v=shade.querySelector('[data-view="party"]'),inv=Object.entries(state.invites||{});if(!state.profile){v.innerHTML='<div class="nx-social-card nx-social-muted">Parti için önce Arkadaşlar sekmesinden oyuncu adı oluştur.</div>';return}
   if(!state.party){v.innerHTML=`${inv.map(([id,x])=>`<div class="nx-social-card"><b>@${esc(x.fromName)}</b> seni partisine çağırdı.<div class="nx-social-actions"><button class="nx-social-btn primary" data-party-accept="${id}">KABUL</button><button class="nx-social-btn" data-party-reject="${id}">RED</button></div></div>`).join('')}<button class="nx-social-btn primary" data-act="create-party">YENİ PARTİ KUR</button>`;v.querySelector('[data-act="create-party"]').onclick=createParty;v.querySelectorAll('[data-party-accept]').forEach(b=>b.onclick=()=>acceptParty(b.dataset.partyAccept).catch(e=>message(e?.message||'Partiye katılınamadı.',true)));v.querySelectorAll('[data-party-reject]').forEach(b=>b.onclick=()=>remove(ref(db,`social/partyInvites/${state.user.uid}/${b.dataset.partyReject}`)));return}
   const members=Object.entries(state.party.members||{}),leader=state.party.leaderUid===state.user.uid;
-  v.innerHTML=`<div class="nx-social-card"><span class="nx-social-label">KALICI PARTİ</span><span class="nx-social-pill">${leader?'LİDER':'ÜYE'}</span><div class="nx-social-list">${members.map(([uid,x])=>`<div class="nx-social-item"><b>@${esc(x.username)}</b>${uid===state.party.leaderUid?'<small>Lider</small>':''}</div>`).join('')}</div></div>${leader?`<div class="nx-social-card"><label class="nx-social-label">PARTİYLE MODA GEÇ</label><select class="nx-social-select" id="nxPartyMode">${Object.entries(MODES).map(([k,m])=>`<option value="${k}">${m.label}</option>`).join('')}</select><button class="nx-social-btn primary" data-act="launch-party">OYUNU OTOMATİK BAŞLAT</button></div>`:'<div class="nx-social-card nx-social-muted">Parti lideri oyun seçtiğinde herkes otomatik olarak aynı maça alınır.</div>'}<button class="nx-social-btn nx-social-danger" data-act="leave-party">PARTİDEN AYRIL</button>`;
+  v.innerHTML=`<div class="nx-social-card"><span class="nx-social-label">KALICI PARTİ</span><span class="nx-social-pill">${leader?'LİDER':'ÜYE'}</span><div class="nx-social-list">${members.map(([uid,x])=>`<div class="nx-social-item"><b>@${esc(x.username)}</b>${uid===state.party.leaderUid?'<small>Lider</small>':''}</div>`).join('')}</div></div>${leader?`<div class="nx-social-card"><label class="nx-social-label">PARTİYLE MODA GEÇ</label><select class="nx-social-select" id="nxPartyMode">${Object.entries(MODES).map(([k,m])=>`<option value="${k}" ${k===(state.party.selectedMode||state.preferredMode)?'selected':''}>${m.label}</option>`).join('')}</select><button class="nx-social-btn primary" data-act="launch-party">OYUNU OTOMATİK BAŞLAT</button></div>`:'<div class="nx-social-card nx-social-muted">Parti lideri oyun seçtiğinde herkes otomatik olarak aynı maça alınır.</div>'}<button class="nx-social-btn nx-social-danger" data-act="leave-party">PARTİDEN AYRIL</button>`;
   v.querySelector('[data-act="launch-party"]')?.addEventListener('click',()=>launchParty(v.querySelector('#nxPartyMode').value));v.querySelector('[data-act="leave-party"]').onclick=leaveParty;
 }
 function leaderboardRows(data){
@@ -121,11 +121,54 @@ async function createParty(){const existing=await currentPartyMembership();if(ex
 async function invite(uid){const partyId=state.party?.members?state.partyId:await createParty();await set(ref(db,`social/partyInvites/${uid}/${partyId}`),{fromUid:state.user.uid,fromName:state.profile.username,createdAt:serverTimestamp()});message('Parti daveti gönderildi.');render('party')}
 async function acceptParty(id){const uid=state.user.uid,existing=await currentPartyMembership();if(existing===id){await remove(ref(db,`social/partyInvites/${uid}/${id}`));message('Zaten bu partidesin.');return}if(existing)throw new Error('Zaten aktif bir partidesin.');const partyRef=ref(db,`social/parties/${id}`),ps=(await get(partyRef)).val();if(!ps)throw new Error('Parti artık mevcut değil.');const pointer=ref(db,`social/userParty/${uid}`),claim=await runTransaction(pointer,value=>!value||value===id?id:undefined,{applyLocally:false});if(!claim.committed)throw new Error('Başka bir parti üyeliği aynı anda etkinleşti.');const fresh=(await get(partyRef)).val();if(!fresh){await runTransaction(pointer,value=>value===id?null:value,{applyLocally:false});throw new Error('Parti artık mevcut değil.');}await update(ref(db),{[`social/parties/${id}/members/${uid}`]:{username:state.profile.username,joinedAt:serverTimestamp()},[`social/partyInvites/${uid}/${id}`]:null});message('Partiye katıldın.')}
 async function leaveParty(){if(!state.partyId)return;const id=state.partyId,leader=state.party.leaderUid===state.user.uid,members=Object.keys(state.party.members||{}).filter(x=>x!==state.user.uid);const changes={[`social/userParty/${state.user.uid}`]:null,[`social/parties/${id}/members/${state.user.uid}`]:null};if(leader&&members.length)changes[`social/parties/${id}/leaderUid`]=members[0];if(!members.length)changes[`social/parties/${id}`]=null;await update(ref(db),changes);message('Partiden ayrıldın.')}
-async function launchParty(mode){const nonce=`${Date.now()}_${Math.random().toString(36).slice(2,7)}`,members=Object.keys(state.party.members||{}),config=MODES[mode];if(config.matchable&&members.length!==2){message('Bu 1v1 mod için partide tam iki oyuncu olmalı.',true);return}if(config.minParty&&members.length<config.minParty){message(`${config.label} için partide en az ${config.minParty} oyuncu olmalı.`,true);return}if(config.maxParty&&members.length>config.maxParty){message(`${config.label} en fazla ${config.maxParty} oyuncuyu destekliyor.`,true);return}const launch={mode,nonce,matchId:`p_${state.partyId}_${nonce}`,at:serverTimestamp(),roomCode:codeFor(mode),partySize:members.length,roles:Object.fromEntries(members.map(uid=>[uid,uid===state.party.leaderUid?'host':'guest']))};await set(ref(db,`social/parties/${state.partyId}/launch`),launch);navigateParty(launch)}
+async function launchParty(mode){const nonce=`${Date.now()}_${Math.random().toString(36).slice(2,7)}`,members=Object.keys(state.party.members||{}),config=MODES[mode];if(config.matchable&&!config.minParty&&members.length!==2){message('Bu 1v1 mod için partide tam iki oyuncu olmalı.',true);return}if(config.minParty&&members.length<config.minParty){message(`${config.label} için partide en az ${config.minParty} oyuncu olmalı.`,true);return}if(config.maxParty&&members.length>config.maxParty){message(`${config.label} en fazla ${config.maxParty} oyuncuyu destekliyor.`,true);return}const launch={mode,nonce,matchId:`p_${state.partyId}_${nonce}`,at:serverTimestamp(),roomCode:codeFor(mode),partySize:members.length,roles:Object.fromEntries(members.map(uid=>[uid,uid===state.party.leaderUid?'host':'guest']))};await set(ref(db,`social/parties/${state.partyId}/launch`),launch);navigateParty(launch)}
 function navigateParty(launch){const {mode,nonce}=launch||{};if(!mode||!nonce||state.launchNonce===nonce||sessionStorage.getItem('nxPartyLaunch')===nonce)return;const members=Object.keys(launch.roles||{}),opponent=members.find(uid=>uid!==state.user.uid)||'',params={nxParty:state.partyId,nxLaunch:nonce};if(launch.roomCode&&launch.roles?.[state.user.uid])Object.assign(params,{nxAuto:'1',nxRole:launch.roles[state.user.uid],nxCode:launch.roomCode,nxPartySize:String(launch.partySize||members.length),nxName:state.profile?.username||state.party?.members?.[state.user.uid]?.username||'NEON Oyuncu',nxUid:state.user.uid,nxOpponent:opponent,nxMatch:launch.matchId||`p_${state.partyId}_${nonce}`});const target=modeUrl(mode,params);state.launchNonce=nonce;sessionStorage.setItem('nxPartyLaunch',nonce);location.href=target}
-async function startMatch(mode){if(!requireProfile())return;if(!MODES[mode]?.matchable){message('Bu mod grup partisiyle oynanır; 1v1 rakip arama Draft, XOX ve Career Twin için açık.',true);return}message('Uygun rakip aranıyor…');const path=`social/matchQueues/${mode}`,uid=state.user.uid,joinedAt=Date.now();await set(ref(db,`${path}/${uid}`),{uid,username:state.profile.username,status:'waiting',joinedAt});onDisconnect(ref(db,`${path}/${uid}`)).remove().catch(()=>{});await runTransaction(ref(db,path),q=>{q=q||{};if(q[uid]?.status!=='waiting')return q;const other=Object.values(q).filter(x=>x&&x.uid!==uid&&x.status==='waiting'&&joinedAt-Number(x.joinedAt||0)<60000).sort((a,b)=>a.joinedAt-b.joinedAt)[0];if(!other)return q;const host=other.joinedAt<=joinedAt?other.uid:uid,matchId=`m_${Math.min(joinedAt,other.joinedAt)}_${host.slice(0,7)}`,roomCode=codeFor(mode);q[uid]={...q[uid],status:'matched',matchId,roomCode,role:uid===host?'host':'guest',opponentUid:other.uid};q[other.uid]={...q[other.uid],status:'matched',matchId,roomCode,role:other.uid===host?'host':'guest',opponentUid:uid};return q},{applyLocally:false});if(state.queueOff)state.queueOff();state.queueOff=onValue(ref(db,`${path}/${uid}`),s=>{const x=s.val();if(x?.status==='matched'){state.queueOff?.();state.queueOff=null;message('Rakip bulundu. Maç otomatik başlatılıyor…');setTimeout(()=>{location.href=modeUrl(mode,{nxAuto:'1',nxRole:x.role,nxCode:x.roomCode,nxName:state.profile.username,nxUid:uid,nxOpponent:x.opponentUid,nxMatch:x.matchId})},350)}});renderSearching(mode)}
+async function startMatch(mode){
+  if(!requireProfile())return;
+  const config=MODES[mode];
+  if(!config?.matchable){message('Bu mod için çevrimiçi eşleştirme henüz bulunmuyor.',true);return}
+  state.preferredMode=mode;
+  const needed=mode==='imposter'?3:2,path=`social/matchQueues/${mode}`,uid=state.user.uid,joinedAt=Date.now();
+  message(needed===3?'Üç kişilik Imposter rakibi aranıyor…':'Uygun rakip aranıyor…');
+  try{
+    await set(ref(db,`${path}/${uid}`),{uid,username:state.profile.username,status:'waiting',joinedAt});
+    onDisconnect(ref(db,`${path}/${uid}`)).remove().catch(()=>{});
+    await runTransaction(ref(db,path),q=>{
+      q=q||{};if(q[uid]?.status!=='waiting')return q;
+      const others=Object.values(q).filter(x=>x&&x.uid!==uid&&x.status==='waiting'&&Math.abs(joinedAt-Number(x.joinedAt||0))<60000).sort((a,b)=>a.joinedAt-b.joinedAt).slice(0,needed-1);
+      if(others.length!==needed-1)return q;
+      const group=[...others,q[uid]].sort((a,b)=>a.joinedAt-b.joinedAt);
+      const host=group[0].uid,matchId=`m_${mode}_${joinedAt}_${host.slice(0,7)}`,roomCode=codeFor(mode);
+      for(const p of group)q[p.uid]={...q[p.uid],status:'matched',matchId,roomCode,role:p.uid===host?'host':'guest',opponentUid:group.find(x=>x.uid!==p.uid)?.uid||'',partySize:needed};
+      return q;
+    },{applyLocally:false});
+    state.queueOff?.();
+    state.queueOff=onValue(ref(db,`${path}/${uid}`),snapshot=>{
+      const x=snapshot.val();if(x?.status!=='matched')return;
+      state.queueOff?.();state.queueOff=null;
+      message('Rakip bulundu. Oyun otomatik başlatılıyor…');
+      setTimeout(()=>{location.href=modeUrl(mode,{nxAuto:'1',nxRole:x.role,nxCode:x.roomCode,nxPartySize:String(x.partySize||needed),nxName:state.profile.username,nxUid:uid,nxOpponent:x.opponentUid,nxMatch:x.matchId})},350);
+    });
+    renderSearching(mode);
+  }catch(e){message(e?.message||'Rakip araması başlatılamadı.',true);throw e}
+}
 function renderSearching(mode){const v=shade.querySelector('[data-view="play"]');v.innerHTML=`<div class="nx-social-searching"><b>${esc(MODES[mode].label)}</b><div>Rakip aranıyor…</div><button class="nx-social-btn nx-social-danger" data-act="cancel">ARAMAYI İPTAL ET</button></div>`;v.querySelector('[data-act="cancel"]').onclick=async()=>{state.queueOff?.();state.queueOff=null;await remove(ref(db,`social/matchQueues/${mode}/${state.user.uid}`));message('Arama iptal edildi.');render('play')}}
 
+async function chooseMode(mode,choice){
+  if(!MODES[mode])throw new Error('Geçersiz oyun modu.');
+  state.preferredMode=mode;
+  if(!requireProfile()){open('friends');return}
+  if(choice==='match'){open('play');await startMatch(mode);return}
+  if(choice!=='friends')throw new Error('Geçersiz oyun seçimi.');
+  const integrity=window.NEON_SOCIAL_CONSISTENCY;
+  if(integrity?.ensureParty)await integrity.ensureParty();
+  else await createParty();
+  if(integrity?.setPartyMode){
+    try{await integrity.setPartyMode(mode)}catch(e){message('Oyun modunu yalnızca parti lideri değiştirebilir. Mevcut lobi açıldı.',true)}
+  }
+  open('party');
+  const selector=shade.querySelector('#nxPartyMode');if(selector)selector.value=mode;
+}
 async function startPresence(user){
   await stopPresence();
   const session=(globalThis.crypto?.randomUUID?.()||`${Date.now()}_${Math.random()}`).replace(/[^a-zA-Z0-9_-]/g,''),connection=ref(db,`social/presence/${user.uid}/connections/${session}`),lastSeen=ref(db,`social/presence/${user.uid}/lastSeen`);
@@ -173,7 +216,7 @@ function bindUser(user){
 function bind(){onAuthStateChanged(auth,user=>{if(user)bindUser(user);else{stopPresence();clearUserBindings();state.user=null;button.textContent='GİRİŞ';button.dataset.count='0';render()}})}
 
 shell();bind();
-window.NEON_SOCIAL={open,close,signIn:signInGoogle,continueAsGuest,signOut:signOutGoogle,recordResult,modes:MODES,get profile(){return state.profile},get party(){return state.party}};
+window.NEON_SOCIAL={open,close,chooseMode,signIn:signInGoogle,continueAsGuest,signOut:signOutGoogle,recordResult,modes:MODES,get profile(){return state.profile},get party(){return state.party}};
 document.addEventListener('neon-match-result',e=>recordResult(e.detail||{}).catch(error=>{console.error('Maç sonucu kaydedilemedi',error);message('Maç sonucu liderliğe kaydedilemedi.',true)}));
 document.addEventListener('click',e=>{const b=e.target.closest('[data-neon-social]');if(b){e.preventDefault();open(b.dataset.neonSocial||'play')}});
 window.addEventListener('beforeunload',()=>{if(state.presenceConnection)remove(state.presenceConnection).catch(()=>{})});
