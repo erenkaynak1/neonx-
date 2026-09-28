@@ -1,6 +1,6 @@
 /* Shared NEON XI arcade controls: real social actions, no room-code entry */
 (()=>{'use strict';
-const base=new URL('../',document.currentScript.src),atRoot=location.pathname.replace(/\\/g,'/').split('/').pop()==='index.html'&&!location.pathname.includes('/side-games/');
+const base=new URL('../',document.currentScript.src),atRoot=[new URL('index.html',base).pathname,base.pathname].includes(location.pathname);
 const paths={home:new URL('index.html',base).href,play:new URL('side-games/index.html',base).href};
 const glyphs={
 home:'<path d="M3 10 12 3l9 7v11H3Z"/><path d="M9 21v-8h6v8"/>',
