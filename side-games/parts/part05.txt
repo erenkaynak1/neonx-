@@ -220,32 +220,7 @@ function renderOnlineChoice(app){
   card.append(b1,b2);app.appendChild(card);
 }
 /* ---------- ONLINE: CREATE ---------- */
-function renderOnlineCreate(app){
-  backBar(app, 'Geri', () => { state.screen='online-choice'; render(); });
-  header(app, 'LOBİ KUR', 'İSMİNİ GİR', 'Diğerleri seni bu isimle görecek');
-
-  const card = el('div','card');
-  card.appendChild(el('label','field-label','Adın'));
-  const input = el('input');
-  input.type='text'; input.placeholder='Örn. Kaan'; input.maxLength=24;
-  input.value = state.online.myName;
-  input.oninput = (e) => { state.online.myName = e.target.value; };
-  card.appendChild(input);
-  const err = el('div','error-text', state.online.err);
-  card.appendChild(err);
-  app.appendChild(card);
-
-  const btn = el('button','btn solid','LOBİYİ OLUŞTUR');
-  btn.onclick = async () => {
-    const name = state.online.myName.trim();
-    if(!name){ state.online.err='Önce adını yaz.'; render(); return; }
-    state.online.err='';
-    btn.disabled = true; btn.textContent='LOBİ AÇILIYOR...';
-    await createLobby(name);
-  };
-  app.appendChild(btn);
-}
-
+function renderOnlineCreate(app){state.screen='online-choice';renderOnlineChoice(app);if(state.online.err)app.appendChild(el('div','error-text',state.online.err));}
 async function createLobby(name){
   const O = state.online;
   p2pLeaving = true;
@@ -298,42 +273,7 @@ async function createLobby(name){
 }
 
 /* ---------- ONLINE: JOIN ---------- */
-function renderOnlineJoin(app){
-  backBar(app, 'Geri', () => { state.screen='online-choice'; render(); });
-  header(app, 'KODLA KATIL', 'LOBİYE GİR', 'Kod ve adını gir');
-
-  const card = el('div','card');
-  card.appendChild(el('label','field-label','Lobi kodu'));
-  const codeInput = el('input','code-input');
-  codeInput.type='text'; codeInput.maxLength=5; codeInput.placeholder='ABCDE';
-  codeInput.value = state.online.code;
-  codeInput.oninput = (e) => { state.online.code = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,''); e.target.value = state.online.code; };
-  card.appendChild(codeInput);
-
-  card.appendChild(el('label','field-label','Adın'));
-  const nameInput = el('input');
-  nameInput.type='text'; nameInput.placeholder='Örn. Ayşe'; nameInput.maxLength=24;
-  nameInput.value = state.online.myName;
-  nameInput.oninput = (e) => { state.online.myName = e.target.value; };
-  card.appendChild(nameInput);
-
-  const err = el('div','error-text', state.online.err);
-  card.appendChild(err);
-  app.appendChild(card);
-
-  const btn = el('button','btn solid','LOBİYE KATIL');
-  btn.onclick = async () => {
-    const code = state.online.code.trim().toUpperCase();
-    const name = state.online.myName.trim();
-    if(code.length !== 5){ state.online.err='5 haneli lobi kodunu gir.'; render(); return; }
-    if(!name){ state.online.err='Önce adını yaz.'; render(); return; }
-    state.online.err='';
-    btn.disabled = true; btn.textContent='BAĞLANILIYOR...';
-    await joinLobby(code, name);
-  };
-  app.appendChild(btn);
-}
-
+function renderOnlineJoin(app){state.screen='online-choice';renderOnlineChoice(app);if(state.online.err)app.appendChild(el('div','error-text',state.online.err));}
 async function joinLobby(code, name){
   const O = state.online;
   p2pLeaving = true;
@@ -422,7 +362,7 @@ async function joinLobby(code, name){
 /* ---------- ONLINE: LOBBY ---------- */
 function renderOnlineLobby(app){
   const O = state.online;
-  const partyAuto = new URLSearchParams(location.search).get('nxAuto') === '1' && !!new URLSearchParams(location.search).get('nxParty');
+  const partyAuto = new URLSearchParams(location.search).get('nxAuto') === '1' && !!(new URLSearchParams(location.search).get('nxParty') || new URLSearchParams(location.search).get('nxMatch'));
   const expectedPartySize = Number(new URLSearchParams(location.search).get('nxPartySize')) || 0;
   backBar(app, 'Lobiden Ayrıl', () => leaveLobby());
   header(app, O.isHost ? 'LOBİ SAHİBİSİN' : 'LOBİDESİN', partyAuto ? 'PARTİ BAĞLANIYOR' : 'BEKLEME SALONU', partyAuto ? 'Oda arka planda hazırlanıyor' : 'Arkadaşların kodu girsin');
