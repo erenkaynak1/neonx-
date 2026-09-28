@@ -1,0 +1,29 @@
+/* NEON XI arcade navigation and online entry, 2026-09-28 */
+body.nx-arcade-has-footer{padding-bottom:calc(108px + env(safe-area-inset-bottom,0px))!important}
+.nx-arcade-footer{position:fixed;bottom:0;left:50%;transform:translateX(-50%);z-index:350000;width:min(100%,520px);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;padding:9px 9px max(12px,env(safe-area-inset-bottom,0px));background:linear-gradient(180deg,rgba(19,32,41,.98),rgba(5,12,20,.99));border:1px solid rgba(157,204,226,.44);border-bottom:0;border-radius:19px 19px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.55),0 -2px 20px rgba(135,201,240,.13);font-family:Arial,system-ui,sans-serif}
+.nx-arcade-footer::before{content:"";position:absolute;left:6%;right:6%;top:0;height:1px;background:linear-gradient(90deg,transparent,#bad8ea,transparent);box-shadow:0 0 12px rgba(122,208,255,.5)}
+.nx-arcade-link{appearance:none;border:1px solid transparent;background:transparent;text-decoration:none;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0;min-height:60px;padding:7px 0 5px;border-radius:11px;color:#a8c5db;gap:5px;font:700 clamp(9px,2.8vw,11px)/1.15 Arial,system-ui,sans-serif;cursor:pointer;touch-action:manipulation;transition:color .16s,background .16s,transform .16s,border-color .16s}
+.nx-arcade-link svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;transition:filter .16s,transform .16s}
+.nx-arcade-link[data-active="true"],.nx-arcade-link:active,.nx-arcade-link:focus-visible{color:#b4ff20;border-color:rgba(180,255,32,.25);background:rgba(180,255,32,.055)}
+.nx-arcade-link[data-active="true"] svg,.nx-arcade-link:active svg{filter:drop-shadow(0 0 5px #91ce19)}
+.nx-arcade-link:active svg{transform:scale(.9)}
+.nx-arcade-link:focus-visible{outline:2px solid #d9ff86;outline-offset:1px}
+.nx-arcade-footer .nx-arcade-badge{position:absolute;top:2px;margin-left:24px;background:#bbff31;color:#061009;border-radius:99px;padding:1px 5px;font-size:9px;line-height:14px;font-weight:900}
+body.nx-arcade-has-footer>.nx-social-launch{display:none!important}
+.nx-arcade-choice-shade{position:fixed;inset:0;z-index:500000;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(0,3,8,.79);backdrop-filter:blur(9px);font-family:Arial,system-ui,sans-serif}
+.nx-arcade-choice-shade.open{display:flex}
+.nx-arcade-choice{position:relative;width:min(100%,440px);border:1px solid rgba(178,237,255,.54);border-radius:22px;padding:24px 17px 19px;background:linear-gradient(152deg,#142330,#080e16 64%,#06150c);box-shadow:inset 0 0 30px rgba(89,190,241,.07),0 18px 90px #000,0 0 24px rgba(76,201,255,.11);color:#eaf6ff}
+.nx-arcade-choice:before{content:"";position:absolute;top:0;left:18%;right:18%;height:2px;background:linear-gradient(90deg,transparent,#b3f5ff,#b4ff20,transparent);box-shadow:0 0 14px #91d6f4}
+.nx-arcade-choice-eyebrow{color:#b4ff20;font:800 10px Arial,sans-serif;letter-spacing:.18em;text-align:center}
+.nx-arcade-choice h2{font:900 clamp(20px,5vw,27px)/1.2 Arial,sans-serif;letter-spacing:.06em;text-align:center;margin:9px 35px 18px}
+.nx-arcade-choice-close{position:absolute;right:11px;top:9px;min-width:38px;min-height:38px;border:0;background:transparent;color:#c8deea;font-size:26px;cursor:pointer}
+.nx-arcade-option{width:100%;min-height:80px;margin-top:10px;padding:13px 15px;border-radius:14px;display:flex;align-items:center;text-align:left;gap:14px;background:linear-gradient(120deg,rgba(21,45,38,.95),rgba(5,16,21,.97));color:#f1fbff;border:1px solid rgba(180,255,32,.47);box-shadow:inset 0 0 18px rgba(180,255,32,.045);font:800 14px Arial,sans-serif;letter-spacing:.035em;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.nx-arcade-option:last-of-type{border-color:rgba(113,202,251,.55);background:linear-gradient(120deg,rgba(18,35,51,.98),rgba(5,15,22,.98))}
+.nx-arcade-option svg{width:27px;height:27px;flex:none;stroke:#b4ff20;stroke-width:1.8;fill:none}.nx-arcade-option:last-of-type svg{stroke:#7fdcff}
+.nx-arcade-option small{display:block;color:#a3b9c5;font:500 11px/1.4 Arial,sans-serif;letter-spacing:0;margin-top:5px}
+.nx-arcade-option:active{transform:scale(.98);box-shadow:0 0 19px rgba(180,255,32,.25)}
+.nx-arcade-option:focus-visible{outline:2px solid #dcff97;outline-offset:2px}
+.nx-arcade-choice-note{font:500 11px/1.45 Arial,sans-serif;color:#8fa7b4;text-align:center;margin:14px 3px 0}
+@media(max-width:359px){.nx-arcade-footer{padding-left:4px;padding-right:4px}.nx-arcade-link{font-size:9px}.nx-arcade-link svg{width:22px;height:22px}}
+@media(max-height:460px) and (orientation:landscape){.nx-arcade-footer{display:none}body.nx-arcade-has-footer{padding-bottom:20px!important}}
+@media(prefers-reduced-motion:reduce){.nx-arcade-link,.nx-arcade-link svg,.nx-arcade-option{transition:none!important}}
