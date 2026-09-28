@@ -41,6 +41,15 @@ for(const [script,style] of [
   const js=read(script),css=read(style);
   assert(!js.includes("'menuNav'")&&!js.includes('navItem('),'Duplicate 3-item footer still rendered: '+script);
   assert(!css.includes('.menuNav'),'Unused old footer CSS not removed: '+style);
+  for(const token of [
+    'body[data-ct-screen="menu"] .menuPanel{',
+    'body[data-ct-screen="menu"] .modeGrid{',
+    'body[data-ct-screen="menu"] .menuMode{',
+    'body[data-ct-screen="menu"] .howPanel{',
+    'body[data-ct-screen="menu"] .menuModeIcon'
+  ]) assert(css.includes(token),'Premium game menu styling missing: '+style+' '+token);
+  assert(!/\\.howPanel,\\s*@media/.test(css),'Dangling CSS selector swallowing game menu styles: '+style);
+  assert(css.includes('grid-template-rows:repeat(3,minmax(0,1fr))'),'Online mode cards lost their grid layout: '+style);
   assert(js.includes("NASIL OYNANIR?"),'Keep the informational how-to-play card: '+script);
   assert(js.includes('ARKADAŞLARINLA OYNA')&&js.includes('RAKİP ARA'),'Online modes must be preserved: '+script);
   new Function(js);
