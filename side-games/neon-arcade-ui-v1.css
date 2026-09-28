@@ -1,14 +1,22 @@
-/* NEON XI arcade navigation and online entry, 2026-09-28 */
-body.nx-arcade-has-footer{padding-bottom:calc(108px + env(safe-area-inset-bottom,0px))!important}
-.nx-arcade-footer{position:fixed;bottom:0;left:50%;transform:translateX(-50%);z-index:9000;width:min(100%,520px);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;padding:9px 9px max(12px,env(safe-area-inset-bottom,0px));background:linear-gradient(180deg,rgba(19,32,41,.98),rgba(5,12,20,.99));border:1px solid rgba(157,204,226,.44);border-bottom:0;border-radius:19px 19px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.55),0 -2px 20px rgba(135,201,240,.13);font-family:Arial,system-ui,sans-serif}
-.nx-arcade-footer::before{content:"";position:absolute;left:6%;right:6%;top:0;height:1px;background:linear-gradient(90deg,transparent,#bad8ea,transparent);box-shadow:0 0 12px rgba(122,208,255,.5)}
-.nx-arcade-link{appearance:none;border:1px solid transparent;background:transparent;text-decoration:none;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0;min-height:60px;padding:7px 0 5px;border-radius:11px;color:#a8c5db;gap:5px;font:700 clamp(9px,2.8vw,11px)/1.15 Arial,system-ui,sans-serif;cursor:pointer;touch-action:manipulation;transition:color .16s,background .16s,transform .16s,border-color .16s}
-.nx-arcade-link svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;transition:filter .16s,transform .16s}
-.nx-arcade-link[data-active="true"],.nx-arcade-link:active,.nx-arcade-link:focus-visible{color:#b4ff20;border-color:rgba(180,255,32,.25);background:rgba(180,255,32,.055)}
-.nx-arcade-link[data-active="true"] svg,.nx-arcade-link:active svg{filter:drop-shadow(0 0 5px #91ce19)}
-.nx-arcade-link:active svg{transform:scale(.9)}
-.nx-arcade-link:focus-visible{outline:2px solid #d9ff86;outline-offset:1px}
-.nx-arcade-footer .nx-arcade-badge{position:absolute;top:2px;margin-left:24px;background:#bbff31;color:#061009;border-radius:99px;padding:1px 5px;font-size:9px;line-height:14px;font-weight:900}
+/* The bottom bar renders the exact home SVG at its original 853px coordinates. */
+body.nx-arcade-has-footer{padding-bottom:calc(clamp(78px,23.9vw,125px) + env(safe-area-inset-bottom,0px))!important}
+.nx-arcade-footer{position:fixed;left:50%;bottom:0;transform:translateX(-50%);z-index:9000;width:min(100%,520px);background:#080d12;font-family:Arial,system-ui,sans-serif}
+.nx-arcade-footer .nx-home-map{display:block;width:100%;height:auto;overflow:visible;touch-action:manipulation}
+.nx-arcade-footer .nx-hotspot{cursor:pointer;outline:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.nx-arcade-footer .nx-hit{fill:rgba(255,255,255,.001);stroke:transparent;stroke-width:1.35;vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision;stroke-linejoin:round;pointer-events:all;transition:stroke .12s ease,fill .12s ease,filter .12s ease,stroke-width .12s ease}
+.nx-arcade-footer .nx-outline{fill:none;stroke:transparent;stroke-width:1;vector-effect:non-scaling-stroke;pointer-events:none;stroke-linejoin:round;transition:stroke .12s ease,filter .12s ease}
+.nx-arcade-footer .nx-hotspot:is(.nx-pressed,:focus-visible) .nx-outline{stroke:#bdefff;stroke-width:2;filter:drop-shadow(0 0 3px #65d9ff)}
+.nx-arcade-footer .nx-hotspot.nx-pressed .nx-hit{fill:rgba(189,239,255,.07)}
+.nx-arcade-footer .nx-nav-glyph{color:#afcce9;fill:none;stroke:currentColor;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;transition:color .18s ease,filter .18s ease,transform .18s ease;transform-box:fill-box;transform-origin:center;pointer-events:none}
+.nx-arcade-footer .nx-nav-label{font:24px Arial,system-ui,sans-serif;fill:#afcce9;text-anchor:middle;pointer-events:none;transition:fill .18s ease}
+.nx-arcade-footer .nx-nav-marker{fill:#b4ff20;opacity:0;transition:opacity .18s ease;pointer-events:none}
+.nx-arcade-footer .nx-home-nav .nx-hotspot[aria-current="page"] .nx-nav-glyph,.nx-arcade-footer .nx-home-nav .nx-hotspot.nx-pressed .nx-nav-glyph{color:#b4ff20;filter:drop-shadow(0 0 5px #8cc51f)}
+.nx-arcade-footer .nx-home-nav .nx-hotspot[aria-current="page"] .nx-nav-label{fill:#b4ff20}
+.nx-arcade-footer .nx-home-nav .nx-hotspot[aria-current="page"] .nx-nav-marker{opacity:1}
+.nx-arcade-footer .nx-home-nav .nx-hotspot.nx-pressed .nx-nav-glyph{transform:scale(.91)}
+.nx-arcade-footer .nx-home-nav [data-nx-nav="play"][aria-current="page"] .nx-nav-glyph{fill:rgba(180,255,32,.18)}
+.nx-arcade-footer .nx-arcade-badge circle{fill:#b4ff20;stroke:#09141b;stroke-width:2}
+.nx-arcade-footer .nx-arcade-badge text{fill:#061009;font:900 16px Arial,sans-serif;pointer-events:none}
 body.nx-arcade-has-footer>.nx-social-launch{display:none!important}
 .nx-arcade-choice-shade{position:fixed;inset:0;z-index:500000;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(0,3,8,.79);backdrop-filter:blur(9px);font-family:Arial,system-ui,sans-serif}
 .nx-arcade-choice-shade.open{display:flex}
@@ -24,6 +32,5 @@ body.nx-arcade-has-footer>.nx-social-launch{display:none!important}
 .nx-arcade-option:active{transform:scale(.98);box-shadow:0 0 19px rgba(180,255,32,.25)}
 .nx-arcade-option:focus-visible{outline:2px solid #dcff97;outline-offset:2px}
 .nx-arcade-choice-note{font:500 11px/1.45 Arial,sans-serif;color:#8fa7b4;text-align:center;margin:14px 3px 0}
-@media(max-width:359px){.nx-arcade-footer{padding-left:4px;padding-right:4px}.nx-arcade-link{font-size:9px}.nx-arcade-link svg{width:22px;height:22px}}
 @media(max-height:460px) and (orientation:landscape){.nx-arcade-footer{display:none}body.nx-arcade-has-footer{padding-bottom:20px!important}}
-@media(prefers-reduced-motion:reduce){.nx-arcade-link,.nx-arcade-link svg,.nx-arcade-option{transition:none!important}}
+@media(prefers-reduced-motion:reduce){.nx-arcade-footer .nx-hit,.nx-arcade-footer .nx-outline,.nx-arcade-footer .nx-nav-glyph,.nx-arcade-footer .nx-nav-label,.nx-arcade-footer .nx-nav-marker,.nx-arcade-option{transition:none!important}}
