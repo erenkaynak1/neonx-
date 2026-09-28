@@ -39,7 +39,7 @@ try{
    if(name==='xox'||name==='twin'){
     await page.waitForSelector('body[data-ct-screen="menu"]',{timeout});
     assert.equal(await page.locator('.menuNav').count(),0,name+': legacy duplicate footer remains');
-    assert.equal(await page.getByText('NASIL OYNANIR?',{exact:true}).count()>0,true,name+': help panel must remain');
+    assert.equal(await page.locator('.howPanel .howTitle').count()>0,true,name+': help panel must remain');
    }
    await page.screenshot({path:path.join(output,name+'.png'),fullPage:false});
    report.cases.push({name,...result,oldFooterCount:await page.locator('.menuNav').count()});
