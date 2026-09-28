@@ -1,0 +1,35 @@
+name: Import approved NEON XI login artwork
+on:
+  push:
+    paths:
+      - '.github/workflows/neon-entry-asset-import.yml'
+permissions:
+  contents: write
+jobs:
+  import-art:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download approved generated image
+        env:
+          ART_SOURCE_URL: 'https://pikaso.cdnpk.net/private/production/5578963474/3654773103.png?token=exp=1790812800~hmac=f54b8241c3e847fa12bf77d7a6d2fc8c9562c16ad42ed24b201fdf7d547daafe'
+        run: |
+          mkdir -p assets/entry
+          curl --fail --location --silent --show-error --retry 3 --max-time 120 "$ART_SOURCE_URL" -o assets/entry/first-login-v1.png
+          python3 - <<'PY'
+          from pathlib import Path
+          from struct import unpack
+          p=Path('assets/entry/first-login-v1.png')
+          b=p.read_bytes()
+          assert b[:8]==b'\x89PNG\r\n\x1a\n','Source is not a PNG'
+          w,h=unpack('>II',b[16:24])
+          assert w>=900 and h>=1600 and len(b)>200000,(w,h,len(b))
+          print(f'Approved login background: {w} x {h}; {len(b)} bytes')
+          PY
+      - name: Add login artwork to repository
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/entry/first-login-v1.png
+          git commit -m "Add approved NEON XI first-login artwork" || exit 0
+          git push
