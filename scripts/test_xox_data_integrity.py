@@ -76,6 +76,14 @@ class XoxDataIntegrityTest(unittest.TestCase):
             merged = set(by_id[player_id].get("clubs") or []) | set(extras.get(player_id, []))
             self.assertTrue(required <= merged, f"{player_id}: missing {sorted(required - merged)}")
 
+    def test_tonali_tottenham_italy_and_previous_clubs(self) -> None:
+        # Verified against Tottenham's official player biography, 2026-09-28.
+        player = next(row for row in self.players if row["id"] == 397033)
+        self.assertEqual(player["nationality"], "İtalya")
+        self.assertEqual(player["currentClub"], "Tottenham Hotspur")
+        self.assertTrue({"Tottenham Hotspur", "Newcastle United", "AC Milan"} <= set(player["clubs"]))
+        self.assertNotIn("Porto", player["clubs"])
+
     def test_every_xox_nationality_has_a_visual_flag_mapping(self) -> None:
         self.assertIn("flagcdn.com", self.runtime)
         self.assertIn("MutationObserver", self.runtime)

@@ -32,3 +32,10 @@ body[data-ct-screen="game"]>.app>.btn{width:48%!important;margin:3.2cqw auto 0!i
 body[data-ct-screen="game"] .modal{background:rgba(0,6,7,.68)!important;backdrop-filter:blur(10px)!important}.sheet{border:1px solid rgba(172,255,197,.26)!important;background:linear-gradient(180deg,#0b1d1a,#06110f)!important}
 @media(max-width:430px){body[data-ct-screen="game"] .grid{grid-template-rows:16cqw repeat(3,21.5cqw)!important}}
 @media(prefers-reduced-motion:reduce){body[data-ct-screen="game"] .cell.claimed,body[data-ct-screen="game"] .cell.claimed::after{animation:none!important}}
+
+/* Post-match answer review: normal document flow, independent of board state. */
+.answerReview[hidden]{display:none!important}
+.answerReview{text-align:left;margin:12px 0;min-width:0}
+.answerGroup{margin:10px 0;padding:12px;border:1px solid rgba(156,255,47,.3);border-radius:12px;background:#07140f;overflow-wrap:anywhere}
+.answerGroup summary{cursor:pointer;color:#cfffaa;font-size:16px;line-height:1.4;font-weight:700}
+.answerNames{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr));gap:8px 16px;max-height:280px;overflow-y:auto;margin:12px 0 0;padding:0 0 0 20px;font-size:16px;line-height:1.4;color:#f6fbff}
