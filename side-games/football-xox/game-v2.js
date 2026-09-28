@@ -22,7 +22,6 @@
   };
   function menuIcon(name,cls){const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('class',cls||'menuIcon');svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('aria-hidden','true');svg.setAttribute('focusable','false');svg.innerHTML=MENU_ICONS[name]||'';return svg}
   function modeButton(label,iconName,primary,fn){const b=E('button','menuMode'+(primary?' isPrimary':'')),inside=E('span','menuModeInside'),iconBox=E('span','menuModeIcon'),copy=E('span','menuModeCopy',esc(label)),arrow=E('span','menuModeArrow');b.type='button';b.setAttribute('aria-label',label);b.onclick=fn;iconBox.appendChild(menuIcon(iconName));arrow.appendChild(menuIcon('chevron'));inside.append(iconBox,copy,arrow);b.appendChild(inside);return b}
-  function navItem(label,iconName,active){const b=E('button','menuNavItem'+(active?' isActive':'')),iconBox=E('span','menuNavIcon'),copy=E('span','menuNavCopy',esc(label));b.type='button';iconBox.appendChild(menuIcon(iconName));b.append(iconBox,copy);if(active)b.setAttribute('aria-current','page');return b}
   const norm=s=>String(s||'').toLocaleLowerCase('tr-TR').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
   const markName=m=>m==='X'?'OYUNCU 1':'OYUNCU 2';
 
@@ -47,8 +46,6 @@
     howTitle.append(document.createTextNode('NASIL OYNANIR? '),howSlashes);
     body.textContent='Satır ve sütun koşullarını aynı anda sağlayan futbolcuyu seçin. Doğru cevap hücreyi X veya O ile kapatır. Yatay, dikey ya da çapraz üç hücreyi tamamlayan oyuncu kazanır. Aynı futbolcu bir tahtada yalnızca bir kez kullanılır.';
     copy.append(howTitle,body);how.append(ball,copy);app.appendChild(how);
-
-    const nav=E('nav','menuNav');nav.setAttribute('aria-label','Futbol XOX menüsü');nav.append(navItem('LİDERLİK','trophy',false),navItem('NASIL OYNANIR?','info',true),navItem('AYARLAR','settings',false));app.appendChild(nav);
   }
   function renderCreate(){S.screen='menu';renderMenu();if(S.error)app.appendChild(E('div','error',esc(S.error)))}
 function renderJoin(){S.screen='menu';renderMenu();if(S.error)app.appendChild(E('div','error',esc(S.error)))}
