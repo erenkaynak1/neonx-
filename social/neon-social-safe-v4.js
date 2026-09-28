@@ -201,16 +201,10 @@ function patchPlay(){
   if(state.queue){if(!v.dataset.nxSafeSearching)searchingMarkup(state.queue.mode);return}
   const select=v.querySelector('#nxMode');if(!select)return;
   for(const [key,c] of Object.entries(MODES))if(!select.querySelector(`option[value="${key}"]`)){const o=document.createElement('option');o.value=key;o.textContent=c.label;select.appendChild(o)}
-  const match=v.querySelector('[data-act="match"]');if(match&&match.textContent!=='RAKİP BUL')match.textContent='RAKİP BUL';
+  const match=v.querySelector('[data-act="match"]');if(match&&match.textContent!=='RAKİP ARA')match.textContent='RAKİP ARA';
   if(!v.querySelector('.nx-safe-match-hint')){const h=document.createElement('div');h.className='nx-safe-match-hint';h.textContent='Arkadaş gerekmez · seçtiğin oyunda çevrimiçi oyuncularla otomatik eşleşirsin.';v.querySelector('.nx-social-choice')?.after(h)}
-  if(v.querySelector('[data-nx-safe-room-card]'))return;
-  const legacy=v.querySelector('[data-act="room-code"]')?.closest('.nx-social-card'),card=document.createElement('div');card.className='nx-social-card';card.dataset.nxSafeRoomCard='1';
-  card.innerHTML=`<span class="nx-social-label">ONLINE ODA</span><div class="nx-social-muted">Oda oluştur veya kodla katıl. Oyuncu adın hesabından otomatik alınır.</div><div class="nx-safe-room-actions"><button class="nx-social-btn primary" type="button" data-nx-safe-create>ODA OLUŞTUR</button><button class="nx-social-btn nx-social-danger" type="button" data-nx-safe-close>ODAYI KAPAT</button></div><div class="nx-social-row" style="margin-top:8px"><input class="nx-social-input" data-nx-safe-room-input maxlength="8" autocomplete="off" placeholder="ODA KODU"><button class="nx-social-btn" type="button" data-nx-safe-join>KATIL</button></div><div class="nx-safe-room-code" data-nx-safe-room-code></div><div class="nx-safe-room-state" data-nx-safe-room-state></div>`;
-  legacy?.replaceWith(card);if(!legacy)v.appendChild(card);
-  card.querySelector('[data-nx-safe-create]').onclick=()=>createRoom(select.value).catch(e=>roomState(e?.message||'Oda oluşturulamadı.',true));
-  card.querySelector('[data-nx-safe-close]').onclick=()=>cancelRoom();
-  card.querySelector('[data-nx-safe-join]').onclick=()=>joinRoom(select.value,card.querySelector('[data-nx-safe-room-input]').value).catch(e=>roomState(e?.message||'Odaya katılınamadı.',true));
-  if(state.room){roomCode(`ODA KODU: ${state.room.code}`);roomState('Oda açık; oyuncu bekleniyor.')}
+  // Room codes remain internal transport identifiers; no code-entry UI is exposed.
+  v.querySelector('[data-act="room-code"]')?.closest('.nx-social-card')?.remove();
 }
 function bindClicks(){
   document.addEventListener('click',e=>{
