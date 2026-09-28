@@ -26,13 +26,47 @@ function ensureChoice(){if(dialog)return dialog;dialog=document.createElement('d
 function openChoice(mode='draft'){previousFocus=document.activeElement;const d=ensureChoice();d.dataset.mode=mode;d.classList.add('open');d.querySelector('[data-nx-option="friends"]').focus()}
 function closeChoice(){dialog?.classList.remove('open');if(previousFocus?.isConnected)previousFocus.focus({preventScroll:true})}
 function openSettings(){location.href=paths.home+'?nxOpenSettings=1'}
-function addFooter(){if(atRoot||document.getElementById('nx-arcade-footer'))return;
- const nav=document.createElement('nav');nav.id='nx-arcade-footer';nav.className='nx-arcade-footer';nav.setAttribute('aria-label','NEON XI alt menü');
- const specs=[['home','Ana Sayfa',paths.home],['play','Oyna',paths.play],['friends','Arkadaşlar','#friends'],['settings','Ayarlar','#settings']];
- specs.forEach(([action,label,href])=>{const a=document.createElement('a');a.href=href;a.className='nx-arcade-link';a.dataset.nxNav=action;if(action==='play')a.dataset.active='true';a.innerHTML=svg(action)+'<span>'+label+'</span>';if(action==='play')a.setAttribute('aria-current','page');if(action==='friends')a.addEventListener('click',async e=>{e.preventDefault();const api=await social();if(api)api.open('friends');else flash('Arkadaşlar paneli yüklenemedi.')});if(action==='settings')a.addEventListener('click',e=>{e.preventDefault();openSettings()});nav.append(a)});
+const homeNavIcons={
+      home:'<path d="M113 1692L132 1675L150 1692V1712H113Z"/>',
+      play:'<path d="M312 1679Q312 1675 316 1678L340 1693Q344 1695 340 1698L316 1712Q312 1715 312 1711Z"/>',
+      friends:'<circle cx="519" cy="1685" r="9"/><path d="M533 1679Q544 1676 544 1686Q544 1695 534 1694M504 1714V1708Q505 1698 519 1698Q533 1698 533 1708V1714M540 1700Q550 1703 550 1714"/>',
+      settings:'<path d="M718 1675H729L732 1682L739 1683L743 1692L738 1698L739 1705L731 1711L724 1707L717 1711L709 1705L710 1698L705 1692L709 1683L716 1682Z"/><circle cx="724" cy="1693" r="8"/>'
+    };
+function addFooter(){
+ if(atRoot||document.getElementById('nx-arcade-footer'))return;
+ const nav=document.createElement('nav');
+ nav.id='nx-arcade-footer';nav.className='nx-arcade-footer';nav.setAttribute('aria-label','NEON XI alt menü');
+ const homeButton=(action,label,x,w,cx,href)=>`<a class="nx-hotspot" data-nx-nav="${action}" href="${href}" tabindex="0" aria-label="${label}" ${action==='play'?'aria-current="page"':''}><title>${label}</title><rect class="nx-hit" x="${x}" y="1659" width="${w}" height="118" rx="24"/><rect class="nx-outline" x="${x+9}" y="1663" width="${w-18}" height="110" rx="21"/><g class="nx-nav-glyph" aria-hidden="true">${homeNavIcons[action]}</g><text class="nx-nav-label" x="${cx}" y="1750" aria-hidden="true">${label}</text><rect class="nx-nav-marker" x="${cx-26}" y="1778" width="52" height="4" rx="2" aria-hidden="true"/></a>`;
+ nav.innerHTML=`<svg class="nx-home-map" xmlns="http://www.w3.org/2000/svg" viewBox="0 1640 853 204" width="853" height="204" role="group" aria-label="NEON XI ana ekran alt menüsü">
+ <defs><linearGradient id="nx-arcade-nav-surface" x2="0" y2="1"><stop stop-color="#15242b"/><stop offset="1" stop-color="#0b151c"/></linearGradient></defs>
+ <g class="nx-home-nav" role="navigation" aria-label="Ana navigasyon">
+ <rect x="29" y="1650" width="797" height="136" rx="42" fill="url(#nx-arcade-nav-surface)" stroke="#9adfff" stroke-width="3" style="filter:drop-shadow(0 0 4px #3dcfff)" aria-hidden="true"/>
+ ${homeButton('home','Ana sayfa',43,182,132,paths.home)}
+ ${homeButton('play','Oyna',231,182,326,paths.play)}
+ ${homeButton('friends','Arkadaşlar',424,194,529,'#friends')}
+ ${homeButton('settings','Ayarlar',628,179,724,'#settings')}
+ </g></svg>`;
+ const setActive=action=>nav.querySelectorAll('[data-nx-nav]').forEach(n=>{if(n.dataset.nxNav===action)n.setAttribute('aria-current','page');else n.removeAttribute('aria-current')});
+ const pulse=target=>{target.classList.add('nx-pressed');clearTimeout(target.nxPulseTimer);target.nxPulseTimer=setTimeout(()=>target.classList.remove('nx-pressed'),280)};
+ nav.addEventListener('pointerdown',e=>{const target=e.target.closest('.nx-hotspot');if(target)pulse(target)});
+ nav.addEventListener('pointercancel',()=>nav.querySelectorAll('.nx-pressed').forEach(n=>n.classList.remove('nx-pressed')));
+ nav.addEventListener('click',async e=>{
+  const a=e.target.closest('[data-nx-nav]');if(!a)return;pulse(a);
+  if(a.dataset.nxNav==='friends'){e.preventDefault();const api=await social();if(api){setActive('friends');api.open('friends')}else flash('Arkadaşlar paneli yüklenemedi.')}
+  if(a.dataset.nxNav==='settings'){e.preventDefault();openSettings()}
+ });
+ nav.addEventListener('keydown',e=>{if(e.key===' '){const a=e.target.closest('[data-nx-nav]');if(a){e.preventDefault();a.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true}))}}});
  document.body.classList.add('nx-arcade-has-footer');document.body.append(nav);
- const badge=()=>{const n=Number(document.querySelector('.nx-social-launch')?.dataset.count||0);const a=nav.querySelector('[data-nx-nav="friends"]');let b=a.querySelector('.nx-arcade-badge');if(n>0){if(!b){b=document.createElement('i');b.className='nx-arcade-badge';a.append(b)}b.textContent=n>99?'99+':String(n);a.setAttribute('aria-label','Arkadaşlar, '+n+' bildirim')}else{b?.remove();a.setAttribute('aria-label','Arkadaşlar')}};badge();setInterval(()=>{if(!document.hidden)badge()},1600)
+ const badge=()=>{
+  const count=Number(document.querySelector('.nx-social-launch')?.dataset.count||0),a=nav.querySelector('[data-nx-nav="friends"]');
+  let b=a.querySelector('.nx-arcade-badge');
+  if(count>0){if(!b){b=document.createElementNS('http://www.w3.org/2000/svg','g');b.classList.add('nx-arcade-badge');b.setAttribute('aria-hidden','true');b.innerHTML='<circle cx="559" cy="1673" r="17"/><text x="559" y="1680" text-anchor="middle"></text>';a.append(b)}b.querySelector('text').textContent=count>99?'99+':String(count);a.setAttribute('aria-label','Arkadaşlar, '+count+' bildirim')}
+  else{b?.remove();a.setAttribute('aria-label','Arkadaşlar')}
+  const socialView=document.querySelector('.nx-social-shade.open .nx-social-view[data-view="friends"].active');
+  setActive(socialView?'friends':'play');
+ };badge();setInterval(()=>{if(!document.hidden)badge()},1000);
 }
+
 document.addEventListener('click',e=>{if(!atRoot)return;const btn=e.target.closest('#bootHome.nx-approved-home-v1 [data-action="online"]');if(btn){e.preventDefault();e.stopImmediatePropagation();openChoice('draft')}},true);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&dialog?.classList.contains('open')){e.preventDefault();closeChoice()}});
 async function settingsDeepLink(){if(!atRoot||new URLSearchParams(location.search).get('nxOpenSettings')!=='1')return;for(let i=0;i<100;i++){const b=document.querySelector('#bootHome.nx-approved-home-v1 [data-action="settings"]');if(b){history.replaceState(null,'',paths.home);b.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true}));return}await new Promise(r=>setTimeout(r,100))}flash('Ayarlar yüklenemedi.')}
