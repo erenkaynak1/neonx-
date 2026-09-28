@@ -1,7 +1,7 @@
 (() => {
   "use strict";
   const HOME_CLASS="nx-approved-home-v1";
-  const VERSION="20260918-crisp-home-v8";
+  const VERSION="20260928-soft-background-v1";
   const css=`
 #bootScreen:has(#bootHome.nx-approved-home-v1.active) .bootGlow,
 #bootScreen:has(#bootHome.nx-approved-home-v1.active) .bootBrand{display:none!important}
@@ -12,6 +12,7 @@
 #bootHome .nx-home{width:min(100%,520px);margin:0 auto;padding:max(0px,calc(env(safe-area-inset-top) - 20px)) 0 env(safe-area-inset-bottom);position:relative;background:#080d12}
 #bootHome .nx-home-map{display:block;position:relative;width:100%;height:auto;overflow:visible;touch-action:pan-y;background:transparent}
 #bootHome .nx-raster-layer{position:absolute;top:0;left:0;width:100%;height:auto;display:block;pointer-events:none;user-select:none;image-rendering:auto}
+#bootHome .nx-raster-layer[data-layer="background"]{filter:blur(2px) saturate(.72) brightness(.86);opacity:.94;clip-path:inset(0)}
 #bootHome .nx-foreground{clip-path:url(#nx-foreground-clip)}
 #bootHome .nx-idle-navigation{clip-path:inset(89.425% 3.4% 3.145% 3.4% round 5.6%)}
 #bootHome .nx-hotspot{cursor:pointer;outline:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
