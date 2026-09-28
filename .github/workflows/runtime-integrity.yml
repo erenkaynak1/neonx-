@@ -40,6 +40,8 @@ jobs:
         run: python scripts/test_runtime_hygiene.py
       - name: Canonical arcade navigation and single-menu contracts
         run: node scripts/test_arcade_navigation.cjs
+      - name: Draft stat typography legibility contracts
+        run: node scripts/test_draft_readability.cjs
       - name: Core patch contracts
         run: python scripts/test_core_patch_contracts.py
       - name: Social system regressions
