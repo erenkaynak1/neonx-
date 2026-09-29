@@ -28,7 +28,7 @@
     brand('Hedef futbolcuya en yakın kariyeri seç');
     const motif=E('div','ctMenuMotif');
     motif.setAttribute('aria-hidden','true');
-    motif.innerHTML='<img src="./assets/career-twin-premium-emblem-v2.svg" alt="" decoding="async" draggable="false">';
+    motif.innerHTML='<img src="./assets/career-twin-premium-emblem-v2.svg?v=20260930-palette-spread-v3" alt="" decoding="async" draggable="false">';
     app.appendChild(motif);
     const panel=E('section','menuPanel'),title=E('h2','menuPanelTitle','OYUN MODU'),grid=E('div','modeGrid');
     panel.setAttribute('aria-label','Oyun modu seç');
