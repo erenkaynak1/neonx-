@@ -66,6 +66,12 @@ jobs:
         run: node --check scripts/neon_social_stress_lab.mjs
       - name: Draft duplicate-player regression
         run: node scripts/test_draft_player_integrity.js
+      - name: Match engine mechanics and visual-event consistency
+        run: node scripts/test_engine_mechanics.cjs
+      - name: Tactical workload and runtime integration
+        run: node scripts/test_tactical_workshop.cjs
+      - name: Tactical balance v1 invariants
+        run: node scripts/test_tactical_balance.cjs
       - name: Side-game builder contracts
         run: python scripts/test_side_game_pool_builders.py
       - name: XOX data integrity regressions
