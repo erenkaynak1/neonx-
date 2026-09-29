@@ -1,0 +1,53 @@
+name: Draft Tactical Calibration
+
+on:
+  pull_request:
+    paths:
+      - 'neon-xi-core.html'
+      - 'tactical-load.js'
+      - 'scripts/tactical_calibration_lab.mjs'
+      - '.github/workflows/draft-tactical-balance.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: draft-tactical-calibration-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  calibration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chromium test runtime
+        run: |
+          npm install --no-save --package-lock=false playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start local game
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/neon-tactical-http.log 2>&1 &
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/index.html >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/neon-tactical-http.log
+          exit 1
+      - name: Run seeded and mirrored full-match matrix
+        env:
+          NEON_BASE_URL: http://127.0.0.1:4173/index.html
+          NEON_BALANCE_SEEDS: '12'
+        run: node scripts/tactical_calibration_lab.mjs
+      - name: Upload calibration data
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: draft-tactical-calibration-${{ github.run_id }}
+          path: artifacts/tactical-balance/
+          if-no-files-found: warn
+          retention-days: 21
