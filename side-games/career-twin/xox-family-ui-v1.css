@@ -273,6 +273,12 @@ body[data-ct-screen="game"] .slot.win{animation:ctWinnerPulse 1.1s ease-in-out 2
   body:is([data-ct-screen="menu"],[data-ct-screen="create"],[data-ct-screen="join"]) .menuMode{transition:none}
 }
 
+/* The same career identity appears unobtrusively in the actual match header. */
+body[data-ct-screen="game"] .brand::after{
+ content:"";position:absolute;right:1.4%;top:3%;width:19%;height:94%;
+ background:url('./assets/career-twin-premium-emblem-v2.svg') center/contain no-repeat;
+ opacity:.24;pointer-events:none;z-index:1
+}
 /* Expanded choice panel after removing the redundant help block. */
 body:is([data-ct-screen="menu"],[data-ct-screen="create"],[data-ct-screen="join"]) .menuPanel{top:38.8%;height:37.5%}
 body:is([data-ct-screen="menu"],[data-ct-screen="create"],[data-ct-screen="join"]) .modeGrid{top:8%;height:92%}
