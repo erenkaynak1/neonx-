@@ -31,9 +31,9 @@ body:is([data-ct-screen="menu"],[data-ct-screen="create"],[data-ct-screen="join"
 }
 @keyframes ctLogoSweep{0%,6%{background-position:100% 0;opacity:0}10%{opacity:1}44%{background-position:0 0;opacity:1}48%,100%{background-position:0 0;opacity:0}}
 .ctMenuLogo>span{display:block;margin-top:1.5%;font:500 1.65cqw/1 Barlow,Arial,sans-serif;letter-spacing:.55em;color:#bdeaf6}
-.ctMenuMotif{position:absolute;z-index:1;left:60.5%;top:16%;width:32%;aspect-ratio:1;pointer-events:none;opacity:.91;
+.ctMenuMotif{position:absolute;z-index:2;left:56.4%;top:15%;width:42%;aspect-ratio:760 / 610;pointer-events:none;opacity:1;
   filter:drop-shadow(0 0 12px rgba(61,255,105,.38))}
-.ctMenuMotif svg{width:100%;height:100%;overflow:visible}
+.ctMenuMotif img{display:block;width:100%;height:100%;object-fit:contain;user-select:none;-webkit-user-drag:none;filter:drop-shadow(0 0 11px rgba(47,255,92,.28)) drop-shadow(0 8px 15px #0007)}
 body:is([data-ct-screen="menu"],[data-ct-screen="create"],[data-ct-screen="join"]) .brand{
   position:absolute;z-index:2;left:7.2%;top:19%;width:57%;height:auto;margin:0;padding:0;border:0;border-radius:0;background:none;text-align:left;box-shadow:none
 }
@@ -273,6 +273,16 @@ body[data-ct-screen="game"] .slot.win{animation:ctWinnerPulse 1.1s ease-in-out 2
   body:is([data-ct-screen="menu"],[data-ct-screen="create"],[data-ct-screen="join"]) .menuMode{transition:none}
 }
 
+/* Expanded choice panel after removing the redundant help block. */
+body:is([data-ct-screen="menu"],[data-ct-screen="create"],[data-ct-screen="join"]) .menuPanel{top:38.8%;height:37.5%}
+body:is([data-ct-screen="menu"],[data-ct-screen="create"],[data-ct-screen="join"]) .modeGrid{top:8%;height:92%}
+body:is([data-ct-screen="menu"],[data-ct-screen="create"],[data-ct-screen="join"]) .menuMode{overflow:hidden}
+body:is([data-ct-screen="menu"],[data-ct-screen="create"],[data-ct-screen="join"]) .menuModeCopy{font-size:clamp(16px,4.6cqw,24px)}
+body:is([data-ct-screen="menu"],[data-ct-screen="create"],[data-ct-screen="join"]) .ctModeDescription{font-size:clamp(10px,2.85cqw,15px)}
+@media(max-height:740px){
+ body.nx-arcade-has-footer[data-ct-screen="menu"]{padding-bottom:calc(104px + env(safe-area-inset-bottom,0px))!important}
+ body[data-ct-screen="menu"] .app{height:680px;min-height:680px}
+}
 /* Mobile typography floor: the three-column arena must stay legible at 320–400px. */
 body[data-ct-screen="game"] .brand .eyebrow{font-size:clamp(9px,1.7cqw,13px)}
 body[data-ct-screen="game"] .brand .subtitle{font-size:clamp(10px,2.4cqw,18px)}
