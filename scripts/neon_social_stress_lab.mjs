@@ -8,6 +8,21 @@ const TIMEOUT=Number(process.env.NEON_BOT_TIMEOUT||45000);
 const OUT=process.env.NEON_STRESS_OUT||'artifacts/neon-social-stress';
 const token=`${Date.now().toString(36)}${Math.random().toString(36).slice(2,7)}`.slice(-11);
 const FRIENDS_ENTRY='#bootHome.nx-approved-home-v1 .nx-hotspot[data-action="friends"]';
+async function beginGuestOnPage(page){
+  const entry=page.locator('#nxEntry [data-entry-action="guest"]');
+  if(await entry.count()){
+    await page.waitForFunction(()=>{
+      const gate=document.getElementById('nxEntry');
+      return Boolean(gate&&!gate.hidden&&gate.dataset.phase==='welcome');
+    },null,{timeout:TIMEOUT});
+    await entry.click();
+    await page.locator('.nx-social-shade.open .nx-social-view.active #nxUsername').waitFor({state:'visible',timeout:TIMEOUT});
+    return;
+  }
+  await page.locator(FRIENDS_ENTRY).click();
+  const active=page.locator('.nx-social-shade.open .nx-social-view.active');
+  await active.locator('[data-act="guest-login"]').click();
+}
 await fs.mkdir(OUT,{recursive:true});
 const report={token,startedAt:new Date().toISOString(),baseUrl:BASE_URL,scenarios:[],bots:[]};
 
@@ -32,9 +47,9 @@ async function makeBot(browser,label){
 
 async function signIn(bot){
   const p=bot.page;
-  await p.locator(FRIENDS_ENTRY).click();
+  await beginGuestOnPage(p);
   const active=p.locator('.nx-social-shade.open .nx-social-view.active');
-  await active.locator('[data-act="guest-login"]').click();
+  
   const input=active.locator('#nxUsername');await input.waitFor({state:'visible'});await input.fill(bot.username);await active.locator('[data-act="claim"]').click();
   await p.waitForFunction(name=>document.body.textContent.includes(`@${name}`),bot.username,{timeout:TIMEOUT});
   await p.waitForFunction(()=>Boolean(window.NEON_IDENTITY?.uid&&window.NEON_SOCIAL_CONSISTENCY),null,{timeout:TIMEOUT});
