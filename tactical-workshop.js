@@ -15,7 +15,12 @@
   const structure=preview?.structure;
   const members=formation(team).slots.map(s=>player(state.teams[team].slots[s.id])).filter(p=>p&&p.pos!=='GK');
   const discipline=members.reduce((sum,p)=>sum+(Number(details(p).pressingDiscipline)||65),0)/Math.max(1,members.length);
-  const condition=Math.round(window.NEON_TACTICAL_LOAD.condition(tac,discipline,90));
+  const resilience=members.reduce((sum,p)=>{
+    const d=details(p),explicit=Number(p.stamina);
+    return sum+(Number.isFinite(explicit)&&explicit>0?explicit:
+      (Number(d.strength)||65)*.42+(Number(d.pace)||65)*.30+(Number(d.teamwork)||65)*.28);
+  },0)/Math.max(1,members.length);
+  const condition=Math.round(window.NEON_TACTICAL_LOAD.condition(tac,discipline,90,resilience));
   const risks=[];
   if(tac.pressingPlan==='Önde Baskı')risks.push('Yüksek pres erken top kazanımını artırır; son bölümde hız ve karar kalitesi azalır.');
   if(tac.transitionPlan==='Hızlı Hücum')risks.push('Hızlı geçiş daha fazla koşu ister; top kaybında arkada kalan oyuncular önemlidir.');
