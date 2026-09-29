@@ -18,6 +18,9 @@ let count=0;for(const m of core.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/
  if(/type\s*=\s*["']module/.test(m[1]))continue;
  new vm.Script(m[2],{filename:`core-inline-${count++}`});
 }
+const coach=fs.readFileSync(path.join(root,'tactical-workshop.js'),'utf8');
+assert.ok(coach.includes('condition(tac,discipline,90,resilience)'),'Coach forecast must share engine workload inputs');
+assert.ok(coach.includes('Number(p.stamina)'),'Coach must prefer explicit stamina when supplied');
 const index=fs.readFileSync(path.join(root,'index.html'),'utf8');
 for(const m of index.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi))new vm.Script(m[1]);
 const sample='<head>İ Türkçe</head><body>İ oyuncu</body>';
