@@ -9,6 +9,21 @@ const OUT_DIR='artifacts/party-draft-lab';
 const token=`${Date.now().toString(36)}${Math.random().toString(36).slice(2,7)}`.slice(-10);
 const HOME_READY='#bootHome.nx-approved-home-v1 .nx-home-map';
 const FRIENDS_ENTRY='#bootHome.nx-approved-home-v1 .nx-hotspot[data-action="friends"]';
+async function beginGuestOnPage(page){
+  const entry=page.locator('#nxEntry [data-entry-action="guest"]');
+  if(await entry.count()){
+    await page.waitForFunction(()=>{
+      const gate=document.getElementById('nxEntry');
+      return Boolean(gate&&!gate.hidden&&gate.dataset.phase==='welcome');
+    },null,{timeout:TIMEOUT});
+    await entry.click();
+    await page.locator('.nx-social-shade.open .nx-social-view.active #nxUsername').waitFor({state:'visible',timeout:TIMEOUT});
+    return;
+  }
+  await page.locator(FRIENDS_ENTRY).click();
+  const active=page.locator('.nx-social-shade.open .nx-social-view.active');
+  await active.locator('[data-act="guest-login"]').click();
+}
 await fs.mkdir(OUT_DIR,{recursive:true});
 
 const report={ok:false,token,startedAt:new Date().toISOString(),steps:[],bots:[],error:null};
@@ -29,9 +44,9 @@ async function makeBot(browser,label){
 
 async function guestSignIn(bot){
   const {page,username}=bot;
-  await page.locator(FRIENDS_ENTRY).click();
+  await beginGuestOnPage(page);
   const shade=page.locator('.nx-social-shade.open');await shade.waitFor({state:'visible'});
-  const active=shade.locator('.nx-social-view.active');await active.locator('[data-act="guest-login"]').click();
+  const active=shade.locator('.nx-social-view.active');
   const input=active.locator('#nxUsername');await input.waitFor({state:'visible'});await input.fill(username);await active.locator('[data-act="claim"]').click();
   await page.waitForFunction(name=>document.body.textContent.includes(`@${name}`),username,{timeout:TIMEOUT});
   await page.waitForFunction(()=>Boolean(window.NEON_IDENTITY?.uid&&window.NEON_SOCIAL_CONSISTENCY?.diagnostics),null,{timeout:15000});
