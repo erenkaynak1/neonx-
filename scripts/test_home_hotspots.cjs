@@ -20,7 +20,7 @@ for(let i=0;i<hits.length;i++)for(let j=i+1;j<hits.length;j++){
   const a=hits[i],b=hits[j];
   assert(!(a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y), `${a.label} overlaps ${b.label}`);
 }
-for(const asset of ['neon-xi-background-v4.png','neon-xi-foreground-ice-v5.png']) {
+for(const asset of ['neon-xi-background-v4.png','neon-xi-foreground-brown-v6.png']) {
   const data=fs.readFileSync(path.join(root,'side-games/assets/premium-home',asset));
   assert.equal(data.readUInt32BE(16),853);
   assert.equal(data.readUInt32BE(20),1844);

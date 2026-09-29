@@ -1,6 +1,6 @@
 # Ana ekran etkileşim katmanı
 
-Ön plan: `neon-xi-foreground-ice-v5.png` (853 × 1844, şeffaf PNG).
+Ön plan: `neon-xi-foreground-brown-v6.png` (853 × 1844, şeffaf PNG).
 Arka plan: `neon-xi-background-v4.png`; mevcut `blur(2px) saturate(.72) brightness(.86)` korunur.
 SVG ve görsel aynı `853 × 1844` koordinat sistemini paylaşır. CSS ekran genişliğine göre ikisini birlikte ölçekler.
 
@@ -23,6 +23,6 @@ SVG ve görsel aynı `853 × 1844` koordinat sistemini paylaşır. CSS ekran gen
 | Arkadaşlar | 424, 1659, 194, 118 | Sosyal panel; anlık simge tepkisi |
 | Ayarlar | 628, 1659, 179, 118 | Ayarlar paneli; anlık simge tepkisi |
 
-Kutucuk kenarları tek renk buz mavisidir. Basışta 280 ms ışık tepkisi verilir. Alt menü simgeleri ve yazıları SVG ile çizilir; seçili simge/yazı yeşil olur. Modal açan Arkadaşlar/Ayarlar tuşları kalıcı sayfa seçimini değiştirmez. Klavyede Tab, Enter ve Space desteklenir. Kaydırma veya pointercancel basma efektini temizler. Hareketi azalt tercihinde ölçek ve geçiş animasyonları devre dışıdır.
+Kutucuk kenarları tek renk `#483A2A` kahverengidir. Basışta 280 ms ışık tepkisi verilir. Alt menü simgeleri ve yazıları SVG ile çizilir; seçili simge/yazı yeşil olur. Modal açan Arkadaşlar/Ayarlar tuşları kalıcı sayfa seçimini değiştirmez. Klavyede Tab, Enter ve Space desteklenir. Kaydırma veya pointercancel basma efektini temizler. Hareketi azalt tercihinde ölçek ve geçiş animasyonları devre dışıdır.
 
 Doğrulama: JS sözdizimi ve diff kontrolü; jsdom üzerinde 16 alan, dokuz eylemin birer kez tetiklenmesi, Oyna renginin basma efekti bittikten sonra korunması, Ana sayfa ile seçim sıfırlama, Enter/Space, beş bağlantı ve iptal/kaydırma temizliği geçti.
