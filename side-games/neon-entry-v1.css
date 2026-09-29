@@ -1,0 +1,27 @@
+/* NEON XI first-run sign-in. Artwork is the exact approved image; SVG is interaction only. */
+html:has(#nxEntry:not([hidden])),body.nx-entry-open{background:#02070b!important}
+body.nx-entry-open{overflow:hidden!important}
+#nxEntry[hidden],#nxEntryGuide[hidden]{display:none!important}
+#nxEntry{position:fixed;inset:0;z-index:2147483645;display:grid;place-items:center;overflow:hidden;background:#02070b;color:#f4fff5;font-family:Arial,system-ui,sans-serif;isolation:isolate}
+#nxEntry .nx-entry-canvas{position:relative;width:min(100vw,56.2799dvh);max-height:100dvh;aspect-ratio:941 / 1672;overflow:hidden;opacity:0;transition:opacity .2s linear;flex:none}
+#nxEntry[data-phase="welcome"] .nx-entry-canvas{opacity:1}
+#nxEntry .nx-entry-art{width:100%;height:100%;object-fit:contain;display:block;pointer-events:none;user-select:none;-webkit-user-drag:none}
+#nxEntry .nx-entry-map{position:absolute;inset:0;width:100%;height:100%;display:block;overflow:visible;touch-action:manipulation}
+#nxEntry .nx-entry-hotspot{outline:none;-webkit-tap-highlight-color:transparent;cursor:pointer;touch-action:manipulation}
+#nxEntry .nx-entry-hotspot rect{fill:rgba(255,255,255,.001);stroke:transparent;stroke-width:2;vector-effect:non-scaling-stroke;transition:fill .15s,stroke .15s,filter .15s}
+#nxEntry .nx-entry-hotspot:is(:active,:focus-visible) rect{fill:rgba(177,255,38,.12);stroke:#bbff6e;filter:drop-shadow(0 0 8px #91f800)}
+#nxEntry .nx-entry-hotspot[aria-disabled="true"]{pointer-events:none;cursor:wait}
+#nxEntry .nx-entry-check{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:18px;text-align:center;font-size:12px;line-height:1.5;font-weight:800;letter-spacing:.17em;color:#b7ff42}
+#nxEntry[data-phase="welcome"] .nx-entry-check{display:none}
+#nxEntry .nx-entry-spinner{width:38px;height:38px;border:2px solid rgba(180,255,32,.18);border-top-color:#b4ff20;border-radius:50%;animation:nx-entry-spin .9s linear infinite}
+@keyframes nx-entry-spin{to{transform:rotate(360deg)}}
+#nxEntry .nx-entry-status{position:absolute;top:max(15px,env(safe-area-inset-top,0px));left:50%;width:min(88vw,430px);transform:translateX(-50%);max-width:88%;padding:10px 13px;border-radius:9px;background:rgba(3,15,11,.94);border:1px solid rgba(186,255,24,.5);box-shadow:0 8px 24px rgba(0,0,0,.7);color:#e9fce2;font:700 12px/1.45 Arial,system-ui,sans-serif;text-align:center;z-index:3}
+#nxEntry .nx-entry-status:empty{display:none}
+#nxEntryGuide{position:absolute;inset:0;z-index:4;display:grid;place-items:center;padding:20px;background:rgba(0,4,8,.8);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+#nxEntryGuide .nx-entry-guide-card{position:relative;max-height:min(85dvh,740px);overflow:auto;overscroll-behavior:contain;width:min(100%,435px);background:linear-gradient(160deg,#102018,#050e0b);border:1px solid #76cf25;border-radius:18px;padding:22px 21px 19px;color:#ecf7eb;box-shadow:0 15px 65px #000,0 0 25px rgba(120,255,44,.14)}
+#nxEntryGuide h2{font:900 26px/1.1 'Arial Narrow',Arial,system-ui,sans-serif;color:#bcff54;margin:0 46px 13px 0;letter-spacing:.04em}
+#nxEntryGuide h3{font-size:14px;color:#c9ff71;margin:17px 0 6px}
+#nxEntryGuide p{font-size:13px;line-height:1.55;color:#e1ebe0;margin:0 0 8px}
+#nxEntryGuide .nx-entry-guide-close{position:absolute;top:11px;right:12px;min-width:42px;min-height:42px;border:1px solid #597f40;border-radius:11px;background:#07120c;color:#fff;font-size:24px;cursor:pointer}
+#nxEntryGuide button:focus-visible{outline:2px solid #caff79;outline-offset:3px}
+@media(prefers-reduced-motion:reduce){#nxEntry .nx-entry-canvas,#nxEntry .nx-entry-hotspot rect{transition:none}#nxEntry .nx-entry-spinner{animation:none}}
