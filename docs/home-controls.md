@@ -23,6 +23,6 @@ SVG ve görsel aynı `853 × 1844` koordinat sistemini paylaşır. CSS ekran gen
 | Arkadaşlar | 424, 1659, 194, 118 | Sosyal panel; anlık simge tepkisi |
 | Ayarlar | 628, 1659, 179, 118 | Ayarlar paneli; anlık simge tepkisi |
 
-Kutucuk kenarları tek renk soğuk buz mavisidir; nötr metalik panel zemininde aktif basışlarda buz mavisi ışık tepkisi verilir. Basışta 280 ms ışık tepkisi verilir. Alt menü simgeleri ve yazıları SVG ile çizilir; seçili simge/yazı yeşil olur. Modal açan Arkadaşlar/Ayarlar tuşları kalıcı sayfa seçimini değiştirmez. Klavyede Tab, Enter ve Space desteklenir. Kaydırma veya pointercancel basma efektini temizler. Hareketi azalt tercihinde ölçek ve geçiş animasyonları devre dışıdır.
+Kutucuk kenarları mat mavi-gri `#718F9E` tonundadır; ön plan görseli yalnızca `brightness(.84) saturate(.72)` ile yumuşatılır. Basışta hafif `#91B4C5` geri bildirimi vardır; sürekli parlak mavi ışıma kullanılmaz. Basışta 280 ms ışık tepkisi verilir. Alt menü simgeleri ve yazıları SVG ile çizilir; seçili simge/yazı yeşil olur. Modal açan Arkadaşlar/Ayarlar tuşları kalıcı sayfa seçimini değiştirmez. Klavyede Tab, Enter ve Space desteklenir. Kaydırma veya pointercancel basma efektini temizler. Hareketi azalt tercihinde ölçek ve geçiş animasyonları devre dışıdır.
 
 Doğrulama: JS sözdizimi ve diff kontrolü; jsdom üzerinde 16 alan, dokuz eylemin birer kez tetiklenmesi, Oyna renginin basma efekti bittikten sonra korunması, Ana sayfa ile seçim sıfırlama, Enter/Space, beş bağlantı ve iptal/kaydırma temizliği geçti.

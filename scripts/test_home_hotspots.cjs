@@ -29,4 +29,7 @@ for(const asset of ['neon-xi-background-v4.png','neon-xi-foreground-ice-v5.png']
 }
 for(const href of [...source.matchAll(/'([^']+\.html)'\)\}/g)].map(m=>m[1])) assert(fs.existsSync(path.join(root,'side-games',href)),href);
 assert(!source.includes('#483A2A') && !source.includes('foreground-brown-v6'), 'Rejected brown palette must not remain on home');
+assert(source.includes('filter:brightness(.84) saturate(.72)'), 'Foreground must use the matte ice treatment');
+assert(source.includes('stroke="#718f9e" stroke-width="2"'), 'Navigation should use a restrained matte frame');
+assert(!source.includes('drop-shadow(0 0 4px #3dcfff)'), 'Always-on cyan navigation glow is not allowed');
 console.log('PASS: 16 bounded, non-overlapping hotspots; 5 scaling widths; layer dimensions/alpha; game paths.');

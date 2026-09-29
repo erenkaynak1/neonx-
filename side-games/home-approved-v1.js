@@ -1,7 +1,7 @@
 (() => {
   "use strict";
   const HOME_CLASS="nx-approved-home-v1";
-  const VERSION="20260929-ice-frames-v2";
+  const VERSION="20260929-muted-ice-v3";
   const css=`
 #bootScreen:has(#bootHome.nx-approved-home-v1.active) .bootGlow,
 #bootScreen:has(#bootHome.nx-approved-home-v1.active) .bootBrand{display:none!important}
@@ -13,13 +13,13 @@
 #bootHome .nx-home-map{display:block;position:relative;width:100%;height:auto;overflow:visible;touch-action:pan-y;background:transparent}
 #bootHome .nx-raster-layer{position:absolute;top:0;left:0;width:100%;height:auto;display:block;pointer-events:none;user-select:none;image-rendering:auto}
 #bootHome .nx-raster-layer[data-layer="background"]{filter:blur(2px) saturate(.72) brightness(.86);opacity:.94;clip-path:inset(0)}
-#bootHome .nx-foreground{clip-path:url(#nx-foreground-clip)}
+#bootHome .nx-foreground{clip-path:url(#nx-foreground-clip);filter:brightness(.84) saturate(.72)}
 
 #bootHome .nx-hotspot{cursor:pointer;outline:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 #bootHome .nx-hit{fill:rgba(255,255,255,.001);stroke:transparent;stroke-width:1.35;vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision;stroke-linejoin:round;transition:stroke .12s ease,fill .12s ease,filter .12s ease,stroke-width .12s ease;pointer-events:all}
 #bootHome .nx-outline{fill:none;stroke:transparent;stroke-width:1.2;vector-effect:non-scaling-stroke;pointer-events:none;stroke-linejoin:round;transition:stroke .12s ease,filter .12s ease}
-#bootHome .nx-hotspot:is(.nx-pressed,:focus-visible) .nx-outline{stroke:#bdefff;stroke-width:2;filter:drop-shadow(0 0 3px #65d9ff)}
-#bootHome .nx-hotspot.nx-pressed .nx-hit{fill:rgba(189,239,255,.12)}
+#bootHome .nx-hotspot:is(.nx-pressed,:focus-visible) .nx-outline{stroke:#91b4c5;stroke-width:1.7;filter:drop-shadow(0 0 1.5px rgba(77,123,146,.28))}
+#bootHome .nx-hotspot.nx-pressed .nx-hit{fill:rgba(130,165,181,.075)}
 #bootHome .nx-icon-feedback{opacity:0;fill:none;stroke:#b4ff20;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;transition:opacity .12s ease;filter:drop-shadow(0 0 4px #91dd19)}
 #bootHome .nx-hotspot.nx-pressed .nx-icon-feedback{opacity:1}
 #bootHome .nx-nav-glyph{color:#afcce9;fill:none;stroke:currentColor;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;transition:color .18s ease,filter .18s ease,transform .18s ease;transform-box:fill-box;transform-origin:center;pointer-events:none}
@@ -32,7 +32,7 @@
 #bootHome .nx-home-nav [data-action="play"][aria-current="page"] .nx-nav-glyph{fill:rgba(180,255,32,.18)}
 #bootHome .nx-home-nav .nx-outline{stroke-width:1}
 #bootHome .nx-home-nav .nx-hit{fill:transparent}
-#bootHome .nx-home-nav .nx-hotspot.nx-pressed .nx-hit{fill:rgba(189,239,255,.07)}
+#bootHome .nx-home-nav .nx-hotspot.nx-pressed .nx-hit{fill:rgba(130,165,181,.045)}
 #bootHome .nx-approved-status{position:fixed;bottom:max(20px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:50;color:#fff;background:#101820eF;border:1px solid rgba(255,255,255,.10);border-radius:12px;font:600 13px/1.5 Arial,system-ui,sans-serif;text-align:center;width:min(90%,420px);pointer-events:none}
 #bootHome .nx-approved-status:not(:empty){padding:12px 16px}
 @media(prefers-reduced-motion:reduce){#bootHome .nx-hit,#bootHome .nx-outline,#bootHome .nx-nav-glyph,#bootHome .nx-nav-label,#bootHome .nx-nav-marker,#bootHome .nx-icon-feedback{transition:none}#bootHome .nx-home-nav .nx-hotspot.nx-pressed .nx-nav-glyph{transform:none}#bootHome *{scroll-behavior:auto!important}}
@@ -109,7 +109,7 @@
       friends:'<circle cx="519" cy="1685" r="9"/><path d="M533 1679Q544 1676 544 1686Q544 1695 534 1694M504 1714V1708Q505 1698 519 1698Q533 1698 533 1708V1714M540 1700Q550 1703 550 1714"/>',
       settings:'<path d="M718 1675H729L732 1682L739 1683L743 1692L738 1698L739 1705L731 1711L724 1707L717 1711L709 1705L710 1698L705 1692L709 1683L716 1682Z"/><circle cx="724" cy="1693" r="8"/>'
     };
-    const hotspot=(action,label,x,y,w,h,r=24,color='#9adfff',url='')=>`<a class="nx-hotspot" ${url?`href="./side-games/${url}"`:`role="button" data-action="${action}"`} tabindex="0" aria-label="${label}"><title>${label}</title><rect class="nx-hit" x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}"/>${contours[label]||`<rect class="nx-outline" x="${x+2}" y="${y+2}" width="${w-4}" height="${h-4}" rx="${r}"/>`}${icons[label]?`<g class="nx-icon-feedback" aria-hidden="true">${icons[label]}</g>`:''}</a>`;
+    const hotspot=(action,label,x,y,w,h,r=24,color='#718f9e',url='')=>`<a class="nx-hotspot" ${url?`href="./side-games/${url}"`:`role="button" data-action="${action}"`} tabindex="0" aria-label="${label}"><title>${label}</title><rect class="nx-hit" x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}"/>${contours[label]||`<rect class="nx-outline" x="${x+2}" y="${y+2}" width="${w-4}" height="${h-4}" rx="${r}"/>`}${icons[label]?`<g class="nx-icon-feedback" aria-hidden="true">${icons[label]}</g>`:''}</a>`;
     const navButton=(action,label,x,w,cx)=>`<a class="nx-hotspot" role="button" data-action="${action}" tabindex="0" aria-label="${label}" ${action==='home'?'aria-current="page"':''}><title>${label}</title><rect class="nx-hit" x="${x}" y="1659" width="${w}" height="118" rx="24"/><rect class="nx-outline" x="${x+9}" y="1663" width="${w-18}" height="110" rx="21"/><g class="nx-nav-glyph" aria-hidden="true">${navIcons[action]}</g><text class="nx-nav-label" x="${cx}" y="1750" aria-hidden="true">${label}</text><rect class="nx-nav-marker" x="${cx-26}" y="1778" width="52" height="4" rx="2" aria-hidden="true"/></a>`;
     stage.innerHTML=`<img class="nx-raster-layer" data-layer="background" src="./side-games/assets/premium-home/neon-xi-background-v4.png" width="853" height="1844" alt="" decoding="async"/>
     <img class="nx-raster-layer nx-foreground" data-layer="foreground" src="./side-games/assets/premium-home/neon-xi-foreground-ice-v5.png" width="853" height="1844" alt="" decoding="async" fetchpriority="high"/>
@@ -121,7 +121,7 @@
       </defs>
       <g class="nx-home-art" aria-hidden="true">
         <circle cx="762" cy="87" r="44" fill="#09141b" stroke="#233b49"/>
-        <circle cx="762" cy="87" r="38" fill="#0c1820" stroke="#a6c9e2" stroke-width="1.7"/>
+        <circle cx="762" cy="87" r="38" fill="#0c1820" stroke="#7896a5" stroke-width="1.7"/>
         <path d="M748 96 Q752 91 752 82 Q752 74 760 73 V71 Q762 67 764 71 V73 Q772 74 772 82 Q772 91 776 96 Z M758 102 Q762 109 766 102" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
       </g>
       <g class="nx-profile-name" visibility="hidden" aria-hidden="true" clip-path="url(#nx-name-clip)"><rect x="142" y="52" width="101" height="34" fill="#101b24"/><text class="nx-live-name" x="145" y="79"></text></g>
@@ -140,7 +140,7 @@
       ${hotspot('','Futbol Imposter',42,1343,379,305,30,'#b849ff','futbol-imposter.html')}
       ${hotspot('','Football Wordle',434,1343,380,305,30,'#adff27','football-wordle/index.html')}
       <g class="nx-home-nav" role="navigation" aria-label="Ana navigasyon">
-      <rect x="29" y="1650" width="797" height="136" rx="42" fill="url(#nx-nav-surface)" stroke="#9adfff" stroke-width="3" style="filter:drop-shadow(0 0 4px #3dcfff)" aria-hidden="true"/>
+      <rect x="29" y="1650" width="797" height="136" rx="42" fill="url(#nx-nav-surface)" stroke="#718f9e" stroke-width="2" aria-hidden="true"/>
       ${navButton('home','Ana sayfa',43,182,132)}
       ${navButton('play','Oyna',231,182,326)}
       ${navButton('friends','Arkadaşlar',424,194,529)}
