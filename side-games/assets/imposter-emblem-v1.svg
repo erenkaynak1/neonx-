@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 640" role="img" aria-labelledby="t d">
+<title id="t">Futbol Imposter amblemi</title><desc id="d">Lime neon ve camgöbeği vurgulu keskin bir kalkan üzerinde yüzü gizli futbolcu ve soru işareti.</desc>
+<defs>
+<linearGradient id="rim" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#dfff85"/><stop offset=".22" stop-color="#baff18"/><stop offset=".56" stop-color="#31ff76"/><stop offset=".88" stop-color="#00eaff"/><stop offset="1" stop-color="#9edaff"/></linearGradient>
+<linearGradient id="steel" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#edf8f1"/><stop offset=".14" stop-color="#748f8c"/><stop offset=".3" stop-color="#102421"/><stop offset=".51" stop-color="#c5d3c8"/><stop offset=".73" stop-color="#122723"/><stop offset="1" stop-color="#e7f5ec"/></linearGradient>
+<linearGradient id="shell" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#17382c"/><stop offset=".36" stop-color="#061910"/><stop offset="1" stop-color="#020807"/></linearGradient>
+<linearGradient id="visor" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#baff18"/><stop offset=".48" stop-color="#32ff70"/><stop offset="1" stop-color="#00eaff"/></linearGradient>
+<pattern id="dots" width="14" height="14" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="1.15" fill="#79ff58" opacity=".22"/></pattern>
+<filter id="glow" x="-90%" y="-90%" width="280%" height="280%"><feGaussianBlur stdDeviation="9"/></filter>
+<clipPath id="cut"><path d="M360 48 535 123 615 261 565 456 360 588 155 456 105 261 185 123Z"/></clipPath>
+</defs>
+<g fill="url(#steel)" stroke="#03100b" stroke-width="7">
+<path d="m138 241-112 17 72 40-77 41 31 33 122-39 57-81z"/>
+<path d="m582 241 112 17-72 40 77 41-31 33-122-39-57-81z"/>
+<path d="m175 385-102 41 38 34 99-18 33-51z"/>
+<path d="m545 385 102 41-38 34-99-18-33-51z"/>
+</g>
+<g stroke="url(#rim)" stroke-width="5" fill="none" opacity=".9"><path d="m28 262 150-4M32 347l150-38M692 262l-150-4m146 89-150-38M91 424l112-26m426 26-112-26"/></g>
+<path d="M360 48 535 123 615 261 565 456 360 588 155 456 105 261 185 123Z" fill="#a1ff20" opacity=".48" filter="url(#glow)"/>
+<path d="M360 48 535 123 615 261 565 456 360 588 155 456 105 261 185 123Z" fill="url(#steel)" stroke="#0a1b17" stroke-width="12"/>
+<path d="M360 67 523 137 594 265 547 444 360 562 173 444 126 265 197 137Z" fill="url(#shell)" stroke="url(#rim)" stroke-width="5"/>
+<g clip-path="url(#cut)">
+<path d="M123 80h474v540H123z" fill="url(#dots)"/>
+<g stroke="#27ff71" opacity=".25" stroke-width="2" fill="none"><path d="M144 242h430M172 285h375M178 322h365M220 111l-35 158 32 204M500 111l35 158-32 204"/><path d="M360 82v480M186 386h346"/></g>
+<!-- Shadowed anonymous striker, no visible face or actual player likeness -->
+<path d="M292 196q-18-38 8-68 23-27 63-27 35 2 57 29 23 29 5 66l16 14-2 32-22 34-5 29 49 19 49 20 26 82-27 140H212l-27-140 26-82 49-20 49-19-5-29-22-34-2-32z" fill="#00110c" stroke="#3fff73" stroke-width="3.6"/>
+<path d="M297 151q55-54 126 0l15 42-22-19-31-10-45 8-25 21-22-12z" fill="#0b2317" stroke="#c7ff5d" stroke-width="2.5"/>
+<path d="M279 207q82-31 163 0v42q-80 33-163 0z" fill="#030f0c" stroke="url(#visor)" stroke-width="5"/>
+<path d="M286 222h148" stroke="#91ffc5" opacity=".7" stroke-width="2"/>
+<path d="m305 277 55 24 55-24m-105 28-50 37 30 140m120-177 50 37-30 140M359 316v147" stroke="#66ff3c" stroke-width="3" fill="none" opacity=".85"/>
+<path d="m289 350 71 43 71-43" stroke="#1eff9a" stroke-width="2" opacity=".5" fill="none"/>
+<!-- Interrogation icon overlay -->
+<path d="M361 186c0-30 20-46 48-46 29 0 49 16 49 42 0 22-14 35-35 47-14 8-17 13-17 25" stroke="#baff18" stroke-width="19" fill="none" stroke-linecap="square" opacity=".23"/>
+<path d="M361 186c0-30 20-46 48-46 29 0 49 16 49 42 0 22-14 35-35 47-14 8-17 13-17 25" stroke="url(#rim)" stroke-width="10" fill="none" stroke-linecap="square" opacity=".85"/>
+<path d="M406 270v13" stroke="#baff18" stroke-width="10" stroke-linecap="square"/>
+</g>
+<path d="M174 443 360 549 546 443" stroke="url(#rim)" stroke-width="5" fill="none"/>
+<path d="M239 480 360 551 481 480" stroke="#bdff61" stroke-width="2" fill="none" opacity=".58"/>
+<path d="M225 463h270" stroke="#00eaff" stroke-width="3" opacity=".6"/>
+<g fill="url(#rim)"><path d="M176 300h38v9h-38zM506 300h38v9h-38zM345 533l15 13 15-13v12l-15 13-15-13z"/></g>
+</svg>
