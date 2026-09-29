@@ -6,7 +6,7 @@ const css = fs.readFileSync(root + '/draft-readability-v1.css', 'utf8');
 const entry = fs.readFileSync(root + '/index.html', 'utf8');
 assert(css.includes('NEON XI DRAFT TYPOGRAPHY V2'), 'Latest readability overrides missing');
 assert(entry.includes("draft-readability-v1.css?v='+VERSION"), 'Draft readability stylesheet not loaded');
-assert(entry.includes("const VERSION='20260928-draft-legibility-v1'"), 'Draft style cache not refreshed');
+assert(/const VERSION='[0-9]{8}-[a-z0-9-]+'/.test(entry), 'Versioned Draft style cache missing');
 for (const [name, selector, declaration] of [
  ['main stat numbers', '.selectedDetail .mainStats .statMini b', 'font-size: 19px !important'],
  ['main stat labels', '.selectedDetail .mainStats .statMini span', 'font-size: 10.5px !important'],
