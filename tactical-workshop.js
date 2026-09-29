@@ -17,10 +17,13 @@
   const discipline=members.reduce((sum,p)=>sum+(Number(details(p).pressingDiscipline)||65),0)/Math.max(1,members.length);
   const condition=Math.round(window.NEON_TACTICAL_LOAD.condition(tac,discipline,90));
   const risks=[];
-  if(tac.pressingPlan==='Önde Baskı')risks.push('Yüksek pres erken top kazanımını artırır; son bölümde hız ve karar kalitesi azalır.');
-  if(tac.transitionPlan==='Hızlı Hücum')risks.push('Hızlı geçiş daha fazla koşu ister; top kaybında arkada kalan oyuncular önemlidir.');
+  if(tac.pressingPlan==='Önde Baskı')risks.push('Yüksek pres geriden çıkışı zorlaştırır; aşıldığında savunma arkasında alan bırakır. Yorgunluk presi zayıflatır.');
+  if(tac.transitionPlan==='Hızlı Hücum')risks.push('Hızlı hücum yalnızca top kazanımından doğar. Rakibin savunma güvenliği ve senin koşucuların fırsatı belirler.');
   if(structure?.cover<2.4)risks.push('Savunma desteği az. Bir orta sahaya daha korumacı görev ver.');
   if(tac.finalAction==='Ortaları Artır'&&structure?.aerial<1)risks.push('Hava topu hedefi az. Pivot santrfor veya ceza sahasına koşu düşün.');
+  if(tac.pressingPlan==='Alçak Blok')risks.push('Alçak blok ceza sahasını korur; rakibin geriden daha rahat çıkmasına izin verir.');
+  if(tac.finalAction==='Kaleyi Görünce Vur')risks.push('Erken şut daha çok deneme, fakat daha düşük ortalama pozisyon kalitesi demektir.');
+  if(tac.finalAction==='Ceza Sahasına Pasla Gir')risks.push('Ekstra pas daha iyi şut açısı yaratır; pas kesilirse kontra riski doğar.');
   const box=document.createElement('section');box.id='nxCoach';box.setAttribute('aria-label','Taktik danışmanı');
   box.innerHTML=`<div class="nx-coach-title"><span>TEKNİK EKİP</span><b>Oyun planının karşılığı</b></div><div class="nx-coach-metrics"><div><strong>${Math.round(structure?.tacticalFit||0)}<small>/100</small></strong><span>Plan uyumu</span></div><div><strong>${Math.round(structure?.roleFit||0)}<small>/100</small></strong><span>Görev uyumu</span></div><div><strong>${condition}<small>%</small></strong><span>90′ kondisyon tahmini</span></div></div><p class="nx-coach-note">${risks.map(esc).join(' ')||'Dengeli yük. Oyuncu görevleriyle hücum desteğini ve savunma güvenliğini birlikte kur.'}</p><div class="nx-presets">${presets.map((p,i)=>`<button type="button" data-plan="${i}">${p.name}</button>`).join('')}</div><small>Hazır planlar takım talimatlarını değiştirir. Oyuncu görevleri sende; bu değerler kazanma olasılığı değildir.</small>`;
   host.prepend(box);
