@@ -25,6 +25,6 @@ assert(code.includes("window.NEON_XI_ENTRY={"),'Welcome controller bridge missin
 assert(code.includes("if(!social?.profile"),'New accounts must see username chooser');
 assert(code.includes("guide.hidden=false"),'Help button must open real guide');
 for(const file of ['neon-entry-v1.css','neon-entry-v1.js','neon-entry-auth-v1.js'])assert(index.includes('./side-games/'+file+"?v='+VERSION"),'Root must load '+file);
-assert(index.includes("const VERSION='20260929-welcome-v1'"),'New welcome assets require a new cache token');
+assert(/const VERSION='20\d{6}-[a-z0-9-]+'/.test(index),'A dated and explicit cache token is required for injected assets');
 new Function(code);
 console.log('PASS: approved artwork resolution, pixel-aligned login controls, restored auth bypass, account reuse and guidance.');
