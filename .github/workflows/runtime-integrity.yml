@@ -40,6 +40,12 @@ jobs:
         run: python scripts/test_runtime_hygiene.py
       - name: Canonical arcade navigation and single-menu contracts
         run: node scripts/test_arcade_navigation.cjs
+      - name: First-login Firebase session and exact artwork contracts
+        run: node scripts/test_neon_entry.cjs
+      - name: Welcome controller JavaScript syntax
+        run: node --check side-games/neon-entry-v1.js
+      - name: Welcome Firebase bridge JavaScript syntax
+        run: node --check side-games/neon-entry-auth-v1.js
       - name: Draft stat typography legibility contracts
         run: node scripts/test_draft_readability.cjs
       - name: Core patch contracts
