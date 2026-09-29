@@ -20,7 +20,7 @@ for(let i=0;i<hits.length;i++)for(let j=i+1;j<hits.length;j++){
   const a=hits[i],b=hits[j];
   assert(!(a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y), `${a.label} overlaps ${b.label}`);
 }
-for(const asset of ['neon-xi-background-v4.png','neon-xi-foreground-brown-v6.png']) {
+for(const asset of ['neon-xi-background-v4.png','neon-xi-foreground-ice-v5.png']) {
   const data=fs.readFileSync(path.join(root,'side-games/assets/premium-home',asset));
   assert.equal(data.readUInt32BE(16),853);
   assert.equal(data.readUInt32BE(20),1844);
@@ -28,4 +28,5 @@ for(const asset of ['neon-xi-background-v4.png','neon-xi-foreground-brown-v6.png
   assert(source.includes(asset));
 }
 for(const href of [...source.matchAll(/'([^']+\.html)'\)\}/g)].map(m=>m[1])) assert(fs.existsSync(path.join(root,'side-games',href)),href);
+assert(!source.includes('#483A2A') && !source.includes('foreground-brown-v6'), 'Rejected brown palette must not remain on home');
 console.log('PASS: 16 bounded, non-overlapping hotspots; 5 scaling widths; layer dimensions/alpha; game paths.');
