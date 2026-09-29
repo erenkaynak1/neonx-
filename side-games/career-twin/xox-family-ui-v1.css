@@ -272,3 +272,19 @@ body[data-ct-screen="game"] .slot.win{animation:ctWinnerPulse 1.1s ease-in-out 2
   body[data-ct-screen="game"] .slot.win{animation:none}
   body:is([data-ct-screen="menu"],[data-ct-screen="create"],[data-ct-screen="join"]) .menuMode{transition:none}
 }
+
+/* Mobile typography floor: the three-column arena must stay legible at 320–400px. */
+body[data-ct-screen="game"] .brand .eyebrow{font-size:clamp(9px,1.7cqw,13px)}
+body[data-ct-screen="game"] .brand .subtitle{font-size:clamp(10px,2.4cqw,18px)}
+body[data-ct-screen="game"] .score .n{font-size:clamp(10px,2.2cqw,16px)}
+body[data-ct-screen="game"] .scoreState{font-size:clamp(9px,1.65cqw,13px)}
+body[data-ct-screen="game"] .roundBadge span{font-size:clamp(9px,1.75cqw,13px)}
+body[data-ct-screen="game"] .metricTitle span{font-size:clamp(9px,1.55cqw,12px)}
+body[data-ct-screen="game"] .slot .who,body[data-ct-screen="game"] .slot.role-guest .who{font-size:clamp(9px,1.85cqw,14px)}
+body[data-ct-screen="game"] .slot .name{font-size:clamp(11px,2.65cqw,19px)}
+body[data-ct-screen="game"] .statLabel{font-size:clamp(8px,1.35cqw,12px)}
+body[data-ct-screen="game"] .statValue{font-size:clamp(10px,2cqw,15px)}
+body[data-ct-screen="game"] .searchHead span{font-size:clamp(9px,1.75cqw,13px)}
+body[data-ct-screen="game"] .statRow{min-height:34px}
+body:is([data-ct-screen="menu"],[data-ct-screen="create"],[data-ct-screen="join"]) .howText{font-size:clamp(10px,2.18cqw,12px)}
+@media(max-width:345px){body[data-ct-screen="game"] .scoreState{display:none}}
