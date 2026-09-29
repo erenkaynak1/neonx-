@@ -28,7 +28,7 @@
     brand('Hedef futbolcuya en yakın kariyeri seç');
     const motif=E('div','ctMenuMotif');
     motif.setAttribute('aria-hidden','true');
-    motif.innerHTML='<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg" fill="none" stroke-linejoin="round"><defs><linearGradient id="ct-motif-lime" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#baff18"/><stop offset="1" stop-color="#31ff76"/></linearGradient></defs><path d="M80 5 147 43v74l-67 38-67-38V43Z" stroke="#7dff19" stroke-opacity=".62" stroke-width="1.5"/><path d="M80 14 139 48v64l-59 34-59-34V48Z" stroke="#31ff76" stroke-opacity=".23"/><path d="M34 37h92M34 123h92M80 14v132" stroke="#31ff76" stroke-opacity=".25" stroke-dasharray="3 5"/><circle cx="51" cy="64" r="15" stroke="url(#ct-motif-lime)" stroke-width="2.2"/><path d="M24 105c2-18 13-26 27-26s25 8 27 26" stroke="url(#ct-motif-lime)" stroke-width="2.4"/><circle cx="108" cy="64" r="15" stroke="#00eaff" stroke-width="2.2"/><path d="M81 105c2-18 13-26 27-26s25 8 27 26" stroke="#00eaff" stroke-width="2.4"/><path d="m68 58 12-9 12 9M68 92l12 9 12-9" stroke="#dfff82" stroke-width="1.7"/><circle cx="80" cy="80" r="5" fill="#baff18" stroke="none"/><path d="M67 80h26" stroke="#baff18" stroke-width="1.4" stroke-dasharray="2 3"/></svg>';
+    motif.innerHTML='<img src="./assets/career-twin-premium-emblem-v2.svg" alt="" decoding="async" draggable="false">';
     app.appendChild(motif);
     const panel=E('section','menuPanel'),title=E('h2','menuPanelTitle','OYUN MODU'),grid=E('div','modeGrid');
     panel.setAttribute('aria-label','Oyun modu seç');
@@ -43,11 +43,7 @@
       grid.appendChild(button);
     }
     panel.append(title,grid);app.appendChild(panel);
-    const how=E('section','howPanel'),ball=E('div','howBall'),copy=E('div','howCopy'),howTitle=E('h2','howTitle'),body=E('p','howText');
-    ball.appendChild(menuIcon('ball'));
-    howTitle.textContent='NASIL OYNANIR?';
-    body.textContent='Aynı hedef futbolcu '+GAME_METRICS.length+' tur ortada kalır. Her turda ilgili parametrede hedefe en yakın oyuncuyu seç. Tek telefonda ilk oyuncunun seçimi gizlenir.';
-    copy.append(howTitle,body);how.append(ball,copy);app.appendChild(how);
+
   }
   function renderCreate(){S.screen='menu';renderMenu();if(S.error)app.appendChild(E('div','error',esc(S.error)))}
 function renderJoin(){S.screen='menu';renderMenu();if(S.error)app.appendChild(E('div','error',esc(S.error)))}
