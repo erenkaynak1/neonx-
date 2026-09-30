@@ -31,7 +31,12 @@
     exposure-=Math.max(0,clamp(restDefense,0,8)-1.7)*.018;
     return clamp(exposure,-.08,.14);
   }
-  const api={version:'2.0.0',condition,multiplier,transitionWindow};
+  // Explicit measured stamina wins; missing values use an unboosted physical proxy.
+  function resilience(stamina,strength=65,pace=65,teamwork=65){
+    if(stamina!=null && Number.isFinite(Number(stamina)) && Number(stamina)>0)return clamp(stamina,25,99);
+    return clamp(clamp(strength,25,99)*.42+clamp(pace,25,99)*.30+clamp(teamwork,25,99)*.28,25,99);
+  }
+  const api={version:'2.1.0',condition,multiplier,transitionWindow,resilience};
   root.NEON_TACTICAL_LOAD=api;
   if(typeof module==='object')module.exports=api;
 })(typeof window==='object'?window:globalThis);

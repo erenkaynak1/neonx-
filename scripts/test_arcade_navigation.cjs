@@ -50,7 +50,9 @@ for(const [script,style] of [
   ]) assert(css.includes(token),'Premium game menu styling missing: '+style+' '+token);
   assert(!/\.howPanel,\s*@media/.test(css),'Dangling CSS selector swallowing game menu styles: '+style);
   assert(css.includes('grid-template-rows:repeat(3,minmax(0,1fr))'),'Online mode cards lost their grid layout: '+style);
-  assert(js.includes("NASIL OYNANIR?"),'Keep the informational how-to-play card: '+script);
+  // Main's approved stadium menus intentionally removed the old how-to card.
+  assert(js.includes('modeGrid'),'Keep the approved three-action menu: '+script);
+  assert(js.includes('TEK TELEFON'),'Local mode must be preserved: '+script);
   assert(js.includes('ARKADAŞLARINLA OYNA')&&js.includes('RAKİP ARA'),'Online modes must be preserved: '+script);
   new Function(js);
 }

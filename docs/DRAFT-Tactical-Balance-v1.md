@@ -1,42 +1,32 @@
-# NEON XI Draft XI | Tactical Balance v1
+# Draft XI — PR #13 integration on v6
 
-Status: experimental engine changes on a dedicated branch. Do not treat unit checks as proof of full-match balance.
+This integration keeps main's contextual v6 engine and approved home screen.
 
-## Why this exists
+## Preserved
 
-A Football Manager-inspired engine needs explainable causes, not a fixed bonus for selecting a fashionable tactic. The simulation already has role models, action phases, route-specific shot choices, 2D event synchronization and chemistry. This iteration keeps those interfaces intact and corrects several inconsistent incentives.
+- Custom chemistry is unchanged: all link calculations, the 25% boost curve, chemistryModifier and teamBasePower remain identical to main 57da47b. The PR's proposed 8% ceiling and removal of the team chemistry factor are explicitly excluded at the user's request.
+- v6 regain-context counters, recovery defense before transition shots, deployed-position cohorts, red-card effects, smooth phase probabilities, xG accounting and watched/fast clock parity remain intact.
+- Main artwork, ice palette, hotspot geometry and the base cache token `20260929-tactical-engine-v6` remain intact. The core and the two changed tactical scripts use a separate `-pr13-load-v2` suffix so returning visitors receive the new engine without changing home asset versions.
 
-## Implemented in v1
+## Integrated
 
-- Chemistry: on-screen and in-match player boosts share an 8% ceiling (previously 25%). Raw team quality no longer applies chemistry a second time, while player actions still benefit once.
-- Physical workload: a high press and fast transitions have cumulative costs; low blocks and secure transitions conserve energy. The current database has no dedicated stamina attribute. Until verified stamina data exists, strength/pace/teamwork supply an explicitly named resilience **proxy**, while pressing discipline describes efficient execution. If a player has a valid explicit stamina attribute it overrides the proxy.
-- High press: the initial phase-one pressing bonus weakens with condition. Transition cover is more fragile as the press tires.
-- Counterattacks: the opponent's pressing level, current condition and rest defense influence transition opportunity; low blocks trade territory for less space behind the line.
-- High turnovers: pressure modifies the likelihood of an actual turnover becoming a counter, rather than always applying the same percentage.
-- Crossing: execution still depends on player ability, and the *actual* attack corridor now governs access. A central move can switch the ball wide, but is less likely to immediately finish with a cross than a genuine wing attack.
-- Existing score, shot log, event pipeline, xG, ratings and 2D director contracts are retained.
+- Deterministic physical workload accepts independent stamina, including detailed attribute data. Missing stamina uses an unboosted strength/pace/teamwork proxy (42/30/28). This proxy is not measured stamina.
+- Player execution, team pressing and the coach forecast share per-player condition. The coach reads the mean 90-minute forecast directly from the production engine preview.
+- Pressing effectiveness fades with condition. Main's defensive recovery-speed penalty is retained without adding a second penalty for the same fatigued recovery speed.
+- A tired high press exposes more counter space inside v6's existing regain-context calculation. The old v1 random counter initiation and pressureBonus branch are not restored.
+- Crossing access follows the actual corridor: wing 1, center .60, transition .40.
+- Runtime Integrity enforces v6, workload, chemistry preservation and approved-home checks. The browser calibration workflow also enforces the mirrored 1,080-match v6 balance matrix.
 
-## Balance invariants
+## Local validation
 
-1. Changing tactical setting has a measurable benefit and a cost. No universal tactic should dominate every opponent, squad and minute.
-2. Physical load and role fit never depend on the side label (A/B).
-3. Better athletic resilience and better discipline must not accelerate fatigue.
-4. High press must not remain at minute-one efficiency at 90'.
-5. A low block must reduce transition space but still concede territory and opportunities elsewhere.
-6. Chemistry has a bounded effect and does not transform a technically weak footballer into an elite one.
-7. Live visuals must describe the event the engine actually resolved, without independent goal or card rolls.
-8. All randomness must go through the seeded match RNG for reproducible analysis.
-9. When the same sides and squads are swapped, statistical bias must be measured rather than hidden.
+`MATCHES=60 node scripts/draft-balance-matrix.cjs` completed 1,080 production-engine matches (9 scenarios, 60 seeds, both sides). All accounting and balance regression gates passed. Equal-quality presets won 27.5–39.2% against balanced opponents in this synthetic sample. Strong/weak squad ordering, red-card disadvantage, early-shot volume/quality cost, possession retention and counter frequency gates passed.
 
-## Next stages, not claimed as complete
+Raw results: `docs/engine/tactical-balance-pr13-integration.json`. The previous v6 JSON remains historical evidence, not the integrated version's results.
 
-1. Replace the current fixed-ish possession/attack clock with a calibrated event scheduler. The current engine advances by 1-3 minutes and samples one attack, which is not yet a possession-level simulator.
-2. Link shot type/xG to actual sequence geometry, defenders and pass origin, then calibrate xG separately from finishing and goalkeeper skill. Ground shots and aerial shots currently estimate xG differently.
-3. Add off-ball occupation: width, half-spaces, opponent fullback gaps, pressing traps, rest defense and coherent 2D player targets from the same state.
-4. Track player-specific exertion by position, repeated sprints, pressing, tackles, match tempo and substitutions. Do not label the resilience proxy as real measured stamina.
-5. Run seeded Monte Carlo comparisons with mirrored rosters and sides: win/draw/loss, shots, xG, xG-to-goal calibration, possessions, route distribution, card frequency and late-game pressing effect. Publish confidence intervals and investigate regressions.
-6. Test against every supported formation and tactic combination, including red cards, lopsided squads, set-piece specialists, positional mismatches and mobile/online match replay.
+The invariant tests exercise real engine functions for explicit stamina, missing-stamina proxy, team-condition averaging, late pressing, transition exposure, crossing corridor and unchanged chemistry. Main's entry artwork and mobile hotspot tests passed.
 
-## Promotion gate
+Browser and multiplayer results must be read from the integration commit's Actions runs before merge. This environment could not download a local Chromium runtime, so local static/headless checks do not claim mobile visual or Firebase multiplayer coverage.
 
-Do not merge this branch because a handful of static unit tests are green. The next release gate is full-match balance evidence, mirrored-seed bias checks and intact 2D/social/mobile regressions.
+## Limits
+
+The motor is still phase/event based. Synthetic 4-3-3 squads do not represent every formation or the real player database. The browser lab uses 96 mirrored matches from a real-player subset and broad smoke bounds; a green result is not evidence of universal tactical balance. Geometry-based possession scheduling, per-player exertion/substitutions and all-formation round-robin calibration remain future work.

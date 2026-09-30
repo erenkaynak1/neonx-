@@ -70,8 +70,12 @@ jobs:
         run: node scripts/test_engine_mechanics.cjs
       - name: Tactical workload and runtime integration
         run: node scripts/test_tactical_workshop.cjs
-      - name: Tactical balance v1 invariants
+      - name: Contextual v6 tactical regressions
+        run: node scripts/test_draft_tactical_balance.cjs
+      - name: Tactical balance integration invariants
         run: node scripts/test_tactical_balance.cjs
+      - name: Approved home artwork and cache preservation
+        run: node scripts/test_home_hotspots.cjs
       - name: Side-game builder contracts
         run: python scripts/test_side_game_pool_builders.py
       - name: XOX data integrity regressions

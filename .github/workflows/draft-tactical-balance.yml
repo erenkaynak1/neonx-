@@ -5,6 +5,10 @@ on:
     paths:
       - 'neon-xi-core.html'
       - 'tactical-load.js'
+      - 'tactical-workshop.js'
+      - 'scripts/test_tactical*.cjs'
+      - 'scripts/test_draft_tactical_balance.cjs'
+      - 'scripts/draft-*.cjs'
       - 'scripts/tactical_calibration_lab.mjs'
       - '.github/workflows/draft-tactical-balance.yml'
   workflow_dispatch:
@@ -38,6 +42,8 @@ jobs:
           done
           cat /tmp/neon-tactical-http.log
           exit 1
+      - name: Run mirrored v6 production-engine balance matrix
+        run: MATCHES=60 node scripts/draft-balance-matrix.cjs
       - name: Run seeded and mirrored full-match matrix
         env:
           NEON_BASE_URL: http://127.0.0.1:4173/index.html

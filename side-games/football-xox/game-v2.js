@@ -31,21 +31,26 @@
   function render(){window.scrollTo(0,0);document.body.dataset.ctScreen=S.screen;document.body.dataset.ctRole=S.role||'';document.body.dataset.xoxTurn=S.game?.turn||'';shell();if(S.screen==='boot')return renderBoot();if(S.screen==='menu')return renderMenu();if(S.screen==='create')return renderCreate();if(S.screen==='join')return renderJoin();if(S.screen==='lobby')return renderLobby();if(S.screen==='game'){reportOnlineResult(S.game);return renderGame()}}
   function renderBoot(){brand('Oyuncu havuzu ve online sistem yükleniyor…');app.appendChild(E('div','card center','<div class="spinner"></div><div class="hint">NEON XI gerçek zamanlı oda servisi hazırlanıyor.</div>'))}
   function renderMenu(){
+    // Menu-only presentation; existing local/social/matchmaking handlers stay shared.
+    app.querySelector('.topbar')?.remove();
+    const logo=E('div','xoxMenuLogo');
+    logo.innerHTML='<div class="xoxLogoArt"><img src="../../assets/neon-xi-logo-outline.png" alt="NEON XI"></div><span>SIDE GAME</span>';
+    app.appendChild(logo);
     brand();
-    const panel=E('section','menuPanel'),title=E('h2','menuPanelTitle'),slashes=E('span','menuSlashes','//'),grid=E('div','modeGrid');
-    title.append(document.createTextNode('OYUN MODU '),slashes);
-    grid.append(
-      modeButton('TEK TELEFON','mobile',true,startLocal),
-      modeButton('ARKADAŞLARINLA OYNA','users',false,()=>window.NEON_ARCADE_UI?.choose('xox','friends')),
-      modeButton('RAKİP ARA','gamepad',false,()=>window.NEON_ARCADE_UI?.choose('xox','match'))
-    );
+    const motif=E('img','xoxMenuMotif');
+    motif.src='./assets/xox-grid-approved-v3.webp';motif.alt='';motif.setAttribute('aria-hidden','true');app.appendChild(motif);
+    const panel=E('section','menuPanel'),title=E('h2','menuPanelTitle','OYUN MODU'),grid=E('div','modeGrid');
+    panel.setAttribute('aria-label','Oyun modu seç');
+    const modes=[
+      ['TEK TELEFON','mobile','Aynı ekranda karşılaşın',startLocal],
+      ['ARKADAŞLARINLA OYNA','users','Arkadaşına meydan oku',()=>window.NEON_ARCADE_UI?.choose('xox','friends')],
+      ['RAKİP ARA','gamepad','Çevrimiçi bir rakiple eşleş',()=>window.NEON_ARCADE_UI?.choose('xox','match')]
+    ];
+    for(const [label,icon,description,action] of modes){
+      const button=modeButton(label,icon,false,action),copy=button.querySelector('.menuModeCopy');
+      copy.appendChild(E('small','menuModeDescription',description));grid.appendChild(button);
+    }
     panel.append(title,grid);app.appendChild(panel);
-
-    const how=E('section','howPanel'),ball=E('div','howBall'),copy=E('div','howCopy'),howTitle=E('h2','howTitle'),howSlashes=E('span','menuSlashes','//'),body=E('p','howText');
-    ball.appendChild(menuIcon('ball'));
-    howTitle.append(document.createTextNode('NASIL OYNANIR? '),howSlashes);
-    body.textContent='Satır ve sütun koşullarını aynı anda sağlayan futbolcuyu seçin. Doğru cevap hücreyi X veya O ile kapatır. Yatay, dikey ya da çapraz üç hücreyi tamamlayan oyuncu kazanır. Aynı futbolcu bir tahtada yalnızca bir kez kullanılır.';
-    copy.append(howTitle,body);how.append(ball,copy);app.appendChild(how);
   }
   function renderCreate(){S.screen='menu';renderMenu();if(S.error)app.appendChild(E('div','error',esc(S.error)))}
 function renderJoin(){S.screen='menu';renderMenu();if(S.error)app.appendChild(E('div','error',esc(S.error)))}

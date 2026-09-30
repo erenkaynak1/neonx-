@@ -30,40 +30,46 @@ for(const minute of [-5,0,45,46,70,90,120,999]){
    assert.ok(Number.isFinite(load.multiplier(value,key))&&load.multiplier(value,key)>0);
  }
 }
+assert.equal(load.resilience(90,25,25,25),90);
+assert.equal(load.resilience(null,75,75,75),75);
+assert.equal(load.resilience(NaN,75,75,75),75);
 assert.ok(load.multiplier(60,'pace')<load.multiplier(60,'shortPassing'));
 assert.equal(load.multiplier(60,'heading'),1);
 assert.ok(load.transitionWindow(high,high,60,2)>load.transitionWindow(high,high,95,2));
 assert.ok(load.transitionWindow(high,high,70,2)>load.transitionWindow(high,low,70,2));
 assert.ok(load.transitionWindow(high,high,70,4)<load.transitionWindow(high,high,70,1));
-const c={clamp,boostFromChem:null,chemistryFor:(_team,member)=>member.chem,game:{squad:{A:[{footballer:{ability:80},chem:10},{footballer:{ability:60},chem:0}],B:[]}},basePlayerPower:p=>p.ability};
-vm.createContext(c);
-vm.runInContext(core.match(/function boostFromChem\(c\)\{[^}]*\}/)[0]+'\n'+extract('chemistryModifier')+'\n'+extract('teamBasePower'),c);
-assert.equal(c.boostFromChem(0),0);
-assert.equal(c.boostFromChem(10),8);
-assert.equal(c.boostFromChem(200),8);
-assert.equal(c.chemistryModifier('A',{chem:10}),1.08);
-assert.equal(c.teamBasePower('A'),70,'baseline cannot double count chemistry');
-const ctx={clamp,rng:()=>.2,other:t=>t==='A'?'B':'A',
- game:{minute:0,score:{A:0,B:0}},
- window:{NEON_TACTICAL_LOAD:load},
- v3Config:t=>t==='A'?high:balanced,
- teamStructure:t=>({outlet:2,runner:2,restDefense:t==='B'?2:2,roleFit:70,press:1.5,cover:2.3,buildup:1.7,creator:2.2,width:2,finisher:1,aerial:1,outfieldCount:10,risk:1}),
- average:()=>70};
-vm.createContext(ctx);
-vm.runInContext(extract('v5TransitionChance')+'\n'+extract('v5GameStateAdjustment')+'\n'+extract('v5TacticRoleAdjustment'),ctx);
-ctx.v3Config=t=>t==='A'?high:high;
-const earlyTransition=ctx.v5TransitionChance('A');
-ctx.game.minute=90;
-const lateTransition=ctx.v5TransitionChance('A');
-assert.ok(lateTransition>earlyTransition,'fatigued high press must expose transitions');
-ctx.v3Config=t=>t==='A'?high:low;
-assert.ok(lateTransition>ctx.v5TransitionChance('A'),'low block must suppress transitions');
-ctx.v3Config=t=>t==='B'?high:balanced;
-ctx.game.minute=0;
-const earlyPress=ctx.v5TacticRoleAdjustment('B','defense',1,'center');
-ctx.game.minute=90;
-const latePress=ctx.v5TacticRoleAdjustment('B','defense',1,'center');
-assert.ok(earlyPress>latePress,'high press must not retain its first-minute intensity');
+// Run actual v6 production functions with complete squads and real workload integration.
+const {makeLab}=require('./draft-engine-lab.cjs');
+const lab=makeLab(),c=lab.c;
+let g=lab.setup({tactic:high},{tactic:high});
+const earlyTransition=c.lab.v5TransitionChance('A','B',3);
+g.minute=90;
+assert.ok(c.lab.v5TransitionChance('A','B',3)>earlyTransition,'fatigued high press exposes transitions');
+c.state.tactics.B={...c.state.tactics.B,...low};
+assert.ok(c.lab.v5TransitionChance('A','B',3)<earlyTransition,'low block limits counter space');
+c.state.tactics.B={...c.state.tactics.B,...high};
+g.minute=0;
+const earlyPress=vm.runInContext('v5TacticRoleAdjustment("B","defense",1,"center")',c);
+g.minute=90;
+assert.ok(vm.runInContext('v5TacticRoleAdjustment("B","defense",1,"center")',c)<earlyPress);
+const member=g.squad.A[1];
+member.footballer.stamina=99;const durable=c.lab.memberCondition(member,90);
+member.footballer.stamina=25;assert(c.lab.memberCondition(member,90)<durable);
+delete member.footballer.stamina;member.footballer.attributes.stamina=99;
+g.attributeCache=new WeakMap();assert.equal(c.lab.memberCondition(member,90),durable);
+delete member.footballer.attributes.stamina;g.attributeCache=new WeakMap();
+assert.equal(c.lab.memberCondition(member,90),load.condition(high,75,90,75));
+const expected=g.squad.A.slice(1).reduce((sum,m)=>sum+c.lab.memberCondition(m,90),0)/10;
+assert.equal(c.lab.teamCondition('A',90),expected);
+// The user explicitly asked to preserve the existing chemistry behavior.
+const hash=source=>require('node:crypto').createHash('sha256').update(source).digest('hex');
+assert.equal(hash(extract('chemistryModifier')),'bda4ba8d341a556b472dacea9ec57a77189af504db33ba1c2bdf4c893d7ed49c','Preserve main chemistry: chemistryModifier');
+assert.equal(hash(extract('teamBasePower')),'281cc061a730a2a7210256d95304b692bcb7564ad60e306cf3b5c6e0f1aea524','Preserve main chemistry: teamBasePower');
+assert.equal(hash(core.match(/function boostFromChem\(c\)\{[^}]*\}/)[0]),'ff2307b2b5488fdbbbc0ac2383ee1f469bad6ed670167886a4ec159e8627a4f2','Preserve main chemistry: boostFromChem');
+const index=fs.readFileSync(path.join(root,'index.html'),'utf8');
+assert.ok(index.includes("const VERSION='20260929-tactical-engine-v6'"),'Keep the approved main asset cache token');
+assert.ok(index.includes("encodeURIComponent(TACTICAL_VERSION)"),'Changed engine requires a separate cache key');
+for(const file of ['tactical-load.js','tactical-workshop.js'])assert.ok(index.includes('./'+file+"?v='+TACTICAL_VERSION"),'Version changed tactical assets');
 const phaseCtx={clamp,v3Config:()=>({attackDirection:'Kanatları Kullan',finalAction:'Ortaları Artır',defenseTactic:'Dengeli Savunma'}),
  v5ActionAffordance:()=>1,v3Choice:w=>w};
 vm.createContext(phaseCtx);
@@ -73,5 +79,5 @@ const m=phaseCtx.v3FinalAction('A','B',false,'center');
 const t=phaseCtx.v3FinalAction('A','B',false,'transition');
 assert.ok(w.cross>m.cross&&m.cross>t.cross,'cross access must follow actual corridor');
 assert.ok([w,m,t].every(x=>Object.values(x).every(y=>y>=0&&Number.isFinite(y))));
-assert.ok(core.includes('const pressureBonus=pressPlan==='));
-console.log('PASS: tactical balance load, physical proxy, capped chemistry, no duplicate team bonus, fatigue-sensitive high press, counter transitions and corridor realism.');
+assert.ok(core.includes('const transitionTriggered=v6RecoverPossession(attackingTeam,defendingTeam,phase)'));
+console.log('PASS: tactical balance load, physical proxy, unchanged chemistry, fatigue-sensitive high press, counter transitions and corridor realism.');

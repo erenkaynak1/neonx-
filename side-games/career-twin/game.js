@@ -20,22 +20,30 @@
   function render(){const params=new URLSearchParams(location.search);window.scrollTo(0,0);document.body.dataset.ctScreen=S.screen;document.body.dataset.ctRole=S.role||'';document.body.dataset.ctCapture=params.get('capture')||'';document.body.dataset.ctQa=params.get('qa')||'';app.innerHTML='';top();if(S.screen==='boot')return renderBoot();if(S.screen==='menu')return renderMenu();if(S.screen==='create')return renderCreate();if(S.screen==='join')return renderJoin();if(S.screen==='lobby')return renderLobby();if(S.screen==='game'){reportOnlineResult(view());return renderGame()}}
   function renderBoot(){brand('Oyuncu verileri yükleniyor…');app.appendChild(E('div','card center','<div class="spinner"></div><div class="hint">Transfermarkt master havuzu hazırlanıyor.</div>'))}
   function renderMenu(){
-    brand();
-    const panel=E('section','menuPanel'),title=E('h2','menuPanelTitle'),slashes=E('span','menuSlashes','//'),grid=E('div','modeGrid');
-    title.append(document.createTextNode('OYUN MODU '),slashes);
-    grid.append(
-      modeButton('TEK TELEFON','mobile',true,startLocal),
-      modeButton('ARKADAŞLARINLA OYNA','users',false,()=>window.NEON_ARCADE_UI?.choose('twin','friends')),
-      modeButton('RAKİP ARA','gamepad',false,()=>window.NEON_ARCADE_UI?.choose('twin','match'))
-    );
-    panel.append(title,grid);
-    app.appendChild(panel);
+    // XOX-family presentation only. Game modes and existing handlers are unchanged.
+    app.querySelector('.topbar')?.remove();
+    const logo=E('div','ctMenuLogo');
+    logo.innerHTML='<div class="ctLogoArt"><img src="../../assets/neon-xi-logo-outline.png" alt="NEON XI"></div><span>SIDE GAME</span>';
+    app.appendChild(logo);
+    brand('Hedef futbolcuya en yakın kariyeri seç');
+    const motif=E('div','ctMenuMotif');
+    motif.setAttribute('aria-hidden','true');
+    motif.innerHTML='<img src="./assets/career-twin-premium-emblem-v2.svg?v=20260930-palette-spread-v3" alt="" decoding="async" draggable="false">';
+    app.appendChild(motif);
+    const panel=E('section','menuPanel'),title=E('h2','menuPanelTitle','OYUN MODU'),grid=E('div','modeGrid');
+    panel.setAttribute('aria-label','Oyun modu seç');
+    const modes=[
+      ['TEK TELEFON','mobile','Aynı ekranda sırayla seçim yapın',startLocal],
+      ['ARKADAŞLARINLA OYNA','users','Arkadaşınla kariyer eşleştir',()=>window.NEON_ARCADE_UI?.choose('twin','friends')],
+      ['RAKİP ARA','gamepad','Çevrimiçi rakiple karşılaş',()=>window.NEON_ARCADE_UI?.choose('twin','match')]
+    ];
+    for(const [label,icon,description,action] of modes){
+      const button=modeButton(label,icon,false,action),copy=button.querySelector('.menuModeCopy');
+      copy.appendChild(E('small','ctModeDescription',esc(description)));
+      grid.appendChild(button);
+    }
+    panel.append(title,grid);app.appendChild(panel);
 
-    const how=E('section','howPanel'),ball=E('div','howBall'),copy=E('div','howCopy'),howTitle=E('h2','howTitle'),howSlashes=E('span','menuSlashes','//'),body=E('p','howText');
-    ball.appendChild(menuIcon('ball'));
-    howTitle.append(document.createTextNode('NASIL OYNANIR? '),howSlashes);
-    body.textContent='Aynı hedef futbolcu '+GAME_METRICS.length+' tur boyunca ortada kalır. Her tur, Transfermarkt master havuzunda verisi bulunan bir parametre için hedefe en yakın futbolcuyu seçersiniz. Tek telefonda ilk seçim gizlenir ve telefon ikinci oyuncuya verilir.';
-    copy.append(howTitle,body);how.append(ball,copy);app.appendChild(how);
   }
   function renderCreate(){S.screen='menu';renderMenu();if(S.error)app.appendChild(E('div','error',esc(S.error)))}
 function renderJoin(){S.screen='menu';renderMenu();if(S.error)app.appendChild(E('div','error',esc(S.error)))}

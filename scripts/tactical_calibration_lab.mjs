@@ -70,4 +70,12 @@ try{
  await fs.writeFile('artifacts/tactical-balance/report.json',JSON.stringify({N,setup,groups,results,issues},null,2));
  console.log(JSON.stringify({N,setup:{rawA:setup.rawA,rawB:setup.rawB,chemA:setup.chemA,chemB:setup.chemB},groups},null,2));
  assert.equal(results.length,scenarios.length*N*2);
+ assert.ok(N>=12,'Use at least 12 mirrored seeds per scenario');
+ for(const group of groups){
+  assert.ok(group.goalsPerMatch>=.3&&group.goalsPerMatch<=7,'Implausible goal volume: '+group.scenario);
+  assert.ok(group.shotsPerMatch>=3&&group.shotsPerMatch<=60,'Implausible shot volume: '+group.scenario);
+  assert.ok(Math.abs(group.mirroredABias)<=2,'Large mirrored side bias: '+group.scenario);
+ }
+ // These broad smoke bounds do not establish universal tactical balance.
+
 }finally{await page.close();await browser.close();}
