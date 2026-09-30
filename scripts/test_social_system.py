@@ -179,5 +179,17 @@ class SocialSystemTests(unittest.TestCase):
         self.assertIn('tüm oyuncuların hazır olması gerekiyor', broker)
 
 
+    def test_imposter_xox_family_skin_preserves_canonical_multiplayer_actions(self):
+        shell = (ROOT / "side-games/futbol-imposter.html").read_text(encoding="utf-8")
+        skin = (ROOT / "side-games/imposter-xox-family-v1.js").read_text(encoding="utf-8")
+        self.assertIn("imposter-xox-family-v1.css", shell)
+        self.assertIn("imposter-xox-family-v1.js", shell)
+        self.assertIn("state.screen='local-setup';render()", skin)
+        self.assertIn("chooseOnline('friends')", skin)
+        self.assertIn("chooseOnline('match')", skin)
+        self.assertIn("const coreRender=render", skin)
+        self.assertIn("coreRender.apply(this,args)", skin)
+
+
 if __name__ == "__main__":
     unittest.main()
