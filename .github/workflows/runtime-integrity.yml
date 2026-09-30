@@ -50,6 +50,8 @@ jobs:
         run: node scripts/test_draft_readability.cjs
       - name: Core patch contracts
         run: python scripts/test_core_patch_contracts.py
+      - name: Draft party broker routes two-player and tournament parties
+        run: node scripts/test_party_broker_routing.cjs
       - name: Social system regressions
         run: python scripts/test_social_system.py
       - name: Social drawer integrity

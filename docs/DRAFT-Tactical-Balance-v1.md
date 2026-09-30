@@ -15,6 +15,7 @@ This integration keeps main's contextual v6 engine and approved home screen.
 - Pressing effectiveness fades with condition. Main's defensive recovery-speed penalty is retained without adding a second penalty for the same fatigued recovery speed.
 - A tired high press exposes more counter space inside v6's existing regain-context calculation. The old v1 random counter initiation and pressureBonus branch are not restored.
 - Crossing access follows the actual corridor: wing 1, center .60, transition .40.
+- The party broker delegates Draft parties larger than two to the existing tournament router before allocating a 1v1 room. This fixes the known Bot Lab failure regardless of capture-listener registration order.
 - Runtime Integrity enforces v6, workload, chemistry preservation and approved-home checks. The browser calibration workflow also enforces the mirrored 1,080-match v6 balance matrix.
 
 ## Local validation
