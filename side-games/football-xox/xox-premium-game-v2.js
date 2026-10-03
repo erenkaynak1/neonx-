@@ -58,8 +58,6 @@
 
   function decorate(){
     if(document.body.dataset.ctScreen!=='game')return;
-    const corner=app.querySelector('.grid .corner');
-    if(corner&&corner.textContent!=='X')corner.textContent='X';
     app.querySelectorAll('.grid .head').forEach(decorateHead);
     const brand=app.querySelector('.brand');
     if(brand&&!brand.dataset.premiumLabelled){
