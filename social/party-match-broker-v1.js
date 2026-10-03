@@ -139,7 +139,15 @@ async function startBrokeredParty(mode,button){
   button.disabled=true;status('Parti maçı hazırlanıyor…');
   try{
     const user=currentUser||await waitForUser();if(!user)throw new Error('Önce hesabınla giriş yap.');
-    const {partyId,party}=await partyContext(user),members=validateParty(mode,party,user),nonce=`${Date.now()}_${Math.random().toString(36).slice(2,8)}`,matchId=`pb_${partyId}_${nonce}`,roomCode=await pickFreeCode(mode,matchId);
+    const {partyId,party}=await partyContext(user),members=validateParty(mode,party,user);
+    // Capture-listener order must never route a multi-member Draft party into a 1v1 room.
+    if(mode==='draft'&&members.length>2){
+      const router=window.NEON_DRAFT_PARTY_ROUTER;
+      if(typeof router?.launchTournament!=='function')throw new Error('Turnuva yönlendiricisi hazırlanıyor. Lütfen tekrar dene.');
+      await router.launchTournament(button);
+      return;
+    }
+    const nonce=`${Date.now()}_${Math.random().toString(36).slice(2,8)}`,matchId=`pb_${partyId}_${nonce}`,roomCode=await pickFreeCode(mode,matchId);
     const roles=Object.fromEntries(members.map(uid=>[uid,uid===user.uid?'host':'guest'])),createdMs=Date.now();
     const pending={mode,nonce,matchId,roomCode,hostUid:user.uid,partyId,partySize:members.length,members,roles,status:'host_booting',attempt:0,createdAt:serverTimestamp(),createdMs,expiresAt:createdMs+PENDING_TTL_MS};
     await update(ref(db),{[`social/parties/${partyId}/launch`]:null,[`social/partyPending/${partyId}`]:pending});

@@ -9,7 +9,7 @@ function makeLab(file=path.join(root,'neon-xi-core.html'),native=false){
  const c={window:{NEON_TACTICAL_LOAD:require('../tactical-load.js')},style:{textContent:''},$:()=>null,analysisOverlay:{addEventListener(){}},document:{addEventListener(){}},console,setTimeout,clearTimeout,
  clamp:(v,a,b)=>Math.max(a,Math.min(b,v)),state:{tactics:{A:{...neutral},B:{...neutral}}},
  details:p=>p.attributes,mainObj:p=>p.attributes,chemMap:()=>({}),teamChem:()=>0,basePlayerPower:p=>p.quality};
- const exportsCode=`{game,simulateAttack,finishMatch,initializeStats,initializeRouteStats,initializeRating,createProfile,teamStructure,stat,v3PhaseScores,v3PhaseProbability,v3FinalAdjustment,v5TransitionChance,chooseAttackingTeam,baseStat,advanceMatchClock:typeof advanceMatchClock==='function'?advanceMatchClock:()=>{game.minute=Math.min(90,game.minute+Math.floor(1+game.random()*3));},v6RecoverPossession:typeof v6RecoverPossession==='function'?v6RecoverPossession:null}`;
+ const exportsCode=`{game,simulateAttack,finishMatch,initializeStats,initializeRouteStats,initializeRating,createProfile,teamStructure,stat,memberCondition,teamCondition,v3PhaseScores,v3PhaseProbability,v3FinalAdjustment,v5TransitionChance,chooseAttackingTeam,baseStat,advanceMatchClock:typeof advanceMatchClock==='function'?advanceMatchClock:()=>{game.minute=Math.min(90,game.minute+Math.floor(1+game.random()*3));},v6RecoverPossession:typeof v6RecoverPossession==='function'?v6RecoverPossession:null}`;
  if(native)c.lab=new Function(...Object.keys(c),source+'\nreturn '+exportsCode+';')(...Object.values(c));
  else{vm.createContext(c);vm.runInContext(source+'\nthis.lab='+exportsCode+';',c);}
  const positions=['GK','LB','CB','CB','RB','DM','CM','CM','LW','ST','RW'];
