@@ -7201,8 +7201,19 @@ render();
     const base = baseStat(member,key,fallback) * chemistryModifier(member.team,member);
     const load = window.NEON_TACTICAL_LOAD;
     if(!load || member.footballer.pos === "GK") return base;
-    const condition = load.condition(tactic(member.team), baseStat(member,"pressingDiscipline",65), game.minute);
+    const condition = memberCondition(member,game.minute);
     return base * load.multiplier(condition,key);
+  }
+  function memberCondition(member,minute=game.minute) {
+    const load=window.NEON_TACTICAL_LOAD;
+    if(!load || member.footballer.pos==="GK")return 100;
+    const stamina=member.footballer.stamina ?? baseStat(member,"stamina",NaN);
+    const resilience=load.resilience(stamina,baseStat(member,"strength",65),baseStat(member,"pace",65),baseStat(member,"teamwork",65));
+    return load.condition(tactic(member.team),baseStat(member,"pressingDiscipline",65),minute,resilience);
+  }
+  function teamCondition(team,minute=game.minute) {
+    const members=activeSquad(team).filter(member=>member.footballer.pos!=="GK");
+    return members.length?members.reduce((sum,member)=>sum+memberCondition(member,minute),0)/members.length:100;
   }
   function average(team,keys,filter=()=>true) {
     const members = activeSquad(team).filter(filter);
@@ -7370,8 +7381,9 @@ render();
       if(action==="cross")value+=(s.aerial-.9)*1.15;
       if(cfg.pressingPlan==="Önde Baskı"){
         const discipline=average(team,["pressingDiscipline","teamwork"],m=>m.footballer.pos!=="GK");
-        const condition=window.NEON_TACTICAL_LOAD?.condition(cfg,discipline,game.minute) ?? 100;
-        value+=phase===1?5.0*condition/100:phase>=4?-2.5:1.0;
+        const condition=teamCondition(team);
+        const pressingEfficiency=clamp((condition-45)/55,.05,1);
+        value+=phase===1?5.0*pressingEfficiency:phase>=4?-2.5:pressingEfficiency;
         if(route==="transition"){
           const recovery=v3UnitScore(team,["CB","LB","RB"],{pace:.65,positioning:.35});
           value-=clamp((80-discipline)/10,0,3)+clamp((76-recovery)*.12,0,4);
@@ -7408,7 +7420,7 @@ render();
     const regain=phase===1?.55:phase===2?.36:.23;
     const intent=cfg.transitionPlan==="Hızlı Hücum"?1.25:cfg.transitionPlan==="Topu Güvenceye Al"?.55:1;
     const exposure=(opponent.general==="Hücum Ağırlıklı"?.07:opponent.general==="Savunma Ağırlıklı"?-.04:0)
-      +(opponent.pressingPlan==="Önde Baskı"?.05:opponent.pressingPlan==="Alçak Blok"?-.035:0)
+      +(opponent.pressingPlan==="Önde Baskı"?.05+(100-teamCondition(losingTeam))*.0012:opponent.pressingPlan==="Alçak Blok"?-.035:0)
       +clamp((d.risk-d.restDefense)*.012,-.06,.08);
     return clamp((regain+exposure+(s.outlet+s.runner-3.2)*.012)*intent,.06,.78);
   }
@@ -7461,7 +7473,7 @@ render();
   window.NEON_XI_ENGINE_V5={version:"6.0.0",roleModel:"attribute-role-tactic-context",roleScores:calculateRoleScores,teamStructure,
     preview(team){
       const old=game.squad[team];
-      try{game.squad[team]=getSquad(team);return {structure:teamStructure(team),roles:calculateRoleScores(team)};}
+      try{game.squad[team]=getSquad(team);return {structure:teamStructure(team),roles:calculateRoleScores(team),condition90:teamCondition(team,90)};}
       finally{game.squad[team]=old;}
     }
   };
@@ -8285,7 +8297,8 @@ render();
     else if(a.finalAction==="Ortaları Artır")weights=v3ScaleRemainder(base,"cross",v3AdjustedRate(crossBase,crossTactic,a.finalAction,"Ortaları Artır",d.defenseTactic));
     else if(a.finalAction==="Ceza Sahasına Pasla Gir"&&!workAttempted)weights=v3ScaleRemainder(base,"workBall",v3AdjustedRate(workBase,workTactic,a.finalAction,"Ceza Sahasına Pasla Gir",d.defenseTactic));
     weights.shot*=v5ActionAffordance(attackingTeam,defendingTeam,"shot",route,5);
-    weights.cross*=v5ActionAffordance(attackingTeam,defendingTeam,"cross","wing",5);
+    const lateralAccess=route==="wing"?1:route==="center"?.60:.40;
+    weights.cross*=lateralAccess*v5ActionAffordance(attackingTeam,defendingTeam,"cross","wing",5);
     weights.workBall*=v5ActionAffordance(attackingTeam,defendingTeam,"workBall",route,5);
     return v3Choice(weights);
   }

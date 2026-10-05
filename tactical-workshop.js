@@ -13,9 +13,8 @@
   const team=state.tacticTeam,tac=state.tactics[team];
   let preview;try{preview=window.NEON_XI_ENGINE_V5?.preview(team)}catch(e){console.warn('Taktik analizi',e)}
   const structure=preview?.structure;
-  const members=formation(team).slots.map(s=>player(state.teams[team].slots[s.id])).filter(p=>p&&p.pos!=='GK');
-  const discipline=members.reduce((sum,p)=>sum+(Number(details(p).pressingDiscipline)||65),0)/Math.max(1,members.length);
-  const condition=Math.round(window.NEON_TACTICAL_LOAD.condition(tac,discipline,90));
+  // The forecast is the mean of the engine's per-player workload, not a second model.
+  const condition=Math.round(preview?.condition90 ?? 100);
   const risks=[];
   if(tac.pressingPlan==='Önde Baskı')risks.push('Yüksek pres geriden çıkışı zorlaştırır; aşıldığında savunma arkasında alan bırakır. Yorgunluk presi zayıflatır.');
   if(tac.transitionPlan==='Hızlı Hücum')risks.push('Hızlı hücum yalnızca top kazanımından doğar. Rakibin savunma güvenliği ve senin koşucuların fırsatı belirler.');

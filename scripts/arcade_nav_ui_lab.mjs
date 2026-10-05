@@ -39,27 +39,32 @@ try{
    if(name==='xox'||name==='twin'){
     await page.waitForSelector('body[data-ct-screen="menu"]',{timeout});
     assert.equal(await page.locator('.menuNav').count(),0,name+': legacy duplicate footer remains');
-    assert.equal(await page.locator('.howPanel .howTitle').count()>0,true,name+': help panel must remain');
+    assert.equal(await page.locator('.howPanel:visible').count(),0,name+': approved menu must not restore the removed help card');
 
     const menu=await page.evaluate(()=>{
       const panel=document.querySelector('.menuPanel'),grid=document.querySelector('.modeGrid'),
-        buttons=[...document.querySelectorAll('.menuMode')],help=document.querySelector('.howPanel');
-      const panelStyle=getComputedStyle(panel),gridStyle=getComputedStyle(grid),helpStyle=getComputedStyle(help);
+        buttons=[...document.querySelectorAll('.menuMode')];
+      const panelStyle=getComputedStyle(panel),gridStyle=getComputedStyle(grid),buttonStyle=getComputedStyle(buttons[0]);
       const rect=panel.getBoundingClientRect(),icon=buttons[0]?.querySelector('svg')?.getBoundingClientRect();
       return {panelPosition:panelStyle.position,background:panelStyle.backgroundColor,clipPath:panelStyle.clipPath,
         panelRect:rect.toJSON(),gridDisplay:gridStyle.display,buttonCount:buttons.length,
-        iconWidth:icon?.width||0,iconHeight:icon?.height||0,helpPosition:helpStyle.position,
-        helpRect:help.getBoundingClientRect().toJSON(),bodyBackground:getComputedStyle(document.body).backgroundColor};
+        iconWidth:icon?.width||0,iconHeight:icon?.height||0,buttonClipPath:buttonStyle.clipPath,
+        buttonBackground:buttonStyle.backgroundColor,buttonRects:buttons.map(b=>b.getBoundingClientRect().toJSON()),
+        labels:buttons.map(b=>b.textContent),bodyBackground:getComputedStyle(document.body).backgroundColor};
     });
     assert.equal(menu.panelPosition,'absolute',name+': game menu lost positioned panel CSS');
     assert.equal(menu.gridDisplay,'grid',name+': game mode cards lost their grid');
-    assert.equal(menu.helpPosition,'absolute',name+': help card lost game styling');
     assert.equal(menu.buttonCount,3,name+': mode choices missing');
     assert(menu.panelRect.height>100&&menu.panelRect.height<450,name+': menu panel has invalid size');
     assert(menu.panelRect.width>200&&menu.panelRect.width<=390,name+': menu panel exceeds mobile width');
     assert(menu.iconWidth>10&&menu.iconWidth<90&&menu.iconHeight<90,name+': giant unstyled SVG icon');
-    assert(menu.clipPath!=='none',name+': cut-corner panel lost');
-    assert(menu.background!=='rgba(0, 0, 0, 0)'&&menu.background!=='transparent',name+': neon panel background lost');
+    assert(menu.buttonClipPath!=='none',name+': angular button frame lost');
+    assert(menu.buttonBackground!=='rgba(0, 0, 0, 0)'&&menu.buttonBackground!=='transparent',name+': button frame background lost');
+    assert(menu.labels[0].includes('TEK TELEFON')&&menu.labels[1].includes('ARKADAŞLARINLA OYNA')&&menu.labels[2].includes('RAKİP ARA'),name+': mode labels changed');
+    for(let i=0;i<menu.buttonRects.length;i++){
+      const r=menu.buttonRects[i];assert(r.width>200&&r.height>=44&&r.left>=0&&r.right<=390,name+': invalid mode tap area');
+      if(i>0)assert(r.top>=menu.buttonRects[i-1].bottom,name+': mode tap areas overlap');
+    }
     result.gameMenu=menu;
 
    }

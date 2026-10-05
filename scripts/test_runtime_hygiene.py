@@ -60,7 +60,7 @@ class RuntimeHygieneTest(unittest.TestCase):
         root_index = (ROOT / "index.html").read_text(encoding="utf-8")
         self.assertIn('no-cache, no-store, must-revalidate', root_index)
         self.assertIn("const VERSION='", root_index)
-        self.assertIn("fetch('./neon-xi-core.html?v='+encodeURIComponent(VERSION),{cache:'default'})", root_index)
+        self.assertIn("fetch('./neon-xi-core.html?v='+encodeURIComponent(TACTICAL_VERSION),{cache:'default'})", root_index)
         self.assertNotIn("fetch('./neon-xi-core.html?v='+encodeURIComponent(VERSION),{cache:'no-store'})", root_index)
         self.assertIn('<link rel="preconnect" href="https://www.gstatic.com" crossorigin>', root_index)
 
