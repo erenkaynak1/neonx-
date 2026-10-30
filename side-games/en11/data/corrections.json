@@ -1,4 +1,13 @@
 {
   "schema_version": 1,
-  "corrections": []
+  "corrections": [
+    {
+      "player_id": 52261,
+      "values": {
+        "clubCount": 5
+      },
+      "source_url": "https://www.tff.org/Default.aspx?kisiId=111663&pageId=526",
+      "verified_at": "2026-10-30"
+    }
+  ]
 }

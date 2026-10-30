@@ -142,7 +142,8 @@
 <body>
   <main class="app" id="app"></main>
   <div id="overlayRoot"></div>
-  <script>
+  <script src="./corrections-runtime.js"></script>
+<script>
   (function(){
     'use strict';
     const PREFIX='neonxi-en11-';
@@ -193,7 +194,7 @@
       S.poolLoads[role]=fetch('./data/players-'+slug+'.json',{cache:'force-cache'}).then(function(r){if(!r.ok)throw new Error('pool');return r.json()}).then(function(data){
         const rows=Array.isArray(data)?data.filter(function(p){return p&&p.id&&p.name&&p.position===role}).map(function(p){p._searchName=norm(p.name);return p}):[];
         if(!rows.length)throw new Error('empty pool');
-        S.poolByRole[role]=rows;return rows;
+        return window.NX_EN11.applyCorrections(rows).then(function(){S.poolByRole[role]=rows;return rows});
       }).catch(function(e){delete S.poolLoads[role];throw e});
       return S.poolLoads[role];
     }
