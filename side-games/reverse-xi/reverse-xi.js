@@ -18,8 +18,35 @@ function renderRoom(data){state.roomData=data;const speakerSide=data.currentSpea
 function mySide(){const d=state.roomData;if(d?.players?.A?.uid===uid())return'A';if(d?.players?.B?.uid===uid())return'B';return''}
 function updateStage(){const d=state.roomData;if(!d)return;['speaker-panel','listen-panel','guess-panel','result-panel','waiting-panel'].forEach(id=>$(id).hidden=true);if(!d.players?.B){$('step-title').textContent='Arkadaşını bekliyoruz';$('step-desc').textContent='Oda kodunu arkadaşınla paylaş. Katıldığında ilk tur başlayacak.';$('waiting-panel').hidden=false;return}const side=mySide(),speaker=d.currentSpeaker||'A',imitator=speaker==='A'?'B':'A',phase=d.phase||'speak';let title='',desc='';if(phase==='speak'){title=speaker+' oyuncusu futbolcu ismini söylüyor';desc='İsmi normal şekilde söyle ve sistemin doğru anladığını onayla.';if(side===speaker)$('speaker-panel').hidden=false;else $('waiting-panel').hidden=false}else if(phase==='imitate'){title=imitator+' oyuncusu ters sesi taklit ediyor';desc='Ters sesi dinle ve duyduğun şekilde kaydet.';if(side===imitator){$('listen-panel').hidden=false;setAudio('reverse-audio',d.reverseOriginal)}else $('waiting-panel').hidden=false}else if(phase==='guess'){title=imitator+' oyuncusu tahmin ediyor';desc='Kendi sesinin tekrar ters çevrilmiş hâlini dinleyip futbolcuyu bul.';if(side===imitator){$('guess-panel').hidden=false;setAudio('final-audio',d.reverseImitation)}else $('waiting-panel').hidden=false}else if(phase==='checking'){title='Cevap kontrol ediliyor';desc='A oyuncusu cevabı doğruluyor.';$('waiting-panel').hidden=false}else if(phase==='result'){title='Tur tamamlandı';desc='Sıradaki tur için devam et.';$('result-panel').hidden=false;$('result-title').textContent=d.lastResult?.correct?'DOĞRU TAHMİN!':'TUR TAMAMLANDI';$('result-copy').textContent='Doğru cevap: '+(d.lastResult?.answer||'')+' · Tahmin: '+(d.lastResult?.guess||'');$('next-turn').hidden=side!==d.currentSpeaker}}
 function setAudio(id,data){const el=$(id);if(!data)return;if(el.dataset.src===data)return;el.dataset.src=data;el.src=data}
-async function createRoom(){try{await ensureAuth();let code=makeCode();while((await get(ref(db,'reverseXI/rooms/'+code))).exists())code=makeCode();state.room=code;const name='Oyuncu '+Math.floor(100+Math.random()*900);await set(roomRef(),{createdAt:serverTimestamp(),hostUid:uid(),players:{A:{uid:uid(),name}},currentSpeaker:'A',turn:1,phase:'speak',guesses:{}});openRoom();history.replaceState(null,'',location.pathname+'?room='+code)}catch(e){toast('Oda oluşturulamadı: '+e.message)}}
-async function joinRoom(code){code=String(code||'').toUpperCase().replace(/[^A-Z0-9]/g,'');if(code.length!==6){toast('6 haneli oda kodunu gir.');return}try{await ensureAuth();const r=ref(db,'reverseXI/rooms/'+code),snap=await get(r);if(!snap.exists()){toast('Bu oda bulunamadı.');return}const d=snap.val();if(d.players?.A?.uid===uid()||d.players?.B?.uid===uid()){state.room=code;openRoom();return}if(d.players?.B){toast('Bu oda dolu.');return}state.room=code;await update(r,{players:{...d.players,B:{uid:uid(),name:'Oyuncu '+Math.floor(100+Math.random()*900)}}});openRoom();history.replaceState(null,'',location.pathname+'?room='+code)}catch(e){toast('Odaya katılınamadı: '+e.message)}}
+async function createRoom(roomCode='',playerName=''){
+ try{
+  await ensureAuth();
+  let code=String(roomCode||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if(!code){code=makeCode();while((await get(ref(db,'reverseXI/rooms/'+code))).exists())code=makeCode()}
+  state.room=code;
+  const name=String(playerName||'Oyuncu '+Math.floor(100+Math.random()*900)).trim().slice(0,24);
+  await set(roomRef(),{createdAt:serverTimestamp(),hostUid:uid(),game_type:'reverse-xi',room_code:code,status:'waiting',players:{A:{uid:uid(),name}},currentSpeaker:'A',turn:1,phase:'speak',guesses:{}});
+  openRoom();
+  history.replaceState(null,'',location.pathname+'?room='+code)
+ }catch(e){toast('Oda oluşturulamadı: '+e.message)}
+}
+async function joinRoom(code,playerName=''){
+ code=String(code||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+ if(code.length!==6){toast('6 haneli oda kodunu gir.');return}
+ try{
+  await ensureAuth();
+  const r=ref(db,'reverseXI/rooms/'+code),snap=await get(r);
+  if(!snap.exists()){toast('Bu oda bulunamadı.');return}
+  const d=snap.val();
+  if(d.players?.A?.uid===uid()||d.players?.B?.uid===uid()){state.room=code;openRoom();return}
+  if(d.players?.B){toast('Bu oda dolu.');return}
+  const name=String(playerName||'Oyuncu '+Math.floor(100+Math.random()*900)).trim().slice(0,24);
+  state.room=code;
+  await update(r,{game_type:'reverse-xi',room_code:code,status:'playing',players:{...d.players,B:{uid:uid(),name}}});
+  openRoom();
+  history.replaceState(null,'',location.pathname+'?room='+code)
+ }catch(e){toast('Odaya katılınamadı: '+e.message)}
+}
 async function validateIncomingGuess(data){
  if(data.phase!=='checking'||mySide()!==(data.currentSpeaker||'A')||!data.pendingGuess||state.validatingGuess===data.pendingGuess.id)return;
  state.validatingGuess=data.pendingGuess.id;
@@ -32,7 +59,7 @@ async function validateIncomingGuess(data){
 }
 function openRoom(){$('intro').hidden=true;$('game').hidden=false;$('room-label').textContent=state.room;if(state.off)state.off();state.off=onValue(roomRef(),s=>{if(!s.exists()){toast('Oda kapatıldı.');return}const data=s.val();renderRoom(data);validateIncomingGuess(data)})}
 async function getStream(){if(state.stream)return state.stream;state.stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});return state.stream}
-function recognize(){return new Promise(async(resolve,reject)=>{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){reject(new Error('speech'));return}const rec=new SR();rec.lang='en-US';rec.interimResults=false;rec.maxAlternatives=4;rec.onresult=e=>resolve([...e.results[0]].map(x=>x.transcript).sort((a,b)=>b.length-a.length)[0]);rec.onerror=()=>reject(new Error('recognition'));rec.start();state.speech=rec})}
+function recognize(){return new Promise(async(resolve,reject)=>{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){reject(new Error('speech'));return}const rec=new SR();rec.lang='tr-TR';rec.interimResults=false;rec.maxAlternatives=4;rec.onresult=e=>resolve([...e.results[0]].map(x=>x.transcript).sort((a,b)=>b.length-a.length)[0]);rec.onerror=()=>reject(new Error('recognition'));rec.start();state.speech=rec})}
 async function startManualRecording(mode){
  const stream=await getStream();
  if(!window.MediaRecorder)throw new Error('Bu tarayıcı ses kaydını desteklemiyor.');
@@ -49,10 +76,12 @@ async function startManualRecording(mode){
   state.recordingMode='';state.recorder=null;button.classList.remove('recording');button.textContent='🎙 KAYDI BAŞLAT';
   if(finishedMode==='name'){
    state.originalBlob=blob;
-   $('heard-name').textContent=state.transcript.trim()||'İsmi elle yazın';
+   const transcript=state.transcript.trim();
+   $('heard-name').textContent=transcript||'Ses çözümlenemedi';
    $('heard-result').hidden=false;$('record-name').hidden=true;
-   $('manual-name').value=state.transcript.trim();
-   if(!state.transcript.trim()){$('speech-fallback').hidden=false;$('manual-name').hidden=false;$('manual-name').focus()}
+   $('manual-name').value=transcript;
+   $('speech-fallback').hidden=false;$('manual-name').hidden=false;
+   if(!transcript)$('manual-name').focus()
   }else if(finishedMode==='imitation'){
    try{toast('Ses ters çevriliyor…');const reverse=await reverseBlob(blob);await update(roomRef(),{reverseImitation:reverse,phase:'guess',imitationBy:uid()})}
    catch(e){toast(e.message||'Ses işlenemedi.')}
@@ -62,7 +91,7 @@ async function startManualRecording(mode){
  if(mode==='name'){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(SR){
-   const speech=new SR();speech.lang='en-US';speech.interimResults=true;speech.continuous=true;speech.maxAlternatives=3;
+   const speech=new SR();speech.lang='tr-TR';speech.interimResults=true;speech.continuous=true;speech.maxAlternatives=3;
    speech.onresult=e=>{state.transcript=Array.from(e.results).map(r=>r[0]?.transcript||'').join(' ').trim()};
    speech.onerror=()=>{ $('speech-fallback').hidden=false;$('manual-name').hidden=false };
    state.speech=speech;try{speech.start()}catch{$('speech-fallback').hidden=false;$('manual-name').hidden=false}
@@ -78,16 +107,20 @@ function stopManualRecording(){
 async function reverseBlob(blob){const ctx=new AudioContext();const buffer=await ctx.decodeAudioData(await blob.arrayBuffer());const rate=22050,channels=1,length=Math.ceil(buffer.duration*rate),samples=new Float32Array(length);const src=buffer.getChannelData(0);for(let i=0;i<length;i++){const pos=i*(buffer.sampleRate/rate),lo=Math.floor(pos),hi=Math.min(src.length-1,lo+1),frac=pos-lo;samples[length-1-i]=src[lo]*(1-frac)+src[hi]*frac}const wav=encodeWav(samples,rate);await ctx.close();return blobData(wav)}
 function encodeWav(samples,rate){const b=new ArrayBuffer(44+samples.length*2),v=new DataView(b);const write=(o,s)=>[...s].forEach((c,i)=>v.setUint8(o+i,c.charCodeAt(0)));write(0,'RIFF');v.setUint32(4,36+samples.length*2,true);write(8,'WAVE');write(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,rate,true);v.setUint32(28,rate*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);write(36,'data');v.setUint32(40,samples.length*2,true);for(let i=0;i<samples.length;i++)v.setInt16(44+i*2,Math.max(-1,Math.min(1,samples[i]))*32767,true);return new Blob([b],{type:'audio/wav'})}
 function blobData(blob){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(blob)})}
-async function captureName(){const stream=await getStream();return new Promise((resolve,reject)=>{const mime=['audio/webm;codecs=opus','audio/mp4','audio/webm'].find(x=>MediaRecorder.isTypeSupported?.(x));const rec=new MediaRecorder(stream,mime?{mimeType:mime}:undefined);const parts=[];let transcript='',done=false;const finish=()=>{if(done)return;done=true;if(rec.state!=='inactive')rec.stop()};rec.ondataavailable=e=>{if(e.data.size)parts.push(e.data)};rec.onerror=()=>reject(new Error('Kayıt yapılamadı.'));rec.onstop=()=>resolve({blob:new Blob(parts,{type:rec.mimeType||'audio/webm'}),text:transcript});rec.start();const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(SR){const speech=new SR();speech.lang='en-US';speech.interimResults=false;speech.maxAlternatives=4;speech.onresult=e=>{transcript=[...e.results[0]].sort((a,b)=>b.confidence-a.confidence)[0].transcript;finish()};speech.onerror=()=>finish();try{speech.start()}catch{finish()}}else{$('speech-fallback').hidden=false;$('manual-name').hidden=false;toast('İsmi söyledikten sonra ekrandaki alana yaz.')}setTimeout(finish,8000)})}
+async function captureName(){const stream=await getStream();return new Promise((resolve,reject)=>{const mime=['audio/webm;codecs=opus','audio/mp4','audio/webm'].find(x=>MediaRecorder.isTypeSupported?.(x));const rec=new MediaRecorder(stream,mime?{mimeType:mime}:undefined);const parts=[];let transcript='',done=false;const finish=()=>{if(done)return;done=true;if(rec.state!=='inactive')rec.stop()};rec.ondataavailable=e=>{if(e.data.size)parts.push(e.data)};rec.onerror=()=>reject(new Error('Kayıt yapılamadı.'));rec.onstop=()=>resolve({blob:new Blob(parts,{type:rec.mimeType||'audio/webm'}),text:transcript});rec.start();const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(SR){const speech=new SR();speech.lang='tr-TR';speech.interimResults=false;speech.maxAlternatives=4;speech.onresult=e=>{transcript=[...e.results[0]].sort((a,b)=>b.confidence-a.confidence)[0].transcript;finish()};speech.onerror=()=>finish();try{speech.start()}catch{finish()}}else{$('speech-fallback').hidden=false;$('manual-name').hidden=false;toast('İsmi söyledikten sonra ekrandaki alana yaz.')}setTimeout(finish,8000)})}
 $('record-name').onclick=async()=>{try{if(state.recordingMode==='name'){stopManualRecording();return}if(state.recordingMode){toast('Önce devam eden kaydı durdur.');return}await startManualRecording('name')}catch(e){toast(e.message||'Mikrofon açılamadı.')}};
-$('confirm-name').onclick=async()=>{const name=$('manual-name').value.trim()||$('heard-name').textContent.trim();if(!name||name==='İsmi elle yazın'){toast('Futbolcu ismini yazıp tekrar onayla.');return}if(!state.originalBlob){toast('Ses kaydı bulunamadı. Tekrar kaydet.');return}try{const reverse=await reverseBlob(state.originalBlob);state.secretAnswer=name;localStorage.setItem('nxReverseXI:'+state.room+':'+uid(),name);await update(roomRef(),{reverseOriginal:reverse,phase:'imitate',answerBy:uid()});}catch(e){toast(e.message||'Ses işlenemedi.')}};
-$('retry-name').onclick=()=>{$('heard-result').hidden=true;$('record-name').hidden=false;$('manual-name').value=''};
+$('confirm-name').onclick=async()=>{const name=$('manual-name').value.trim();if(!name){toast('Futbolcu ismini yazıp onayla.');return}if(!state.originalBlob){toast('Ses kaydı bulunamadı. Tekrar kaydet.');return}try{const reverse=await reverseBlob(state.originalBlob);state.secretAnswer=name;localStorage.setItem('nxReverseXI:'+state.room+':'+uid(),name);await update(roomRef(),{reverseOriginal:reverse,phase:'imitate',answerBy:uid()});}catch(e){toast(e.message||'Ses işlenemedi.')}};
+$('retry-name').onclick=()=>{$('heard-result').hidden=true;$('record-name').hidden=false;$('manual-name').hidden=true;$('speech-fallback').hidden=true;$('manual-name').value='';state.transcript='';state.originalBlob=null};
 $('record-imitation').onclick=async()=>{try{if(state.recordingMode==='imitation'){stopManualRecording();return}if(state.recordingMode){toast('Önce devam eden kaydı durdur.');return}await startManualRecording('imitation')}catch(e){toast(e.message||'Mikrofon kullanılamadı.')}};
 $('send-guess').onclick=async()=>{const guess=$('guess-input').value.trim();if(!guess){toast('Tahminini yaz.');return}if(state.roomData?.phase!=='guess'){toast('Şu anda tahmin gönderilemez.');return}const guessId='g'+Date.now(),byName=mySide();try{await update(roomRef(),{pendingGuess:{id:guessId,guess,byName:byName||'Oyuncu',createdAt:Date.now()},phase:'checking'});$('guess-feedback').textContent='Cevap kontrol ediliyor…'}catch(e){toast('Tahmin gönderilemedi: '+e.message)}};
 $('next-turn').onclick=async()=>{const d=state.roomData;if(!d||d.phase!=='result')return;const next=d.currentSpeaker==='A'?'B':'A';localStorage.removeItem('nxReverseXI:'+state.room+':'+uid());state.secretAnswer='';await update(roomRef(),{currentSpeaker:next,turn:(d.turn||1)+1,phase:'speak',reverseOriginal:null,reverseImitation:null,lastResult:null,pendingGuess:null,answerBy:null,imitationBy:null})};
-$('create-room').onclick=createRoom;$('join-room').onclick=()=>joinRoom($('room-code').value);$('room-code').addEventListener('keydown',e=>{if(e.key==='Enter')joinRoom($('room-code').value)});$('copy-link').onclick=async()=>{const url=location.origin+location.pathname+'?room='+state.room;try{await navigator.clipboard.writeText(url);toast('Davet bağlantısı kopyalandı.')}catch{toast('Oda kodu: '+state.room)}};
+$('create-room').onclick=()=>createRoom();$('join-room').onclick=()=>joinRoom($('room-code').value);$('room-code').addEventListener('keydown',e=>{if(e.key==='Enter')joinRoom($('room-code').value)});$('copy-link').onclick=async()=>{const url=location.origin+location.pathname+'?room='+state.room;try{await navigator.clipboard.writeText(url);toast('Davet bağlantısı kopyalandı.')}catch{toast('Oda kodu: '+state.room)}};
 document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{state.mode=b.dataset.mode;document.querySelectorAll('[data-mode]').forEach(x=>x.classList.toggle('active',x===b));$('duel-start').hidden=state.mode!=='duel';$('solo-start').hidden=state.mode!=='solo'});
 $('start-solo').onclick=()=>toast('Solo AI modu sonraki geliştirme adımında etkinleştirilecek. Multiplayer çekirdeği hazırlandı.');
 window.addEventListener('beforeunload',()=>state.stream?.getTracks().forEach(t=>t.stop()));
 await ensureAuth().catch(e=>toast('Kimlik bağlantısı kurulamadı: '+e.message));
-const initial=new URLSearchParams(location.search).get('room');if(initial)joinRoom(initial);
+const startup=new URLSearchParams(location.search),initial=startup.get('room'),partyCode=startup.get('nxCode')||'',partyName=startup.get('nxName')||'NEON Oyuncu';
+if(startup.get('nxAuto')==='1'&&partyCode){
+ if(startup.get('nxRole')==='host')await createRoom(partyCode,partyName);
+ else await joinRoom(partyCode,partyName);
+}else if(initial)joinRoom(initial);

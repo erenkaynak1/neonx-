@@ -7,7 +7,8 @@ const MODES={
   draft:{label:'NEON XI Draft',path:'index.html',code:'alpha6',min:2,max:2,roomPath:code=>`rooms/${code}`},
   xox:{label:'Futbol XOX',path:'side-games/football-xox/index.html',code:'numeric4',min:2,max:2,roomPath:code=>`rooms/XOX-${code}`},
   twin:{label:'Kariyer İkizi',path:'side-games/career-twin/index.html',code:'numeric4',min:2,max:2,roomPath:code=>`rooms/CT-${code}`},
-  imposter:{label:'Futbol Imposter',path:'side-games/futbol-imposter.html',code:'alpha5',min:3,max:12,roomPath:code=>`rooms/IMP-${code}`}
+  imposter:{label:'Futbol Imposter',path:'side-games/futbol-imposter.html',code:'alpha5',min:3,max:12,roomPath:code=>`rooms/IMP-${code}`},
+  reverse:{label:'RE:VERSE',path:'side-games/reverse-xi/index.html',code:'alpha6',min:2,max:2,roomPath:code=>`reverseXI/rooms/${code}`}
 };
 const app=getApps().length?getApp():initializeApp(CONFIG),auth=getAuth(app),db=getDatabase(app),base=new URL('../',import.meta.url);
 const q=new URLSearchParams(location.search);
@@ -155,6 +156,7 @@ function roomReady(mode,room,user,code){
   if(mode==='twin')return room.gameType==='career-twin'&&room.status!=='closed'&&room.hostUid===user.uid;
   if(mode==='imposter')return room.game_type==='futbol-imposter'&&room.status!=='closed'&&String(room.room_code||'')===String(code);
   if(mode==='xox')return room.game_type==='football-xox'&&room.status!=='closed'&&String(room.room_code||'')===String(code);
+  if(mode==='reverse')return room.game_type==='reverse-xi'&&room.status!=='closed'&&room.hostUid===user.uid&&String(room.room_code||'')===String(code);
   return false;
 }
 
@@ -268,4 +270,4 @@ onAuthStateChanged(auth,async user=>{
   try{await acknowledgeArrival(user)}catch(e){console.warn('[NEON XI] broker ack skipped',e)}
 });
 
-window.NEON_PARTY_BROKER={version:'1.3',modes:Object.keys(MODES)};
+window.NEON_PARTY_BROKER={version:'1.4',modes:Object.keys(MODES)};

@@ -4,7 +4,7 @@ import {GoogleAuthProvider,getAuth,linkWithPopup,onAuthStateChanged,signInAnonym
 import {getDatabase,get,onDisconnect,onValue,ref,remove,runTransaction,serverTimestamp,set,update} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js';
 
 const CONFIG={apiKey:'AIzaSyBLpXHGGTHXykKrnu8_Hv1i71oc3tpTNvY',authDomain:'neonxi.firebaseapp.com',databaseURL:'https://neonxi-default-rtdb.europe-west1.firebasedatabase.app',projectId:'neonxi',storageBucket:'neonxi.firebasestorage.app',messagingSenderId:'667191549799',appId:'1:667191549799:web:1e40feacbee09ed7f3d9c2'};
-const MODES={draft:{label:'NEON XI Draft',path:'index.html',code:'alpha6',matchable:true},xox:{label:'Futbol XOX',path:'side-games/football-xox/index.html',code:'numeric4',matchable:true},twin:{label:'Career Twin',path:'side-games/career-twin/index.html',code:'numeric4',matchable:true},imposter:{label:'Futbol Imposter',path:'side-games/futbol-imposter.html',code:'alpha5',matchable:true,minParty:3,maxParty:12}};
+const MODES={draft:{label:'NEON XI Draft',path:'index.html',code:'alpha6',matchable:true},xox:{label:'Futbol XOX',path:'side-games/football-xox/index.html',code:'numeric4',matchable:true},twin:{label:'Career Twin',path:'side-games/career-twin/index.html',code:'numeric4',matchable:true},imposter:{label:'Futbol Imposter',path:'side-games/futbol-imposter.html',code:'alpha5',matchable:true,minParty:3,maxParty:12},reverse:{label:'RE:VERSE',path:'side-games/reverse-xi/index.html',code:'alpha6',matchable:false,minParty:2,maxParty:2}};
 const base=new URL('../',import.meta.url),app=getApps().length?getApp():initializeApp(CONFIG),auth=getAuth(app),db=getDatabase(app);
 const state={user:null,profile:null,friends:{},requests:{},invites:{},party:null,partyId:'',queueOff:null,partyOff:null,userOffs:[],friendOffs:[],presenceOff:null,presenceConnection:null,friendPresence:{},headToHead:{},weekly:{},allTime:{},launchNonce:'',tab:'play',preferredMode:'draft'};
 let statusEl,shade,button;
@@ -76,7 +76,7 @@ function render(tab=state.tab){
 }
 function renderPlay(){
   const v=shade.querySelector('[data-view="play"]');
-  v.innerHTML=`<div class="nx-social-choice"><button class="nx-social-btn primary" data-act="party-play">ARKADAŞLARINLA OYNA</button><button class="nx-social-btn" data-act="match">RAKİP ARA</button></div><div class="nx-social-card"><label class="nx-social-label">OYUN MODU</label><select class="nx-social-select" id="nxMode">${Object.entries(MODES).map(([k,m])=>`<option value="${k}" ${k===state.preferredMode?'selected':''}>${m.label}</option>`).join('')}</select></div>`;
+  v.innerHTML=`<div class="nx-social-choice"><button class="nx-social-btn primary" data-act="party-play">ARKADAŞLARINLA OYNA</button><button class="nx-social-btn" data-act="match">RAKİP ARA</button></div><div class="nx-social-card"><label class="nx-social-label">OYUN MODU</label><select class="nx-social-select" id="nxMode">${Object.entries(MODES).filter(([,m])=>m.matchable).map(([k,m])=>`<option value="${k}" ${k===state.preferredMode?'selected':''}>${m.label}</option>`).join('')}</select></div>`;
   v.querySelector('[data-act="party-play"]').onclick=()=>{if(!requireProfile())return;render('party')};v.querySelector('[data-act="match"]').onclick=()=>startMatch(v.querySelector('#nxMode').value);v.querySelector('#nxMode').onchange=e=>{state.preferredMode=e.target.value};
 }
 function renderFriends(){
