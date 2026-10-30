@@ -44,7 +44,7 @@ h1{margin:0;font:900 clamp(34px,9.3vw,66px)/.92 'Orbitron',sans-serif;letter-spa
 .icon{position:relative;z-index:1;width:72px;aspect-ratio:1;border:1px solid rgba(var(--card-accent),.72);clip-path:polygon(24% 0,76% 0,100% 24%,100% 76%,76% 100%,24% 100%,0 76%,0 24%);display:grid;place-items:center;color:rgb(var(--card-accent));background:radial-gradient(circle,rgba(var(--card-accent),.13),rgba(0,8,5,.94) 69%);box-shadow:inset 0 0 22px rgba(var(--card-accent),.12);text-shadow:0 0 13px rgba(var(--card-accent),.58)}
 .icon svg{width:39px;height:39px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}.icon.word{font:900 27px/1 'Orbitron',sans-serif}
 .copy{position:relative;z-index:1;min-width:0}.tag{margin-bottom:5px;color:rgb(var(--card-accent));font:700 9px/1 'Orbitron',sans-serif;letter-spacing:.16em}.game h2{margin:0 0 5px;font:800 clamp(17px,4.8vw,24px)/1 'Orbitron',sans-serif;letter-spacing:-.02em}.game p{margin:0;color:#a6b89f;font-size:13px;line-height:1.25}.launch{display:inline-flex;align-items:center;gap:7px;margin-top:9px;color:#d9ff68;font:700 10px/1 'Orbitron',sans-serif;letter-spacing:.08em}.launch span{transition:transform .18s ease}.game:hover .launch span{transform:translateX(4px)}
-.game.xox{--card-accent:200,255,49}.game.twin{--card-accent:178,255,64}.game.imposter{--card-accent:213,255,70}.game.wordle{--card-accent:230,255,80}
+.game.xox{--card-accent:200,255,49}.game.twin{--card-accent:178,255,64}.game.imposter{--card-accent:213,255,70}.game.wordle{--card-accent:230,255,80}.game.reverse{--card-accent:128,223,255}
 .bottom-rail{position:relative;display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:13px;padding:12px 15px;border:1px solid var(--line-soft);border-radius:17px;background:rgba(3,14,9,.72);color:#90a384;font-size:11px;letter-spacing:.09em}.system-live{display:flex;align-items:center;gap:8px;color:#cfff52;font-weight:700}.system-live i{display:block;width:7px;height:7px;border-radius:50%;background:var(--lime);box-shadow:0 0 12px var(--lime);animation:livePulse 1.9s ease-in-out infinite}
 @keyframes cardSweep{0%{left:-38%;opacity:0}20%{opacity:.85}100%{left:126%;opacity:0}}
 @keyframes livePulse{0%,100%{opacity:.55;transform:scale(.84)}50%{opacity:1;transform:scale(1.15)}}
@@ -109,9 +109,15 @@ h1{margin:0;font:900 clamp(34px,9.3vw,66px)/.92 'Orbitron',sans-serif;letter-spa
         <span class="icon word" aria-hidden="true">W</span>
         <span class="copy"><span class="tag">HARF TAHMİNİ · YENİ</span><h2>FOOTBALL WORDLE</h2><p>Serbest harf girişiyle gizli futbolcu adını adım adım çöz.</p><span class="launch">OYNA <span>›</span></span></span>
       </a>
+
+      <a class="game reverse" href="./reverse-xi/index.html">
+        <span class="game-no">05</span>
+        <span class="icon word" aria-hidden="true">R↶</span>
+        <span class="copy"><span class="tag">SES TAKLİDİ · YENİ</span><h2>REVERSE XI</h2><p>Futbolcu ismini ters dinle, taklit et ve rakibinin tahminini çöz.</p><span class="launch">OYNA <span>›</span></span></span>
+      </a>
     </div>
 
-    <div class="bottom-rail"><span class="system-live"><i></i> NEON GAMES ONLINE</span><span>4 OYUN AKTİF</span></div>
+    <div class="bottom-rail"><span class="system-live"><i></i> NEON GAMES ONLINE</span><span>5 OYUN AKTİF</span></div>
   </section>
 </main>
 <script type="module" src="../social/neon-social.js?v=20260928-home-identical-nav-v6"></script>
