@@ -1,7 +1,7 @@
 (() => {
   "use strict";
   const HOME_CLASS="nx-approved-home-v1";
-  const VERSION="20260929-muted-ice-v3";
+  const VERSION="20261030-social-play-entry-v1";
   const css=`
 #bootScreen:has(#bootHome.nx-approved-home-v1.active) .bootGlow,
 #bootScreen:has(#bootHome.nx-approved-home-v1.active) .bootBrand{display:none!important}
@@ -148,7 +148,7 @@
       </g>
     </svg>`;
     const status=document.createElement('div');status.className='nx-approved-status';status.setAttribute('role','status');
-    const actions={single:()=>clickTarget(single,status,'Tek Oyunculu'),bot:()=>clickTarget(bot,status,'Bota Karşı'),online:()=>clickTarget(online,status,'Online'),tournament:()=>clickTarget(tournament,status,'Turnuva'),settings:()=>clickTarget(settings,status,'Ayarlar'),friends:()=>openSocial('friends',status),profile:()=>openSocial('friends',status),notifications:()=>openSocial('invites',status),home:()=>home.scrollTo({top:0,behavior:'smooth'}),play:()=>{const scaledTop=stage.clientWidth*(405/853);home.scrollTo({top:Math.max(0,scaledTop-12),behavior:'smooth'});}};
+    const actions={single:()=>clickTarget(single,status,'Tek Oyunculu'),bot:()=>clickTarget(bot,status,'Bota Karşı'),online:()=>clickTarget(online,status,'Online'),tournament:()=>clickTarget(tournament,status,'Turnuva'),settings:()=>clickTarget(settings,status,'Ayarlar'),friends:()=>openSocial('friends',status),profile:()=>openSocial('friends',status),notifications:()=>openSocial('invites',status),home:()=>home.scrollTo({top:0,behavior:'smooth'}),play:()=>openSocial('play',status)};
     const selectNav=action=>{
       stage.querySelectorAll('.nx-home-nav .nx-hotspot').forEach(n=>{
         if(n.dataset.action===action)n.setAttribute('aria-current','page');
