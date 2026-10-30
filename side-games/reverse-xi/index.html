@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#020705"><title>REVERSE XI — NEON XI</title>
+<link rel="stylesheet" href="./reverse-xi.css?v=1">
+</head>
+<body>
+<main class="wrap">
+<header><a class="back" href="../index.html" aria-label="Geri">‹</a><div class="brand"><small>NEON XI · ARCADE</small><h1>REVERSE <b>XI</b></h1></div><span class="live">● LIVE</span></header>
+<section class="intro" id="intro"><div class="eyebrow">SESİNİ TERSİNE ÇEVİR</div><h2>DUY. TAKLİT ET.<br><em>TAHMİN ET.</em></h2><p>Bir futbolcu ismi söyle. Rakibin ters sesini taklit etsin. Son hâlini dinleyip futbolcuyu bul.</p>
+<div class="mode-grid"><button class="mode active" data-mode="duel"><strong>1 VS 1</strong><span>Arkadaşınla oyna</span></button><button class="mode" data-mode="solo"><strong>SOLO AI</strong><span>Tek başına oyna</span></button></div>
+<div id="duel-start" class="start-card"><label>ODA KODU</label><div class="join-row"><input id="room-code" maxlength="6" placeholder="6 haneli kod" autocomplete="off"><button id="join-room" class="btn secondary">KATIL</button></div><button id="create-room" class="btn primary">YENİ ODA OLUŞTUR</button><p class="hint">Oda oluştur, kodu arkadaşınla paylaş veya onun kodunu gir.</p></div>
+<div id="solo-start" class="start-card" hidden><p class="hint">Solo modda yapay zekâ gizli bir futbolcu belirler. Tarayıcının ses ve konuşma tanıma desteğine bağlı olarak bazı adımlar sınırlı olabilir.</p><button id="start-solo" class="btn primary">SOLO OYUNA BAŞLA</button></div>
+</section>
+<section id="game" hidden>
+<div class="room-bar"><span>ODA <b id="room-label">------</b></span><button id="copy-link" class="small-btn">DAVET LİNKİNİ KOPYALA</button></div>
+<div class="players"><div class="player" id="player-a"><small>OYUNCU A</small><strong id="name-a">Bekleniyor…</strong></div><div class="versus">VS</div><div class="player" id="player-b"><small>OYUNCU B</small><strong id="name-b">Bekleniyor…</strong></div></div>
+<div class="step"><span id="step-no">TUR 1</span><b id="step-title">Rakip bekleniyor</b><p id="step-desc">İkinci oyuncu odaya katıldığında oyun başlayacak.</p></div>
+<div id="speaker-panel" class="action-panel" hidden><div class="panel-icon">🎙</div><h3>Futbolcuyu söyle</h3><p>İstediğin futbolcunun adını normal şekilde söyle. Sistem duyduğunu yazıya dökecek.</p><button id="record-name" class="btn primary">İSMİ KAYDET</button><div id="heard-result" class="heard" hidden><strong id="heard-name"></strong><p>Doğru anladım mı?</p><div class="two"><button id="confirm-name" class="btn primary">EVET, DEVAM ET</button><button id="retry-name" class="btn secondary">TEKRAR SÖYLE</button></div></div><p class="hint" id="speech-fallback" hidden>Konuşma tanıma desteklenmiyor. İsmi yazıp onaylayabilirsin.</p><input id="manual-name" class="manual" placeholder="Futbolcu ismi (gerekirse)" hidden></div>
+<div id="listen-panel" class="action-panel" hidden><div class="panel-icon">◖))</div><h3>Ters sesi dinle</h3><p>Dinle, aklında tut ve duyduğun sesi taklit et.</p><audio id="reverse-audio" controls></audio><button id="record-imitation" class="btn primary">TAKLİDİMİ KAYDET</button></div>
+<div id="guess-panel" class="action-panel" hidden><div class="panel-icon">⌁</div><h3>Tahminini yaz</h3><p>Son sesin hangi futbolcuya ait olduğunu düşünüyorsun?</p><audio id="final-audio" controls></audio><div class="join-row"><input id="guess-input" placeholder="Futbolcunun adı"><button id="send-guess" class="btn primary">GÖNDER</button></div><div id="guess-feedback" class="feedback" aria-live="polite"></div></div>
+<div id="result-panel" class="action-panel" hidden><div class="panel-icon">✦</div><h3 id="result-title">Tur tamamlandı</h3><p id="result-copy"></p><button id="next-turn" class="btn primary">SONRAKİ TUR</button></div>
+<div id="waiting-panel" class="action-panel" hidden><div class="panel-icon">◌</div><h3>Rakip oynuyor</h3><p>Rakibinin hamlesi tamamlanınca burada görünecek.</p></div>
+<div class="chat-log" id="chat-log"><div class="chat-title">TAHMİN KAYITLARI</div><div id="chat-lines" class="chat-lines"><span class="hint">Henüz tahmin yok.</span></div></div>
+</section>
+<div id="toast" role="status"></div>
+</main>
+<script type="module" src="./reverse-xi.js?v=1"></script>
+</body></html>
