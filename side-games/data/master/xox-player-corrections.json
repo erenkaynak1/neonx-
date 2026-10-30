@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "players": {
+    "397033": {
+      "currentClub": "Tottenham Hotspur",
+      "clubs": [
+        "Tottenham Hotspur",
+        "Newcastle United",
+        "AC Milan"
+      ],
+      "source_url": "https://www.tottenhamhotspur.com/player/432422/sandro-tonali/biography",
+      "verified_at": "2026-10-30"
+    }
+  }
+}
