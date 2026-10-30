@@ -1,0 +1,75 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-10-30T21:58:43.462Z",
+  "provider": "dcaribou/transfermarkt-datasets",
+  "provider_revision": "e44f186d6f06dd8452aaf54c7921ba66c961f637",
+  "source_snapshot_at": "2026-10-30T20:50:06.439883+00:00",
+  "source_cutoff": "2026-06-28",
+  "latest_season": 2025,
+  "player_count": 49563,
+  "position_counts": {
+    "Goalkeeper": 5828,
+    "Defender": 15961,
+    "Midfield": 14272,
+    "Attack": 13502
+  },
+  "metric_coverage": {
+    "Goalkeeper": {
+      "internationalGoals": 2251,
+      "internationalCaps": 2251,
+      "careerGoals": 2259,
+      "careerAssists": 2259,
+      "careerAppearances": 2259,
+      "clubCount": 2259,
+      "heightCm": 5278,
+      "age": 5819,
+      "peakValue": 4604
+    },
+    "Defender": {
+      "internationalGoals": 6193,
+      "internationalCaps": 6193,
+      "careerGoals": 9098,
+      "careerAssists": 9098,
+      "careerAppearances": 9098,
+      "clubCount": 9098,
+      "heightCm": 14646,
+      "age": 15951,
+      "peakValue": 13411
+    },
+    "Midfield": {
+      "internationalGoals": 5551,
+      "internationalCaps": 5551,
+      "careerGoals": 8510,
+      "careerAssists": 8510,
+      "careerAppearances": 8510,
+      "clubCount": 8510,
+      "heightCm": 13059,
+      "age": 14257,
+      "peakValue": 12015
+    },
+    "Attack": {
+      "internationalGoals": 5247,
+      "internationalCaps": 5247,
+      "careerGoals": 8534,
+      "careerAssists": 8534,
+      "careerAppearances": 8534,
+      "clubCount": 8534,
+      "heightCm": 12506,
+      "age": 13492,
+      "peakValue": 11369
+    }
+  },
+  "selection_policy": "Every source player with a supported on-field position and a name is included. Missing stats remain unavailable.",
+  "files": {
+    "Goalkeeper": "players-goalkeeper.json",
+    "Defender": "players-defender.json",
+    "Midfield": "players-midfield.json",
+    "Attack": "players-attack.json"
+  },
+  "corrections_file": "side-games/en11/data/corrections.json",
+  "verified_corrections": 0,
+  "disabled_metrics": {
+    "trophies": "The source does not provide a verified trophy table.",
+    "debutAge": "The source does not provide the first senior national-team appearance date."
+  }
+}
