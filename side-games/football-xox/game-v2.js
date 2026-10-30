@@ -52,6 +52,10 @@
       copy.appendChild(E('small','menuModeDescription',description));grid.appendChild(button);
     }
     panel.append(title,grid);app.appendChild(panel);
+    const how=E('section','howPanel');how.setAttribute('aria-label','Nasıl oynanır');
+    const ball=E('div','howBall','?'),copy=E('div','howCopy');
+    const howTitle=E('h2','howTitle','NASIL OYNANIR?'),howText=E('p','howText','Her karede satır ve sütun koşullarını karşılayan futbolcuyu seç. Üç kareyi sıraya diz ve kazan.');
+    copy.append(howTitle,howText);how.append(ball,copy);app.appendChild(how);
   }
   function renderCreate(){S.screen='menu';renderMenu();if(S.error)app.appendChild(E('div','error',esc(S.error)))}
 function renderJoin(){S.screen='menu';renderMenu();if(S.error)app.appendChild(E('div','error',esc(S.error)))}
