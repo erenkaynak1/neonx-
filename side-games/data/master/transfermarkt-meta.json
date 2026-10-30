@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-10-26T10:18:41.684045+00:00",
+  "generated_at": "2026-10-30T20:50:06.439883+00:00",
   "provider": "dcaribou/transfermarkt-datasets",
   "provider_revision": "e44f186d6f06dd8452aaf54c7921ba66c961f637",
   "dataset_url": "https://pub-e682421888d945d684bcae8890b0ec20.r2.dev/data/transfermarkt-datasets.duckdb",
