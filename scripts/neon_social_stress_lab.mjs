@@ -66,7 +66,7 @@ async function befriend(a,b){await Promise.all([call(a,'sendFriend',b.uid,b.user
 const browser=await chromium.launch({headless:true});let a,b,c,cloneA,fatal=null;
 try{
   a=await makeBot(browser,'a');b=await makeBot(browser,'b');c=await makeBot(browser,'c');
-  await scenario('Üç bağımsız Firebase misafir oturumu',async()=>{const ids=await Promise.all([signIn(a),signIn(b),signIn(c)]);assert.equal(new Set(ids.map(x=>x.uid)).size,3);return ids});
+  await scenario('Üç bağımsız Firebase misafir oturumu',async()=>{const ids=[];for(const bot of [a,b,c])ids.push(await signIn(bot));assert.equal(new Set(ids.map(x=>x.uid)).size,3);return ids});
 
   await scenario('Karşılıklı eşzamanlı arkadaşlık isteği tek arkadaşlığa yakınsar',async()=>{await befriend(a,b);const [da,db]=await Promise.all([diag(a),diag(b)]);assert.equal(Object.keys(da.requests).length,0);assert.equal(Object.keys(db.requests).length,0);return {aFriends:Object.keys(da.friends).length,bFriends:Object.keys(db.friends).length}});
 
