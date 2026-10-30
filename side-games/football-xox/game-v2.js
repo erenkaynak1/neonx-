@@ -1,0 +1,158 @@
+'use strict';
+(() => {
+  const GAME_TYPE='football-xox';
+  const app=document.getElementById('app');
+  let PLAYERS=[],SEARCH_ROWS=[],BY_ID=new Map(),CONDITION_IDS=new Map(),PAIR_CACHE=new Map(),RULES=null;
+  let RT=null,room=null,unsubRoom=null,unsubActions=null,pollTimer=null,syncBusy=false;
+  const processedActions=new Set();
+  const S={screen:'boot',mode:null,role:null,name:'',code:'',error:'',game:null,selected:null,search:'',guestName:'',clientId:(window.NXArcadeRealtime?.makeId?.()||('nx-'+Date.now().toString(36)+Math.random().toString(36).slice(2)))};
+  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
+  const E=(tag,cls,html)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(html!==undefined)e.innerHTML=html;return e};
+  const B=(txt,primary,fn)=>{const b=E('button','btn'+(primary?' primary':''),esc(txt));b.type='button';b.onclick=fn;return b};
+  const newBoardButton=(primary,fn)=>{const b=B('YENİ TAHTA',primary,fn);b.classList.add('newBoardBtn');return b};
+  const MENU_ICONS={
+    gamepad:'<path d="M7.5 7.5h9c2.7 0 4.2 1.8 4.7 4.6l.6 3.2c.4 2.4-2.2 3.8-3.8 2l-2.1-2.2H8.1L6 17.3c-1.6 1.8-4.2.4-3.8-2l.6-3.2c.5-2.8 2-4.6 4.7-4.6Z"/><path d="M7.1 10.1v4M5.1 12.1h4M16.8 10.8h.01M18.7 13h.01"/>',
+    mobile:'<rect x="6.3" y="2.2" width="11.4" height="19.6" rx="1.8"/><path d="M10 4h4M10.6 19.3h2.8"/>',
+    home:'<path d="m3 11.2 9-8 9 8M5.3 9.8v10.4h5v-6.3h3.4v6.3h5V9.8M3.6 20.2h16.8"/>',
+    users:'<circle cx="12" cy="7.1" r="3.1"/><circle cx="5.2" cy="9.2" r="2.3"/><circle cx="18.8" cy="9.2" r="2.3"/><path d="M7.1 20.5v-3.3c0-3.2 2-5.2 4.9-5.2s4.9 2 4.9 5.2v3.3H7.1ZM7 13.5a4.6 4.6 0 0 0-5 4.7v2.3h5M17 13.5a4.6 4.6 0 0 1 5 4.7v2.3h-5"/>',
+    chevron:'<path d="m8 4 8 8-8 8"/>',
+    ball:'<circle cx="12" cy="12" r="9.2"/><path d="m12 7.2 3.3 2.4-1.2 3.9H9.9L8.7 9.6 12 7.2ZM12 7.2V2.8M15.3 9.6l4.2-1.5M14.1 13.5l2.6 3.6M9.9 13.5l-2.6 3.6M8.7 9.6 4.5 8.1M7.3 17.1l-3.7.2M16.7 17.1l3.7.2"/>',
+    trophy:'<path d="M7.5 3.2h9v5.2c0 4-1.8 6.2-4.5 6.2S7.5 12.4 7.5 8.4V3.2ZM7.5 5H3.8v2.3c0 2.5 1.5 4.1 4.2 4.5M16.5 5h3.7v2.3c0 2.5-1.5 4.1-4.2 4.5M12 14.6v4.1M8.2 21h7.6M9.4 18.7h5.2"/>',
+    info:'<circle cx="12" cy="12" r="9.3"/><path d="M12 10.3v6.2M12 7.2h.01"/>',
+    settings:'<circle cx="12" cy="12" r="3.2"/><path d="M9.4 3.3 10 1.8h4l.6 1.5 1.8.8 1.5-.7 2.8 2.8-.7 1.5.8 1.8 1.5.6v4l-1.5.6-.8 1.8.7 1.5-2.8 2.8-1.5-.7-1.8.8-.6 1.5h-4l-.6-1.5-1.8-.8-1.5.7-2.8-2.8.7-1.5-.8-1.8-1.5-.6v-4l1.5-.6.8-1.8-.7-1.5 2.8-2.8 1.5.7 1.8-.8Z"/>'
+  };
+  function menuIcon(name,cls){const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('class',cls||'menuIcon');svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('aria-hidden','true');svg.setAttribute('focusable','false');svg.innerHTML=MENU_ICONS[name]||'';return svg}
+  function modeButton(label,iconName,primary,fn){const b=E('button','menuMode'+(primary?' isPrimary':'')),inside=E('span','menuModeInside'),iconBox=E('span','menuModeIcon'),copy=E('span','menuModeCopy',esc(label)),arrow=E('span','menuModeArrow');b.type='button';b.setAttribute('aria-label',label);b.onclick=fn;iconBox.appendChild(menuIcon(iconName));arrow.appendChild(menuIcon('chevron'));inside.append(iconBox,copy,arrow);b.appendChild(inside);return b}
+  const norm=s=>String(s||'').toLocaleLowerCase('tr-TR').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  const markName=m=>m==='X'?'OYUNCU 1':'OYUNCU 2';
+
+  function shell(){app.innerHTML='';const top=E('div','top topbar'),back=E('a','back'),copy=E('span','backCopy','YAN OYUNLAR');back.href='../index.html';back.setAttribute('aria-label','Yan oyunlara dön');back.append(menuIcon('gamepad','backIcon'),copy);top.append(back);app.appendChild(top)}
+  function brand(sub='İki koşulu aynı anda sağlayan futbolcuyu bul.'){const h=E('section','hero brand');h.innerHTML='<div class="eyebrow">NEON XI · SIDE GAME</div><h1>FUTBOL <span>XOX</span></h1><div class="desc subtitle">'+esc(sub)+'</div>';app.appendChild(h)}
+  function field(label,placeholder,value,max){const w=E('div','fieldWrap');w.appendChild(E('div','label',esc(label)));const i=E('input','field');i.placeholder=placeholder;i.value=value||'';if(max)i.maxLength=max;w.appendChild(i);return[w,i]}
+  function render(){window.scrollTo(0,0);document.body.dataset.ctScreen=S.screen;document.body.dataset.ctRole=S.role||'';document.body.dataset.xoxTurn=S.game?.turn||'';shell();if(S.screen==='boot')return renderBoot();if(S.screen==='menu')return renderMenu();if(S.screen==='create')return renderCreate();if(S.screen==='join')return renderJoin();if(S.screen==='lobby')return renderLobby();if(S.screen==='game'){reportOnlineResult(S.game);return renderGame()}}
+  function renderBoot(){brand('Oyuncu havuzu ve online sistem yükleniyor…');app.appendChild(E('div','card center','<div class="spinner"></div><div class="hint">NEON XI gerçek zamanlı oda servisi hazırlanıyor.</div>'))}
+  function renderMenu(){
+    // Menu-only presentation; existing local/social/matchmaking handlers stay shared.
+    app.querySelector('.topbar')?.remove();
+    const logo=E('div','xoxMenuLogo');
+    logo.innerHTML='<div class="xoxLogoArt"><img src="../../assets/neon-xi-logo-outline.png" alt="NEON XI"></div><span>SIDE GAME</span>';
+    app.appendChild(logo);
+    brand();
+    const motif=E('img','xoxMenuMotif');
+    motif.src='./assets/xox-grid-approved-v3.webp';motif.alt='';motif.setAttribute('aria-hidden','true');app.appendChild(motif);
+    const panel=E('section','menuPanel'),title=E('h2','menuPanelTitle','OYUN MODU'),grid=E('div','modeGrid');
+    panel.setAttribute('aria-label','Oyun modu seç');
+    const modes=[
+      ['TEK TELEFON','mobile','Aynı ekranda karşılaşın',startLocal],
+      ['ARKADAŞLARINLA OYNA','users','Arkadaşına meydan oku',()=>window.NEON_ARCADE_UI?.choose('xox','friends')],
+      ['RAKİP ARA','gamepad','Çevrimiçi bir rakiple eşleş',()=>window.NEON_ARCADE_UI?.choose('xox','match')]
+    ];
+    for(const [label,icon,description,action] of modes){
+      const button=modeButton(label,icon,false,action),copy=button.querySelector('.menuModeCopy');
+      copy.appendChild(E('small','menuModeDescription',description));grid.appendChild(button);
+    }
+    panel.append(title,grid);app.appendChild(panel);
+  }
+  function renderCreate(){S.screen='menu';renderMenu();if(S.error)app.appendChild(E('div','error',esc(S.error)))}
+function renderJoin(){S.screen='menu';renderMenu();if(S.error)app.appendChild(E('div','error',esc(S.error)))}
+function renderLobby(){const auto=new URLSearchParams(location.search).get('nxAuto')==='1';brand(auto?'Parti maçı hazırlanıyor…':(S.role==='host'?'Oda hazır · rakip bekleniyor':'Odaya bağlanılıyor…'));const c=E('div','card center');if(auto)c.append(E('div','label','OTOMATİK PARTİ BAĞLANTISI'),E('div','spinner'),E('div','hint',S.role==='host'?'Oda arka planda kuruldu. Parti arkadaşın bağlanınca oyun başlayacak.':'Parti liderinin odasına otomatik bağlanılıyor…'));else c.append(E('div','label','ODA KODU'),E('div','code',esc(S.code)),E('div','spinner'),E('div','hint',S.role==='host'?'Kodu arkadaşına gönder. Katılınca oyun otomatik başlayacak.':'Merkezi lobi servisine bağlanılıyor…'));app.appendChild(c);if(S.error)app.appendChild(E('div','error',esc(S.error)))}
+
+  function condLabel(c){return c.type==='club'?'KULÜP':c.type==='league'?'LİG':'MİLLİYET'}
+  function matches(p,c){if(c.type==='nationality')return p.nationality===c.value;if(c.type==='club')return (p.clubs||[]).includes(c.value);if(c.type==='league')return (p.leagues||[]).includes(c.value);return false}
+  function conditionKey(c){return c.type+':'+c.value}
+  function addCondition(c,id){const key=conditionKey(c);if(!CONDITION_IDS.has(key))CONDITION_IDS.set(key,new Set());CONDITION_IDS.get(key).add(id)}
+  function buildIndexes(){CONDITION_IDS=new Map();PAIR_CACHE=new Map();SEARCH_ROWS=PLAYERS.map(player=>({player,name:norm(player.name)}));PLAYERS.forEach(player=>{if(player.nationality)addCondition({type:'nationality',value:player.nationality},player.id);(player.clubs||[]).forEach(value=>addCondition({type:'club',value},player.id));(player.leagues||[]).forEach(value=>addCondition({type:'league',value},player.id))})}
+  function validPair(a,b){if(a.type==='nationality'&&b.type==='nationality')return false;if(a.type===b.type&&a.value===b.value)return false;const ak=conditionKey(a),bk=conditionKey(b),cacheKey=ak<bk?ak+'|'+bk:bk+'|'+ak;if(PAIR_CACHE.has(cacheKey))return PAIR_CACHE.get(cacheKey);const as=CONDITION_IDS.get(ak),bs=CONDITION_IDS.get(bk);let valid=false;if(as&&bs){const small=as.size<=bs.size?as:bs,large=small===as?bs:as;for(const id of small){if(large.has(id)){valid=true;break}}}PAIR_CACHE.set(cacheKey,valid);return valid}
+  function allConditions(){const clubs=Object.values(RULES.clubs||{}).flat().map(value=>({type:'club',value}));const n=(RULES.nationalities||[]).map(value=>({type:'nationality',value}));const l=(RULES.leagues||[]).map(value=>({type:'league',value}));return [...clubs,...n,...l]}
+  function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+  function generateChallenge(){const pool=allConditions();for(let attempt=0;attempt<500;attempt++){const rows=shuffle(pool).slice(0,3);if(new Set(rows.map(x=>x.type+':'+x.value)).size<3)continue;const possible=shuffle(pool).filter(c=>rows.every(r=>validPair(r,c)));const cols=[];for(const c of possible){if(cols.some(x=>x.type===c.type&&x.value===c.value))continue;cols.push(c);if(cols.length===3)break}if(cols.length===3)return{rows,cols}}throw new Error('Geçerli XOX tahtası üretilemedi')}
+  const reportedResults=new Set();
+  function newGame(){return{challenge:generateChallenge(),turn:'X',board:Array(9).fill(null),used:[],over:false,winner:null,notice:'Boş bir hücreye dokun ve futbolcu ara.',matchRound:`${Date.now()}_${Math.random().toString(36).slice(2,7)}`,revision:1}}
+  function reportOnlineResult(g){const q=new URLSearchParams(location.search),baseMatch=q.get('nxMatch');if(S.mode!=='online'||!g?.over||!baseMatch)return;const matchId=`${baseMatch}:${g.matchRound||'board1'}`;if(reportedResults.has(matchId))return;reportedResults.add(matchId);const ownMark=S.role==='host'?'X':'O',result=!g.winner?'draws':g.winner===ownMark?'wins':'losses';document.dispatchEvent(new CustomEvent('neon-match-result',{detail:{matchId,opponentUid:q.get('nxOpponent')||'',mode:'xox',result}}))}
+  function startLocal(){cleanup();S.mode='local';S.role='local';S.screen='game';S.game=newGame();S.error='';render()}
+
+  async function getRT(){if(RT)return RT;if(!window.NXArcadeRealtime?.ready)throw new Error('realtime-loader');RT=await window.NXArcadeRealtime.ready;return RT}
+  function stopWatch(){try{unsubRoom&&unsubRoom()}catch{}try{unsubActions&&unsubActions()}catch{}unsubRoom=unsubActions=null;if(pollTimer){clearInterval(pollTimer);pollTimer=null}processedActions.clear()}
+  function cleanup(){stopWatch();room=null;syncBusy=false}
+  const roomCode=()=>String(Math.floor(1000+Math.random()*9000));
+  function roomState(){return{game:S.game,hostName:S.role==='host'?S.name:(room?.state?.hostName||''),guestName:S.role==='guest'?S.name:(S.guestName||room?.state?.guestName||'')}}
+  async function pushState(status){if(S.mode!=='online'||S.role!=='host'||!room)return;const rt=await getRT();const nextRev=Number(room.revision||0)+1;const updated=await rt.updateRoom(room.id,{state:roomState(),status:status||((S.game&&S.screen==='game')?'playing':'waiting'),revision:nextRev,expires_ms:Date.now()+3*60*60*1000});room=rt.decodeRoom(updated)}
+  function applyRoom(raw){if(!raw)return;const r=RT.decodeRoom(raw);room=r;const members=Array.isArray(r.members)?r.members:[];const host=members.find(m=>m.role==='host')||members[0];const guest=members.find(m=>m.role==='guest')||members.find(m=>m.id!==host?.id);if(host?.name&&S.role==='guest')room.state.hostName=host.name;if(guest?.name){S.guestName=guest.name;room.state.guestName=guest.name}const backendGame=r.state?.game||null;if(backendGame){S.game=backendGame;if(S.screen!=='game'){S.screen='game';render();return}render()}else if(S.role==='host'&&members.length>=2&&!syncBusy){syncBusy=true;S.game=newGame();S.screen='game';pushState('playing').then(()=>{syncBusy=false;render()}).catch(e=>{syncBusy=false;S.error='Oyun başlatılamadı.';console.error(e);render()})}}
+  async function processActionRecord(rec){if(!rec||processedActions.has(rec.id))return;processedActions.add(rec.id);const a=RT.decodeAction(rec);if(S.role!=='host'||!room)return;const action=a.action||{};try{if(action.type==='attempt')processAttempt(Number(action.cell),Number(action.playerId),'O');else if(action.type==='pass')passTurn('O');else if(action.type==='resign')resignGame('O');else if(action.type==='newBoard'&&S.game?.over)resetOnline();await RT.deleteAction(rec.id)}catch(e){console.warn('XOX action',e)}}
+  async function pollBackend(){if(!room||syncBusy)return;syncBusy=true;try{const latest=await RT.findRoom(GAME_TYPE,S.code);if(latest)applyRoom(latest);if(S.role==='host'&&room){const acts=await RT.listActions(room.id,0);for(const rec of acts)await processActionRecord(rec)}}catch(e){console.warn('XOX poll',e)}finally{syncBusy=false}}
+  function watchRoom(){stopWatch();unsubRoom=RT.subscribeRoom(room.id,ev=>{if(ev.type==='delete'){S.error='Oda kapatıldı.';S.screen='lobby';S.game=null;render();return}applyRoom(ev.data)});if(S.role==='host')unsubActions=RT.subscribeActions(room.id,ev=>processActionRecord(ev.data));pollTimer=setInterval(pollBackend,2200)}
+  async function createRoom(name,forcedCode=''){if(!name){S.error='Önce adını yaz.';render();return}cleanup();S.mode='online';S.role='host';S.name=name;S.screen='lobby';S.error='';render();try{const rt=await getRT();let created=null,code='';for(let i=0;i<(forcedCode?1:12)&&!created;i++){code=forcedCode||roomCode();try{created=await rt.createRoom({gameType:GAME_TYPE,code,ownerId:S.clientId,members:[{id:S.clientId,name,role:'host'}],state:{game:null,hostName:name,guestName:''}})}catch(e){if(!forcedCode&&String(e?.message||e).includes('room-code-in-use'))continue;throw e}}if(!created)throw new Error('room-code');S.code=code;room=rt.decodeRoom(created);watchRoom();render()}catch(e){console.error(e);cleanup();S.error='Oda kurulamadı. Online servis bağlantısını kontrol edip tekrar dene.';S.screen='create';render()}}
+  async function joinRoom(code,name){if(!/^\d{4}$/.test(code)){S.error='4 haneli oda kodu gir.';render();return}if(!name){S.error='Önce adını yaz.';render();return}cleanup();S.mode='online';S.role='guest';S.name=name;S.code=code;S.screen='lobby';S.error='';render();try{const rt=await getRT();const found=await rt.findRoom(GAME_TYPE,code);if(!found)throw new Error('not-found');room=rt.decodeRoom(found);const members=Array.isArray(room.members)?room.members.slice():[];if(room.status!=='waiting'||members.some(m=>m.role==='guest'))throw new Error('full');members.push({id:S.clientId,name,role:'guest'});const state={...(room.state||{}),guestName:name};const updated=await rt.updateRoom(room.id,{members,state,status:'playing',revision:Number(room.revision||0)+1,expires_ms:Date.now()+3*60*60*1000});room=rt.decodeRoom(updated);watchRoom();await rt.sendAction({roomId:room.id,roomCode:code,gameType:GAME_TYPE,senderId:S.clientId,action:{type:'join',name}});applyRoom(updated);render()}catch(e){console.error(e);cleanup();S.error=String(e?.message||e).includes('full')?'Bu oda dolu veya oyun başlamış.':'Oda bulunamadı ya da online servise bağlanılamadı.';S.screen='join';render()}}
+  async function sendGuestAction(action){if(!room)return;try{await RT.sendAction({roomId:room.id,roomCode:S.code,gameType:GAME_TYPE,senderId:S.clientId,action})}catch(e){S.error='Hamle gönderilemedi. Tekrar dene.';render()}}
+  function broadcast(){if(S.mode==='online'&&S.role==='host')pushState(S.game?.over?'finished':'playing').catch(e=>console.warn('XOX sync',e))}
+  function resetOnline(){if(S.role!=='host')return;S.game=newGame();broadcast();render()}
+
+  function canAct(){if(!S.game||S.game.over)return false;if(S.mode==='local')return true;return (S.role==='host'&&S.game.turn==='X')||(S.role==='guest'&&S.game.turn==='O')}
+  function ownMark(){return S.mode==='local'?(S.game?.turn||'X'):(S.role==='guest'?'O':'X')}
+  function canResign(){return !!S.game&&!S.game.over&&(S.mode==='local'||S.role==='host'||S.role==='guest')}
+  function passTurn(mark){const g=S.game;if(!g||g.over||g.turn!==mark)return;g.notice='↠ '+markName(mark)+' turu pas geçti.';g.turn=mark==='X'?'O':'X';g.revision++;broadcast();render()}
+  function resignGame(mark){const g=S.game;if(!g||g.over)return;g.over=true;g.winner=mark==='X'?'O':'X';g.notice='⚑ '+markName(mark)+' pes etti.';g.revision++;broadcast();render()}
+  function requestPass(){if(!canAct())return;const mark=S.game.turn;if(S.mode==='online'&&S.role==='guest'){sendGuestAction({type:'pass'});return}passTurn(mark)}
+  function requestResign(){if(!canResign())return;const mark=ownMark();if(S.mode==='online'&&S.role==='guest'){sendGuestAction({type:'resign'});return}resignGame(mark)}
+  function openCell(i){if(!canAct()||S.game.board[i])return;S.selected=i;S.search='';renderPicker()}
+  function renderPicker(){const i=S.selected;if(i===null||i===undefined)return;const g=S.game,r=Math.floor(i/3),c=i%3,a=g.challenge.rows[r],b=g.challenge.cols[c];const modal=E('div','modal show');modal.id='pickerModal';const sh=E('div','sheet');sh.innerHTML='<div class="sheetTop"><div><div class="sheetTitle">FUTBOLCU SEÇ</div><div class="condition">'+esc(a.value)+' + '+esc(b.value)+'</div></div><button class="close" type="button">✕</button></div>';const inp=E('input','field');inp.placeholder='Futbolcu adını yaz…';inp.autocomplete='off';const box=E('div','results');inp.oninput=()=>{S.search=inp.value;fillSearch(box)};sh.querySelector('.close').onclick=()=>modal.remove();sh.append(inp,box);modal.appendChild(sh);document.body.appendChild(modal);fillSearch(box);setTimeout(()=>inp.focus(),80)}
+  function fillSearch(box){box.innerHTML='';const q=norm(S.search.trim());if(!q){box.appendChild(E('div','nores','İsim yazınca eşleşen futbolcular burada görünür.'));return}const used=new Set(S.game.used||[]);let arr=SEARCH_ROWS.filter(row=>!used.has(row.player.id)&&row.name.includes(q));arr.sort((a,b)=>(b.name.startsWith(q)?1:0)-(a.name.startsWith(q)?1:0)+(b.player.recognitionScore||0)-(a.player.recognitionScore||0));arr=arr.slice(0,14).map(row=>row.player);if(!arr.length){box.appendChild(E('div','nores','Eşleşen futbolcu bulunamadı.'));return}arr.forEach(p=>{const b=E('button','result');b.type='button';b.innerHTML='<b>'+esc(p.name)+'</b><span>'+esc(p.nationality||'')+'</span>';b.onclick=()=>submitPlayer(p.id);box.appendChild(b)})}
+  function submitPlayer(id){if(S.selected===null||S.selected===undefined)return;const modal=document.getElementById('pickerModal');if(S.mode==='online'&&S.role==='guest'){sendGuestAction({type:'attempt',cell:S.selected,playerId:id});S.selected=null;if(modal)modal.remove();return}processAttempt(S.selected,id,S.game.turn);S.selected=null;if(modal)modal.remove()}
+  function processAttempt(cell,id,mark){const g=S.game;if(!g||g.over||g.turn!==mark||g.board[cell]||g.used.includes(id))return;const p=BY_ID.get(id);if(!p)return;const r=Math.floor(cell/3),c=cell%3,ok=matches(p,g.challenge.rows[r])&&matches(p,g.challenge.cols[c]);if(ok){g.board[cell]={mark,player:p.name,playerId:p.id};g.used.push(p.id);g.notice='✓ '+p.name+' doğru cevap.';const w=winnerLine(g.board);if(w){g.over=true;g.winner=mark}else if(g.board.every(Boolean)){g.over=true;g.winner=null}else g.turn=mark==='X'?'O':'X'}else{g.notice='✕ '+p.name+' bu iki koşulu birlikte sağlamıyor. Sıra rakibe geçti.';g.turn=mark==='X'?'O':'X'}g.revision++;broadcast();render()}
+  function winnerLine(board){const lines=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];return lines.find(l=>board[l[0]]&&board[l[0]].mark===board[l[1]]?.mark&&board[l[0]].mark===board[l[2]]?.mark)||null}
+
+  let revealedAnswerRound = null;
+  function remainingAnswers(g, cell) {
+    if (!g?.over || g.board[cell]) return [];
+    const used = new Set((g.used || []).map(Number));
+    g.board.forEach(entry => { if (entry) used.add(Number(entry.playerId)); });
+    const row = g.challenge.rows[Math.floor(cell / 3)], col = g.challenge.cols[cell % 3];
+    return PLAYERS.filter(player => !used.has(Number(player.id)) && matches(player, row) && matches(player, col))
+      .sort((a, b) => (b.recognitionScore || 0) - (a.recognitionScore || 0) || a.name.localeCompare(b.name, 'tr'));
+  }
+  function appendAnswerReview(container, g) {
+    if (!g.over) return;
+    const empty = g.board.map((entry, cell) => entry ? -1 : cell).filter(cell => cell >= 0);
+    if (!empty.length) {
+      container.appendChild(E('div', 'hint', 'Tüm kutular dolu; gösterilecek boş kutu yok.'));
+      return;
+    }
+    const round = g.matchRound || JSON.stringify(g.challenge);
+    const panel = E('section', 'answerReview');
+    panel.id = 'xoxAnswers';
+    panel.hidden = revealedAnswerRound !== round;
+    const toggle = B(panel.hidden ? 'Cevapları Gör' : 'Cevapları Gizle', false, () => {
+      panel.hidden = !panel.hidden;
+      revealedAnswerRound = panel.hidden ? null : round;
+      toggle.textContent = panel.hidden ? 'Cevapları Gör' : 'Cevapları Gizle';
+      toggle.setAttribute('aria-expanded', String(!panel.hidden));
+      if (!panel.hidden && !panel.childElementCount) fill();
+    });
+    toggle.setAttribute('aria-controls', panel.id);
+    toggle.setAttribute('aria-expanded', String(!panel.hidden));
+    function fill() {
+      panel.appendChild(E('p', 'hint', 'Boş kutular için kullanılmamış futbolcular. Her kutunun seçenekleri ayrı gösterilir; aynı futbolcu yalnızca bir kez oynanabilir.'));
+      empty.forEach(cell => {
+        const row = Math.floor(cell / 3), col = cell % 3;
+        const players = remainingAnswers(g, cell);
+        const group = E('details', 'answerGroup');
+        const summary = E('summary', '', esc((row + 1) + '. satır · ' + (col + 1) + '. sütun — ' + g.challenge.rows[row].value + ' × ' + g.challenge.cols[col].value + ' (' + players.length + ')'));
+        group.appendChild(summary);
+        if (!players.length) group.appendChild(E('p', 'hint', 'Oyuncu havuzunda kullanılmamış uygun futbolcu kalmadı.'));
+        else {
+          const list = E('ul', 'answerNames');
+          players.forEach(player => list.appendChild(E('li', '', esc(player.name))));
+          group.appendChild(list);
+        }
+        panel.appendChild(group);
+      });
+    }
+    if (!panel.hidden) fill();
+    container.append(toggle, panel);
+  }
+
+  function renderGame(){brand(S.mode==='online'?'ONLINE MAÇ':'TEK TELEFON · SIRAYLA OYNA');const g=S.game;if(!g){app.appendChild(E('div','card center','<div class="spinner"></div>'));return}const score=E('div','scorebar');const hostName=S.role==='host'?S.name:(room?.state?.hostName||'Oyuncu 1');const guestName=S.role==='guest'?S.name:(S.guestName||room?.state?.guestName||'Oyuncu 2');const left=S.mode==='online'?hostName:'Oyuncu 1';const right=S.mode==='online'?guestName:'Oyuncu 2';score.innerHTML='<div class="playerBox"><div class="mark x">X</div><div>'+esc(left)+'</div></div><div class="turn" aria-label="'+esc(markName(g.turn))+' sırası"><span class="turnLine"></span></div><div class="playerBox right"><div class="mark o">O</div><div>'+esc(right)+'</div></div>';app.appendChild(score);const wrap=E('section','boardWrap'),grid=E('div','grid');grid.appendChild(E('div','corner','<span class="turnGlyph turnX">X</span><span class="turnGlyph turnO">O</span>'));g.challenge.cols.forEach(c=>grid.appendChild(E('div','head','<div><small>'+condLabel(c)+'</small>'+esc(c.value)+'</div>')));for(let r=0;r<3;r++){const rc=g.challenge.rows[r];grid.appendChild(E('div','head','<div><small>'+condLabel(rc)+'</small>'+esc(rc.value)+'</div>'));for(let c=0;c<3;c++){const i=r*3+c,b=g.board[i],cell=E('button',b?'cell claimed '+b.mark.toLowerCase():'cell');cell.type='button';cell.disabled=!!b||g.over||!canAct();cell.innerHTML=b?'<span class="cellMark">'+b.mark+'</span><span class="cellName">'+esc(b.player)+'</span>':'<span class="emptyHint">＋</span>';cell.onclick=()=>openCell(i);grid.appendChild(cell)}}wrap.appendChild(grid);app.appendChild(wrap);window.NX_XOX_BOARD?.(grid,g,g.over&&g.winner?winnerLine(g.board):null);if(!g.over){const actions=E('div','actionBar');const pass=B('TURU PAS GEÇ',false,requestPass),resign=B('PES ET',false,requestResign);pass.classList.add('actionBtn','passAction');resign.classList.add('actionBtn','resignAction');pass.disabled=!canAct();resign.disabled=!canResign();actions.append(pass,resign);app.appendChild(actions)}app.appendChild(E('div','status '+(g.notice.startsWith('✓')?'good':g.notice.startsWith('✕')?'bad':''),esc(g.notice)));if(S.mode==='online'&&!canAct()&&!g.over)app.appendChild(E('div','waitBox','Rakibin sırası…'));if(S.error)app.appendChild(E('div','error',esc(S.error)));if(g.over){const c=E('div','card center');c.innerHTML='<div class="label">MAÇ BİTTİ</div><div class="winTitle">'+(g.winner?(g.winner==='X'?'OYUNCU 1':'OYUNCU 2')+' KAZANDI':'BERABERE')+'</div>';appendAnswerReview(c,g);if(S.mode==='local'||S.role==='host')c.appendChild(newBoardButton(true,()=>S.mode==='local'?(S.game=newGame(),render()):resetOnline()));else c.appendChild(E('div','hint','Oda sahibinin yeni tahta başlatması bekleniyor.'));app.appendChild(c)}else if(S.mode==='local')app.appendChild(newBoardButton(false,()=>{S.game=newGame();render()}));else if(S.role==='host')app.appendChild(newBoardButton(false,()=>{S.game=newGame();broadcast();render()}))}
+
+  async function init(){render();try{const [pr,rr,rt]=await Promise.all([fetch('../data/master/xox-players.json',{cache:'no-store'}),fetch('../data/master/xox-rules.json',{cache:'no-store'}),getRT()]);if(!pr.ok||!rr.ok||!rt)throw new Error('data');PLAYERS=(await pr.json()).filter(p=>p&&p.id&&p.name);RULES=await rr.json();BY_ID=new Map(PLAYERS.map(p=>[Number(p.id),p]));buildIndexes();if(PLAYERS.length<100)throw new Error('small');S.screen='menu';render();const q=new URLSearchParams(location.search);if(q.get('nxAuto')==='1'){const name=String(q.get('nxName')||'NEON Oyuncu').slice(0,24),code=String(q.get('nxCode')||'');if(q.get('nxRole')==='host')await createRoom(name,code);else{S.screen='lobby';S.name=name;S.code=code;render();for(let i=0;i<20;i++){const found=await rt.findRoom(GAME_TYPE,code);if(found){await joinRoom(code,name);break}await new Promise(r=>setTimeout(r,500))}}}}catch(e){console.error(e);shell();brand('Online servis veya oyuncu havuzu yüklenemedi');app.appendChild(E('div','card center','<div class="error">Bağlantı kurulamadı. Sayfayı yenileyip tekrar dene.</div>'))}}
+  window.addEventListener('beforeunload',()=>{stopWatch()});init();
+})();

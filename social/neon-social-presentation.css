@@ -1,0 +1,95 @@
+/* Approved September social references: slate surfaces, restrained lime/cyan accents. */
+.nx-ui-icon{display:inline-block;flex:none;width:22px;height:22px;background:currentColor;mask:var(--nx-icon) center/contain no-repeat;-webkit-mask:var(--nx-icon) center/contain no-repeat;vertical-align:middle;pointer-events:none}
+.nx-social-shade.nx-social-shade{align-items:center;padding:18px;background:rgba(1,5,9,.66);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px)}
+.nx-social-shade .nx-social-panel{box-sizing:border-box;width:min(100%,520px);max-height:calc(100dvh - 36px);padding:22px;border:1px solid #52778d;border-radius:18px;background:#09131c;color:#eff4fa;box-shadow:0 24px 90px #000b,inset 0 1px 1px #a1ddff40;transform:translateY(12px) scale(.98);transition:transform .24s cubic-bezier(.2,.8,.2,1);font-family:Inter,system-ui,sans-serif;scrollbar-width:thin;scrollbar-color:#375066 transparent}
+.nx-social-shade.open .nx-social-panel{transform:none}
+.nx-social-panel .nx-social-brand{display:flex;gap:13px;align-items:center}
+.nx-social-brand>.nx-ui-icon{width:35px;height:35px;color:#baff35;filter:drop-shadow(0 0 7px #baff3533)}
+.nx-social-brand span>small{display:block;color:#a5c7df;font-size:9px;letter-spacing:.32em;font-weight:700;margin-bottom:3px}
+.nx-social-panel .nx-social-brand strong{display:block;font-size:25px;letter-spacing:-.03em;line-height:1.15;color:#f4f7fb}
+.nx-social-panel .nx-social-close{display:grid;place-items:center;width:40px;height:40px;border:1px solid #39566a;border-radius:10px;background:#10202c;color:#dceaf6;cursor:pointer}
+.nx-social-panel .nx-social-tabs{gap:0;border:1px solid #2d4559;border-radius:12px;overflow:hidden;margin:20px 0 0;background:#0e1a24}
+.nx-social-panel .nx-social-tabs button{display:flex;align-items:center;justify-content:center;gap:7px;min-height:46px;border:0;border-bottom:3px solid transparent;border-radius:0;background:transparent;color:#a9c5dd;font-size:12px;font-weight:650}
+.nx-social-panel .nx-social-tabs button .nx-ui-icon{width:21px;height:21px}
+.nx-social-panel .nx-social-tabs button.active{background:#1b2d22;border-bottom-color:#baff35;color:#d5ff75;box-shadow:inset 0 1px 0 #baff3530}
+.nx-auth-welcome{text-align:center;padding:20px 3px 0}
+.nx-auth-emblem{width:88px;height:88px;margin:0 auto 12px;display:grid;place-items:center;border:1px solid #518baa;border-radius:50%;background:#0f2533;box-shadow:0 0 0 7px #0c1b26,inset 0 0 24px #01070c,0 0 26px #79c8ff16;color:#bdff37}
+.nx-auth-emblem .nx-ui-icon{width:47px;height:47px;filter:drop-shadow(0 0 9px #baff3555)}
+.nx-auth-welcome h2{margin:0 0 7px;color:#f3f6fa;font-size:clamp(21px,3.8vw,27px);letter-spacing:-.035em;line-height:1.2;font-weight:750}
+.nx-auth-intro{margin:0 0 21px;color:#94b5d0;font-size:14px;line-height:1.5}
+.nx-auth-welcome .nx-social-btn{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;min-height:54px;border-radius:11px;font-size:16px;font-weight:700;white-space:normal;padding:10px 12px;line-height:1.25}
+.nx-auth-welcome .nx-auth-google{background:#edf4fb;color:#0b1421;border:1px solid white;box-shadow:0 3px 16px #b0dfff12}
+.nx-auth-welcome .nx-auth-guest{background:#0c1822;border:1px solid #75b2ce;color:#edf4fb}
+.nx-auth-note{color:#95b7d2;font-size:12px;line-height:1.5;margin:10px 0 0}
+.nx-auth-divider{display:flex;align-items:center;gap:15px;color:#91afc8;font-size:12px;margin:17px 0}
+.nx-auth-divider::before,.nx-auth-divider::after{content:'';height:1px;background:#30495c;flex:1}
+.nx-social-panel .nx-social-status:empty{display:none}
+.nx-social-panel .nx-social-status{color:#a2c4de;font-size:12px;line-height:1.5;margin:13px 3px 0}
+.nx-social-panel .nx-social-status.error{color:#ffa8bc}
+.nx-social-panel .nx-social-card{background:#101e29;border-color:#293d4b}
+.nx-social-panel .nx-social-input,.nx-social-panel .nx-social-select{background:#0b1721;border-color:#355064;color:#f1f6fa}
+.nx-social-panel .nx-social-muted{color:#9cb2c5}
+.nx-social-panel button{transition:transform .12s ease,box-shadow .18s ease,border-color .18s ease,background-color .18s ease;touch-action:manipulation}
+.nx-social-panel button:active:not(:disabled){transform:scale(.975);box-shadow:0 0 16px #baff3538}
+.nx-social-panel button:focus-visible{outline:2px solid #92def9;outline-offset:3px}
+.nx-social-panel button:disabled{opacity:.55;cursor:wait}
+.nx-social-panel button[aria-busy=true]{animation:nxAuthBusy 1s ease-in-out infinite}
+@keyframes nxAuthBusy{50%{opacity:.4}}
+/* An extra layer selector intentionally wins over the older embedded drawer theme. */
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-social-drawer{top:11.7%;bottom:8.8%;width:70%;max-width:380px;min-width:260px;border:1px solid #506a80;border-left:0;border-radius:0 20px 20px 0;background:#0b1720;box-shadow:14px 8px 50px #0009,inset 0 1px 0 #c2e6ff22;color:#eff4f9;font-family:Inter,system-ui,sans-serif}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-social-drawer-scrim{background:#02091138;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-drawer-head{grid-template-columns:29px 1fr 36px;padding:18px 15px 12px;gap:11px;background:none;border:0}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-drawer-head-icon{width:29px;height:32px;border:0;border-radius:0;background:none;box-shadow:none;color:#bbff37}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-drawer-head-icon .nx-ui-icon{width:29px;height:29px}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-drawer-title{font-size:23px!important;letter-spacing:-.025em;font-weight:750;color:#f2f6fa;text-shadow:none}
+.nx-drawer-heading{display:grid;gap:2px}.nx-drawer-subtitle{font-size:11px;color:#809db5}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-drawer-close{width:36px;height:36px;border:1px solid #3e586a;border-radius:50%;color:#b7cfe1;background:transparent}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-drawer-tabs{padding:0;gap:0;margin:0 14px 12px;border-bottom:1px solid #314657}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-drawer-tab{display:flex;gap:5px;align-items:center;justify-content:center;min-height:44px;border:0;border-bottom:2px solid transparent;border-radius:10px 10px 0 0;background:transparent;color:#aac3d8;font-size:11px;font-weight:650;letter-spacing:0}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-drawer-tab .nx-ui-icon{width:17px;height:17px}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-drawer-tab.active{background:#192b24;border-bottom-color:#baff35;color:#e4f4d5;box-shadow:none}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-drawer-body{padding:0 14px 16px;scrollbar-color:#3f596e transparent;overscroll-behavior:contain}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-drawer-search{grid-template-columns:minmax(0,1fr) 42px;margin:3px 0 18px;gap:8px}
+.nx-drawer-search-field{display:flex;gap:8px;align-items:center;min-width:0;padding-left:10px;background:#11202b;border:1px solid #304959;border-radius:10px;color:#9ebed8}
+.nx-drawer-search-field .nx-ui-icon{width:19px;height:19px}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-drawer-search input{width:100%;height:42px;border:0;background:transparent;padding:0 7px 0 0;color:#eef6ff;font-size:13px}
+.nx-drawer-search-field:focus-within{outline:2px solid #91d8ee;outline-offset:2px}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-drawer-search button{height:44px;background:#baff35;border:1px solid #caff68;color:#13220b;box-shadow:0 0 15px #baff351c}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-drawer-section{margin-top:18px}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-drawer-section-title{font-size:11px;letter-spacing:.025em;color:#dce8f1;padding:0 2px 9px;gap:8px;font-weight:650}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-drawer-dot{background:#859fb6;box-shadow:none;width:7px;height:7px}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-drawer-dot.online{background:#35ea9a;box-shadow:0 0 8px #35ea9a40}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-drawer-list{gap:0}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-drawer-friend-row{border:0;border-bottom:1px solid #203440;border-radius:0;background:transparent}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-drawer-friend-main{grid-template-columns:38px minmax(0,1fr) 36px;padding:11px 3px;gap:10px}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-drawer-avatar{width:36px;height:36px;border:1px solid #779db7;border-radius:50%;background:#10202b;color:#a3c5df;font-size:17px;font-weight:700}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-drawer-friend-copy{gap:4px}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-drawer-friend-copy b{color:#eef4fb;font-size:13px;font-weight:650}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-drawer-presence{color:#88a8bf;font-size:10px;font-weight:450}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-drawer-presence.online{color:#5ee4ad}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-drawer-more{width:36px;height:40px;font-size:17px;color:#a0bcd3}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-drawer-empty{padding:13px 10px;background:#10202a;border:1px solid #253d4b;border-radius:10px;color:#91aec4;font-size:11px;line-height:1.5;text-align:left}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-drawer-action{font-size:10px;min-height:40px;border-color:#3b5262;background:#14242e;color:#c2d9e9}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-drawer-action.danger{color:#ffa2b8;border-color:#65404c}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-drawer-invite{padding:12px;background:#10202a;border-color:#2d4657}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-drawer-invite b{font-size:13px}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-drawer-invite p{font-size:11px;color:#a0bbcf}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-drawer-invite-actions button{min-height:40px;font-size:11px}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-drawer-status{font-size:11px;background:#10202b;color:#c0d8e8;border-color:#3d5a6b}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer button{touch-action:manipulation;transition:transform .12s ease,box-shadow .18s ease,border-color .18s ease}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer button:active:not(:disabled){transform:scale(.96);box-shadow:0 0 13px #baff3544}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer button:focus-visible{outline:2px solid #8ed8ed;outline-offset:2px}
+@media(hover:hover){.nx-social-panel button:hover:not(:disabled){box-shadow:0 0 13px #86cfff25}#bootHome.nx-approved-home-v1 .nx-social-drawer-layer button:hover:not(:disabled){box-shadow:0 0 12px #8ee7ff20}}
+@media(max-width:560px){#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-social-drawer{width:82%;max-width:340px;min-width:0}.nx-social-shade .nx-social-panel{padding:18px;border-radius:17px}.nx-social-panel .nx-social-tabs button{font-size:10px;gap:4px}.nx-social-panel .nx-social-tabs button .nx-ui-icon{width:18px;height:18px}.nx-auth-intro{font-size:12px}.nx-auth-welcome .nx-social-btn{font-size:14px}.nx-auth-note{font-size:11px}}
+@media(max-height:640px){.nx-auth-emblem{width:56px;height:56px;margin-bottom:10px}.nx-auth-emblem .nx-ui-icon{width:32px;height:32px}.nx-auth-welcome{padding-top:14px}.nx-auth-intro{margin-bottom:14px}.nx-auth-divider{margin:12px 0}}
+@media(prefers-reduced-motion:reduce){.nx-social-shade,.nx-social-shade .nx-social-panel,.nx-social-panel button,#bootHome.nx-approved-home-v1 .nx-social-drawer-layer,#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-social-drawer,#bootHome.nx-approved-home-v1 .nx-social-drawer-layer button{transition:none!important;animation:none!important}.nx-social-panel button[aria-busy=true]{animation:none}}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-lobby-hero,#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-drawer-party{background:#10212c;border-color:#304c60;padding:12px;border-radius:12px}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-lobby-hero-top strong,#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-drawer-party-top strong{font-size:12px;color:#dceafa}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-lobby-code,#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-lobby-hint{font-size:10px;color:#98b7d0}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-lobby-mode select{font-size:12px;min-height:42px;background:#0b1721;border-color:#3a5669;color:#e7f3fc}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-lobby-launch,#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-lobby-ready,#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-drawer-party-open,#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-drawer-party-leave{min-height:42px;font-size:11px}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-lobby-member b,#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-lobby-invite-row b{font-size:12px}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-lobby-member small,#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-lobby-invite-row small,#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-lobby-state{font-size:10px}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-lobby-invite-row button,#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-lobby-kick{min-height:36px;font-size:10px}
+#bootHome.nx-approved-home-v1 .nx-social-drawer-layer .nx-drawer-section-title{text-transform:none;font-size:12px;letter-spacing:0}
+.nx-drawer-total{display:inline-grid;place-items:center;min-width:24px;height:19px;padding:0 5px;border-radius:10px;background:#1c2f3b;color:#b8d4e9;font-size:10px;margin-left:3px}

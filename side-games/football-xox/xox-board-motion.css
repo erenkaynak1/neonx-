@@ -1,0 +1,31 @@
+/* Quiet metallic board with a single outline per cell. */
+body[data-ct-screen="game"] .boardWrap{clip-path:none;border:1px solid #35433d!important;border-radius:18px!important;background:linear-gradient(145deg,#1b2120,#090d0c);padding:10px;filter:none}
+body[data-ct-screen="game"] .boardWrap::before,body[data-ct-screen="game"] .boardWrap::after{display:none}
+body[data-ct-screen="game"] .grid{position:relative}
+body[data-ct-screen="game"] .cell{--claim:#75f73c;clip-path:none;border:1px solid #34423b!important;border-radius:10px!important;background:linear-gradient(145deg,#202725,#101614);isolation:isolate}
+body[data-ct-screen="game"] .cell::before{display:none}
+body[data-ct-screen="game"] .cell::after{content:"";position:absolute;inset:0;clip-path:none;border:0;opacity:1;background:linear-gradient(145deg,color-mix(in srgb,var(--claim) 38%,#121916),color-mix(in srgb,var(--claim) 16%,#080e0b));transform:scaleY(0);transform-origin:bottom;z-index:0}
+body[data-ct-screen="game"] .cell.claimed.o{--claim:#27dce6}
+body[data-ct-screen="game"] .cell.claimed{background:#111916;border-color:color-mix(in srgb,var(--claim) 65%,#26352c)!important}
+body[data-ct-screen="game"] .cell.claimed::after{transform:scaleY(1)}
+body[data-ct-screen="game"] .cell.claim-enter::after{animation:xox-fill .55s cubic-bezier(.2,.75,.2,1) both}
+body[data-ct-screen="game"] .cell.claim-enter .cellName{animation:xox-name .45s .12s both}
+body[data-ct-screen="game"] .cell.winning-cell{box-shadow:inset 0 0 18px color-mix(in srgb,var(--claim) 22%,transparent)}
+body[data-ct-screen="game"] .cell:focus-visible{outline:2px solid #d0ffa8;outline-offset:-4px}
+body[data-ct-screen="game"] .cellName{max-width:94%;line-height:1.15}
+body[data-ct-screen="game"] .emptyHint{color:#6d8978;text-shadow:none;font-size:4.5cqw}
+body[data-ct-screen="game"] .head,body[data-ct-screen="game"] .corner{clip-path:none;border-radius:8px!important;background:#111b16;border:1px solid #304136!important}
+body[data-ct-screen="game"] .head::before,body[data-ct-screen="game"] .corner::before{display:none}
+.win-stroke{position:absolute;inset:0;width:100%;height:100%;z-index:5;pointer-events:none;overflow:visible;color:#9cff60;filter:drop-shadow(0 0 5px currentColor)}
+.win-stroke.o{color:#67f3ff}
+.win-stroke line{stroke:currentColor;stroke-width:4;stroke-linecap:round;vector-effect:non-scaling-stroke;stroke-dasharray:1;stroke-dashoffset:0}
+.win-stroke.win-enter line{animation:xox-line .7s .48s cubic-bezier(.3,.7,.2,1) both}
+@keyframes xox-fill{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes xox-name{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes xox-line{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+@media(prefers-reduced-motion:reduce){body[data-ct-screen="game"] .cell.claim-enter::after,body[data-ct-screen="game"] .cell.claim-enter .cellName,.win-stroke.win-enter line{animation:none}}
+/* Replace the legacy sweep, including its animation on every re-render. */
+body[data-ct-screen="game"] .cell.claimed{animation:none!important}
+body[data-ct-screen="game"] .cell.claimed::after{inset:0;background:linear-gradient(145deg,color-mix(in srgb,var(--claim) 38%,#121916),color-mix(in srgb,var(--claim) 16%,#080e0b));animation:none}
+body[data-ct-screen="game"] .cell.claimed.claim-enter::after{animation:xox-fill .55s cubic-bezier(.2,.75,.2,1) both}
+@media(prefers-reduced-motion:reduce){body[data-ct-screen="game"] .cell.claimed.claim-enter::after{animation:none!important}}

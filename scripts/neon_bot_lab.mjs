@@ -1,0 +1,180 @@
+import { chromium } from 'playwright';
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+
+const BASE_URL=process.env.NEON_BASE_URL||'http://127.0.0.1:4173/index.html';
+const OUT_DIR=process.env.NEON_BOT_OUT||'artifacts/neon-bot-lab';
+const TIMEOUT=Number(process.env.NEON_BOT_TIMEOUT||45000);
+const runToken=`${Date.now().toString(36)}${Math.random().toString(36).slice(2,6)}`.slice(-10);
+const HOME_READY='#bootHome.nx-approved-home-v1 .nx-home-map';
+const FRIENDS_ENTRY='#bootHome.nx-approved-home-v1 .nx-hotspot[data-action="friends"]';
+async function beginGuestOnPage(page){
+  const entry=page.locator('#nxEntry [data-entry-action="guest"]');
+  if(await entry.count()){
+    await page.waitForFunction(()=>{
+      const gate=document.getElementById('nxEntry');
+      return Boolean(gate&&!gate.hidden&&gate.dataset.phase==='welcome');
+    },null,{timeout:TIMEOUT});
+    await entry.click();
+    await page.locator('.nx-social-shade.open .nx-social-view.active #nxUsername').waitFor({state:'visible',timeout:TIMEOUT});
+    return;
+  }
+  await page.locator(FRIENDS_ENTRY).click();
+  const active=page.locator('.nx-social-shade.open .nx-social-view.active');
+  await active.locator('[data-act="guest-login"]').click();
+}
+await fs.mkdir(OUT_DIR,{recursive:true});
+
+const report={runToken,baseUrl:BASE_URL,startedAt:new Date().toISOString(),scenarios:[],bots:[],observations:[]};
+const safeName=v=>String(v||'artifact').replace(/[^a-zA-Z0-9_-]+/g,'_');
+
+async function shot(page,name){try{await page.screenshot({path:path.join(OUT_DIR,`${safeName(name)}.png`),fullPage:true})}catch{}}
+async function scenario(name,fn,pages=[]){
+  const started=Date.now();
+  try{const detail=await fn();report.scenarios.push({name,status:'PASS',durationMs:Date.now()-started,detail:detail||null});console.log(`PASS  ${name}`);return detail}
+  catch(error){report.scenarios.push({name,status:'FAIL',durationMs:Date.now()-started,error:String(error?.stack||error)});console.error(`FAIL  ${name}\n${error?.stack||error}`);await Promise.all(pages.map((p,i)=>shot(p,`FAIL-${name}-${i+1}`)));throw error}
+}
+
+async function makeBot(browser,label){
+  const username=`nxbot${runToken}${label}`.slice(0,20);
+  const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,locale:'tr-TR'});
+  await context.tracing.start({screenshots:true,snapshots:true,sources:true});
+  const page=await context.newPage();page.setDefaultTimeout(TIMEOUT);
+  const bot={label,username,context,page,uid:'',pageErrors:[],consoleErrors:[]};
+  page.on('pageerror',e=>bot.pageErrors.push(String(e?.stack||e)));
+  page.on('console',m=>{if(m.type()==='error')bot.consoleErrors.push(m.text())});
+  await page.goto(BASE_URL,{waitUntil:'domcontentloaded',timeout:TIMEOUT});
+  await page.waitForSelector(HOME_READY,{timeout:TIMEOUT});
+  return bot;
+}
+
+async function guestSignIn(bot){
+  const {page,username}=bot;
+  await beginGuestOnPage(page);
+  const active=page.locator('.nx-social-shade.open .nx-social-view.active');
+  
+  const input=active.locator('#nxUsername');await input.waitFor({state:'visible'});await input.fill(username);await active.locator('[data-act="claim"]').click();
+  await page.waitForFunction(name=>document.body.textContent.includes(`@${name}`),username,{timeout:TIMEOUT});
+  await page.waitForFunction(()=>Boolean(window.NEON_IDENTITY?.uid),null,{timeout:15000});
+  bot.uid=await page.evaluate(()=>window.NEON_IDENTITY.uid);
+  assert.ok(bot.uid,`${username}: UID oluşmadı`);
+  const close=page.locator('.nx-social-shade.open .nx-social-close');if(await close.isVisible().catch(()=>false))await close.click();
+  await page.locator('.nx-social-shade.open').waitFor({state:'hidden',timeout:10000}).catch(()=>{});
+  return {username,uid:bot.uid};
+}
+
+async function openDrawer(bot,tab='friends'){
+  const {page}=bot,layer=page.locator('#bootHome.nx-approved-home-v1 .nx-social-drawer-layer.open');
+  if(!(await layer.isVisible().catch(()=>false))){await page.locator(FRIENDS_ENTRY).click();await layer.waitFor({state:'visible'})}
+  const targetTab=['friends','lobby','invites'].includes(tab)?tab:'friends';
+  await page.locator(`[data-nx-drawer-tab="${targetTab}"]`).click();
+  return layer;
+}
+async function closeDrawer(bot){const layer=bot.page.locator('.nx-social-drawer-layer.open');if(!(await layer.isVisible().catch(()=>false)))return;await layer.locator('.nx-drawer-close').click();await layer.waitFor({state:'hidden',timeout:10000})}
+async function diagnostics(bot){return bot.page.evaluate(async()=>{const api=window.NEON_SOCIAL_CONSISTENCY;if(!api?.diagnostics)return null;return await api.diagnostics()})}
+
+async function addFriend(sender,receiver){
+  await openDrawer(sender,'friends');
+  const input=sender.page.locator('.nx-social-drawer-layer.open [data-nx-find]');await input.fill(receiver.username);await sender.page.locator('.nx-social-drawer-layer.open [data-nx-find-btn]').click();
+  const result=sender.page.locator('.nx-social-drawer-layer.open .nx-drawer-find-card');await result.waitFor({state:'visible'});assert.ok((await result.textContent()).includes(`@${receiver.username}`));await result.locator('button').click();
+  await openDrawer(receiver,'invites');const accept=receiver.page.locator('.nx-social-drawer-layer.open [data-nx-friend-accept]');await accept.waitFor({state:'visible'});await accept.click();
+  for(const [bot,other] of [[sender,receiver],[receiver,sender]]){await openDrawer(bot,'friends');await bot.page.waitForFunction(name=>[...document.querySelectorAll('.nx-drawer-friend-row')].some(x=>x.textContent.includes(`@${name}`)),other.username,{timeout:TIMEOUT})}
+}
+
+async function waitForPartyMembers(bot,leader,member){
+  await openDrawer(bot,'friends');
+  await bot.page.waitForFunction(({leaderName,memberName})=>{
+    const card=document.querySelector('.nx-social-drawer-layer.open .nx-drawer-party');
+    const text=card?.textContent||'';
+    return text.includes(`@${leaderName}`)&&text.includes(`@${memberName}`);
+  },{leaderName:leader.username,memberName:member.username},{timeout:15000});
+}
+
+async function makeParty(leader,member){
+  await openDrawer(leader,'friends');
+  const row=leader.page.locator('.nx-drawer-friend-row').filter({hasText:`@${member.username}`}).first();await row.waitFor({state:'visible'});await row.locator('[data-nx-friend-more]').click();await row.locator('[data-nx-party-invite]').click();
+  await openDrawer(member,'invites');
+  const accept=member.page.locator('.nx-social-drawer-layer.open [data-nx-party-accept]');await accept.waitFor({state:'visible'});assert.equal(await accept.isEnabled(),true);
+  const inviteId=String(await accept.getAttribute('data-nx-party-accept')||'');assert.ok(inviteId,'Davet partyId içermiyor');
+  const [leaderBefore,memberBefore]=await Promise.all([diagnostics(leader),diagnostics(member)]);
+  report.observations.push(`Parti kabul öncesi: invite=${inviteId}, leaderPointer=${leaderBefore?.partyId||''}, memberPointer=${memberBefore?.partyId||''}`);
+  assert.equal(leaderBefore?.partyId,inviteId,`Davet aktif lider partisini göstermiyor: invite=${inviteId} leader=${leaderBefore?.partyId||''}`);
+  assert.ok(leaderBefore?.party?.members?.[leader.uid],`Lider parti düğümü bulunamadı: ${inviteId}`);
+  assert.ok(memberBefore?.invites?.[inviteId],`Üyenin Firebase daveti bulunamadı: ${inviteId}`);
+  await accept.click();
+  await Promise.all([waitForPartyMembers(leader,leader,member),waitForPartyMembers(member,leader,member)]);
+  const [leaderAfter,memberAfter]=await Promise.all([diagnostics(leader),diagnostics(member)]);
+  assert.equal(leaderAfter?.partyId,inviteId);assert.equal(memberAfter?.partyId,inviteId);
+  assert.ok(leaderAfter?.party?.members?.[member.uid]);assert.ok(memberAfter?.party?.members?.[leader.uid]);
+  return {partyId:inviteId};
+}
+
+async function leaveParty(bot){
+  await openDrawer(bot,'lobby');
+  const card=bot.page.locator('.nx-social-drawer-layer.open .nx-drawer-body');
+  const leave=card.locator('[data-nx-party-leave]');
+  if(!(await leave.isVisible().catch(()=>false)))return;
+  await leave.click().catch(async error=>{if(await leave.isVisible().catch(()=>false))throw error});
+}
+
+async function waitForBothPartyPointersToClear(a,b,timeout=15000){
+  const started=Date.now();let lastA=null,lastB=null;
+  while(Date.now()-started<timeout){
+    [lastA,lastB]=await Promise.all([diagnostics(a),diagnostics(b)]);
+    if(!lastA?.partyId&&!lastB?.partyId)return {a:lastA,b:lastB};
+    await new Promise(resolve=>setTimeout(resolve,150));
+  }
+  assert.equal(lastA?.partyId||'','','A oyuncusunun partyId pointerı temizlenmedi');
+  assert.equal(lastB?.partyId||'','','B oyuncusunun partyId pointerı temizlenmedi');
+  return {a:lastA,b:lastB};
+}
+
+async function openDraftMatchmaking(bot){
+  await closeDrawer(bot);
+  const {page}=bot;
+  await page.evaluate(()=>window.NEON_SOCIAL?.open?.('play'));
+  const shade=page.locator('.nx-social-shade.open');await shade.waitFor({state:'visible',timeout:15000});
+  const active=shade.locator('.nx-social-view.active'),mode=active.locator('#nxMode');await mode.waitFor({state:'visible'});await mode.selectOption('draft');
+  return active;
+}
+
+async function draftHandshake(a,b){
+  const [viewA,viewB]=await Promise.all([openDraftMatchmaking(a),openDraftMatchmaking(b)]);
+  const [matchA,matchB]=[viewA.locator('[data-act="match"]'),viewB.locator('[data-act="match"]')];await Promise.all([matchA.waitFor({state:'visible'}),matchB.waitFor({state:'visible'})]);await Promise.all([matchA.click(),matchB.click()]);
+  const hasMatch=url=>{try{return Boolean(new URL(url).searchParams.get('nxMatch'))}catch{return false}};
+  await Promise.all([a.page.waitForURL(hasMatch,{timeout:TIMEOUT}),b.page.waitForURL(hasMatch,{timeout:TIMEOUT})]);
+  const read=page=>{const u=new URL(page.url());return Object.fromEntries(['nxMatch','nxCode','nxRole','nxOpponent','nxUid','nxAuto'].map(k=>[k,u.searchParams.get(k)]))};
+  const x=read(a.page),y=read(b.page);
+  assert.ok(x.nxMatch&&y.nxMatch);assert.equal(x.nxMatch,y.nxMatch,'Farklı match ID');assert.equal(x.nxCode,y.nxCode,'Farklı oda kodu');
+  assert.deepEqual(new Set([x.nxRole,y.nxRole]),new Set(['host','guest']));assert.equal(x.nxOpponent,b.uid);assert.equal(y.nxOpponent,a.uid);assert.equal(x.nxAuto,'1');assert.equal(y.nxAuto,'1');
+  await Promise.all([a.page.waitForSelector('#draftScreen',{state:'attached',timeout:TIMEOUT}),b.page.waitForSelector('#draftScreen',{state:'attached',timeout:TIMEOUT})]);
+  return {botA:x,botB:y};
+}
+
+async function writeReport(){
+  report.finishedAt=new Date().toISOString();const passed=report.scenarios.filter(x=>x.status==='PASS').length,failed=report.scenarios.filter(x=>x.status==='FAIL').length;report.summary={total:report.scenarios.length,passed,failed};
+  await fs.writeFile(path.join(OUT_DIR,'report.json'),JSON.stringify(report,null,2));
+  const lines=['# NEON XI Bot Lab','',`- Run: \`${runToken}\``,`- Sonuç: **${passed} başarılı / ${failed} hatalı / ${report.scenarios.length} toplam**`,'','## Senaryolar',...report.scenarios.map(x=>`- ${x.status==='PASS'?'✅':'❌'} **${x.name}** — ${x.durationMs} ms${x.error?`\n  - ${x.error.split('\n')[0]}`:''}`),'','## Botlar',...report.bots.map(x=>`- ${x.label}: @${x.username} — UID ${x.uid||'yok'} — page errors ${x.pageErrors.length} — console errors ${x.consoleErrors.length}`),'','## Notlar',...(report.observations.length?report.observations.map(x=>`- ${x}`):['- Ek gözlem yok.'])];
+  await fs.writeFile(path.join(OUT_DIR,'report.md'),lines.join('\n'));
+}
+
+const browser=await chromium.launch({headless:true});let botA,botB,fatal=null;
+try{
+  botA=await makeBot(browser,'a');botB=await makeBot(browser,'b');
+  await scenario('İki bağımsız misafir hesabı oluşturma',async()=>{const [a,b]=await Promise.all([guestSignIn(botA),guestSignIn(botB)]);assert.notEqual(a.uid,b.uid);return {a,b}},[botA.page,botB.page]);
+  await scenario('Arkadaş arama + istek + kabul',()=>addFriend(botA,botB),[botA.page,botB.page]);
+  await scenario('Parti daveti + Firebase partyId bütünlüğü + iki tarafta aynı parti görünümü',()=>makeParty(botA,botB),[botA.page,botB.page]);
+  await scenario('Eşzamanlı partiden ayrılma veri bütünlüğü',async()=>{await Promise.all([leaveParty(botA),leaveParty(botB)]);return waitForBothPartyPointersToClear(botA,botB)},[botA.page,botB.page]);
+  await scenario('Gerçek iki oturumla Draft matchmaking handshake',()=>draftHandshake(botA,botB),[botA.page,botB.page]);
+  report.observations.push('Botlar ayrı Chromium context ve ayrı Firebase misafir oturumları kullanır.');
+  report.observations.push('Parti daveti kabul edilmeden önce invite partyId, lider userParty pointerı ve gerçek party node aynı kimlik olarak doğrulanır.');
+  report.observations.push('Parti üyeliği iki tarafta gerçek zamanlı olarak yakınsayana kadar doğrulanır.');
+  report.observations.push('Parti çıkışı güncel LOBİ sekmesinden iki oyuncuda eşzamanlı tetiklenir; race-safe transaction sonucu partyId pointerlarının ikisinde de temizlendiği doğrulanır.');
+  report.observations.push('Draft eşleşmesi doğrudan güncel sosyal runtime Oyna ekranından başlatılır.');
+}catch(error){fatal=error}
+finally{
+  for(const bot of [botA,botB].filter(Boolean)){report.bots.push({label:bot.label,username:bot.username,uid:bot.uid,pageErrors:bot.pageErrors,consoleErrors:bot.consoleErrors.slice(-30),finalUrl:bot.page.url()});await shot(bot.page,`final-${bot.label}`);try{await bot.context.tracing.stop({path:path.join(OUT_DIR,`trace-${bot.label}.zip`)})}catch{}try{await bot.context.close()}catch{}}
+  await browser.close();await writeReport();
+}
+if(fatal)process.exitCode=1;

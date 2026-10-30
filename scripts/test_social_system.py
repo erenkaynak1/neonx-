@@ -1,0 +1,195 @@
+import pathlib
+import unittest
+
+
+ROOT = pathlib.Path(__file__).resolve().parents[1]
+
+
+class SocialSystemTests(unittest.TestCase):
+    def test_shared_social_layer_is_loaded_everywhere(self):
+        expected = {
+            "index.html": "./social/neon-social.js",
+            "side-games/index.html": "../social/neon-social.js",
+            "side-games/football-xox/index.html": "../../social/neon-social.js",
+            "side-games/career-twin/index.html": "../../social/neon-social.js",
+            "side-games/football-wordle/index.html": "../../social/neon-social.js",
+            "side-games/futbol-imposter.html": "../social/neon-social.js",
+        }
+        for filename, asset in expected.items():
+            with self.subTest(filename=filename):
+                self.assertIn(asset, (ROOT / filename).read_text(encoding="utf-8"))
+
+    def test_social_data_model_and_actions_exist(self):
+        source = (ROOT / "social/neon-social.js").read_text(encoding="utf-8")
+        for token in (
+            "social/usernames/",
+            "social/profiles/",
+            "social/friendRequests/",
+            "social/friends/",
+            "social/parties/",
+            "social/userParty/",
+            "social/matchQueues/",
+            "social/presence/",
+            "social/headToHead/",
+            "social/leaderboards/weekly/",
+            "social/leaderboards/allTime",
+            "social/resultReceipts/",
+            "runTransaction",
+            "ARKADAŞLARINLA OYNA",
+            "RAKİP ARA",
+            "chooseMode",
+            "Çevrimiçi",
+            "Çevrimdışı",
+            "HAFTALIK ZİRVE",
+            "ALL-TIME WINNERS",
+        ):
+            with self.subTest(token=token):
+                self.assertIn(token, source)
+
+    def test_main_and_side_game_matchmaking_share_the_same_1v1_queue(self):
+        base_social = (ROOT / "social/neon-social.js").read_text(encoding="utf-8")
+        safe_social = (ROOT / "social/neon-social-safe-v4.js").read_text(encoding="utf-8")
+        self.assertIn("const LEGACY_MATCH_MODES=new Set(['draft','xox','twin'])", safe_social)
+        self.assertIn("`social/matchQueues/${mode}`", base_social)
+        self.assertIn("`social/matchQueues/${mode}`", safe_social)
+        self.assertIn("const queuePath=mode=>LEGACY_MATCH_MODES.has(mode)?", safe_social)
+        self.assertIn("clearQueueEntries", safe_social)
+        self.assertNotIn("setInterval(()=>{patchOpen();patchPlay();ensureBadge();identity()},1200)", safe_social)
+
+    def test_party_membership_is_single_party_and_stale_pointer_safe(self):
+        social = (ROOT / "social/neon-social.js").read_text(encoding="utf-8")
+        self.assertIn("async function currentPartyMembership()", social)
+        self.assertIn("if(party?.members?.[uid])return id", social)
+        self.assertIn("await remove(pointer);return ''", social)
+        self.assertIn("if(existing)throw new Error('Zaten aktif bir partidesin.')", social)
+        self.assertIn("runTransaction(pointer,value=>!value||value===id?id:undefined", social)
+        self.assertIn("Başka bir parti üyeliği aynı anda etkinleşti", social)
+
+    def test_matchmaking_adapters_accept_fixed_room_codes(self):
+        core = (ROOT / "neon-xi-core.html").read_text(encoding="utf-8")
+        xox = (ROOT / "side-games/football-xox/game-v2.js").read_text(encoding="utf-8")
+        twin = (ROOT / "side-games/career-twin/game.js").read_text(encoding="utf-8")
+        twin_loader = (ROOT / "side-games/career-twin/game-loader-v2.js").read_text(encoding="utf-8")
+        imposter = (ROOT / "side-games/online-base44-imposter.js").read_text(encoding="utf-8")
+        self.assertIn("NEON_XI_MATCHMAKING", core)
+        self.assertIn('autoMatch.get("nxAuto")', core)
+        self.assertIn("createRoom(name,forcedCode='')", xox)
+        self.assertIn("createRoom(name,forcedCode='')", twin)
+        self.assertIn("q.get('nxAuto')==='1'", xox)
+        self.assertIn("q.get('nxAuto')==='1'", twin)
+        self.assertIn("q.get('nxAuto')==='1'", twin_loader)
+        self.assertIn("createLobby=async function(name,forcedCode='')", imposter)
+        self.assertIn("launchPartyRoom", imposter)
+        self.assertIn("maybeAutoStart", imposter)
+
+    def test_party_launch_reloads_same_mode_and_hides_manual_room_flow(self):
+        social = (ROOT / "social/neon-social.js").read_text(encoding="utf-8")
+        core = (ROOT / "neon-xi-core.html").read_text(encoding="utf-8")
+        xox = (ROOT / "side-games/football-xox/game-v2.js").read_text(encoding="utf-8")
+        twin = (ROOT / "side-games/career-twin/game.js").read_text(encoding="utf-8")
+        self.assertIn("nxLaunch", social)
+        self.assertIn("nxPartySize", social)
+        self.assertIn("nxOpponent", social)
+        self.assertIn("nxMatch", social)
+        self.assertNotIn("location.pathname===new URL(target).pathname", social)
+        self.assertIn("setBootView(bootLobby)", core)
+        self.assertIn("OTOMATİK PARTİ BAĞLANTISI", xox)
+        self.assertIn("OTOMATİK PARTİ BAĞLANTISI", twin)
+
+    def test_membership_supports_google_and_explicit_guest_auth(self):
+        core = (ROOT / "neon-xi-core.html").read_text(encoding="utf-8")
+        social = (ROOT / "social/neon-social.js").read_text(encoding="utf-8")
+        combined = core + social
+        self.assertIn("signInAnonymously", social)
+        self.assertNotIn("signInAnonymously", core)
+        self.assertNotIn("GoogleAuthProvider", core)
+        self.assertIn("GoogleAuthProvider", social)
+        self.assertIn("signInWithPopup", combined)
+        self.assertIn("linkWithPopup", combined)
+        self.assertIn('data-act="google-login"', social)
+        self.assertIn('data-act="guest-login"', social)
+        self.assertIn("GOOGLE’A BAĞLA", social)
+        self.assertIn("Yalnızca bu tarayıcıda korunur", social)
+        self.assertIn("signOut", social)
+        self.assertIn("Devam etmek için benzersiz oyuncu adını seç", social)
+        self.assertIn("function requireProfile()", social)
+        self.assertIn("if(state.profile)return true", social)
+        self.assertIn("function close(){shade.classList.remove('open')", social)
+        self.assertIn("if(user)bindUser(user)", social)
+        self.assertIn("ensurePlayerUser", core)
+        self.assertNotIn("ensureGoogleUser", core)
+
+    def test_results_feed_live_leaderboards(self):
+        social = (ROOT / "social/neon-social.js").read_text(encoding="utf-8")
+        result_sources = {
+            "neon-xi-core.html": 'mode:"draft"',
+            "side-games/football-xox/game-v2.js": "mode:'xox'",
+            "side-games/career-twin/game.js": "mode:'twin'",
+            "side-games/online-v2.js": "mode:'imposter'",
+        }
+        self.assertIn("document.addEventListener('neon-match-result'", social)
+        for filename, token in result_sources.items():
+            with self.subTest(filename=filename):
+                source = (ROOT / filename).read_text(encoding="utf-8")
+                self.assertIn("neon-match-result", source)
+                self.assertIn(token, source)
+
+    def test_main_home_uses_approved_friends_entry_and_sim_lab_is_removed(self):
+        home = (ROOT / "side-games/home-approved-v1.js").read_text(encoding="utf-8")
+        core = (ROOT / "neon-xi-core.html").read_text(encoding="utf-8")
+        self.assertIn("navButton('friends','Arkadaşlar'", home)
+        self.assertIn("friends:()=>openSocial('friends',status)", home)
+        self.assertIn("profile:()=>openSocial('friends',status)", home)
+        self.assertIn("notifications:()=>openSocial('invites',status)", home)
+        self.assertIn('data-action="${action}"', home)
+        self.assertIn("stage.addEventListener('click',dispatch)", home)
+        self.assertNotIn("nxQuickSim1", core)
+        self.assertNotIn("nxQuickSim100", core)
+        self.assertNotIn("NEON_XI_SIM_LAB", core)
+        self.assertNotIn("100X Tactical Simulation Lab", core)
+
+    def test_profile_gate_keeps_offline_menu_accessible(self):
+        social = (ROOT / "social/neon-social.js").read_text(encoding="utf-8")
+        self.assertIn("OYUN İÇİ KULLANICI ADINI SEÇ", social)
+        self.assertNotIn("if(!state.profile){open('friends')", social)
+        self.assertIn("function requireProfile()", social)
+        self.assertIn("if(state.profile)return true", social)
+        self.assertIn("function close(){shade.classList.remove('open')", social)
+
+    def test_home_drawer_only_exposes_party_invite_and_remove_actions(self):
+        drawer = (ROOT / "social/neon-social-drawer-v1.js").read_text(encoding="utf-8")
+        self.assertIn("PARTİYE DAVET ET", drawer)
+        self.assertIn("ARKADAŞLIKTAN ÇIKAR", drawer)
+        self.assertNotIn("OYUNA DAVET ET", drawer)
+
+    def test_home_drawer_has_a_complete_friend_lobby(self):
+        drawer = (ROOT / "social/neon-social-drawer-v1.js").read_text(encoding="utf-8")
+        broker = (ROOT / "social/party-match-broker-v1.js").read_text(encoding="utf-8")
+        tournament = (ROOT / "social/party-draft-tournament-router-v1.js").read_text(encoding="utf-8")
+        for token in ('data-nx-drawer-tab="lobby"', 'ARKADAŞ LOBİSİ', 'data-nx-confirm-kick', 'data-nx-ready', 'data-nx-lobby-mode', 'LOBİDEN AYRIL'):
+            with self.subTest(token=token):
+                self.assertIn(token, drawer)
+        self.assertIn('.nx-social-drawer-layer [data-nx-party-launch]', broker)
+        self.assertIn('.nx-social-drawer-layer [data-nx-party-launch]', tournament)
+        self.assertIn(".nx-lobby-member,.nx-drawer-party-member", tournament)
+        self.assertIn("version:'1.4'", tournament)
+        self.assertIn("if(!party?.members?.[user.uid])", tournament)
+        self.assertIn("String(current||'')===partyId?null:current", tournament)
+        self.assertIn("event.stopImmediatePropagation()", tournament)
+        self.assertIn('tüm oyuncuların hazır olması gerekiyor', broker)
+
+
+    def test_imposter_xox_family_skin_preserves_canonical_multiplayer_actions(self):
+        shell = (ROOT / "side-games/futbol-imposter.html").read_text(encoding="utf-8")
+        skin = (ROOT / "side-games/imposter-xox-family-v1.js").read_text(encoding="utf-8")
+        self.assertIn("imposter-xox-family-v1.css", shell)
+        self.assertIn("imposter-xox-family-v1.js", shell)
+        self.assertIn("state.screen='local-setup';render()", skin)
+        self.assertIn("chooseOnline('friends')", skin)
+        self.assertIn("chooseOnline('match')", skin)
+        self.assertIn("const coreRender=render", skin)
+        self.assertIn("coreRender.apply(this,args)", skin)
+
+
+if __name__ == "__main__":
+    unittest.main()

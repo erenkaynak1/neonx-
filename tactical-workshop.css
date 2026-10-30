@@ -1,0 +1,104 @@
+/* Existing neon identity, readable match and tactical controls. */
+#nxCoach{padding:16px;margin-bottom:16px;border:1px solid #638233;border-radius:14px;background:#0b1c15;color:#edf8ef;font-family:system-ui,sans-serif}
+.nx-coach-title{display:grid;gap:5px}.nx-coach-title>span{font-size:10px;color:#bbef65;letter-spacing:.16em}.nx-coach-title>b{font-size:17px}
+.nx-coach-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}.nx-coach-metrics>div{display:grid;gap:5px;border-left:2px solid #b9ed68;padding-left:9px}.nx-coach-metrics strong{font-size:25px;font-variant-numeric:tabular-nums}.nx-coach-metrics small{font-size:11px;color:#afc2b6}.nx-coach-metrics span{font-size:11px;color:#c3d3c8}
+#nxCoach .nx-coach-note{font-size:12px!important;line-height:1.6!important;color:#d6e6d9}#nxCoach>small{display:block;font-size:10px;line-height:1.5;color:#a5baad;margin-top:10px}.nx-presets{display:flex;flex-wrap:wrap;gap:7px}.nx-presets button{min-height:38px;padding:8px 11px;border:1px solid #537b45;border-radius:8px;color:#e3f5dc;background:#182e20;cursor:pointer;font:600 12px system-ui}.nx-presets button:hover{background:#304d26}.nx-role-fit{font:600 12px/1.5 system-ui!important;color:#c8f77b!important}
+#tacticsScreen .controlHead h3{font-size:18px!important}#tacticsScreen .controlHead p{font-size:12px!important}#tacticsScreen .choice strong,#tacticsScreen .roleBtn strong{font-size:14px!important}#tacticsScreen .choice p,#tacticsScreen .roleBtn span{font-size:12px!important;line-height:1.5!important}#tacticsScreen .choice,#tacticsScreen .roleBtn{padding:12px!important;min-height:44px!important}#tacticsScreen .risk,#tacticsScreen .trait{font-size:11px!important}#tacticsScreen .navBtn{font-size:11px!important;min-height:38px!important}#tacticsScreen .boostStat span{font-size:10px!important}
+#tacticsScreen :focus-visible,#draftScreen :focus-visible{outline:2px solid #c5ff65!important;outline-offset:3px}
+#draftScreen .playerRow{content-visibility:auto;contain-intrinsic-size:auto 86px}#draftScreen .playerRow .name{font-size:14px!important}#draftScreen .playerFormerMeta{font-size:10px!important}#draftScreen #searchInput{font-size:14px!important;min-height:44px}
+#matchSimulation .neonMiniPitch{border:1px solid #659b72!important;border-radius:14px!important;box-shadow:inset 0 0 40px #001b1366!important}
+#matchSimulation .nv-name{font:600 11px/1.3 system-ui!important;letter-spacing:0!important;padding:3px 5px!important;color:#f3fff5!important;max-width:105px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#matchSimulation .nv-player:not(.carrier):not(.active):not(.runner) .nv-name{opacity:.76}#matchSimulation .nv-player.carrier .nv-name{background:#1d3d15!important;color:#d9ff9a!important}
+#matchSimulation .nv-player::before{opacity:.10!important}#matchSimulation .nv-core{filter:none!important}
+@media(max-width:720px){#tacticsScreen:not(.hidden){height:auto!important;min-height:calc(100dvh - 90px);overflow:visible!important}#tacticsScreen .tacticShell{height:auto!important;display:flex!important;flex-direction:column;overflow:visible!important}#tacticsScreen #sideNav{order:0;flex-wrap:nowrap;flex-shrink:0}#tacticsScreen .tacticPitchCard{order:1;min-height:400px!important}#tacticsScreen #tacticPitch{height:340px!important;flex:none!important}#tacticsScreen .controlPanel{order:2;overflow:visible!important}#tacticsScreen .controlBody{overflow:visible!important;max-height:none!important}#tacticsScreen .slot .name{font-size:10px!important}#tacticsScreen .slot .role{font-size:8px!important}#tacticsScreen .analysisChip{font-size:10px!important}#tacticsScreen{padding-bottom:90px!important}#matchSimulation .nv-name{font-size:9px!important;max-width:74px}}
+@media(prefers-reduced-motion:reduce){#nxCoach *,#tacticsScreen .choice,#tacticsScreen .roleBtn{animation:none!important;transition:none!important}}
+#draftScreen .draftHeroLogo{height:90px!important;min-height:0!important;padding:8px!important;overflow:hidden}#draftScreen .draftHeroLogo img{height:100%!important;width:100%!important;object-fit:contain!important}
+@media(max-width:720px){#draftScreen .draftHeroLogo{height:56px!important}}
+/* Match centre: pitch first, commentary beside it, statistics below. */
+@media(min-width:721px){
+#matchSimulation.matchSim{padding:68px 20px 20px!important}
+#matchSimulation .matchSimShell{max-width:1280px!important;margin:auto!important}
+#matchSimulation .matchScoreboard{padding:12px 20px!important;min-height:104px!important}
+#matchSimulation .matchScore{font-size:38px!important}
+#matchSimulation .matchTeamBadge{width:44px!important;height:44px!important}
+#matchSimulation .matchGrid.hasVisualizer{display:grid!important;grid-template-columns:minmax(0,1.35fr) minmax(290px,1fr)!important;grid-template-rows:auto auto!important;align-items:start!important}
+#matchSimulation #matchVisualCard{grid-column:1!important;grid-row:1!important;min-width:0!important}
+#matchSimulation .commentaryCard{grid-column:2!important;grid-row:1!important;min-width:0!important}
+#matchSimulation .matchSide{grid-column:1/-1!important;grid-row:2!important;display:grid!important;grid-template-columns:1fr 1fr!important;gap:14px!important}
+#matchSimulation #matchVisualCard .neonMiniPitchWrap{height:auto!important;padding:12px!important}
+#matchSimulation #matchVisualCard .neonMiniPitch{height:clamp(390px,65vh,650px)!important;min-height:390px!important;width:100%!important;max-width:none!important;aspect-ratio:auto!important}
+#matchSimulation .commentaryFeed{height:clamp(380px,64vh,640px)!important;overflow:auto!important}
+#matchSimulation .matchControls{position:sticky!important;bottom:0!important;z-index:100!important;background:#07130ff5!important;padding:12px!important;border:1px solid #36593d;border-radius:12px;backdrop-filter:none!important}
+#matchSimulation .matchControls .btn{min-height:42px!important;font-size:13px!important}
+}
+@media(max-width:720px){
+#matchSimulation.matchSim{padding:62px 10px 76px!important;overflow-y:auto!important}
+#matchSimulation .matchSimShell{height:auto!important;overflow:visible!important}
+#matchSimulation .matchGrid,#matchSimulation .matchGrid.hasVisualizer{display:flex!important;flex-direction:column!important;height:auto!important;overflow:visible!important}
+#matchSimulation #matchVisualCard{width:100%!important;min-height:0!important;flex:none!important}
+#matchSimulation #matchVisualCard .neonMiniPitchWrap{height:auto!important;padding:8px!important}
+#matchSimulation #matchVisualCard .neonMiniPitch{width:100%!important;height:480px!important;min-height:480px!important;aspect-ratio:auto!important}
+#matchSimulation .commentaryCard,#matchSimulation .matchSide{width:100%!important;display:block!important;height:auto!important}
+#matchSimulation .commentaryFeed{height:210px!important;overflow:auto!important}
+#matchSimulation .matchScoreboard{min-height:96px!important;padding:10px!important}
+#matchSimulation .matchScore{font-size:32px!important;line-height:1.1!important}
+#matchSimulation .matchControls{position:fixed!important;bottom:0!important;left:0!important;right:0!important;z-index:100!important;display:flex!important;flex-wrap:wrap!important;gap:5px!important;padding:8px!important;background:#06130ff5!important}
+#matchSimulation .matchControls .btn{min-height:38px!important;font-size:11px!important;padding:7px 9px!important}
+#matchSimulation .matchStatsCard,#matchSimulation .matchReasonCard{height:auto!important;overflow:visible!important;padding:12px!important;margin-top:10px!important}
+#matchSimulation .matchReasonMain,#matchSimulation .matchReasonSub{font-size:12px!important;line-height:1.5!important}
+#matchSimulation #matchVisualCard .matchVisualHead h2{font-size:14px!important}
+#matchSimulation #matchVisualCard.nv4-simple .nv-player .nv-name{font:600 9px/1.2 system-ui!important}
+}
+/* Override legacy compact viewport rules that fixed grid rows at 52px. */
+body #matchSimulation .matchSimShell{display:block!important;height:auto!important;overflow:visible!important}
+body #matchSimulation .matchGrid.hasVisualizer{margin-top:14px!important;height:auto!important;overflow:visible!important}
+body #matchSimulation #matchVisualCard.matchVisualCard{height:auto!important;min-height:0!important;max-height:none!important}
+body #matchSimulation #matchVisualCard.nv4-simple .neonMiniPitchWrap,body #matchSimulation #matchVisualCard.nv4-focus .neonMiniPitchWrap{display:block!important;height:auto!important;min-height:0!important;max-height:none!important;aspect-ratio:auto!important;padding:10px!important}
+body #matchSimulation #matchVisualCard.nv4-simple .neonMiniPitch,body #matchSimulation #matchVisualCard.nv4-focus .neonMiniPitch{height:clamp(390px,65vh,650px)!important;min-height:390px!important;max-height:none!important;width:100%!important;max-width:none!important;aspect-ratio:auto!important;flex:none!important}
+@media(max-width:720px){body #matchSimulation #matchVisualCard.nv4-simple .neonMiniPitch,body #matchSimulation #matchVisualCard.nv4-focus .neonMiniPitch{height:480px!important;min-height:480px!important}body #tacticsScreen #sideNav{position:static!important;top:auto!important;width:100%!important;transform:none!important}}
+/* Keep navigation out of the match transport controls on narrow screens. */
+body:has(#matchSimulation:not(.hidden)) #neonScreenNav{top:8px!important;bottom:auto!important;left:10px!important;right:auto!important;width:auto!important;max-width:calc(100vw - 20px)!important;transform:none!important}
+
+/* NEON XI: dark digital pitch, restrained luminous geometry. */
+body #matchSimulation {background:#020605!important}
+body #matchSimulation .matchScoreboard{background:linear-gradient(110deg,#07130c,#030806)!important;border:1px solid #385a24!important;border-top:3px solid #baff18!important;border-radius:12px!important;box-shadow:0 12px 32px #0003!important}
+body #matchSimulation .matchScore{color:#fff!important;font-variant-numeric:tabular-nums;letter-spacing:2px}
+body #matchSimulation .matchClock{background:#baff18!important;color:#071005!important;border:0!important;border-radius:4px!important;font-weight:800}
+body #matchSimulation #matchVisualCard{background:#040c08!important;border:1px solid #294a23!important;border-radius:14px!important;box-shadow:0 16px 40px #0003!important}
+body #matchSimulation #matchVisualCard .matchVisualHead{background:#08120b!important;border-bottom:1px solid #294a23!important;min-height:42px!important;height:auto!important;padding:10px 14px!important}
+body #matchSimulation #matchVisualCard .matchVisualHead h2{color:#dfff8c!important;font-size:13px!important;letter-spacing:.04em}
+body #matchSimulation #matchVisualCard .nvActionChip{color:#d5ff8d!important;background:#11200c!important;border:1px solid #496528!important;border-radius:5px!important;font-size:10px!important}
+body #matchSimulation #matchVisualCard .neonMiniPitchWrap{background:#040c08!important;padding:14px!important}
+body #matchSimulation #matchVisualCard .neonMiniPitch{background:radial-gradient(ellipse at 50% 45%,#15382066,transparent 72%),repeating-linear-gradient(0deg,transparent 0 31px,#7bff9d06 31px 32px),repeating-linear-gradient(90deg,transparent 0 31px,#7bff9d06 31px 32px),linear-gradient(180deg,#071a10,#041109)!important;border:10px solid #07110a!important;border-radius:4px!important;box-shadow:0 0 0 1px #395922,inset 0 0 48px #0009,0 0 18px #baff1808!important}
+body #matchSimulation #matchVisualCard .neonMiniPitch::before{inset:8%!important;border:2px solid #8cfc77b3!important;border-radius:0!important;background:none!important}
+body #matchSimulation #matchVisualCard .neonMiniPitch::after{display:none!important}
+body #matchSimulation #matchVisualCard .nv-halfLine{background:#8cfc77b3!important;height:2px!important}
+body #matchSimulation #matchVisualCard :is(.nv-centerCircle,.nv-box-top,.nv-box-bottom,.nv-pen-top,.nv-pen-bottom){border:2px solid #8cfc77b3!important;border-radius:0!important}
+body #matchSimulation #matchVisualCard .nv-centerCircle{border-radius:50%!important}
+body #matchSimulation #matchVisualCard :is(.nv-goal-top,.nv-goal-bottom){border:2px solid #b9ff8c!important;border-radius:1px!important;background:repeating-linear-gradient(90deg,transparent 0 5px,#8cfc772b 5px 6px),repeating-linear-gradient(0deg,transparent 0 4px,#8cfc772b 4px 5px)!important}
+body #matchSimulation #matchVisualCard :is(.nv-pitch-brand,.nv-tunnel-mark){display:none!important}
+body #matchSimulation #matchVisualCard .nv-player{width:28px!important;height:28px!important;filter:none!important}
+body #matchSimulation #matchVisualCard .nv-player::before{display:none!important}
+body #matchSimulation #matchVisualCard .nv-player .nv-core{width:24px!important;height:24px!important;font:800 10px/1 system-ui!important;border:2px solid #9aeaff!important;box-shadow:0 2px 3px #071c2470!important;text-shadow:none!important;filter:none!important}
+body #matchSimulation #matchVisualCard .nv-player.teamA .nv-core{background:#0d3043!important;color:white!important}
+body #matchSimulation #matchVisualCard .nv-player.teamB .nv-core{background:#492215!important;color:#fff!important}
+body #matchSimulation #matchVisualCard .nv-player.gk .nv-core{border-color:#e5ff85!important;background:#34420f!important;color:#eaffaf!important}
+body #matchSimulation #matchVisualCard .nv-player.carrier::after{inset:-3px!important;border:2px solid #caff54!important;animation:none!important;box-shadow:none!important}
+body #matchSimulation #matchVisualCard .nv-player.pressing::after{animation:none!important;border-color:#ffac78!important;inset:-4px!important}
+body #matchSimulation #matchVisualCard .nv-player .nv-name{opacity:0!important;backdrop-filter:none!important;text-shadow:none!important}
+body #matchSimulation #matchVisualCard .nv-player:is(.carrier,.active,:hover) .nv-name{opacity:1!important;background:#102019ee!important;border:1px solid #d4e0d044!important;border-radius:4px!important;color:#fff!important;font-size:10px!important}
+body #matchSimulation #matchVisualCard .nv-ball{width:11px!important;height:11px!important;border:1px solid #25382b!important;background:radial-gradient(circle at 40% 35%,#fff 0 32%,#29362d 34% 46%,#fff 49%)!important;box-shadow:0 1px 3px #0009!important;z-index:15!important}
+body #matchSimulation #matchVisualCard .nv-ball::after{display:none!important}
+body #matchSimulation #matchVisualCard .nv-live-action{border-radius:5px!important;background:#08130c!important;border-left:3px solid #baff18!important;padding:10px!important}
+body #matchSimulation #matchVisualCard .nv-live-action strong{font-size:12px!important;line-height:1.5!important;color:#edf5ef!important}
+@media(max-width:720px){body #matchSimulation #matchVisualCard .neonMiniPitchWrap{padding:8px!important}body #matchSimulation #matchVisualCard .neonMiniPitch{border-width:5px!important}body #matchSimulation #matchVisualCard .nv-player{width:24px!important;height:24px!important}body #matchSimulation #matchVisualCard .nv-player .nv-core{width:21px!important;height:21px!important;font-size:9px!important}body #matchSimulation #matchVisualCard .nvActionChip{max-width:55%!important;font-size:9px!important}}
+
+body #matchSimulation #matchVisualCard .nv-player .nv-core{border-radius:7px!important;box-shadow:0 0 8px #42caff24,inset 0 0 6px #42caff12!important}
+body #matchSimulation #matchVisualCard .nv-player.teamB .nv-core{border-color:#ff9a68!important;box-shadow:0 0 8px #ff884424!important}
+body #matchSimulation #matchVisualCard :is(.nv-halfLine,.nv-centerCircle,.nv-box-top,.nv-box-bottom,.nv-pen-top,.nv-pen-bottom){box-shadow:0 0 6px #7cff5530!important}
+body #matchSimulation #matchVisualCard .nv-pitch-brand{display:grid!important;opacity:.16!important;pointer-events:none!important}
+body #matchSimulation #matchVisualCard .nv-pitch-brand strong{color:#baff18!important;text-shadow:none!important}
+body #matchSimulation #matchVisualCard .nv-pitch-brand span{display:none!important}
+body #matchSimulation .matchClock *{color:#071005!important}
+body #matchSimulation .matchTeamBadge{border-color:#71932b!important;background:#10200b!important;color:#dfff8b!important;box-shadow:0 0 14px #baff1814!important}
+body #matchSimulation .matchScoreboard{box-shadow:0 0 24px #baff1809,inset 0 1px #baff1822!important}

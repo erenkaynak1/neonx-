@@ -20,11 +20,17 @@ import validate_side_game_pools as validator
 
 ROOT = Path(__file__).resolve().parents[1]
 RULES = ROOT / "side-games" / "data" / "master" / "xox-rules.json"
-ENGLISH_COUNTRIES = [
-    "Turkey", "Argentina", "Brazil", "France", "Spain", "Germany", "Italy", "England",
-    "Portugal", "Netherlands", "Belgium", "Croatia", "Serbia", "Colombia", "Morocco",
-    "Algeria", "Egypt", "Nigeria", "Senegal", "Cote d'Ivoire", "Japan", "Norway", "Sweden",
-]
+
+# Keep the synthetic fixture synchronized with every canonical nationality
+# understood by the XOX builder. This avoids duplicating a stale country list
+# in the test whenever the production pool is expanded.
+ENGLISH_COUNTRIES = []
+_seen_countries = set()
+for _source_country, _canonical_country in xox_builder.COUNTRY_MAP.items():
+    if _canonical_country in _seen_countries:
+        continue
+    ENGLISH_COUNTRIES.append(_source_country)
+    _seen_countries.add(_canonical_country)
 
 
 def create_fixture(path: Path, player_count: int = 300) -> None:
@@ -55,7 +61,7 @@ def create_fixture(path: Path, player_count: int = 300) -> None:
         [(f"L{index}", league) for index, league in enumerate(leagues, 1)],
     )
     clubs = list(xox_builder.CLUB_ALIASES)
-    reserved_ids = [36, 141, 114]
+    reserved_ids = [36, 141, 114, 449]
     club_rows = []
     for index, club in enumerate(clubs):
         club_id = reserved_ids[index] if index < len(reserved_ids) else 1_000 + index
@@ -123,7 +129,11 @@ class SideGamePoolPipelineTest(unittest.TestCase):
             master_meta_path = root / "transfermarkt-meta.json"
             xox_path = root / "xox-players.json"
             xox_meta_path = root / "xox-meta.json"
+            fixture_rules_path = root / "xox-rules.json"
             career_meta_path = root / "career-meta.json"
+            fixture_rules = json.loads(RULES.read_text(encoding="utf-8"))
+            fixture_rules.pop("audience_profile", None)
+            fixture_rules_path.write_text(json.dumps(fixture_rules), encoding="utf-8")
             create_fixture(database)
             original_revision = master_builder.upstream_revision
             master_builder.upstream_revision = lambda: "f" * 40
@@ -143,7 +153,7 @@ class SideGamePoolPipelineTest(unittest.TestCase):
                 SimpleNamespace(
                     master=master_path,
                     master_meta=master_meta_path,
-                    rules=RULES,
+                    rules=fixture_rules_path,
                     output=xox_path,
                     meta=xox_meta_path,
                     min_players=100,
@@ -164,7 +174,7 @@ class SideGamePoolPipelineTest(unittest.TestCase):
             master_meta = json.loads(master_meta_path.read_text(encoding="utf-8"))
             xox = json.loads(xox_path.read_text(encoding="utf-8"))
             xox_meta = json.loads(xox_meta_path.read_text(encoding="utf-8"))
-            rules = json.loads(RULES.read_text(encoding="utf-8"))
+            rules = json.loads(fixture_rules_path.read_text(encoding="utf-8"))
             career_meta = json.loads(career_meta_path.read_text(encoding="utf-8"))
             validator.validate_master(master, master_meta, 100)
             validator.validate_xox(xox, xox_meta, rules, {row["id"] for row in master}, 100)

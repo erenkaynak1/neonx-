@@ -1,0 +1,145 @@
+name: NEON XI Bot Lab
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'scripts/neon_bot_lab.mjs'
+      - 'scripts/neon_social_stress_lab.mjs'
+      - 'scripts/xox_ui_lab.mjs'
+      - 'scripts/party_draft_lab.mjs'
+      - 'scripts/entry_ui_lab.mjs'
+      - 'scripts/party_draft_tournament_lab.mjs'
+      - '.github/workflows/neon-bot-lab.yml'
+      - 'index.html'
+      - 'neon-xi-core.html'
+      - 'social/**'
+      - 'side-games/**'
+  push:
+    branches:
+      - main
+      - bot-lab-v1
+    paths:
+      - 'scripts/neon_bot_lab.mjs'
+      - 'scripts/neon_social_stress_lab.mjs'
+      - 'scripts/xox_ui_lab.mjs'
+      - 'scripts/party_draft_lab.mjs'
+      - 'scripts/entry_ui_lab.mjs'
+      - 'scripts/party_draft_tournament_lab.mjs'
+      - '.github/workflows/neon-bot-lab.yml'
+      - 'index.html'
+      - 'neon-xi-core.html'
+      - 'social/**'
+      - 'side-games/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: neon-bot-lab-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  bot-lab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm install --no-save --package-lock=false playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start local NEON XI server
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/neon-bot-http.log 2>&1 &
+          echo $! > /tmp/neon-bot-http.pid
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/index.html >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/neon-bot-http.log
+          exit 1
+      - name: Verify actual first-login and persistent session in mobile browser
+        id: welcome
+        continue-on-error: true
+        env:
+          NEON_BASE_URL: http://127.0.0.1:4173/index.html
+          NEON_BOT_TIMEOUT: '45000'
+        run: node scripts/entry_ui_lab.mjs
+      - name: Run canonical arcade navigation mobile UI lab
+        id: arcade_nav
+        continue-on-error: true
+        env:
+          NEON_ORIGIN: http://127.0.0.1:4173
+          NEON_BOT_TIMEOUT: '45000'
+        run: node scripts/arcade_nav_ui_lab.mjs
+      - name: Run two-member party to Draft XI lab
+        id: party_draft
+        continue-on-error: true
+        env:
+          NEON_BASE_URL: http://127.0.0.1:4173/index.html
+          NEON_BOT_TIMEOUT: '45000'
+        run: node scripts/party_draft_lab.mjs
+      - name: Run multi-member party Draft tournament lab
+        id: party_draft_tournament
+        continue-on-error: true
+        env:
+          NEON_BASE_URL: http://127.0.0.1:4173/index.html
+          NEON_BOT_TIMEOUT: '45000'
+        run: node scripts/party_draft_tournament_lab.mjs
+      - name: Run two-player Bot Lab
+        id: baseline
+        continue-on-error: true
+        env:
+          NEON_BASE_URL: http://127.0.0.1:4173/index.html
+          NEON_BOT_TIMEOUT: '45000'
+        run: node scripts/neon_bot_lab.mjs
+      - name: Run three-session social stress lab
+        id: stress
+        continue-on-error: true
+        env:
+          NEON_BASE_URL: http://127.0.0.1:4173/index.html
+          NEON_BOT_TIMEOUT: '45000'
+        run: node scripts/neon_social_stress_lab.mjs
+      - name: Run Football XOX data and flag lab
+        id: xox
+        continue-on-error: true
+        env:
+          NEON_XOX_URL: http://127.0.0.1:4173/side-games/football-xox/index.html
+          NEON_BOT_TIMEOUT: '45000'
+        run: node scripts/xox_ui_lab.mjs
+      - name: Enforce Bot Lab results
+        if: always()
+        run: |
+          echo "party_draft=${{ steps.party_draft.outcome }}"
+          echo "party_draft_tournament=${{ steps.party_draft_tournament.outcome }}"
+          echo "baseline=${{ steps.baseline.outcome }}"
+          echo "stress=${{ steps.stress.outcome }}"
+          echo "xox=${{ steps.xox.outcome }}"
+          echo "arcade_nav=${{ steps.arcade_nav.outcome }}"
+          echo "welcome=${{ steps.welcome.outcome }}"
+          test "${{ steps.party_draft.outcome }}" = "success"
+          test "${{ steps.party_draft_tournament.outcome }}" = "success"
+          test "${{ steps.baseline.outcome }}" = "success"
+          test "${{ steps.stress.outcome }}" = "success"
+          test "${{ steps.xox.outcome }}" = "success"
+          test "${{ steps.arcade_nav.outcome }}" = "success"
+          test "${{ steps.welcome.outcome }}" = "success"
+      - name: Upload Bot Lab reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: neon-bot-lab-${{ github.run_id }}
+          path: |
+            artifacts/party-draft-lab
+            artifacts/party-draft-tournament-lab
+            artifacts/neon-bot-lab
+            artifacts/neon-social-stress
+            artifacts/xox-ui-lab
+            artifacts/arcade-navigation
+            artifacts/entry-ui-lab
+          if-no-files-found: warn
+          retention-days: 14

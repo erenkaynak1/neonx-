@@ -87,7 +87,10 @@ def validate_xox(
     master_ids: set[int],
     minimum: int,
 ) -> dict[str, int]:
-    require(len(players) >= minimum, f"XOX player count is {len(players)}; minimum {minimum}")
+    audience_profile = rules.get("audience_profile") or {}
+    audience_minimum = int(audience_profile.get("minimum_runtime_players") or 0)
+    required_minimum = max(minimum, audience_minimum)
+    require(len(players) >= required_minimum, f"XOX player count is {len(players)}; minimum {required_minimum}")
     require(meta.get("master_provider") == "dcaribou/transfermarkt-datasets", "XOX master mismatch")
     historical = sum(1 for player in players if player.get("status") in {"recent", "legend"})
     require(historical >= max(1, minimum // 10), "XOX pool lacks historical players")
@@ -96,12 +99,14 @@ def validate_xox(
     allowed_leagues = set(rules["leagues"])
     allowed_nationalities = set(rules["nationalities"])
     ids = set()
+    players_by_id = {}
     condition_counts: Counter[str] = Counter()
     for player in players:
         player_id = int(player["id"])
         require(player_id in master_ids, f"XOX player {player_id} is outside master pool")
         require(player_id not in ids, f"duplicate XOX player {player_id}")
         ids.add(player_id)
+        players_by_id[player_id] = player
         clubs = set(player.get("clubs") or [])
         leagues = set(player.get("leagues") or [])
         nationality = player.get("nationality")
@@ -121,6 +126,21 @@ def validate_xox(
     )
     missing = sorted(key for key in expected if condition_counts[key] == 0)
     require(not missing, "XOX conditions without players: " + ", ".join(missing))
+    missing_core = []
+    mismatched_core = []
+    for expected_player in audience_profile.get("core_players") or []:
+        player_id = int(expected_player["id"])
+        player = players_by_id.get(player_id)
+        if not player:
+            missing_core.append(expected_player["name"])
+        elif player["name"] != expected_player["name"]:
+            mismatched_core.append(f"{expected_player['name']} -> {player['name']}")
+    require(not missing_core, "XOX Turkish-audience core players missing: " + ", ".join(missing_core))
+    require(not mismatched_core, "XOX core player identity mismatch: " + ", ".join(mismatched_core))
+    require(
+        meta.get("audience_core_player_count") == len(audience_profile.get("core_players") or []),
+        "XOX audience core count mismatch",
+    )
     return dict(condition_counts)
 
 

@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 610" role="img" aria-labelledby="title desc">
+<title id="title">Kariyer İkizi amblemi</title>
+<desc id="desc">NEON XI resmi siyah, parlak lime, neon yeşili ve camgöbeği paletiyle birbirini yansıtan iki futbolcu.</desc>
+<defs>
+ <linearGradient id="chrome" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f6fff0"/><stop offset=".14" stop-color="#bbd2be"/><stop offset=".39" stop-color="#243b2e"/><stop offset=".63" stop-color="#d9eacb"/><stop offset=".81" stop-color="#183423"/><stop offset="1" stop-color="#f7fff4"/></linearGradient>
+ <linearGradient id="rim" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#BAFF18"/><stop offset=".25" stop-color="#DCFF72"/><stop offset=".52" stop-color="#31FF76"/><stop offset=".82" stop-color="#00EAFF"/><stop offset="1" stop-color="#BAFF18"/></linearGradient>
+ <linearGradient id="dark" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#16352a"/><stop offset=".45" stop-color="#03120f"/><stop offset="1" stop-color="#000805"/></linearGradient>
+ <linearGradient id="left" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#264921"/><stop offset=".42" stop-color="#04170e"/><stop offset="1" stop-color="#06100e"/></linearGradient>
+ <linearGradient id="right" x1="1" y1="0" x2="0" y2="1"><stop stop-color="#12392f"/><stop offset=".42" stop-color="#031a14"/><stop offset="1" stop-color="#06100e"/></linearGradient>
+ <pattern id="mesh" width="14" height="14" patternUnits="userSpaceOnUse"><path d="M0 0h14v14" fill="none" stroke="#95ffa0" stroke-opacity=".07" stroke-width=".65"/><path d="m0 14 14-14" fill="none" stroke="#64ffff" stroke-opacity=".05" stroke-width=".65"/></pattern>
+ <filter id="glow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="7"/></filter>
+ <filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.5"/></filter>
+ <clipPath id="shield"><path d="M380 36 576 130 622 259 573 454 380 556 187 454 138 259 184 130Z"/></clipPath>
+</defs>
+<!-- Floating forged-steel winglets -->
+<g fill="url(#chrome)" stroke="#203627" stroke-width="5">
+<path d="m138 259-80-16-42 30 105 19-73 25 10 36 87-25 37-74z"/>
+<path d="m622 259 80-16 42 30-105 19 73 25-10 36-87-25-37-74z"/>
+<path d="m154 366-89 23 21 34 104-11 33-52z"/>
+<path d="m606 366 89 23-21 34-104-11-33-52z"/>
+</g>
+<g stroke="url(#rim)" stroke-width="4" fill="none" opacity=".94"><path d="m18 273 113 18m-69 61 91-26M742 273l-113 18m69 61-91-26m-516 60 101-12m477 12-101-12"/></g>
+<!-- Main crest -->
+<path d="M380 36 576 130 622 259 573 454 380 556 187 454 138 259 184 130Z" fill="#BAFF18" opacity=".48" filter="url(#glow)"/>
+<path d="M380 36 576 130 622 259 573 454 380 556 187 454 138 259 184 130Z" fill="url(#chrome)" stroke="#0d1417" stroke-width="10"/>
+<path d="M380 52 561 141 604 261 557 443 380 538 203 443 156 261 199 141Z" fill="url(#dark)" stroke="url(#rim)" stroke-width="4"/>
+<g clip-path="url(#shield)"><path d="M144 62h236v570H144z" fill="url(#left)"/><path d="M380 62h236v570H380z" fill="url(#right)"/><path d="M145 90h480v500H145z" fill="url(#mesh)"/>
+<g stroke="#31ff76" fill="none" stroke-width="2" opacity=".29"><path d="M179 155h174m-174 16h130m-143 173h191m-171 14h155M235 113l-34 152 30 148M289 84l-30 155 15 184"/></g>
+<g stroke="#00EAFF" fill="none" stroke-width="2" opacity=".29"><path d="M407 155h174m43 16H451m-51 173h191m-169 14h151M525 113l34 152-30 148M471 84l30 155-15 184"/></g>
+<path d="M380 69v470" stroke="url(#rim)" stroke-width="3" opacity=".8"/>
+<circle cx="380" cy="284" r="61" stroke="#DCFF72" stroke-width="2.7" fill="none" opacity=".84"/><circle cx="380" cy="284" r="8" fill="#DCFF72"/>
+<path d="M224 284h312m-312-89h312v177H224z" stroke="#3affb4" stroke-width="2" fill="none" opacity=".35"/>
+<!-- Twin athletes, paired without using any real person's likeness -->
+<g fill="#030e0c" stroke-linejoin="round">
+<path d="M344 176c-10-29-26-42-52-42-22-4-47 3-55 25l-13 8 17 10-9 22 9 14-7 27 21 6 7 27-31 27-34 10-36 63 22 123 167 12 9-133-15-61-28-18-23-29 4-24 22-4 16-23-5-24 11-21-8-15z" fill="#00130e" stroke="#31FF76" stroke-opacity=".8" stroke-width="2"/>
+<path d="M416 176c10-29 26-42 52-42 22-4 47 3 55 25l13 8-17 10 9 22-9 14 7 27-21 6-7 27 31 27 34 10 36 63-22 123-167 12-9-133 15-61 28-18 23-29-4-24-22-4-16-23 5-24-11-21 8-15z" fill="#001014" stroke="#00EAFF" stroke-opacity=".83" stroke-width="2"/>
+</g>
+<path d="M235 155q28-21 61-9 32 11 34 51l-12 13 1 21-17 14-12 2m-53-50 28 10-22 9m-1 24 19 7 18-2m-38 45 31 26 41-9m-83 16 35 70 45-6m-72 38 24-35" fill="none" stroke="#BAFF18" stroke-width="3.4" opacity=".86"/>
+<path d="M525 155q-28-21-61-9-32 11-34 51l12 13-1 21 17 14 12 2m53-50-28 10 22 9m1 24-19 7-18-2m38 45-31 26-41-9m83 16-35 70-45-6m72 38-24-35" fill="none" stroke="#00EAFF" stroke-width="3.4" opacity=".86"/>
+<g fill="#BAFF18" opacity=".55"><rect x="178" y="276" width="6" height="45"/><rect x="189" y="259" width="6" height="62"/><rect x="200" y="289" width="6" height="32"/></g>
+<g fill="#00eaff" opacity=".55"><rect x="576" y="276" width="6" height="45"/><rect x="565" y="259" width="6" height="62"/><rect x="554" y="289" width="6" height="32"/></g>
+</g>
+<!-- Luminous base and mirrored arrows -->
+<path d="m177 438 203 110 203-110" fill="none" stroke="url(#rim)" stroke-width="4" opacity=".85"/>
+<path d="m290 482 90 55 90-55" fill="none" stroke="url(#rim)" stroke-width="4" opacity=".78"/>
+<path d="m306 463 74 41 74-41" fill="none" stroke="#DCFF72" stroke-width="2" opacity=".4"/>
+<g fill="url(#rim)"><path d="m341 283 29-18v11h20v14h-20v11z"/><path d="m419 283-29-18v11h-20v14h20v11z"/></g>
+<path d="M185 451h390" stroke="url(#rim)" stroke-width="4"/><path d="M245 468h270" stroke="#f1fff2" stroke-opacity=".25" stroke-width="2"/>
+</svg>

@@ -1,0 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&display=swap');
+/* Approved 29 September XOX menu. All selectors are scoped to the menu. */
+body[data-ct-screen="menu"]{padding:0!important;background:#030807!important;overflow-x:hidden;font-family:Barlow,Arial,sans-serif}
+body[data-ct-screen="menu"]::before,body[data-ct-screen="menu"]::after{display:none!important}
+body[data-ct-screen="menu"] .app{position:relative;isolation:isolate;width:min(100%,520px);height:max(100svh,690px);min-height:690px;margin:0 auto;container-type:inline-size;background:#030807 url('./assets/xox-stadium-approved-v3.webp') center/100% 100% no-repeat;overflow:hidden}
+body[data-ct-screen="menu"] .app::before{content:"";position:absolute;inset:0;background:#00000012;z-index:-1;pointer-events:none}
+body[data-ct-screen="menu"] .topbar{display:none}
+body[data-ct-screen="menu"] .xoxMenuLogo{position:absolute;left:5.4%;top:max(5.2%,env(safe-area-inset-top));width:30.5%;text-align:center}
+.xoxMenuLogo img{display:block;width:100%;height:auto}
+.xoxLogoArt{position:relative;isolation:isolate}
+.xoxLogoArt::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(105deg,transparent 43%,#dcff7270 47%,#ffffff 50%,#dcff7270 53%,transparent 57%);background-size:300% 100%;background-position:100% 0;mask:url('../../assets/neon-xi-logo-outline.png') center/100% 100% no-repeat;-webkit-mask:url('../../assets/neon-xi-logo-outline.png') center/100% 100% no-repeat;animation:xox-logo-sweep 4.8s ease-in-out infinite}
+@keyframes xox-logo-sweep{0%,6%{background-position:100% 0;opacity:0}10%{opacity:1}44%{background-position:0% 0;opacity:1}48%,100%{background-position:0% 0;opacity:0}}
+@media(prefers-reduced-motion:reduce){.xoxLogoArt::after{animation:none;opacity:0}}
+.xoxMenuLogo span{display:block;font:500 1.5cqw Barlow,Arial,sans-serif;letter-spacing:.65em;color:#bdeaf6;margin-top:1.5%}
+body[data-ct-screen="menu"] .brand{position:absolute;left:7.2%;top:17.5%;width:57%;height:auto;margin:0;padding:0;border:0;border-radius:0;background:none;text-align:left;box-shadow:none}
+body[data-ct-screen="menu"] .brand .eyebrow{display:none}
+body[data-ct-screen="menu"] .brand h1{font:800 10.5cqw/.95 'Barlow Condensed',Impact,sans-serif;letter-spacing:-.01em;white-space:nowrap;margin:0 0 4%;color:#f6fbff;text-shadow:none}
+body[data-ct-screen="menu"] .brand h1 span{color:#baff18;text-shadow:none}
+body[data-ct-screen="menu"] .brand .subtitle{font:400 3.05cqw/1.35 Barlow,Arial,sans-serif;color:#d8e4e5;letter-spacing:0;max-width:100%;text-shadow:0 1px 3px #000}
+body[data-ct-screen="menu"] .xoxMenuMotif{position:absolute;left:63.4%;top:11.1%;width:30.2%;height:16.2%;object-fit:contain;pointer-events:none}
+body[data-ct-screen="menu"] .menuPanel{position:absolute;left:7.2%;top:35.1%;width:85.6%;height:40.2%;margin:0;padding:0;border:0;background:none;box-shadow:none;filter:none;clip-path:none}
+body[data-ct-screen="menu"] .menuPanelTitle{position:static;margin:0;color:#f3f8fa;font:700 3.7cqw/1.1 'Barlow Condensed',Arial,sans-serif;letter-spacing:.1em;text-shadow:none}
+body[data-ct-screen="menu"] .modeGrid{position:absolute;inset:8.5% 0 0;display:grid;grid-template-rows:repeat(3,minmax(0,1fr));gap:4.5%}
+body[data-ct-screen="menu"] .menuMode{position:relative;display:block;width:100%;height:100%;padding:1px;margin:0;border:0;border-radius:0;clip-path:polygon(2.6% 0,97.4% 0,100% 12%,100% 88%,97.4% 100%,2.6% 100%,0 88%,0 12%);background:#9adfff;color:#c1eeff;cursor:pointer;transition:background .16s,filter .16s,transform .12s;touch-action:manipulation}
+body[data-ct-screen="menu"] .menuModeInside{display:grid;grid-template-columns:24% 1fr 12%;align-items:center;width:100%;height:100%;clip-path:inherit;background:#101e29;box-shadow:inset 0 0 20px #040c1240}
+body[data-ct-screen="menu"] .menuModeIcon,body[data-ct-screen="menu"] .menuModeArrow{display:grid;place-items:center;color:inherit}
+body[data-ct-screen="menu"] .menuModeIcon .menuIcon{width:8.1cqw;height:8.1cqw}
+body[data-ct-screen="menu"] .menuModeArrow .menuIcon{width:3cqw;height:3cqw}
+body[data-ct-screen="menu"] .menuIcon{fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+body[data-ct-screen="menu"] .menuModeCopy{font:700 4.3cqw/1.1 'Barlow Condensed',Arial,sans-serif;text-align:left;color:#f4f8fb;white-space:nowrap;letter-spacing:.005em}
+body[data-ct-screen="menu"] .menuModeDescription{display:block;margin-top:5%;font:400 2.95cqw/1.25 Barlow,Arial,sans-serif;color:#b9d4e2;white-space:normal}
+body[data-ct-screen="menu"] .menuMode:hover,body[data-ct-screen="menu"] .menuMode:focus-visible{background:#baff18;color:#baff18;filter:drop-shadow(0 0 5px #baff1860);outline:none}
+body[data-ct-screen="menu"] .menuMode:active{transform:scale(.982);background:#baff18;color:#baff18}
+body[data-ct-screen="menu"] .howPanel{display:none}
+/* Preserve the existing shared fixed navigation, including its SVG interactions. */
+body[data-ct-screen="menu"] .nx-arcade-footer{padding-bottom:env(safe-area-inset-bottom);background:#080d12}
+@media(max-height:680px){body[data-ct-screen="menu"] .app{height:760px}}
+@media(prefers-reduced-motion:reduce){body[data-ct-screen="menu"] .menuMode{transition:none}}
+/* Override shared footer spacing only on this full-height menu. */
+body.nx-arcade-has-footer[data-ct-screen="menu"]{padding:0!important}
+body[data-ct-screen="menu"] .xoxMenuLogo{left:4.7%;width:33.5%}
+body[data-ct-screen="menu"] .brand h1{font-size:12cqw}
+body[data-ct-screen="menu"] .menuModeCopy{font-size:4.8cqw;font-weight:800}
+body[data-ct-screen="menu"] .xoxMenuMotif{left:59.5%;top:8.6%;width:38.5%;height:21.5%}
+body[data-ct-screen="menu"] .app::before{background:#0000004d}
+body[data-ct-screen="menu"] .brand .subtitle{font-size:3.25cqw;max-width:52cqw}
+body[data-ct-screen="menu"] .menuModeDescription{font-size:3.2cqw}
+body[data-ct-screen="menu"] .menuModeArrow .menuIcon{width:5cqw;height:5cqw;stroke-width:2.2}

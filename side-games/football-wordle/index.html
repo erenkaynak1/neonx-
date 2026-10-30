@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#020605">
+<title>NEON XI — Football Wordle</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Rajdhani:wght@500;600;700&display=swap');
+:root{--bg:#020605;--panel:#07100d;--panel2:#0a1512;--text:#f7fff8;--muted:#789488;--led:#a9ff2f;--led2:#56f58c;--cyan:#16edff;--violet:#b85cff;--yellow:#ffd42a;--dark:#18241f;--line:#254135}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;color:var(--text);font-family:'Rajdhani',system-ui,sans-serif;background:#020605}
+body{position:relative;min-height:100vh;padding:max(14px,env(safe-area-inset-top)) 12px max(22px,env(safe-area-inset-bottom));overflow-x:hidden;background:radial-gradient(circle at 50% -4%,rgba(169,255,47,.13),transparent 29%),radial-gradient(circle at 88% 20%,rgba(22,237,255,.075),transparent 25%),radial-gradient(circle at 5% 72%,rgba(184,92,255,.06),transparent 25%),linear-gradient(180deg,#040a07 0%,#020605 54%,#030807 100%)}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.36;background-image:linear-gradient(rgba(169,255,47,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(169,255,47,.035) 1px,transparent 1px);background-size:38px 38px;mask-image:linear-gradient(to bottom,#000,transparent 86%)}
+body:after{content:"";position:fixed;z-index:0;left:50%;top:0;width:min(76vw,460px);height:3px;transform:translateX(-50%);background:linear-gradient(90deg,transparent,var(--cyan) 18%,var(--led) 50%,var(--violet) 82%,transparent);box-shadow:0 0 10px var(--led),0 0 26px rgba(169,255,47,.45)}
+.app{position:relative;z-index:1;width:min(100%,530px);margin:0 auto}
+.top{display:grid;grid-template-columns:70px minmax(0,1fr) 70px;align-items:center;gap:8px;margin-bottom:8px}
+.back,.new{min-height:44px;border:1px solid rgba(169,255,47,.36);border-radius:12px;background:linear-gradient(180deg,rgba(11,23,18,.94),rgba(5,13,10,.94));color:#eaffda;font:800 11px 'Orbitron',sans-serif;letter-spacing:.05em;text-decoration:none;padding:0 10px;display:inline-flex;align-items:center;justify-content:center;box-shadow:inset 0 0 16px rgba(169,255,47,.04),0 0 15px rgba(169,255,47,.055);cursor:pointer}
+.back:active,.new:active{transform:translateY(1px);border-color:var(--led);box-shadow:0 0 16px rgba(169,255,47,.18)}
+.brand{text-align:center;min-width:0;padding:7px 0}
+.eyebrow{font:800 8px 'Orbitron',sans-serif;letter-spacing:.25em;color:var(--cyan);text-shadow:0 0 10px rgba(22,237,255,.38)}
+h1{font:900 clamp(18px,5.7vw,28px) 'Orbitron',sans-serif;letter-spacing:.035em;line-height:1;margin:4px 0 0;white-space:nowrap;background:linear-gradient(90deg,#f7fff6 4%,var(--led) 42%,#edffdd 62%,var(--cyan) 98%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 9px rgba(169,255,47,.26))}
+.meta{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin:5px 0 11px}
+.pill{position:relative;overflow:hidden;font-size:10px;font-weight:800;letter-spacing:.05em;color:#b8cec3;border:1px solid rgba(169,255,47,.16);background:rgba(5,13,10,.82);border-radius:999px;padding:5px 9px;box-shadow:inset 0 0 14px rgba(169,255,47,.025)}
+.pill strong{color:var(--led);text-shadow:0 0 8px rgba(169,255,47,.24)}
+.boardWrap{position:relative;border:1px solid rgba(169,255,47,.28);border-radius:25px;background:linear-gradient(180deg,rgba(7,16,13,.92),rgba(3,9,7,.91));padding:15px 8px 9px;box-shadow:0 24px 70px rgba(0,0,0,.42),inset 0 1px rgba(255,255,255,.025),inset 0 0 30px rgba(169,255,47,.018),0 0 26px rgba(169,255,47,.055);overflow:hidden}
+.boardWrap:before{content:"";position:absolute;left:8%;right:8%;top:0;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),var(--led),transparent);box-shadow:0 0 11px rgba(169,255,47,.38)}
+.board{position:relative;z-index:1;display:grid;gap:8px;width:100%;margin:0 auto}
+.guessRow{display:grid;grid-template-columns:repeat(var(--cols),minmax(0,1fr));gap:clamp(3px,1.2vw,7px);width:100%;max-width:476px;margin:0 auto}
+.tile{position:relative;aspect-ratio:1;border-radius:50%;border:2px solid #315044;background:radial-gradient(circle at 38% 30%,#12231c 0,#09130f 48%,#050b08 100%);display:grid;place-items:center;min-width:0;color:#fafffb;font:900 clamp(13px,5.5vw,31px) 'Rajdhani',sans-serif;text-transform:uppercase;text-shadow:0 2px 3px #000;box-shadow:inset 0 0 0 2px rgba(255,255,255,.01),inset 0 0 18px rgba(169,255,47,.025),0 0 0 1px rgba(0,0,0,.45);transition:transform .16s ease,background .2s ease,border-color .2s ease,box-shadow .2s ease,color .2s ease}
+.board[data-long="1"] .tile{font-size:clamp(10px,3.7vw,22px)}
+.tile:after{content:"";position:absolute;inset:5px;border-radius:50%;border:1px solid rgba(255,255,255,.018);pointer-events:none}
+.tile.filled{border-color:rgba(169,255,47,.7);box-shadow:inset 0 0 16px rgba(169,255,47,.06),0 0 9px rgba(169,255,47,.09)}
+.tile.exact{background:radial-gradient(circle at 36% 28%,#d9ff75 0,var(--led) 24%,#5fbd14 72%,#397b08 100%);border-color:#dfff9a;color:#071004;text-shadow:0 1px 0 rgba(255,255,255,.28);box-shadow:inset 0 0 16px rgba(255,255,255,.22),0 0 10px rgba(169,255,47,.85),0 0 25px rgba(169,255,47,.35)}
+.tile.present{background:radial-gradient(circle at 36% 28%,#fff293 0,var(--yellow) 28%,#cf8d00 76%,#815500 100%);border-color:#fff1a0;color:#1d1400;text-shadow:0 1px 0 rgba(255,255,255,.3);box-shadow:inset 0 0 16px rgba(255,255,255,.18),0 0 9px rgba(255,212,42,.72),0 0 22px rgba(255,212,42,.26)}
+.tile.absent{background:radial-gradient(circle at 36% 28%,#26362f 0,#19261f 55%,#0d1511 100%);border-color:#354b41;color:#81968b;box-shadow:inset 0 0 15px rgba(0,0,0,.35)}
+.tile.pop{animation:pop .13s ease}.tile.reveal{animation:flip .42s ease both}
+@keyframes pop{50%{transform:scale(1.08);box-shadow:0 0 13px rgba(169,255,47,.22)}}
+@keyframes flip{0%{transform:rotateX(0)}45%{transform:rotateX(90deg)}55%{transform:rotateX(90deg)}100%{transform:rotateX(0)}}
+.message{height:28px;display:flex;align-items:end;justify-content:center;text-align:center;font-weight:700;letter-spacing:.025em;color:#a9c0b4;font-size:12px;margin:5px 0 0}.message.good{color:var(--led);text-shadow:0 0 10px rgba(169,255,47,.34)}.message.warn{color:var(--yellow);text-shadow:0 0 9px rgba(255,212,42,.22)}
+.keyboard{display:grid;gap:5px;margin:10px auto 0;max-width:505px;user-select:none;padding:8px 5px;border-radius:17px;border:1px solid rgba(22,237,255,.07);background:rgba(3,10,8,.48)}
+.keyRow{display:flex;justify-content:center;gap:4px}
+.key{height:44px;flex:1 1 0;max-width:43px;min-width:0;border:1px solid #2a4439;border-radius:8px;background:linear-gradient(180deg,#16241e,#0c1712);color:#e7f7ee;font:800 clamp(11px,3.8vw,16px) 'Rajdhani',sans-serif;cursor:pointer;box-shadow:inset 0 -2px rgba(0,0,0,.28),inset 0 1px rgba(255,255,255,.025);transition:transform .08s ease,filter .12s ease,box-shadow .16s ease,border-color .16s ease}
+.key.wide{flex:1.55;max-width:64px;font-size:10px;color:var(--led);border-color:rgba(169,255,47,.35)}
+.key.exact{background:linear-gradient(180deg,#a9ff2f,#67c817);border-color:#d5ff83;color:#071004;box-shadow:0 0 9px rgba(169,255,47,.35)}
+.key.present{background:linear-gradient(180deg,#ffe35b,#d39e00);border-color:#fff092;color:#1d1400;box-shadow:0 0 8px rgba(255,212,42,.26)}
+.key.absent{background:#0b120f;border-color:#17231e;color:#44594e;box-shadow:none}
+.key:active{transform:translateY(1px);filter:brightness(1.22)}
+.legend{display:flex;justify-content:center;gap:13px;flex-wrap:wrap;margin:11px 0 4px;color:#748b80;font-size:10px;font-weight:700;letter-spacing:.04em}.legend span{display:inline-flex;align-items:center;gap:5px}.dot{width:9px;height:9px;border-radius:50%}.dot.g{background:var(--led);box-shadow:0 0 7px rgba(169,255,47,.7)}.dot.y{background:var(--yellow);box-shadow:0 0 7px rgba(255,212,42,.45)}.dot.d{background:#283a31;border:1px solid #40584c}
+.result{display:none;margin:12px 0 0;border:1px solid rgba(169,255,47,.3);border-radius:18px;background:linear-gradient(180deg,rgba(8,20,15,.96),rgba(3,11,8,.96));padding:15px;text-align:center;box-shadow:0 0 24px rgba(169,255,47,.07),inset 0 0 24px rgba(169,255,47,.025)}.result.show{display:block}.result .label{font-size:9px;letter-spacing:.2em;color:var(--cyan);font-weight:800}.result .player{font:800 20px 'Orbitron',sans-serif;margin-top:6px;color:#fff;text-shadow:0 0 12px rgba(169,255,47,.12)}.result .answer{color:var(--led);font-weight:900;letter-spacing:.15em;margin-top:5px;text-shadow:0 0 10px rgba(169,255,47,.35)}.result button{margin-top:11px;min-height:44px;border:1px solid #d9ff8e;border-radius:12px;background:linear-gradient(180deg,#b8ff4e,#81d821);color:#071005;font:900 11px 'Orbitron',sans-serif;padding:0 16px;cursor:pointer;box-shadow:0 0 14px rgba(169,255,47,.25)}
+.note{text-align:center;color:#4e695c;font-size:10px;line-height:1.4;margin:11px 10px 0}.note b{color:#8ba497}.shake{animation:shake .25s linear}@keyframes shake{25%{transform:translateX(-4px)}50%{transform:translateX(4px)}75%{transform:translateX(-3px)}}
+@media(hover:hover) and (pointer:fine){.back:hover,.new:hover,.key:hover{border-color:rgba(169,255,47,.72);box-shadow:0 0 12px rgba(169,255,47,.12)}}
+@media(max-width:370px){body{padding-inline:8px}.boardWrap{padding-inline:5px}.guessRow{gap:3px}.keyRow{gap:3px}.keyboard{gap:4px;padding-inline:3px}.key{height:42px}.top{grid-template-columns:62px minmax(0,1fr) 62px;gap:4px}.back,.new{padding:0 7px;font-size:9px}.eyebrow{font-size:7px}}
+@media(prefers-reduced-motion:reduce){.tile,.key,.back,.new{animation:none!important;transition:none!important}}
+</style>
+<link rel="stylesheet" href="../neon-arcade-ui-v1.css?v=20260928-home-identical-nav-v6">
+</head>
+<body>
+<main class="app">
+  <header class="top">
+    <a class="back" href="../index.html" aria-label="Yan oyunlara dön">← GERİ</a>
+    <div class="brand"><div class="eyebrow">NEON XI · SIDE GAME</div><h1>FOOTBALL WORDLE</h1></div>
+    <button class="new" id="newBtn" type="button">YENİ</button>
+  </header>
+  <div class="meta">
+    <span class="pill">Havuz: <strong id="poolCount">—</strong></span>
+    <span class="pill">Hak: <strong>6</strong></span>
+    <span class="pill"><strong>SERBEST GİRİŞ</strong></span>
+  </div>
+  <section class="boardWrap" aria-label="Football Wordle oyun alanı">
+    <div class="board" id="board"></div>
+    <div class="message" id="message" role="status" aria-live="polite"></div>
+  </section>
+  <div class="keyboard" id="keyboard" aria-label="Harf klavyesi"></div>
+  <div class="legend" aria-label="Renk açıklamaları">
+    <span><i class="dot g"></i>Doğru yer</span><span><i class="dot y"></i>İsimde var</span><span><i class="dot d"></i>Yok</span>
+  </div>
+  <section class="result" id="result" aria-live="polite">
+    <div class="label">GİZLİ FUTBOLCU</div>
+    <div class="player" id="resultPlayer"></div>
+    <div class="answer" id="resultAnswer"></div>
+    <button id="againBtn" type="button">YENİ OYUN</button>
+  </section>
+  <p class="note"><b>Sözlük/isim doğrulaması yok.</b> Kutucuk sayısı kadar istediğin harfi yazıp ENTER'a basabilirsin. Önceki tüm tahminler ve renk sonuçları ekranda kalır.</p>
+</main>
+<script src="./players.js?v=1"></script>
+<script>
+(()=>{
+'use strict';
+const MAX_GUESSES=6;
+const OVERRIDES={
+  'Lionel Messi':'MESSI','Cristiano Ronaldo':'RONALDO','Kevin De Bruyne':'DEBRUYNE','De Bruyne':'DEBRUYNE','Virgil van Dijk':'VANDIJK','Van Dijk':'VANDIJK','Frenkie de Jong':'DEJONG','De Jong':'DEJONG','Donny van de Beek':'VANDEBEEK','Marc-Andre ter Stegen':'TERSTEGEN','Ter Stegen':'TERSTEGEN','Vinicius Junior':'VINICIUS','Ronaldo Nazario':'RONALDO','Emile Smith Rowe':'SMITHROWE','Park Ji-sung':'PARK','Van Persie':'VANPERSIE','Van Nistelrooy':'VANNISTELROOY','Van Basten':'VANBASTEN','Van der Vaart':'VANDERVAART','De Ligt':'DELIGT','De Paul':'DEPAUL','De Rossi':'DEROSSI','De Ketelaere':'DEKETELAERE','De Gea':'DEGEA','Lo Celso':'LOCELSO','El Shaarawy':'ELSHAARAWY','Abedi Pele':'ABEDI','Alisson Becker':'ALISSON','Joao Pedro':'JOAOPEDRO','Ruben Dias':'DIAS','Joško Gvardiol':'GVARDIOL','Sadio Mane':'MANE','Riyad Mahrez':'MAHREZ','Jay-Jay Okocha':'OKOCHA',"Samuel Eto'o":'ETOO','Pierre-Emerick Aubameyang':'AUBAMEYANG','Eric Maxim Choupo-Moting':'CHOUPOMOTING','DaMarcus Beasley':'BEASLEY','Rustü Recber':'RECBER','Ugürcan Cakir':'CAKIR','Mac Allister':'MACALLISTER','Van de Ven':'VANDEVEN'
+};
+const board=document.getElementById('board');
+const keyboard=document.getElementById('keyboard');
+const message=document.getElementById('message');
+const result=document.getElementById('result');
+const resultPlayer=document.getElementById('resultPlayer');
+const resultAnswer=document.getElementById('resultAnswer');
+const poolCount=document.getElementById('poolCount');
+let target=null,row=0,current=[],ended=false,cells=[],keyStates=new Map();
+function normalize(text){return String(text||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Za-z]/g,'').toUpperCase()}
+function answerFor(name){if(OVERRIDES[name])return OVERRIDES[name];const parts=String(name).trim().split(/\s+/);return normalize(parts[parts.length-1])}
+const rawPool=(window.NX_WORDLE_PLAYERS||[]).map(name=>({name,answer:answerFor(name)})).filter(p=>p.answer.length>=3&&p.answer.length<=13);
+const seenAnswers=new Set();
+const pool=rawPool.filter(p=>{if(seenAnswers.has(p.answer))return false;seenAnswers.add(p.answer);return true});
+poolCount.textContent=pool.length;
+function randomItem(list){if(!list.length)return null;if(window.crypto&&crypto.getRandomValues){const a=new Uint32Array(1);crypto.getRandomValues(a);return list[a[0]%list.length]}return list[Math.floor(Math.random()*list.length)]}
+function buildBoard(){board.replaceChildren();cells=[];board.style.setProperty('--cols',target.answer.length);board.dataset.long=target.answer.length>=9?'1':'0';for(let r=0;r<MAX_GUESSES;r++){const rowEl=document.createElement('div');rowEl.className='guessRow';rowEl.style.setProperty('--cols',target.answer.length);const rowCells=[];for(let c=0;c<target.answer.length;c++){const tile=document.createElement('div');tile.className='tile';tile.setAttribute('aria-label',`${r+1}. tahmin ${c+1}. harf`);rowEl.appendChild(tile);rowCells.push(tile)}board.appendChild(rowEl);cells.push(rowCells)}}
+const keyboardLayout=[Array.from('QWERTYUIOP'),Array.from('ASDFGHJKL'),['ENTER',...Array.from('ZXCVBNM'),'⌫']];
+function buildKeyboard(){keyboard.replaceChildren();for(const rowKeys of keyboardLayout){const rowEl=document.createElement('div');rowEl.className='keyRow';for(const label of rowKeys){const b=document.createElement('button');b.type='button';b.className='key'+((label==='ENTER'||label==='⌫')?' wide':'');b.textContent=label;b.dataset.key=label;b.setAttribute('aria-label',label==='⌫'?'Sil':label);b.addEventListener('click',()=>handleKey(label));rowEl.appendChild(b)}keyboard.appendChild(rowEl)}}
+function showMessage(text,type=''){message.textContent=text;message.className='message'+(type?' '+type:'')}
+function renderCurrent(){const rowCells=cells[row];if(!rowCells)return;for(let i=0;i<rowCells.length;i++){const value=current[i]||'';rowCells[i].textContent=value;rowCells[i].className='tile'+(value?' filled':'')}if(current.length){const t=rowCells[current.length-1];t.classList.remove('pop');void t.offsetWidth;t.classList.add('pop')}}
+function handleKey(raw){if(ended||!target)return;if(raw==='ENTER'){submit();return}if(raw==='⌫'||raw==='BACKSPACE'){if(current.length){current.pop();renderCurrent()}return}const letter=normalize(raw);if(letter.length!==1||!/[A-Z]/.test(letter))return;if(current.length<target.answer.length){current.push(letter);renderCurrent();showMessage('')}}
+function evaluate(guess,answer){const out=Array(answer.length).fill('absent');const remaining=answer.split('');for(let i=0;i<answer.length;i++){if(guess[i]===answer[i]){out[i]='exact';remaining[i]=null}}for(let i=0;i<answer.length;i++){if(out[i]==='exact')continue;const idx=remaining.indexOf(guess[i]);if(idx!==-1){out[i]='present';remaining[idx]=null}}return out}
+const rank={absent:1,present:2,exact:3};
+function updateKey(letter,state){const old=keyStates.get(letter);if(old&&rank[old]>=rank[state])return;keyStates.set(letter,state);const key=keyboard.querySelector(`[data-key="${letter}"]`);if(key){key.classList.remove('absent','present','exact');key.classList.add(state)}}
+function submit(){if(current.length!==target.answer.length){showMessage(`${target.answer.length} harf doldurmalısın`,'warn');const el=cells[row]?.[0]?.parentElement;if(el){el.classList.remove('shake');void el.offsetWidth;el.classList.add('shake')}return}const guess=current.join('');const states=evaluate(guess,target.answer);states.forEach((state,i)=>{const tile=cells[row][i];tile.className=`tile ${state} reveal`;tile.style.animationDelay=`${i*55}ms`;updateKey(guess[i],state)});if(guess===target.answer){window.setTimeout(()=>finish(true),Math.min(750,target.answer.length*55+350));return}row++;current=[];if(row>=MAX_GUESSES){window.setTimeout(()=>finish(false),Math.min(750,target.answer.length*55+350))}else{showMessage(`${MAX_GUESSES-row} hak kaldı`)}}
+function finish(win){ended=true;showMessage(win?'Bildin!':'Hakların bitti',win?'good':'warn');resultPlayer.textContent=target.name;resultAnswer.textContent=target.answer;result.classList.add('show');result.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'nearest'})}
+function newGame(){target=randomItem(pool);if(!target){showMessage('Oyuncu havuzu yüklenemedi','warn');return}row=0;current=[];ended=false;keyStates.clear();result.classList.remove('show');showMessage(`${target.answer.length} harfli futbolcuyu bul`);buildBoard();buildKeyboard()}
+document.getElementById('newBtn').addEventListener('click',newGame);document.getElementById('againBtn').addEventListener('click',newGame);
+document.addEventListener('keydown',e=>{if(e.ctrlKey||e.metaKey||e.altKey||e.target.closest?.('button,a,input,textarea,select,.nx-arcade-footer,.nx-social-shade,.nx-arcade-choice-shade'))return;if(e.key==='Enter'){e.preventDefault();handleKey('ENTER');return}if(e.key==='Backspace'){e.preventDefault();handleKey('⌫');return}if(e.key.length===1){const n=normalize(e.key);if(n.length===1&&/[A-Z]/.test(n)){e.preventDefault();handleKey(n)}}});
+newGame();
+})();
+</script>
+<script type="module" src="../../social/neon-social.js?v=20260928-home-identical-nav-v6"></script>
+<script src="../neon-arcade-ui-v1.js?v=20260928-home-identical-nav-v6"></script>
+<script type="module" src="../../social/neon-social-consistency-v1.js?v=20260928-home-identical-nav-v6"></script>
+</body>
+</html>
