@@ -1,6 +1,18 @@
 {
   "schema_version": 1,
   "players": {
+    "52261": {
+      "currentClub": "Başakşehir FK",
+      "clubs": [
+        "Fenerbahçe",
+        "İstanbulspor",
+        "Kayserispor",
+        "Manisaspor",
+        "Başakşehir FK"
+      ],
+      "source_url": "https://www.tff.org/Default.aspx?kisiId=111663&pageId=526",
+      "verified_at": "2026-10-31"
+    },
     "397033": {
       "currentClub": "Tottenham Hotspur",
       "clubs": [

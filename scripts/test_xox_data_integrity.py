@@ -79,16 +79,27 @@ class XoxDataIntegrityTest(unittest.TestCase):
             merged = set(by_id[player_id].get("clubs") or []) | set(extras.get(player_id, []))
             self.assertTrue(required <= merged, f"{player_id}: missing {sorted(required - merged)}")
 
+    def test_volkan_babacan_has_five_verified_professional_clubs(self) -> None:
+        source_player = next(row for row in self.players if row["id"] == 52261)
+        correction = self.corrections["players"][str(source_player["id"])]
+        clubs = correction["clubs"]
+        self.assertEqual(correction["currentClub"], "Başakşehir FK")
+        self.assertEqual(len(clubs), 5)
+        self.assertEqual(set(clubs), {"Fenerbahçe", "İstanbulspor", "Kayserispor", "Manisaspor", "Başakşehir FK"})
+        self.assertTrue(correction["source_url"].startswith("https://www.tff.org/"))
+        self.assertEqual(correction["verified_at"], "2026-10-31")
+        self.assertIn("player.clubs = correctedClubs", self.runtime)
+
     def test_tonali_tottenham_italy_and_previous_clubs(self) -> None:
         # Verified against Tottenham's official player biography, 2026-10-30.
         source_player = next(row for row in self.players if row["id"] == 397033)
         correction = self.corrections["players"][str(source_player["id"])]
         player = dict(source_player)
         player["currentClub"] = correction["currentClub"]
-        player["clubs"] = sorted(set(player.get("clubs") or []) | set(correction["clubs"]))
+        player["clubs"] = correction["clubs"]
         self.assertEqual(player["nationality"], "İtalya")
         self.assertEqual(player["currentClub"], "Tottenham Hotspur")
-        self.assertTrue({"Tottenham Hotspur", "Newcastle United", "AC Milan"} <= set(player["clubs"]))
+        self.assertEqual(set(player["clubs"]), {"Tottenham Hotspur", "Newcastle United", "AC Milan"})
         self.assertNotIn("Porto", player["clubs"])
         self.assertTrue(correction["source_url"].startswith("https://www.tottenhamhotspur.com/"))
         self.assertEqual(correction["verified_at"], "2026-10-30")

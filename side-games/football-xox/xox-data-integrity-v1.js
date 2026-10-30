@@ -64,10 +64,9 @@
       }
       if (Array.isArray(item.clubs)) {
         const before = new Set(Array.isArray(player.clubs) ? player.clubs : []);
-        const merged = new Set(before);
-        item.clubs.filter(club => typeof club === 'string' && club.trim()).forEach(club => merged.add(club.trim()));
-        addedClubLinks += merged.size - before.size;
-        if (merged.size !== before.size) player.clubs = [...merged].sort((a,b)=>String(a).localeCompare(String(b),'tr'));
+        const correctedClubs = [...new Set(item.clubs.filter(club => typeof club === 'string' && club.trim()).map(club => club.trim()))];
+        addedClubLinks += correctedClubs.filter(club => !before.has(club)).length;
+        player.clubs = correctedClubs.sort((a,b)=>String(a).localeCompare(String(b),'tr'));
       }
       player.verifiedCorrection = {verifiedAt, sourceUrl};
       corrected += 1;
