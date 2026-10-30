@@ -67,7 +67,7 @@
     "Attack": "players-attack.json"
   },
   "corrections_file": "side-games/en11/data/corrections.json",
-  "verified_corrections": 0,
+  "verified_corrections": 1,
   "disabled_metrics": {
     "trophies": "The source does not provide a verified trophy table.",
     "debutAge": "The source does not provide the first senior national-team appearance date."
