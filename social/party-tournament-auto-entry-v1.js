@@ -39,6 +39,8 @@ async function start(){
   console.info('[NEON XI] party member entered tournament',roomCode,user.uid);
 }
 start().catch(e=>{
+  document.documentElement.dataset.nxPartyTournament='error';
+  document.documentElement.dataset.nxPartyTournamentError=String(e?.message||e);
   console.error('[NEON XI] automatic tournament entry failed',e);
   const el=document.createElement('div');
   el.style.cssText='position:fixed;z-index:999999;left:12px;right:12px;top:max(12px,env(safe-area-inset-top));padding:12px 14px;border:1px solid rgba(255,90,110,.5);border-radius:12px;background:#16090d;color:#ffd5dc;font:700 12px system-ui;text-align:center';

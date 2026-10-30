@@ -263,7 +263,16 @@ body[data-ct-screen="game"] .brand::after{
 }
 /* Final mobile-first menu distribution. Three accessible modes, no redundant help panel. */
 body:is([data-ct-screen="menu"],[data-ct-screen="create"],[data-ct-screen="join"]) .menuPanel{
-  top:40.5%;height:42%;left:7.2%;width:85.6%;
+  top:35.35%;height:32.85%;left:8.75%;width:82.5%;
+  border:1px solid rgba(111,255,35,.42);background-color:rgba(3,12,10,.92);
+  clip-path:polygon(4% 0,40% 0,41.5% 2%,72% 2%,73% 0,96% 0,100% 7%,100% 93%,96% 100%,4% 100%,0 93%,0 7%);
+  overflow:hidden;
+}
+body:is([data-ct-screen="menu"],[data-ct-screen="create"],[data-ct-screen="join"]) .menuPanelTitle{
+  position:absolute;z-index:2;left:7%;top:6.5%;
+}
+body:is([data-ct-screen="menu"],[data-ct-screen="create"],[data-ct-screen="join"]) .modeGrid{
+  left:5.25%;top:19.2%;width:89.5%;height:74.6%;inset:auto;
 }
 body:is([data-ct-screen="menu"],[data-ct-screen="create"],[data-ct-screen="join"]) .modeGrid{
   inset:8% 0 0;width:100%;height:92%;

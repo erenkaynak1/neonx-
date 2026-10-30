@@ -82,7 +82,7 @@ async function launchDraftFromParty(leader,member,partyId){
 }
 
 const browser=await chromium.launch({headless:true});let leader,member;
-try{leader=await makeBot(browser,'a');member=await makeBot(browser,'b');await Promise.all([guestSignIn(leader),guestSignIn(member)]);mark('İki bağımsız misafir oturumu hazır',{leader:leader.uid,member:member.uid});const partyId=await setupParty(leader,member);mark('İki kişilik Draft partisi hazır',{partyId});report.launch=await launchDraftFromParty(leader,member,partyId);report.ok=true}
+try{leader=await makeBot(browser,'a');member=await makeBot(browser,'b');await guestSignIn(leader);await guestSignIn(member);mark('İki bağımsız misafir oturumu hazır',{leader:leader.uid,member:member.uid});const partyId=await setupParty(leader,member);mark('İki kişilik Draft partisi hazır',{partyId});report.launch=await launchDraftFromParty(leader,member,partyId);report.ok=true}
 catch(error){report.error=String(error?.stack||error);console.error(report.error);if(leader)await shot(leader.page,'FAIL-leader');if(member)await shot(member.page,'FAIL-member')}
 finally{for(const bot of [leader,member].filter(Boolean)){let diag=null;try{diag=await diagnostics(bot)}catch{}report.bots.push({label:bot.label,username:bot.username,uid:bot.uid,url:bot.page.url(),diagnostics:diag,pageErrors:bot.pageErrors,consoleErrors:bot.consoleErrors.slice(-40)});await shot(bot.page,`final-${bot.label}`);try{await bot.context.close()}catch{}}await browser.close();report.finishedAt=new Date().toISOString();await fs.writeFile(path.join(OUT_DIR,'report.json'),JSON.stringify(report,null,2))}
 if(!report.ok)process.exitCode=1;

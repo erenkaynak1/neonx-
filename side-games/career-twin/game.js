@@ -43,6 +43,10 @@
       grid.appendChild(button);
     }
     panel.append(title,grid);app.appendChild(panel);
+    const help=E('section','howPanel');
+    help.setAttribute('aria-label','Kariyer İkizi nasıl oynanır');
+    help.innerHTML='<div class="howBall" aria-hidden="true">'+menuIcon('info').outerHTML+'</div><div class="howCopy"><h3 class="howTitle">NASIL OYNANIR?</h3><p class="howText">Her turda hedef futbolcuya en yakın kariyer yolculuğunu seç. Oyuncu verilerini karşılaştır ve rakibinden daha yakın tahmin et.</p></div>';
+    app.appendChild(help);
 
   }
   function renderCreate(){S.screen='menu';renderMenu();if(S.error)app.appendChild(E('div','error',esc(S.error)))}

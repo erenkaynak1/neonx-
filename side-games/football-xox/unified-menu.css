@@ -18,7 +18,7 @@ body[data-ct-screen="menu"] .brand h1{font:800 10.5cqw/.95 'Barlow Condensed',Im
 body[data-ct-screen="menu"] .brand h1 span{color:#baff18;text-shadow:none}
 body[data-ct-screen="menu"] .brand .subtitle{font:400 3.05cqw/1.35 Barlow,Arial,sans-serif;color:#d8e4e5;letter-spacing:0;max-width:100%;text-shadow:0 1px 3px #000}
 body[data-ct-screen="menu"] .xoxMenuMotif{position:absolute;left:63.4%;top:11.1%;width:30.2%;height:16.2%;object-fit:contain;pointer-events:none}
-body[data-ct-screen="menu"] .menuPanel{position:absolute;left:7.2%;top:35.1%;width:85.6%;height:40.2%;margin:0;padding:0;border:0;background:none;box-shadow:none;filter:none;clip-path:none}
+body[data-ct-screen="menu"] .menuPanel{position:absolute;left:7.2%;top:35.1%;width:85.6%;height:40.2%;margin:0;padding:0;border:1px solid rgba(111,255,35,.38);background-color:rgba(3,12,10,.88);background-image:linear-gradient(155deg,rgba(5,19,12,.88),rgba(3,12,10,.78));box-shadow:0 0 24px rgba(78,255,36,.12),inset 0 0 24px rgba(78,255,36,.035);filter:none;clip-path:polygon(2.8% 0,97.2% 0,100% 3%,100% 97%,97.2% 100%,2.8% 100%,0 97%,0 3%)}
 body[data-ct-screen="menu"] .menuPanelTitle{position:static;margin:0;color:#f3f8fa;font:700 3.7cqw/1.1 'Barlow Condensed',Arial,sans-serif;letter-spacing:.1em;text-shadow:none}
 body[data-ct-screen="menu"] .modeGrid{position:absolute;inset:8.5% 0 0;display:grid;grid-template-rows:repeat(3,minmax(0,1fr));gap:4.5%}
 body[data-ct-screen="menu"] .menuMode{position:relative;display:block;width:100%;height:100%;padding:1px;margin:0;border:0;border-radius:0;clip-path:polygon(2.6% 0,97.4% 0,100% 12%,100% 88%,97.4% 100%,2.6% 100%,0 88%,0 12%);background:#9adfff;color:#c1eeff;cursor:pointer;transition:background .16s,filter .16s,transform .12s;touch-action:manipulation}
@@ -31,7 +31,24 @@ body[data-ct-screen="menu"] .menuModeCopy{font:700 4.3cqw/1.1 'Barlow Condensed'
 body[data-ct-screen="menu"] .menuModeDescription{display:block;margin-top:5%;font:400 2.95cqw/1.25 Barlow,Arial,sans-serif;color:#b9d4e2;white-space:normal}
 body[data-ct-screen="menu"] .menuMode:hover,body[data-ct-screen="menu"] .menuMode:focus-visible{background:#baff18;color:#baff18;filter:drop-shadow(0 0 5px #baff1860);outline:none}
 body[data-ct-screen="menu"] .menuMode:active{transform:scale(.982);background:#baff18;color:#baff18}
-body[data-ct-screen="menu"] .howPanel{display:none}
+body[data-ct-screen="menu"] .howPanel{
+  position:absolute;z-index:5;left:8.5%;top:76%;width:83%;height:12.5%;
+  display:grid;grid-template-columns:22% 78%;align-items:center;gap:2%;
+  margin:0;padding:7px 10px;border:1px solid rgba(111,255,35,.58);
+  background:linear-gradient(110deg,rgba(2,22,12,.97),rgba(5,17,18,.96));
+  box-shadow:0 0 16px rgba(57,255,39,.14),inset 0 0 18px rgba(57,255,39,.05);
+  clip-path:polygon(4% 0,96% 0,100% 12%,100% 88%,96% 100%,4% 100%,0 88%,0 12%)
+}
+body[data-ct-screen="menu"] .howBall{
+  display:grid;place-items:center;justify-self:center;width:56%;aspect-ratio:1;
+  border:1px solid #73ff26;border-radius:50%;color:#baff18;
+  font:800 18px 'Barlow Condensed',Arial,sans-serif;text-shadow:0 0 8px #6eff2d;
+  box-shadow:0 0 10px rgba(100,255,42,.4),inset 0 0 10px rgba(100,255,42,.14)
+}
+body[data-ct-screen="menu"] .howCopy{min-width:0}
+body[data-ct-screen="menu"] .howTitle{margin:0 0 3px;color:#78ff22;font:800 clamp(13px,3.4cqw,18px)/1 'Barlow Condensed',Arial,sans-serif;letter-spacing:.06em}
+body[data-ct-screen="menu"] .howText{margin:0;color:#d2e3d9;font:500 clamp(9px,2.35cqw,12px)/1.22 Barlow,Arial,sans-serif}
+@media(max-height:680px){body[data-ct-screen="menu"] .howPanel{top:75%;height:13%}}
 /* Preserve the existing shared fixed navigation, including its SVG interactions. */
 body[data-ct-screen="menu"] .nx-arcade-footer{padding-bottom:env(safe-area-inset-bottom);background:#080d12}
 @media(max-height:680px){body[data-ct-screen="menu"] .app{height:760px}}

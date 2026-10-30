@@ -23,6 +23,7 @@ class XoxDataIntegrityTest(unittest.TestCase):
         cls.rules = json.loads((MASTER / "xox-rules.json").read_text(encoding="utf-8"))
         cls.players = json.loads((MASTER / "xox-players.json").read_text(encoding="utf-8"))
         cls.supplement = json.loads((MASTER / "xox-club-supplement.json").read_text(encoding="utf-8"))
+        cls.corrections = json.loads((MASTER / "xox-player-corrections.json").read_text(encoding="utf-8"))
 
     def test_integrity_layer_runs_before_xox_game(self) -> None:
         integrity = self.index.index("./xox-data-integrity-v1.js")
@@ -30,6 +31,8 @@ class XoxDataIntegrityTest(unittest.TestCase):
         self.assertLess(integrity, game)
         self.assertIn("xox-club-supplement.json", self.runtime)
         self.assertIn("mergeSupplement", self.runtime)
+        self.assertIn("mergeVerifiedCorrections", self.runtime)
+        self.assertIn("xox-player-corrections.json", self.runtime)
         self.assertIn("NX_XOX_DATA_INTEGRITY", self.runtime)
 
     def test_transfer_supplement_recovers_real_missing_club_links(self) -> None:
@@ -76,13 +79,30 @@ class XoxDataIntegrityTest(unittest.TestCase):
             merged = set(by_id[player_id].get("clubs") or []) | set(extras.get(player_id, []))
             self.assertTrue(required <= merged, f"{player_id}: missing {sorted(required - merged)}")
 
+    def test_volkan_babacan_has_five_verified_professional_clubs(self) -> None:
+        source_player = next(row for row in self.players if row["id"] == 52261)
+        correction = self.corrections["players"][str(source_player["id"])]
+        clubs = correction["clubs"]
+        self.assertEqual(correction["currentClub"], "Başakşehir FK")
+        self.assertEqual(len(clubs), 5)
+        self.assertEqual(set(clubs), {"Fenerbahçe", "İstanbulspor", "Kayserispor", "Manisaspor", "Başakşehir FK"})
+        self.assertTrue(correction["source_url"].startswith("https://www.tff.org/"))
+        self.assertEqual(correction["verified_at"], "2026-10-31")
+        self.assertIn("player.clubs = correctedClubs", self.runtime)
+
     def test_tonali_tottenham_italy_and_previous_clubs(self) -> None:
-        # Verified against Tottenham's official player biography, 2026-09-28.
-        player = next(row for row in self.players if row["id"] == 397033)
+        # Verified against Tottenham's official player biography, 2026-10-30.
+        source_player = next(row for row in self.players if row["id"] == 397033)
+        correction = self.corrections["players"][str(source_player["id"])]
+        player = dict(source_player)
+        player["currentClub"] = correction["currentClub"]
+        player["clubs"] = correction["clubs"]
         self.assertEqual(player["nationality"], "İtalya")
         self.assertEqual(player["currentClub"], "Tottenham Hotspur")
-        self.assertTrue({"Tottenham Hotspur", "Newcastle United", "AC Milan"} <= set(player["clubs"]))
+        self.assertEqual(set(player["clubs"]), {"Tottenham Hotspur", "Newcastle United", "AC Milan"})
         self.assertNotIn("Porto", player["clubs"])
+        self.assertTrue(correction["source_url"].startswith("https://www.tottenhamhotspur.com/"))
+        self.assertEqual(correction["verified_at"], "2026-10-30")
 
     def test_every_xox_nationality_has_a_visual_flag_mapping(self) -> None:
         self.assertIn("flagcdn.com", self.runtime)
