@@ -52,8 +52,9 @@ async function rollbackPartyJoin(pointer,id,uid,{removeInvite=true}={}){
 async function acceptParty(id){
   const user=me();if(!user||!id)throw new Error('Parti daveti geçersiz.');const uid=user.uid,profile=await currentProfile(),existing=await validPartyFor(uid);
   if(existing===id){await remove(ref(state.db,`social/partyInvites/${uid}/${id}`));announce('Zaten bu partidesin.');return {already:true}}if(existing)throw new Error('Zaten aktif bir partidesin. Önce mevcut partiden ayrıl.');
-  const inviteRef=ref(state.db,`social/partyInvites/${uid}/${id}`),invite=(await get(inviteRef)).val();if(!invite)throw new Error('Parti daveti artık mevcut değil.');
-  const target=partyRef(id),serverParty=(await get(target)).val();
+  const inviteRef=ref(state.db,`social/partyInvites/${uid}/${id}`),target=partyRef(id);let invite=null,serverParty=null;
+  for(let attempt=0;attempt<8;attempt++){const [inviteSnap,partySnap]=await Promise.all([get(inviteRef),get(target)]);invite=inviteSnap.val();serverParty=partySnap.val();if(invite&&serverParty?.createdAt&&serverParty?.leaderUid&&serverParty?.members?.[serverParty.leaderUid])break;if(attempt<7)await sleep(100)}
+  if(!invite)throw new Error('Parti daveti artık mevcut değil.');
   if(!serverParty?.createdAt||!serverParty?.leaderUid||!serverParty?.members?.[serverParty.leaderUid]){await remove(inviteRef);throw new Error('Parti artık mevcut değil. Davet temizlendi.')}
   const pointer=ref(state.db,partyKey(uid)),claim=await runTransaction(pointer,current=>!current||current===id?id:undefined,{applyLocally:false});if(!claim.committed)throw new Error('Başka bir parti üyeliği aynı anda etkinleşti.');
   const beforeJoin=(await get(target)).val();
