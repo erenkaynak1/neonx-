@@ -31,7 +31,24 @@ body[data-ct-screen="menu"] .menuModeCopy{font:700 4.3cqw/1.1 'Barlow Condensed'
 body[data-ct-screen="menu"] .menuModeDescription{display:block;margin-top:5%;font:400 2.95cqw/1.25 Barlow,Arial,sans-serif;color:#b9d4e2;white-space:normal}
 body[data-ct-screen="menu"] .menuMode:hover,body[data-ct-screen="menu"] .menuMode:focus-visible{background:#baff18;color:#baff18;filter:drop-shadow(0 0 5px #baff1860);outline:none}
 body[data-ct-screen="menu"] .menuMode:active{transform:scale(.982);background:#baff18;color:#baff18}
-body[data-ct-screen="menu"] .howPanel{display:none}
+body[data-ct-screen="menu"] .howPanel{
+  position:absolute;z-index:5;left:8.5%;top:76%;width:83%;height:12.5%;
+  display:grid;grid-template-columns:22% 78%;align-items:center;gap:2%;
+  margin:0;padding:7px 10px;border:1px solid rgba(111,255,35,.58);
+  background:linear-gradient(110deg,rgba(2,22,12,.97),rgba(5,17,18,.96));
+  box-shadow:0 0 16px rgba(57,255,39,.14),inset 0 0 18px rgba(57,255,39,.05);
+  clip-path:polygon(4% 0,96% 0,100% 12%,100% 88%,96% 100%,4% 100%,0 88%,0 12%)
+}
+body[data-ct-screen="menu"] .howBall{
+  display:grid;place-items:center;justify-self:center;width:56%;aspect-ratio:1;
+  border:1px solid #73ff26;border-radius:50%;color:#baff18;
+  font:800 18px 'Barlow Condensed',Arial,sans-serif;text-shadow:0 0 8px #6eff2d;
+  box-shadow:0 0 10px rgba(100,255,42,.4),inset 0 0 10px rgba(100,255,42,.14)
+}
+body[data-ct-screen="menu"] .howCopy{min-width:0}
+body[data-ct-screen="menu"] .howTitle{margin:0 0 3px;color:#78ff22;font:800 clamp(13px,3.4cqw,18px)/1 'Barlow Condensed',Arial,sans-serif;letter-spacing:.06em}
+body[data-ct-screen="menu"] .howText{margin:0;color:#d2e3d9;font:500 clamp(9px,2.35cqw,12px)/1.22 Barlow,Arial,sans-serif}
+@media(max-height:680px){body[data-ct-screen="menu"] .howPanel{top:75%;height:13%}}
 /* Preserve the existing shared fixed navigation, including its SVG interactions. */
 body[data-ct-screen="menu"] .nx-arcade-footer{padding-bottom:env(safe-area-inset-bottom);background:#080d12}
 @media(max-height:680px){body[data-ct-screen="menu"] .app{height:760px}}
