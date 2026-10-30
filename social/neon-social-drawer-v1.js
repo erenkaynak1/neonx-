@@ -3,12 +3,13 @@ import {getApp,getApps} from 'https://www.gstatic.com/firebasejs/12.16.0/firebas
 import {getAuth,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js';
 import {getDatabase,get,onValue,ref,remove,runTransaction,serverTimestamp,set,update} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js';
 
-const VERSION='20260913-friend-lobby-v1';
+const VERSION='20261030-reverse-party-v1';
 const MODES={
   draft:{label:'NEON XI Draft',code:'alpha6',minParty:2,maxParty:8},
   xox:{label:'Futbol XOX',code:'numeric4',minParty:2,maxParty:2},
   twin:{label:'Kariyer İkizi',code:'numeric4',minParty:2,maxParty:2},
-  imposter:{label:'Futbol Imposter',code:'alpha5',minParty:3,maxParty:12}
+  imposter:{label:'Futbol Imposter',code:'alpha5',minParty:3,maxParty:12},
+  reverse:{label:'RE:VERSE',code:'alpha6',minParty:2,maxParty:2}
 };
 const state={
   auth:null,db:null,user:null,profile:null,
