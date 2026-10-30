@@ -4,6 +4,7 @@
   const nativeFetch = window.fetch.bind(window);
   const PLAYER_FILE_RE = /(?:^|\/)xox-players\.json(?:[?#]|$)/;
   const SUPPLEMENT_URL = '../data/master/xox-club-supplement.json?v=20260911-transfer-supplement-v1';
+  const CORRECTION_URL = '../data/master/xox-player-corrections.json?v=20261030-tonali-current-club-v1';
 
   const COUNTRY_CODES = {
     'Türkiye':'tr','Arjantin':'ar','Brezilya':'br','Fransa':'fr','İspanya':'es','Almanya':'de','İtalya':'it',
@@ -18,6 +19,12 @@
     .then(response => response.ok ? response.json() : null)
     .catch(error => {
       console.warn('[NEON XI XOX] club supplement unavailable', error);
+      return null;
+    });
+  const correctionPromise = nativeFetch(CORRECTION_URL, {cache:'no-store'})
+    .then(response => response.ok ? response.json() : null)
+    .catch(error => {
+      console.warn('[NEON XI XOX] player correction unavailable', error);
       return null;
     });
 
@@ -41,24 +48,53 @@
     return {players, enriched, clubLinks};
   }
 
+  function mergeVerifiedCorrections(players, document) {
+    const rows = Array.isArray(players) ? players : [];
+    const corrections = document?.players || {};
+    let corrected = 0;
+    let addedClubLinks = 0;
+    for (const player of rows) {
+      const item = corrections[String(player?.id)];
+      if (!item) continue;
+      const sourceUrl = String(item.source_url || '');
+      const verifiedAt = String(item.verified_at || '');
+      if (!/^https:\/\//i.test(sourceUrl) || !/^\d{4}-\d{2}-\d{2}$/.test(verifiedAt)) continue;
+      if (typeof item.currentClub === 'string' && item.currentClub.trim()) {
+        player.currentClub = item.currentClub.trim();
+      }
+      if (Array.isArray(item.clubs)) {
+        const before = new Set(Array.isArray(player.clubs) ? player.clubs : []);
+        const merged = new Set(before);
+        item.clubs.filter(club => typeof club === 'string' && club.trim()).forEach(club => merged.add(club.trim()));
+        addedClubLinks += merged.size - before.size;
+        if (merged.size !== before.size) player.clubs = [...merged].sort((a,b)=>String(a).localeCompare(String(b),'tr'));
+      }
+      player.verifiedCorrection = {verifiedAt, sourceUrl};
+      corrected += 1;
+    }
+    return {players:rows, corrected, addedClubLinks};
+  }
+
   window.fetch = async function xoxIntegrityFetch(input, init) {
     const url = typeof input === 'string' ? input : String(input?.url || '');
     const response = await nativeFetch(input, init);
     if (!PLAYER_FILE_RE.test(url) || !response.ok) return response;
     try {
       const players = await response.clone().json();
-      const supplement = await supplementPromise;
+      const [supplement, corrections] = await Promise.all([supplementPromise, correctionPromise]);
       const merged = mergeSupplement(players, supplement);
+      const corrected = mergeVerifiedCorrections(merged.players, corrections);
       window.NX_XOX_DATA_INTEGRITY = Object.freeze({
         supplementVersion: supplement?.version || null,
         supplementPlayers: Number(supplement?.player_count || 0),
         enrichedPlayers: merged.enriched,
-        addedClubLinks: merged.clubLinks
+        addedClubLinks: merged.clubLinks + corrected.addedClubLinks,
+        verifiedCorrections: corrected.corrected
       });
       const headers = new Headers(response.headers);
       headers.set('content-type','application/json; charset=utf-8');
       headers.delete('content-length');
-      return new Response(JSON.stringify(merged.players), {
+      return new Response(JSON.stringify(corrected.players), {
         status: response.status,
         statusText: response.statusText,
         headers
