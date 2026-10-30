@@ -42,7 +42,9 @@ class SocialConsistencyTests(unittest.TestCase):
 
     def test_party_accept_uses_pointer_claim_member_write_and_post_verify_rollback(self):
         self.assertIn('const inviteRef=ref(state.db,`social/partyInvites/${uid}/${id}`)', CONSISTENCY)
-        self.assertIn('const target=partyRef(id),serverParty=(await get(target)).val()', CONSISTENCY)
+        self.assertIn('const inviteRef=ref(state.db,`social/partyInvites/${uid}/${id}`),target=partyRef(id)', CONSISTENCY)
+        self.assertIn('for(let attempt=0;attempt<8;attempt++){const [inviteSnap,partySnap]=await Promise.all([get(inviteRef),get(target)])', CONSISTENCY)
+        self.assertIn('invite=inviteSnap.val();serverParty=partySnap.val()', CONSISTENCY)
         self.assertIn('runTransaction(pointer,current=>!current||current===id?id:undefined', CONSISTENCY)
         self.assertIn('const beforeJoin=(await get(target)).val()', CONSISTENCY)
         self.assertIn('await set(ref(state.db,`social/parties/${id}/members/${uid}`)', CONSISTENCY)
