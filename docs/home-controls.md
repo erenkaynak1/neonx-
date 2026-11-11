@@ -1,28 +1,62 @@
-# Ana ekran etkileşim katmanı
+# Ana ekran v2 — kontroller ve bağlantılar
 
-Ön plan: `neon-xi-foreground-ice-v5.png` (853 × 1844, şeffaf PNG).
-Arka plan: `neon-xi-background-v4.png`; mevcut `blur(2px) saturate(.72) brightness(.86)` korunur.
-SVG ve görsel aynı `853 × 1844` koordinat sistemini paylaşır. CSS ekran genişliğine göre ikisini birlikte ölçekler.
+Dosyalar: `side-games/neon-home-v2.js`, `side-games/neon-home-v2.css`.
+Ortak parçalar (token, font, alt navigasyon, ikonlar): `side-games/neon-arcade-ui-v1.css/.js`.
+Tasarım kuralları: `docs/DESIGN_SYSTEM.md`.
 
-| Alan | x, y, genişlik, yükseklik | Davranış |
+Ana ekran artık tek parça bir görsel + SVG "hotspot" haritası değildir; canlı HTML/CSS'tir.
+Eski ana ekran işaretlemesi silinmez: `.nx-approved-legacy` içinde gizli ve `inert` tutulur,
+yeni kontroller aynı düğmeleri tetikler. Böylece oyun akışları değişmeden çalışır.
+
+## Yerleşim (mobil, yukarıdan aşağı)
+
+1. Üst çubuk: profil (sol) · bildirim zili + ayarlar (sağ)
+2. Logo
+3. Aktif parti göstergesi (yalnızca partideyken)
+4. Draft XI hero + 4 mod (Tek oyunculu · Bota karşı · Online · Turnuva)
+5. Quiz oyunları: 6 görsel karo (2 sütun) + "Tümü"
+6. Nasıl oynanır · Şikayet ve öneri
+7. Sabit alt navigasyon: Ana sayfa · Sosyal · **Oyna** · Lobi · Liderlik
+
+Tablet (≥600px): 3 sütun karo. Masaüstü (≥900px): solda hero, sağda quiz rafı, altta yüzen navigasyon.
+
+## Eylem tablosu
+
+| Kontrol | `data-action` | Tetiklenen mevcut işlev |
 | --- | --- | --- |
-| Profil | 46, 46, 205, 82 | Sosyal profil/giriş |
-| Bildirimler | 718, 46, 85, 85 | Davetler; zil üzerinde yeşil SVG vurgusu |
-| Hemen başla | 83, 559, 305, 64 | Tek oyunculu |
-| Tek oyunculu | 65, 752, 238, 111 | İnsan simgesi vurgusu; mevcut oyun eylemi |
-| Bota karşı | 311, 752, 233, 111 | Robot simgesi vurgusu; mevcut oyun eylemi |
-| Online | 551, 752, 233, 111 | Küre simgesi vurgusu; mevcut oyun eylemi |
-| Turnuva | 65, 874, 719, 90 | Kupa simgesi vurgusu; mevcut turnuva eylemi |
-| Tüm quiz oyunları | 638, 1000, 174, 46 | Mevcut yan oyunlar sayfası |
-| Futbol XOX | 42, 1058, 379, 272 | Doğrudan oyun bağlantısı |
-| Kariyer İkizi | 434, 1058, 380, 272 | Doğrudan oyun bağlantısı |
-| Futbol Imposter | 42, 1343, 379, 305 | Doğrudan oyun bağlantısı |
-| Football Wordle | 434, 1343, 380, 305 | Doğrudan oyun bağlantısı |
-| Ana sayfa | 43, 1659, 182, 118 | Üste kaydırır; ev simgesi yeşil seçili kalır |
-| Oyna | 231, 1659, 182, 118 | Draft kartına kaydırır; üçgen yeşil seçili kalır |
-| Arkadaşlar | 424, 1659, 194, 118 | Sosyal panel; anlık simge tepkisi |
-| Ayarlar | 628, 1659, 179, 118 | Ayarlar paneli; anlık simge tepkisi |
+| Hemen başla, Tek oyunculu | `single` | `#singleModeBtn` |
+| Bota karşı | `bot` | `#botModeBtn` |
+| Online | `online` | `NEON_ARCADE_UI.openChoice('draft')` (yedek: `#onlineModeBtn`) |
+| Turnuva | `tournament` | `.neonHomeQuickRow button` → `NEON_MENU.openTournament` |
+| Ayarlar | `settings` | `[data-open-neon-settings]`; `?nxOpenSettings=1` derin bağlantısı korunur |
+| Profil | `profile` | Giriş yoksa giriş paneli; varsa hesap kartı (çıkış, Google'a bağla) |
+| Bildirimler | `notifications` | `NEON_SOCIAL.open('invites')` → çekmece › Davetler |
+| Sosyal | `friends` | `NEON_SOCIAL.open('friends')` → çekmece › Arkadaşlar |
+| Lobi, Aktif parti göstergesi | `lobby` | `NEON_SOCIAL.open('party')` → çekmece › Lobi |
+| Oyna | `play` | `NEON_SOCIAL.open('play')` → eşleşme paneli |
+| Liderlik | `leaderboard` | `NEON_SOCIAL.open('leaderboard')` |
+| Ana sayfa | `home` | En üste kaydırır |
+| Quiz karoları | — | `./side-games/...` bağlantıları |
 
-Kutucuk kenarları mat mavi-gri `#718F9E` tonundadır; ön plan görseli yalnızca `brightness(.84) saturate(.72)` ile yumuşatılır. Basışta hafif `#91B4C5` geri bildirimi vardır; sürekli parlak mavi ışıma kullanılmaz. Basışta 280 ms ışık tepkisi verilir. Alt menü simgeleri ve yazıları SVG ile çizilir; seçili simge/yazı yeşil olur. Modal açan Arkadaşlar/Ayarlar tuşları kalıcı sayfa seçimini değiştirmez. Klavyede Tab, Enter ve Space desteklenir. Kaydırma veya pointercancel basma efektini temizler. Hareketi azalt tercihinde ölçek ve geçiş animasyonları devre dışıdır.
+## Canlı durum (yalnızca okunur)
 
-Doğrulama: JS sözdizimi ve diff kontrolü; jsdom üzerinde 16 alan, dokuz eylemin birer kez tetiklenmesi, Oyna renginin basma efekti bittikten sonra korunması, Ana sayfa ile seçim sıfırlama, Enter/Space, beş bağlantı ve iptal/kaydırma temizliği geçti.
+- İsim/avatar: `NEON_SOCIAL.profile.username`
+- Rozet (Sosyal düğmesi + zil): sosyal çekirdeğin `.nx-social-launch[data-count]` değeri
+  (arkadaşlık istekleri + parti davetleri). `MutationObserver` ile izlenir, yoklama yoktur.
+- Aktif parti: `NEON_SOCIAL.party` → üye sayısı ve lider adı.
+
+## Sosyal çekmece
+
+- Sekmeler: **Arkadaşlar · Davetler** (iki ana bölüm) + kompakt **Lobi**.
+- Arkadaş menüsü (•••) yalnızca: PARTİYE DAVET ET · ARKADAŞLIKTAN ÇIKAR.
+- Gelen parti daveti: bildirim (toast) + rozet; "GÖR" Davetler bölümünü açar; KABUL / RED orada kalır.
+
+## Uyumluluk kancaları (değiştirmeyin)
+
+`#bootHome.nx-approved-home-v1`, `.nx-home.nx-approved-canvas` (çekmecenin bağlandığı yer),
+`.nx-home-map`, `.nx-hotspot[data-action="friends"]`, `[data-action="online"]`,
+`[data-action="settings"]`, `.nx-approved-status`.
+
+## Doğrulama
+
+`node scripts/test_home_v2.cjs` ve `node scripts/test_arcade_navigation.cjs` (çevrimdışı sözleşme testleri).

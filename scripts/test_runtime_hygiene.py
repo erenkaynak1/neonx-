@@ -17,6 +17,8 @@ class RuntimeHygieneTest(unittest.TestCase):
             "scripts/integrate_side_games.py",
             "side-games/.integration-trigger",
             "side-games/.parts",
+            "side-games/home-approved-v1.js",
+            "side-games/home-art-fix-v4.js",
             "side-games/home-coded-v1.js",
             "side-games/home-coded-v2.js",
             "side-games/home-coded-v3.js",
@@ -40,13 +42,16 @@ class RuntimeHygieneTest(unittest.TestCase):
         public_guard = (ROOT / "public-source-ui-guard-v1.js").read_text(encoding="utf-8")
 
         for active_asset in (
-            "./side-games/home-approved-v1.js",
+            "./side-games/neon-home-v2.js",
+            "./side-games/neon-home-v2.css",
+            "./side-games/neon-arcade-ui-v1.js",
             "./draft-mobile.css",
             "./draft-mobile-ui.js",
             "./public-source-ui-guard-v1.js",
         ):
             self.assertIn(active_asset, root_index)
         self.assertNotIn("home-raster-v2", root_index)
+        self.assertNotIn("home-approved-v1.js", root_index)
         self.assertNotIn("home-coded-v", root_index)
         self.assertIn("draft-player-integrity-v1.js", public_guard)
 

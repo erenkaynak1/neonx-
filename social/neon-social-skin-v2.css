@@ -1,0 +1,216 @@
+/* NEON XI social skin v2 — presentation only.
+   Restyles the social drawer, the classic social sheet, sign-in and notification toasts with
+   the shared interface tokens (side-games/neon-arcade-ui-v1.css). No behaviour lives here:
+   friendship, party, invitation and matchmaking logic stay in their existing modules.
+   Loaded after neon-social.css / neon-social-presentation.css and written to win over them. */
+
+/* ================= Classic sheet: Play, Leaderboard, Profile, sign-in ================= */
+html .nx-social-shade.nx-social-shade{align-items:flex-end;padding:0;background:rgba(3,5,6,.72);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);transition:opacity var(--nxu-med,220ms) ease,visibility 0s linear var(--nxu-med,220ms)}
+html .nx-social-shade.nx-social-shade.open{transition-delay:0s}
+html .nx-social-shade.nx-social-shade .nx-social-panel{box-sizing:border-box;width:min(100%,520px);max-height:92dvh;padding:var(--nxu-5) var(--nxu-4) calc(var(--nxu-5) + env(safe-area-inset-bottom,0px));border:1px solid var(--nxu-line-strong);border-bottom:0;border-radius:var(--nxu-radius-l) var(--nxu-radius-l) 0 0;background:var(--nxu-surface-1);box-shadow:0 -24px 80px rgba(0,0,0,.6);color:var(--nxu-text);font-family:var(--nxu-body);font-weight:500;font-size:14px;line-height:1.45;transform:translateY(24px);transition:transform var(--nxu-med) var(--nxu-ease);scrollbar-width:thin;scrollbar-color:var(--nxu-surface-3) transparent}
+html .nx-social-shade.nx-social-shade.open .nx-social-panel{transform:none}
+.nx-social-shade .nx-social-panel *{box-sizing:border-box}
+.nx-social-shade .nx-social-head{align-items:center}
+.nx-social-shade .nx-social-panel .nx-social-brand{gap:var(--nxu-3)}
+.nx-social-shade .nx-social-brand>.nx-ui-icon{display:none}
+.nx-social-shade .nx-social-brand span>small{margin-bottom:6px;color:var(--nxu-action);font:700 12px/1 var(--nxu-display);letter-spacing:.18em}
+.nx-social-shade .nx-social-panel .nx-social-brand strong{color:var(--nxu-text);font:800 italic 32px/1 var(--nxu-display);letter-spacing:.01em;text-transform:uppercase}
+.nx-social-shade .nx-social-panel .nx-social-close{width:44px;height:44px;border:0;border-radius:50%;background:rgba(255,255,255,.06);color:var(--nxu-text-2)}
+.nx-social-shade .nx-social-panel .nx-social-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;margin:var(--nxu-4) 0 0;border:0;border-bottom:1px solid var(--nxu-line);border-radius:0;background:none;overflow:visible}
+.nx-social-shade .nx-social-panel .nx-social-tabs button{min-height:44px;padding:0 2px;gap:6px;border:0;border-bottom:2px solid transparent;border-radius:0;background:none;box-shadow:none;color:var(--nxu-text-3);font:600 13px/1 var(--nxu-display);letter-spacing:.08em;text-transform:uppercase}
+.nx-social-shade .nx-social-panel .nx-social-tabs button .nx-ui-icon{display:none}
+.nx-social-shade .nx-social-panel .nx-social-tabs button.active{border-bottom-color:var(--nxu-action);background:none;box-shadow:none;color:var(--nxu-text)}
+/* On the home screen each destination has its own entry, so the sheet shows one thing at a time. */
+html.nx-home-v2 .nx-social-shade .nx-social-panel .nx-social-tabs{display:none}
+.nx-social-shade .nx-social-view.active{padding-top:var(--nxu-4)}
+
+.nx-social-shade .nx-social-panel .nx-social-card{margin:0 0 var(--nxu-3);padding:var(--nxu-4);border:0;border-radius:var(--nxu-radius);background:var(--nxu-surface-2);box-shadow:none}
+.nx-social-shade .nx-social-label{margin:0 0 var(--nxu-2);color:var(--nxu-text-3);font:700 12px/1.2 var(--nxu-display);letter-spacing:.14em}
+.nx-social-shade .nx-social-card>b{font-size:17px;font-weight:600}
+.nx-social-shade .nx-social-panel .nx-social-card>.nx-social-btn{display:block;width:100%;margin-top:var(--nxu-3)}
+.nx-social-shade .nx-social-panel :is(.nx-social-muted,.nx-social-item small){color:var(--nxu-text-2);font-size:13px}
+.nx-social-shade .nx-social-panel :is(.nx-social-input,.nx-social-select){height:48px;padding:0 var(--nxu-3);border:1px solid var(--nxu-line-strong);border-radius:var(--nxu-radius);background:var(--nxu-ink);color:var(--nxu-text);font:500 15px/1 var(--nxu-body)}
+.nx-social-shade .nx-social-panel :is(.nx-social-input,.nx-social-select):focus{border-color:var(--nxu-info);outline:0}
+.nx-social-shade .nx-social-row{gap:var(--nxu-2);align-items:stretch}
+
+.nx-social-shade .nx-social-panel .nx-social-btn{min-height:48px;padding:0 var(--nxu-4);border:1px solid var(--nxu-line-strong);border-radius:var(--nxu-radius);background:transparent;box-shadow:none;color:var(--nxu-text);font:700 15px/1.1 var(--nxu-display);letter-spacing:.07em;transition:transform var(--nxu-fast) var(--nxu-ease),background-color var(--nxu-fast) ease,border-color var(--nxu-fast) ease}
+.nx-social-shade .nx-social-panel .nx-social-btn.primary{border-color:var(--nxu-action);background:var(--nxu-action);color:var(--nxu-on-lime)}
+.nx-social-shade .nx-social-panel .nx-social-btn.nx-social-danger{border-color:transparent;background:transparent;color:var(--nxu-text-2)}
+.nx-social-shade .nx-social-panel .nx-social-view>.nx-social-btn{width:100%;margin-top:var(--nxu-2)}
+.nx-social-shade .nx-social-panel button:active:not(:disabled){transform:scale(.98);box-shadow:none}
+.nx-social-shade .nx-social-panel button:focus-visible{outline:2px solid var(--nxu-info);outline-offset:2px}
+.nx-social-shade .nx-social-panel button:disabled{opacity:.5}
+.nx-social-shade .nx-social-choice{grid-template-columns:1fr;gap:var(--nxu-2);margin-bottom:var(--nxu-3)}
+.nx-social-shade .nx-social-panel .nx-social-choice .nx-social-btn{min-height:56px;font-size:17px}
+.nx-social-shade .nx-safe-match-hint{margin:0 0 var(--nxu-3);color:var(--nxu-text-3);font-size:13px;text-align:left}
+.nx-social-shade .nx-social-searching{padding:var(--nxu-6) var(--nxu-2);color:var(--nxu-text-2)}
+.nx-social-shade .nx-social-searching b{margin-bottom:var(--nxu-2);color:var(--nxu-text);font:800 italic 26px/1 var(--nxu-display)}
+.nx-social-shade .nx-social-searching>div::after{content:"";display:block;width:140px;height:2px;margin:var(--nxu-4) auto 0;background:linear-gradient(90deg,transparent,var(--nxu-action),transparent);background-size:60% 100%;background-repeat:no-repeat;animation:nxs-scan 1.2s ease-in-out infinite alternate}
+@keyframes nxs-scan{from{background-position:-40% 0}to{background-position:140% 0}}
+
+.nx-social-shade .nx-social-list{gap:0;margin-top:var(--nxu-2)}
+.nx-social-shade .nx-social-panel .nx-social-item{padding:var(--nxu-3) 0;border:0;border-top:1px solid var(--nxu-line);border-radius:0;background:none}
+.nx-social-shade .nx-social-actions{gap:var(--nxu-2)}
+.nx-social-shade .nx-social-panel .nx-social-actions .nx-social-btn{min-height:44px;padding:0 var(--nxu-3);font-size:14px}
+.nx-social-shade .nx-presence{color:var(--nxu-text-3);font-size:12px;font-weight:500}
+.nx-social-shade .nx-presence i{background:var(--nxu-text-3);box-shadow:none}
+.nx-social-shade .nx-presence.online{color:var(--nxu-success)}
+.nx-social-shade .nx-presence.online i{background:var(--nxu-success);box-shadow:none}
+.nx-social-shade .nx-social-pill{border:0;border-radius:var(--nxu-radius-s);padding:4px 8px;background:var(--nxu-surface-3);color:var(--nxu-text);font:700 12px/1 var(--nxu-display);letter-spacing:.1em}
+.nx-social-shade .nx-social-panel .nx-social-status{margin:var(--nxu-3) 0 0;color:var(--nxu-text-2);font-size:13px}
+.nx-social-shade .nx-social-panel .nx-social-status.error{color:var(--nxu-danger)}
+.nx-social-shade .nx-username-gate{border:0;box-shadow:inset 3px 0 0 var(--nxu-action)}
+
+/* Leaderboard */
+.nx-social-shade .nx-leader-list{gap:0;margin-top:var(--nxu-3)}
+.nx-social-shade .nx-leader-row{grid-template-columns:32px minmax(0,1fr) auto;gap:var(--nxu-3);padding:10px 0;border:0;border-top:1px solid var(--nxu-line);border-radius:0;background:none}
+.nx-social-shade .nx-leader-row b{font-size:15px;font-weight:600}
+.nx-social-shade .nx-leader-row small{color:var(--nxu-text-3);font-size:12px}
+.nx-social-shade .nx-leader-row>strong{color:var(--nxu-text);font:700 18px/1 var(--nxu-display);font-variant-numeric:tabular-nums}
+.nx-social-shade .nx-leader-row .nx-rank{width:32px;height:32px;border-radius:var(--nxu-radius-s);background:var(--nxu-surface-3);color:var(--nxu-text-2);font:700 15px/1 var(--nxu-display)}
+.nx-social-shade .nx-leader-row:nth-child(1) .nx-rank{background:var(--nxu-action);color:var(--nxu-on-lime)}
+.nx-social-shade .nx-leader-row:nth-child(2) .nx-rank{background:var(--neon-frame);color:var(--nxu-ink)}
+.nx-social-shade .nx-leader-row:nth-child(3) .nx-rank{background:var(--nxu-text-2);color:var(--nxu-ink)}
+.nx-social-shade .nx-leader-row.me{margin:0 calc(var(--nxu-2) * -1);padding-left:var(--nxu-2);padding-right:var(--nxu-2);border-radius:var(--nxu-radius-s);background:rgba(186,255,24,.08);box-shadow:inset 3px 0 0 var(--nxu-action)}
+.nx-social-shade .nx-leader-empty{padding:var(--nxu-4) 0;text-align:left}
+
+/* Profile entry: only the account card and sign-out, the friend tools live in the drawer. */
+.nx-social-shade.nx-profile-mode [data-view="friends"] .nx-social-card:has(#nxFind),
+.nx-social-shade.nx-profile-mode [data-view="friends"] .nx-social-card:has(.nx-social-list){display:none}
+
+/* Sign-in */
+.nx-social-shade .nx-auth-welcome{padding:var(--nxu-2) 0 0;text-align:left}
+.nx-social-shade .nx-auth-emblem{display:none}
+.nx-social-shade .nx-auth-welcome h2{margin:0 0 var(--nxu-1);color:var(--nxu-text);font:600 18px/1.3 var(--nxu-body);letter-spacing:0}
+.nx-social-shade .nx-auth-intro{margin:0 0 var(--nxu-5);color:var(--nxu-text-2);font-size:15px}
+.nx-social-shade .nx-auth-welcome .nx-social-btn{min-height:52px;border-radius:var(--nxu-radius);font:600 16px/1.2 var(--nxu-body);letter-spacing:0}
+.nx-social-shade .nx-auth-welcome .nx-auth-google{border-color:var(--nxu-text);background:var(--nxu-text);color:var(--nxu-ink);box-shadow:none}
+.nx-social-shade .nx-auth-welcome .nx-auth-guest{border-color:var(--nxu-line-strong);background:transparent;color:var(--nxu-text)}
+.nx-social-shade .nx-auth-note{margin:var(--nxu-2) 0 0;color:var(--nxu-text-3);font-size:13px}
+.nx-social-shade .nx-auth-divider{margin:var(--nxu-4) 0;color:var(--nxu-text-3);font-size:13px}
+.nx-social-shade .nx-auth-divider::before,.nx-social-shade .nx-auth-divider::after{background:var(--nxu-line)}
+@media(hover:hover){.nx-social-shade .nx-social-panel .nx-social-btn:hover:not(:disabled){border-color:var(--nxu-text-2);box-shadow:none}.nx-social-shade .nx-social-panel .nx-social-btn.primary:hover:not(:disabled){border-color:var(--nxu-action-hover);background:var(--nxu-action-hover)}.nx-social-shade .nx-social-panel .nx-social-close:hover{color:var(--nxu-text);box-shadow:none}}
+@media(min-width:600px){html .nx-social-shade.nx-social-shade{align-items:center;padding:var(--nxu-5)}html .nx-social-shade.nx-social-shade .nx-social-panel{border-bottom:1px solid var(--nxu-line-strong);border-radius:var(--nxu-radius-l);padding:var(--nxu-6)}}
+
+/* ================= Home drawer: Friends, Invitations, Lobby ================= */
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer{position:absolute;inset:0;z-index:120;font-family:var(--nxu-body);font-weight:500}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer *{box-sizing:border-box}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-social-drawer-scrim{background:rgba(3,5,6,.66);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-social-drawer{top:0;bottom:0;left:0;width:min(88%,392px);max-width:none;min-width:0;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px);border:0;border-right:1px solid var(--nxu-line-strong);border-radius:0;background:var(--nxu-surface-1);box-shadow:24px 0 80px rgba(0,0,0,.6);color:var(--nxu-text);font-family:var(--nxu-body);transition:transform 280ms var(--nxu-ease)}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-head{grid-template-columns:minmax(0,1fr) 44px;gap:var(--nxu-3);padding:var(--nxu-4) var(--nxu-3) var(--nxu-3) var(--nxu-4);border:0;background:none}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-head-icon{display:none}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-title{color:var(--nxu-text);font:800 italic 32px/1 var(--nxu-display)!important;letter-spacing:.01em;text-shadow:none;text-transform:uppercase}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-heading{gap:6px}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-subtitle{color:var(--nxu-text-3);font-size:13px}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-close{width:44px;height:44px;border:0;border-radius:50%;background:rgba(255,255,255,.06);color:var(--nxu-text-2)}
+
+/* Two primary sections, with the lobby as a compact third entry. */
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-tabs{grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:0;margin:0 var(--nxu-4);padding:0;border-bottom:1px solid var(--nxu-line)}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-tab{display:flex;align-items:center;justify-content:center;gap:6px;min-height:46px;padding:0 var(--nxu-2);border:0;border-bottom:2px solid transparent;border-radius:0;background:none;box-shadow:none;color:var(--nxu-text-3);font:700 15px/1 var(--nxu-display);letter-spacing:.08em;text-transform:uppercase;transition:color var(--nxu-fast) ease,border-color var(--nxu-fast) ease}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-tab .nx-ui-icon{display:none}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-tab.active{border-bottom-color:var(--nxu-action);background:none;color:var(--nxu-text)}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-tab[data-nx-drawer-tab="lobby"]{padding:0 var(--nxu-3);font-size:13px;font-weight:600}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-tab[data-nx-drawer-tab="lobby"] .nx-ui-icon{display:inline-block;width:18px;height:18px}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-tab-count{min-width:18px;height:18px;margin:0;padding:0 5px;border-radius:9px;background:var(--nxu-action);color:var(--nxu-on-lime);font:700 12px/18px var(--nxu-display);letter-spacing:0}
+
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-body{padding:var(--nxu-4);scrollbar-color:var(--nxu-surface-3) transparent;overscroll-behavior:contain}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-search{grid-template-columns:minmax(0,1fr) 48px;gap:var(--nxu-2);margin:0 0 var(--nxu-4)}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-search-field{gap:var(--nxu-2);padding-left:var(--nxu-3);border:1px solid var(--nxu-line-strong);border-radius:var(--nxu-radius);background:var(--nxu-ink);color:var(--nxu-text-3)}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-search-field:focus-within{border-color:var(--nxu-info);outline:0}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-search input{height:46px;padding:0 var(--nxu-2) 0 0;border:0;background:transparent;color:var(--nxu-text);font:500 15px/1 var(--nxu-body);box-shadow:none}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-search button{display:grid;place-items:center;height:48px;border:0;border-radius:var(--nxu-radius);background:var(--nxu-action);box-shadow:none;color:var(--nxu-on-lime)}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-find-result{margin:calc(var(--nxu-2) * -1) 0 var(--nxu-4)}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-find-result:empty{display:none}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-find-card{gap:var(--nxu-3);padding:var(--nxu-2) var(--nxu-2) var(--nxu-2) var(--nxu-3);border:0;border-radius:var(--nxu-radius);background:var(--nxu-surface-2)}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-find-card b{color:var(--nxu-text);font-size:15px;font-weight:600}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-find-card button{min-height:44px;padding:0 var(--nxu-4);border:0;border-radius:var(--nxu-radius);background:var(--nxu-action);color:var(--nxu-on-lime);font:700 14px/1 var(--nxu-display);letter-spacing:.07em}
+
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-section{margin-top:var(--nxu-5)}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-search+.nx-drawer-find-result+.nx-drawer-section,#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-body>.nx-drawer-section:first-child{margin-top:0}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-section-title{gap:var(--nxu-2);padding:0 0 var(--nxu-2);color:var(--nxu-text-3);font:700 12px/1.2 var(--nxu-display);letter-spacing:.14em;text-transform:uppercase}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-total{color:var(--nxu-text-2)}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-dot{width:6px;height:6px;background:var(--nxu-text-3);box-shadow:none}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-dot.online{background:var(--nxu-success);box-shadow:none}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-list{gap:0}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-friend-row{border:0;border-top:1px solid var(--nxu-line);border-radius:0;background:none}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-friend-main{grid-template-columns:40px minmax(0,1fr) 44px;gap:var(--nxu-3);padding:var(--nxu-2) 0}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-avatar{width:40px;height:40px;border:0;border-radius:50%;background:var(--nxu-surface-3);color:var(--nxu-text);font:700 18px/1 var(--nxu-display)}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-friend-copy{gap:2px}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-friend-copy b{color:var(--nxu-text);font-size:15px;font-weight:600}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-presence{gap:6px;color:var(--nxu-text-3);font-size:12px;font-weight:500}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-presence.online{color:var(--nxu-success)}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-more{width:44px;height:44px;border-radius:50%;color:var(--nxu-text-2);font-size:18px;letter-spacing:1px}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer :is(.nx-drawer-menu,.nx-drawer-confirm){gap:var(--nxu-2);padding:0 0 var(--nxu-3) 52px}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-action{min-height:44px;padding:0 var(--nxu-3);border:1px solid var(--nxu-line-strong);border-radius:var(--nxu-radius);background:transparent;color:var(--nxu-text);font:700 14px/1.1 var(--nxu-display);letter-spacing:.07em;text-align:left}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-menu .nx-drawer-action:first-child{border-color:var(--nxu-action);background:var(--nxu-action);color:var(--nxu-on-lime)}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-action.danger{border-color:var(--nxu-line-strong);background:transparent;color:var(--nxu-danger)}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-confirm .nx-drawer-action{text-align:center}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-confirm p{margin:0 0 var(--nxu-1);color:var(--nxu-text-2);font-size:13px;line-height:1.4}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-empty{padding:var(--nxu-3) 0;border:0;border-top:1px solid var(--nxu-line);border-radius:0;background:none;color:var(--nxu-text-3);font-size:13px;line-height:1.45;text-align:left}
+
+/* Invitations: clear Accept / Decline */
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-list:has(.nx-drawer-invite){gap:var(--nxu-2)}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-invite{padding:var(--nxu-3);border:0;border-radius:var(--nxu-radius);background:var(--nxu-surface-2)}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-invite b{margin-bottom:2px;color:var(--nxu-text);font-size:15px;font-weight:600}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-invite p{margin:0 0 var(--nxu-3);color:var(--nxu-text-2);font-size:13px!important;line-height:1.4}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-invite p[style]{margin:var(--nxu-2) 0 0;color:var(--nxu-text-3)!important}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-invite-actions{grid-template-columns:1.4fr 1fr;gap:var(--nxu-2)}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-invite-actions button{min-height:44px;border:1px solid var(--nxu-line-strong);border-radius:var(--nxu-radius);background:transparent;color:var(--nxu-text);font:700 14px/1 var(--nxu-display);letter-spacing:.08em}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-invite-actions button.primary{border-color:var(--nxu-action);background:var(--nxu-action);color:var(--nxu-on-lime)}
+
+/* Active party + lobby */
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer :is(.nx-drawer-party,.nx-lobby-hero){margin:0 0 var(--nxu-4);padding:var(--nxu-3) var(--nxu-3) var(--nxu-3) var(--nxu-4);border:0;border-radius:var(--nxu-radius);background:var(--nxu-surface-2);box-shadow:inset 3px 0 0 var(--nxu-success)}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer :is(.nx-drawer-party-top,.nx-lobby-hero-top){margin-bottom:var(--nxu-2)}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer :is(.nx-drawer-party-top,.nx-lobby-hero-top) strong{color:var(--nxu-success);font:700 13px/1.2 var(--nxu-display);letter-spacing:.14em}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer :is(.nx-drawer-party-top span,.nx-lobby-code){padding:0;border:0;color:var(--nxu-text-2);font:600 12px/1.2 var(--nxu-display);letter-spacing:.1em}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-party-members{gap:var(--nxu-1) var(--nxu-2);margin-bottom:var(--nxu-3)}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-party-member{padding:0;background:none;color:var(--nxu-text);font-size:13px}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer :is(.nx-drawer-party-open,.nx-lobby-ready){width:100%;min-height:44px;margin-top:0;border:1px solid var(--nxu-line-strong);border-radius:var(--nxu-radius);background:transparent;color:var(--nxu-text);font:700 14px/1 var(--nxu-display);letter-spacing:.08em;text-align:center}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-lobby-ready{margin-top:var(--nxu-3)}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-lobby-ready.active,#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-lobby-launch{border-color:var(--nxu-action);background:var(--nxu-action);color:var(--nxu-on-lime)}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-lobby-launch{width:100%;min-height:52px;margin-top:var(--nxu-3);border:0;border-radius:0;font:700 17px/1 var(--nxu-display);letter-spacing:.07em;text-align:center;clip-path:polygon(var(--nxu-cut) 0,100% 0,100% calc(100% - var(--nxu-cut)),calc(100% - var(--nxu-cut)) 100%,0 100%,0 var(--nxu-cut))}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-lobby-launch:disabled{background:var(--nxu-surface-3);color:var(--nxu-text-3);cursor:not-allowed}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-lobby-hint{margin:var(--nxu-2) 0 0;color:var(--nxu-text-3);font-size:13px;line-height:1.4;text-align:left}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-lobby-mode{gap:var(--nxu-2)}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-lobby-mode label{color:var(--nxu-text-3);font:700 12px/1 var(--nxu-display);letter-spacing:.14em}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-lobby-mode select{height:48px;min-height:48px;padding:0 var(--nxu-3);border:1px solid var(--nxu-line-strong);border-radius:var(--nxu-radius);background:var(--nxu-ink);color:var(--nxu-text);font:600 15px/1 var(--nxu-body)}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-lobby-members{gap:0}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-lobby-member{grid-template-columns:40px minmax(0,1fr) auto;gap:var(--nxu-3);padding:var(--nxu-2) 0;border:0;border-top:1px solid var(--nxu-line);border-radius:0;background:none}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-lobby-member-copy b{color:var(--nxu-text);font-size:15px;font-weight:600}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-lobby-member-copy small{color:var(--nxu-text-3);font-size:12px}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-lobby-state{padding:4px 8px;border-radius:var(--nxu-radius-s);background:var(--nxu-surface-3);color:var(--nxu-text-2);font:700 12px/1 var(--nxu-display);letter-spacing:.1em}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-lobby-state.ready{background:rgba(49,255,118,.12);color:var(--nxu-success)}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-lobby-kick{min-height:44px;padding:0 var(--nxu-3);border:1px solid var(--nxu-line-strong);border-radius:var(--nxu-radius);background:transparent;color:var(--nxu-text-2);font:700 12px/1 var(--nxu-display);letter-spacing:.08em}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-lobby-kick[data-nx-confirm-kick]{color:var(--nxu-danger)}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-lobby-kick-actions{gap:var(--nxu-1)}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-lobby-kick-actions .nx-lobby-kick{padding:0 var(--nxu-2);font-size:12px}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-lobby-empty-slot{padding:var(--nxu-3) 0;border:0;border-top:1px dashed var(--nxu-line-strong);border-radius:0;color:var(--nxu-text-3);font:600 12px/1 var(--nxu-display);letter-spacing:.12em;text-align:left}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-lobby-invite-row{gap:var(--nxu-3);padding:var(--nxu-2) 0;border:0;border-top:1px solid var(--nxu-line);border-radius:0;background:none}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-lobby-invite-row b{color:var(--nxu-text);font-size:15px;font-weight:600}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-lobby-invite-row small{margin-top:2px;color:var(--nxu-text-3);font-size:12px}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-lobby-invite-row button{min-height:44px;padding:0 var(--nxu-3);border:1px solid var(--nxu-line-strong);border-radius:var(--nxu-radius);background:transparent;color:var(--nxu-text);font:700 13px/1 var(--nxu-display);letter-spacing:.08em}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-party-leave{width:100%;min-height:44px;margin-top:var(--nxu-5);border:0;border-radius:var(--nxu-radius);background:transparent;color:var(--nxu-text-2);font:700 13px/1 var(--nxu-display);letter-spacing:.1em;text-align:center}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-status{margin:var(--nxu-3) 0 0;padding:var(--nxu-3);border:0;border-radius:var(--nxu-radius);background:var(--nxu-surface-3);box-shadow:0 8px 30px rgba(0,0,0,.5);color:var(--nxu-text);font-size:13px;line-height:1.4}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-status.error{color:var(--nxu-danger)!important}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer :is(.nx-drawer-invite-actions,.nx-drawer-find-card,.nx-lobby-invite-row,.nx-lobby-member) button{text-align:center}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer button{touch-action:manipulation;transition:transform var(--nxu-fast) var(--nxu-ease),background-color var(--nxu-fast) ease,border-color var(--nxu-fast) ease,color var(--nxu-fast) ease}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer button:active:not(:disabled){transform:scale(.97);box-shadow:none}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer button:focus-visible{outline:2px solid var(--nxu-info);outline-offset:2px}
+#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer button:disabled{opacity:.5}
+@media(hover:hover){#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer button:hover:not(:disabled){box-shadow:none}#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer :is(.nx-drawer-close,.nx-drawer-more):hover{background:rgba(255,255,255,.1);color:var(--nxu-text)}#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-drawer-tab:hover{color:var(--nxu-text)}}
+@media(min-width:900px){#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-social-drawer{width:420px}}
+
+/* ================= Notification toasts ================= */
+.nx-safe-toast-stack.nx-safe-toast-stack{top:calc(env(safe-area-inset-top,0px) + 8px);left:8px;right:8px;width:auto;gap:var(--nxu-2);font-family:var(--nxu-body)}
+.nx-safe-toast-stack .nx-safe-toast{gap:var(--nxu-3);padding:10px 10px 10px var(--nxu-4);border:1px solid var(--nxu-line-strong);border-radius:var(--nxu-radius);background:rgba(23,29,35,.97);box-shadow:inset 3px 0 0 var(--nxu-action),0 16px 44px rgba(0,0,0,.55);color:var(--nxu-text);animation:nxs-toast 320ms var(--nxu-ease)}
+.nx-safe-toast-stack .nx-safe-toast b{margin-bottom:3px;color:var(--nxu-action);font:700 12px/1.2 var(--nxu-display);letter-spacing:.14em}
+.nx-safe-toast-stack .nx-safe-toast span{color:var(--nxu-text);font-size:14px;line-height:1.35}
+.nx-safe-toast-stack .nx-safe-toast button{min-height:44px;padding:0 var(--nxu-4);border:1px solid var(--nxu-line-strong);border-radius:var(--nxu-radius);background:transparent;color:var(--nxu-text);font:700 14px/1 var(--nxu-display);letter-spacing:.08em;cursor:pointer}
+@keyframes nxs-toast{from{opacity:0;transform:translateY(-12px)}}
+/* On the home screen toasts sit under the top bar so profile, notifications and settings stay reachable. */
+html.nx-home-v2 body:has(#bootHome.active) .nx-safe-toast-stack.nx-safe-toast-stack{top:calc(env(safe-area-inset-top,0px) + 68px)}
+@media(min-width:600px){.nx-safe-toast-stack.nx-safe-toast-stack,html.nx-home-v2 body:has(#bootHome.active) .nx-safe-toast-stack.nx-safe-toast-stack{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 88px);left:auto;right:var(--nxu-5);width:360px}}
+
+@media(prefers-reduced-motion:reduce){
+  html .nx-social-shade.nx-social-shade,html .nx-social-shade.nx-social-shade .nx-social-panel,.nx-social-shade .nx-social-panel *,#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer,#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer *,.nx-safe-toast-stack .nx-safe-toast{transition:none!important;animation:none!important}
+}

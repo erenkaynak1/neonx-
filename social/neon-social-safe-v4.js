@@ -76,11 +76,11 @@ function bindNotifications(user){
   state.requestOff?.();state.inviteOff?.();
   state.requestOff=onValue(ref(state.db,`social/friendRequests/${user.uid}`),s=>{
     const data=s.val()||{};state.requestCount=Object.keys(data).length;ensureBadgeTarget();
-    for(const [fromUid,x] of Object.entries(data)){if(seen('friend',user.uid,fromUid))continue;toast('ARKADAŞLIK İSTEĞİ',`${x?.username||'Bir oyuncu'} arkadaşın olmak istiyor.`,'friends')}
+    for(const [fromUid,x] of Object.entries(data)){if(seen('friend',user.uid,fromUid))continue;toast('ARKADAŞLIK İSTEĞİ',`${x?.username||'Bir oyuncu'} arkadaşın olmak istiyor.`,'invites')}
   });
   state.inviteOff=onValue(ref(state.db,`social/partyInvites/${user.uid}`),s=>{
     const data=s.val()||{};state.inviteCount=Object.keys(data).length;ensureBadgeTarget();
-    for(const [partyId,x] of Object.entries(data)){if(seen('party',user.uid,partyId))continue;toast('PARTİ DAVETİ',`${x?.fromName||'Bir oyuncu'} seni partisine çağırıyor.`,'party')}
+    for(const [partyId,x] of Object.entries(data)){if(seen('party',user.uid,partyId))continue;toast('PARTİ DAVETİ',`${x?.fromName||'Bir oyuncu'} seni partisine çağırıyor.`,'invites')}
   });
 }
 function code(){return [...Array(6)].map(()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*32)]).join('')}

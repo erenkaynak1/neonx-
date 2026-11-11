@@ -1,0 +1,138 @@
+/* NEON XI interface system v2 — screens one step from home.
+   Presentation only: bot setup, multiplayer chooser, room code, lobby, tournament bar,
+   settings and the floating social button. Markup, ids and handlers are untouched.
+   Tokens come from neon-arcade-ui-v1.css. Scoped to html.nx-home-v2 (set by neon-home-v2.js). */
+
+/* ---------- Stage: same blurred city as home, darker so forms carry the contrast ---------- */
+html.nx-home-v2 #bootScreen:not(:has(#bootHome.active)):not(:has(#bootTournament.active)){align-items:flex-start!important;background:var(--nxu-black) url("../assets/ui/bg-city.webp") center top/cover no-repeat!important;font-family:var(--nxu-body)}
+html.nx-home-v2 #bootScreen:not(:has(#bootHome.active)):not(:has(#bootTournament.active))::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,7,8,.82),rgba(5,7,8,.94) 46%,var(--nxu-black))}
+html.nx-home-v2 #bootScreen .bootGlow{display:none!important}
+html.nx-home-v2 #bootScreen:not(:has(#bootHome.active)):not(:has(#bootTournament.active)) .bootPanel{box-sizing:border-box!important;width:100%!important;max-width:560px!important;height:100%!important;margin:0 auto!important;padding:calc(env(safe-area-inset-top,0px) + var(--nxu-4)) var(--nxu-4) calc(env(safe-area-inset-bottom,0px) + var(--nxu-6))!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;overflow:auto!important;animation:nxv-rise 280ms var(--nxu-ease) both}
+@keyframes nxv-rise{from{opacity:0;transform:translateY(10px)}}
+
+/* Brand: the real logo instead of the legacy wordmark text */
+html.nx-home-v2 #bootScreen .bootBrand{height:44px;margin:0 0 var(--nxu-6)!important;background:url("../assets/ui/logo-neon-xi.webp") center/auto 32px no-repeat;text-align:left}
+html.nx-home-v2 #bootScreen .bootBrand>*{position:absolute!important;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+
+/* ---------- Type ---------- */
+html.nx-home-v2 #bootScreen .multiplayerChoiceHead{text-align:left}
+html.nx-home-v2 #bootScreen .multiplayerChoiceHead .bootKicker,html.nx-home-v2 #bootScreen .bootFormBox label,html.nx-home-v2 #bootScreen .lobbyCodeBox span,html.nx-home-v2 #bootScreen .lobbyTeamCard span{margin:0 0 var(--nxu-2)!important;color:var(--nxu-info)!important;font:600 12px/1.2 var(--nxu-display)!important;letter-spacing:.16em!important;text-transform:uppercase}
+html.nx-home-v2 #bootScreen .multiplayerChoiceHead h2,html.nx-home-v2 #bootScreen .botDifficultyTitle strong{display:block;margin:0!important;color:var(--nxu-text);font:italic 800 30px/1 var(--nxu-display)!important;letter-spacing:.01em!important;text-transform:uppercase}
+html.nx-home-v2 #bootScreen .multiplayerChoiceHead p,html.nx-home-v2 #bootScreen .botDifficultyTitle span{display:block;margin:var(--nxu-2) 0 0!important;max-width:none;color:var(--nxu-text-2)!important;font:500 14px/1.45 var(--nxu-body)!important}
+
+/* ---------- Fields ---------- */
+html.nx-home-v2 #bootScreen .bootFormBox{gap:0!important}
+html.nx-home-v2 #bootScreen .bootFormBox input{box-sizing:border-box;width:100%;height:48px!important;padding:0 var(--nxu-4)!important;border:1px solid var(--nxu-line-strong)!important;border-radius:var(--nxu-radius)!important;background:var(--nxu-ink)!important;box-shadow:none!important;color:var(--nxu-text)!important;font:600 16px/1 var(--nxu-body)!important;transition:border-color var(--nxu-fast) ease}
+html.nx-home-v2 #bootScreen .bootFormBox input::placeholder{color:var(--nxu-text-3)}
+html.nx-home-v2 #bootScreen .bootFormBox input:focus{border-color:var(--nxu-action)!important;box-shadow:none!important;outline:0}
+
+/* ---------- Choice rows (difficulty, multiplayer) — tone instead of outline ---------- */
+html.nx-home-v2 #bootScreen .botSetupWrap,html.nx-home-v2 #bootScreen .multiplayerChoice,html.nx-home-v2 #bootScreen .bootFormGrid,html.nx-home-v2 #bootScreen .lobbyWrap{gap:var(--nxu-5)!important}
+html.nx-home-v2 #bootScreen .botDifficultyGrid,html.nx-home-v2 #bootScreen .bootCards{grid-template-columns:1fr!important;gap:var(--nxu-2)!important}
+html.nx-home-v2 #bootScreen .botDifficultyCard,html.nx-home-v2 #bootScreen .bootCard{position:relative;display:grid;grid-template-columns:minmax(0,1fr);gap:var(--nxu-1);min-height:0!important;padding:var(--nxu-4) 44px var(--nxu-4) var(--nxu-4)!important;border:0!important;border-radius:var(--nxu-radius)!important;background:var(--nxu-surface-1)!important;box-shadow:inset 0 0 0 1px var(--nxu-line)!important;color:var(--nxu-text)!important;text-align:left;transform:none!important;transition:background-color var(--nxu-fast) ease,box-shadow var(--nxu-fast) ease,transform var(--nxu-fast) var(--nxu-ease)!important;-webkit-tap-highlight-color:transparent}
+html.nx-home-v2 #bootScreen .botDifficultyCard::after,html.nx-home-v2 #bootScreen .bootCard::after{content:"";position:absolute;right:var(--nxu-4);top:50%;width:8px;height:8px;margin-top:-5px;border:solid var(--nxu-text-3);border-width:2px 2px 0 0;transform:rotate(45deg);transition:border-color var(--nxu-fast) ease,right var(--nxu-med) var(--nxu-ease)}
+html.nx-home-v2 #bootScreen .botDifficultyCard>span,html.nx-home-v2 #bootScreen .bootCard .bootCardTag{display:block!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:none!important;color:var(--nxu-info)!important;font:600 12px/1.2 var(--nxu-display)!important;letter-spacing:.16em!important}
+html.nx-home-v2 #bootScreen .botDifficultyCard strong,html.nx-home-v2 #bootScreen .bootCard strong{margin:0!important;color:var(--nxu-text)!important;font:700 20px/1.15 var(--nxu-display)!important;letter-spacing:.03em;text-transform:uppercase}
+html.nx-home-v2 #bootScreen .botDifficultyCard small,html.nx-home-v2 #bootScreen .bootCard small{color:var(--nxu-text-2)!important;font:500 13px/1.4 var(--nxu-body)!important}
+html.nx-home-v2 #bootScreen .botDifficultyCard.easy>span{color:var(--nxu-success)!important}
+html.nx-home-v2 #bootScreen .botDifficultyCard.hard>span{color:var(--nxu-action)!important}
+html.nx-home-v2 #bootScreen .botDifficultyCard:active,html.nx-home-v2 #bootScreen .bootCard:active{background:var(--nxu-surface-2)!important;transform:scale(.985)!important}
+html.nx-home-v2 #bootScreen .botDifficultyCard:focus-visible,html.nx-home-v2 #bootScreen .bootCard:focus-visible,html.nx-home-v2 #bootScreen .bootGhostBtn:focus-visible,html.nx-home-v2 #bootScreen .bootPrimaryBtn:focus-visible{outline:2px solid var(--nxu-info);outline-offset:2px}
+
+/* ---------- Buttons: one filled action per screen, everything else quiet ---------- */
+html.nx-home-v2 #bootScreen .bootActionRow{gap:var(--nxu-2)!important}
+html.nx-home-v2 #bootScreen .multiplayerBackRow{justify-content:flex-start}
+html.nx-home-v2 #bootScreen .bootPrimaryBtn,html.nx-home-v2 #bootScreen .bootGhostBtn,html.nx-home-v2 .tournamentHostBar .bootGhostBtn{min-height:48px!important;padding:0 var(--nxu-5)!important;border-radius:var(--nxu-radius)!important;box-shadow:none!important;font:700 15px/1 var(--nxu-display)!important;letter-spacing:.1em!important;transform:none;transition:background-color var(--nxu-fast) ease,border-color var(--nxu-fast) ease,transform var(--nxu-fast) var(--nxu-ease)!important}
+html.nx-home-v2 #bootScreen .bootPrimaryBtn{flex:1 1 auto;border:0!important;border-radius:0!important;background:var(--nxu-action)!important;color:var(--nxu-on-lime)!important;clip-path:polygon(var(--nxu-cut) 0,100% 0,100% calc(100% - var(--nxu-cut)),calc(100% - var(--nxu-cut)) 100%,0 100%,0 var(--nxu-cut))}
+html.nx-home-v2 #bootScreen .bootGhostBtn,html.nx-home-v2 .tournamentHostBar .bootGhostBtn{border:1px solid var(--nxu-line-strong)!important;background:transparent!important;color:var(--nxu-text)!important}
+html.nx-home-v2 #bootScreen .bootPrimaryBtn:active,html.nx-home-v2 #bootScreen .bootGhostBtn:active{transform:scale(.97)!important}
+html.nx-home-v2 #bootScreen .bootDivider{gap:var(--nxu-3);color:var(--nxu-text-3);font:600 12px/1 var(--nxu-display);letter-spacing:.16em;text-transform:uppercase}
+html.nx-home-v2 #bootScreen .bootDivider::before,html.nx-home-v2 #bootScreen .bootDivider::after{background:var(--nxu-line)}
+html.nx-home-v2 #bootScreen .onlineBootStatus{color:var(--nxu-text-2);font:500 14px/1.4 var(--nxu-body)}
+
+/* ---------- Room lobby ---------- */
+html.nx-home-v2 #bootScreen .lobbyCodeBox,html.nx-home-v2 #bootScreen .lobbyTeamCard{padding:var(--nxu-4)!important;border:0!important;border-radius:var(--nxu-radius)!important;background:var(--nxu-surface-1)!important;box-shadow:inset 0 0 0 1px var(--nxu-line)}
+html.nx-home-v2 #bootScreen .lobbyCodeBox{gap:0!important}
+html.nx-home-v2 #bootScreen .lobbyCodeBox strong{color:var(--nxu-action)!important;font:800 40px/1 var(--nxu-display)!important;letter-spacing:.14em!important}
+html.nx-home-v2 #bootScreen .lobbyTeams{gap:var(--nxu-2)!important}
+html.nx-home-v2 #bootScreen .lobbyTeamCard strong{color:var(--nxu-text)!important;font:700 20px/1.15 var(--nxu-display)!important;letter-spacing:.02em}
+
+/* ---------- Tournament host bar ---------- */
+html.nx-home-v2 .tournamentHost{background:var(--nxu-black)!important}
+html.nx-home-v2 .tournamentHostBar{padding:0 var(--nxu-4)!important;border-bottom:1px solid var(--nxu-line)!important;background:var(--nxu-ink)!important}
+html.nx-home-v2 .tournamentHostBar strong{color:var(--nxu-text);font:700 15px/1 var(--nxu-display)!important;letter-spacing:.14em!important}
+html.nx-home-v2 .tournamentHostBar .bootGhostBtn{min-height:40px!important;padding:0 var(--nxu-3)!important;font-size:13px!important}
+html.nx-home-v2 .tournamentFrame{background:var(--nxu-black)!important}
+html.nx-home-v2 .tournamentHostBar>div{flex:1 1 auto;min-width:0;padding-left:124px;overflow:hidden;white-space:nowrap}
+html.nx-home-v2 .tournamentHostBar .bootGhostBtn{flex:none;white-space:nowrap}
+html.nx-home-v2 .nx-tournament-back-safe{top:calc(env(safe-area-inset-top,0px) + 7px);left:max(var(--nxu-4),env(safe-area-inset-left,0px));min-height:40px;padding:0 var(--nxu-3);border:1px solid var(--nxu-line-strong);border-radius:var(--nxu-radius);background:var(--nxu-ink);box-shadow:none;color:var(--nxu-text);font:700 13px/1 var(--nxu-display);letter-spacing:.1em}
+@media(max-width:520px){html.nx-home-v2 .tournamentHostBar>div{visibility:hidden}}
+
+/* ---------- Floating social button (screens without the bottom bar) ---------- */
+html.nx-home-v2 .nx-social-launch{right:var(--nxu-4);min-height:44px;padding:0 var(--nxu-4);border:1px solid var(--nxu-line-strong);border-radius:var(--nxu-radius);background:rgba(16,21,26,.94);box-shadow:0 12px 32px rgba(0,0,0,.5);color:var(--nxu-text);font:700 14px/1 var(--nxu-display);letter-spacing:.12em;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+html.nx-home-v2 .nx-social-launch[data-count]:not([data-count="0"])::after{min-width:20px;height:20px;border-radius:var(--nxu-radius-s);background:var(--nxu-action);color:var(--nxu-on-lime);font:700 13px/1 var(--nxu-display)}
+
+/* ---------- Settings ---------- */
+html.nx-home-v2 .nxSettingsOverlay{background:rgba(5,7,8,.72);font-family:var(--nxu-body)}
+html.nx-home-v2 .nxSettingsPanel{border:0;border-radius:var(--nxu-radius-l);background:var(--nxu-ink);box-shadow:0 0 0 1px var(--nxu-line),0 32px 96px rgba(0,0,0,.7);color:var(--nxu-text)}
+html.nx-home-v2 .nxSettingsOverlay:not(.hidden) .nxSettingsPanel{animation:nxv-rise 240ms var(--nxu-ease) both}
+html.nx-home-v2 .nxSettingsHeader{align-items:center;padding:var(--nxu-5) var(--nxu-4) var(--nxu-4);border-bottom:1px solid var(--nxu-line);background:var(--nxu-ink);-webkit-backdrop-filter:none;backdrop-filter:none}
+html.nx-home-v2 .nxSettingsEyebrow{margin-bottom:var(--nxu-1);color:var(--nxu-action);font:600 12px/1.2 var(--nxu-display);letter-spacing:.18em}
+html.nx-home-v2 .nxSettingsHeader h2{font:italic 800 32px/1 var(--nxu-display);letter-spacing:.01em}
+html.nx-home-v2 .nxSettingsHeader p{margin-top:var(--nxu-2);color:var(--nxu-text-2);font-size:14px}
+html.nx-home-v2 .nxSettingsClose{width:44px;height:44px;border:0;border-radius:50%;background:var(--nxu-surface-2);box-shadow:none!important;color:var(--nxu-text);font:500 26px/1 var(--nxu-body);transition:background-color var(--nxu-fast) ease,transform var(--nxu-fast) var(--nxu-ease)}
+html.nx-home-v2 .nxSettingsClose:active{transform:scale(.92)}
+html.nx-home-v2 .nxSettingsBody{gap:var(--nxu-6);padding:var(--nxu-5) var(--nxu-4)}
+html.nx-home-v2 .nxSettingsSection{border:0;border-radius:0;background:none;overflow:visible}
+html.nx-home-v2 .nxSettingsSectionTitle{padding:0 0 var(--nxu-2);border-bottom:1px solid var(--nxu-line);background:none}
+html.nx-home-v2 .nxSettingsSectionTitle span{color:var(--nxu-info);font:600 12px/1.2 var(--nxu-display);letter-spacing:.16em}
+html.nx-home-v2 .nxSettingsSectionTitle small{color:var(--nxu-text-3);font-size:12px}
+html.nx-home-v2 .nxSettingsRangeRow,html.nx-home-v2 .nxSettingsToggleRow,html.nx-home-v2 .nxSettingsActionRow{padding:var(--nxu-4) 0;border-top:1px solid var(--nxu-line)}
+html.nx-home-v2 .nxSettingsSectionTitle+*{border-top:0}
+html.nx-home-v2 .nxSettingsLabel strong{color:var(--nxu-text);font:600 15px/1.3 var(--nxu-body)}
+html.nx-home-v2 .nxSettingsLabel small{margin-top:2px;color:var(--nxu-text-2);font-size:13px;line-height:1.4}
+html.nx-home-v2 .nxSettingsRangeControl input{height:28px;accent-color:var(--nxu-action)}
+html.nx-home-v2 .nxSettingsRangeControl output{color:var(--nxu-text);font:700 16px/1 var(--nxu-display);letter-spacing:.04em}
+html.nx-home-v2 .nxSettingToggle{min-width:0;height:44px;padding:0;gap:var(--nxu-2);flex-direction:row-reverse;border:0;border-radius:var(--nxu-radius);background:none!important;color:var(--nxu-text-3)}
+html.nx-home-v2 .nxSettingToggle span{width:46px;height:26px;background:var(--nxu-surface-3);box-shadow:none}
+html.nx-home-v2 .nxSettingToggle span::after{width:20px;height:20px;background:var(--nxu-text-2);box-shadow:none!important;transition:transform var(--nxu-med) var(--nxu-ease),background-color var(--nxu-med) ease}
+html.nx-home-v2 .nxSettingToggle b{min-width:44px;font:700 13px/1 var(--nxu-display);letter-spacing:.1em;text-align:right}
+html.nx-home-v2 .nxSettingToggle[aria-checked="true"]{color:var(--nxu-action)}
+html.nx-home-v2 .nxSettingToggle[aria-checked="true"] span{background:var(--nxu-action)}
+html.nx-home-v2 .nxSettingToggle[aria-checked="true"] span::after{transform:translateX(20px);background:var(--nxu-on-lime)}
+html.nx-home-v2 .nxSettingToggle:focus-visible,html.nx-home-v2 .nxSettingsButton:focus-visible,html.nx-home-v2 .nxSettingsClose:focus-visible{outline:2px solid var(--nxu-info);outline-offset:2px}
+html.nx-home-v2 .nxSettingsButton{min-height:44px;padding:0 var(--nxu-4);border:1px solid var(--nxu-line-strong);border-radius:var(--nxu-radius);background:transparent;box-shadow:none!important;color:var(--nxu-text);font:700 14px/1 var(--nxu-display);letter-spacing:.1em;transition:background-color var(--nxu-fast) ease,transform var(--nxu-fast) var(--nxu-ease)}
+html.nx-home-v2 .nxSettingsButton:active{transform:scale(.97)}
+html.nx-home-v2 .nxSettingsButton.primary{border:0;border-radius:0;background:var(--nxu-action);color:var(--nxu-on-lime);clip-path:polygon(var(--nxu-cut) 0,100% 0,100% calc(100% - var(--nxu-cut)),calc(100% - var(--nxu-cut)) 100%,0 100%,0 var(--nxu-cut))}
+html.nx-home-v2 .nxSettingsButton.ghost{color:var(--nxu-text-2)}
+html.nx-home-v2 .nxSettingsFooter{padding:var(--nxu-3) var(--nxu-4) calc(env(safe-area-inset-bottom,0px) + var(--nxu-3));border-top:1px solid var(--nxu-line);background:var(--nxu-ink);-webkit-backdrop-filter:none;backdrop-filter:none}
+html.nx-home-v2 .nxSettingsFooter>span{color:var(--nxu-text-3);font-size:12px}
+html.nx-home-v2 .nxSettingsFooter>div{gap:var(--nxu-2)}
+html.nx-home-v2 #nx-home-help{display:flex;flex-wrap:wrap;gap:var(--nxu-2)}
+html.nx-home-v2 #nx-home-help{align-items:center;padding-top:var(--nxu-4);border-top:1px solid var(--nxu-line)}
+html.nx-home-v2 #nx-home-help .nxSettingsButton{margin:0!important;text-decoration:none}
+html.nx-home-v2 #nx-home-help details{flex:1 1 100%;padding:0!important;color:var(--nxu-text-2)!important;font:500 14px/1.5 var(--nxu-body)!important}
+html.nx-home-v2 #nx-home-help summary::after{content:"";width:7px;height:7px;margin-left:var(--nxu-3);border:solid var(--nxu-text-3);border-width:0 2px 2px 0;transform:translateY(-2px) rotate(45deg);transition:transform var(--nxu-med) var(--nxu-ease)}
+html.nx-home-v2 #nx-home-help details[open] summary::after{transform:translateY(2px) rotate(225deg)}
+html.nx-home-v2 #nx-home-help summary::-webkit-details-marker{display:none}
+html.nx-home-v2 #nx-home-help summary{display:flex;align-items:center;list-style:none;min-height:44px!important;color:var(--nxu-text)!important;font:600 15px/1.3 var(--nxu-body)}
+@media(max-width:760px){
+  html.nx-home-v2 .nxSettingsPanel{border-radius:0;box-shadow:none}
+  html.nx-home-v2 .nxSettingsRangeRow{grid-template-columns:1fr;gap:var(--nxu-2)}
+  html.nx-home-v2 .nxSettingsToggleRow,html.nx-home-v2 .nxSettingsActionRow{grid-template-columns:minmax(0,1fr) auto;gap:var(--nxu-3)}
+  html.nx-home-v2 .nxSettingsFooter{flex-direction:column;align-items:stretch;gap:var(--nxu-2)}
+  html.nx-home-v2 .nxSettingsFooter>div{display:grid;grid-template-columns:1fr 1fr}
+}
+@media(hover:hover){
+  html.nx-home-v2 #bootScreen .botDifficultyCard:hover,html.nx-home-v2 #bootScreen .bootCard:hover{background:var(--nxu-surface-2)!important;box-shadow:inset 0 0 0 1px var(--nxu-line),inset 3px 0 0 var(--nxu-action)!important}
+  html.nx-home-v2 #bootScreen .botDifficultyCard:hover::after,html.nx-home-v2 #bootScreen .bootCard:hover::after{right:var(--nxu-3);border-color:var(--nxu-action)}
+  html.nx-home-v2 #bootScreen .bootPrimaryBtn:hover,html.nx-home-v2 .nxSettingsButton.primary:hover{background:var(--nxu-action-hover)!important}
+  html.nx-home-v2 #bootScreen .bootGhostBtn:hover,html.nx-home-v2 .tournamentHostBar .bootGhostBtn:hover,html.nx-home-v2 .nxSettingsButton:not(.primary):hover,html.nx-home-v2 .nxSettingsClose:hover{background:var(--nxu-surface-2)!important;border-color:var(--nxu-line-strong)!important}
+}
+@media(min-width:761px){
+  html.nx-home-v2 #bootScreen:not(:has(#bootHome.active)):not(:has(#bootTournament.active)) .bootPanel{padding-top:var(--nxu-8)!important}
+}
+@media(prefers-reduced-motion:reduce){
+  html.nx-home-v2 #bootScreen .bootPanel,html.nx-home-v2 .nxSettingsPanel{animation:none!important}
+  html.nx-home-v2 #bootScreen *,html.nx-home-v2 .nxSettingsOverlay *{transition:none!important}
+}

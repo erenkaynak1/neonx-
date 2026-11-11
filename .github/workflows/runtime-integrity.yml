@@ -12,6 +12,7 @@ on:
       - '*.css'
       - 'social/**'
       - 'side-games/**'
+      - 'assets/ui/**'
       - 'scripts/**'
       - '.github/workflows/runtime-integrity.yml'
 
@@ -38,8 +39,10 @@ jobs:
         run: pip install --disable-pip-version-check duckdb requests
       - name: Runtime hygiene regressions
         run: python scripts/test_runtime_hygiene.py
-      - name: Canonical arcade navigation and single-menu contracts
+      - name: Shared navigation and single-menu contracts
         run: node scripts/test_arcade_navigation.cjs
+      - name: Home screen v2 contracts
+        run: node scripts/test_home_v2.cjs
       - name: First-login Firebase session and exact artwork contracts
         run: node scripts/test_neon_entry.cjs
       - name: Welcome controller JavaScript syntax

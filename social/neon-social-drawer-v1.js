@@ -120,8 +120,8 @@ function ensureShell(){
       </div>
       <div class="nx-drawer-tabs">
         <button class="nx-drawer-tab" type="button" data-nx-drawer-tab="friends">${socialIcon("users")}<span>Arkadaşlar</span></button>
-        <button class="nx-drawer-tab" type="button" data-nx-drawer-tab="lobby">${socialIcon("users")}<span>Lobi</span></button>
         <button class="nx-drawer-tab" type="button" data-nx-drawer-tab="invites">${socialIcon("mail")}<span>Davetler</span></button>
+        <button class="nx-drawer-tab" type="button" data-nx-drawer-tab="lobby">${socialIcon("device-gamepad-2")}<span>Lobi</span></button>
       </div>
       <div class="nx-drawer-body"></div>
     </aside>`;

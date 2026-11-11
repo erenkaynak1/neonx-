@@ -1,36 +1,111 @@
-/* The bottom bar renders the exact home SVG at its original 853px coordinates. */
-body.nx-arcade-has-footer{padding-bottom:calc(clamp(78px,23.9vw,125px) + env(safe-area-inset-bottom,0px))!important}
-.nx-arcade-footer{position:fixed;left:50%;bottom:0;transform:translateX(-50%);z-index:9000;width:min(100%,520px);background:#080d12;font-family:Arial,system-ui,sans-serif}
-.nx-arcade-footer .nx-home-map{display:block;width:100%;height:auto;overflow:visible;touch-action:manipulation}
-.nx-arcade-footer .nx-hotspot{cursor:pointer;outline:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
-.nx-arcade-footer .nx-hit{fill:rgba(255,255,255,.001);stroke:transparent;stroke-width:1.35;vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision;stroke-linejoin:round;pointer-events:all;transition:stroke .12s ease,fill .12s ease,filter .12s ease,stroke-width .12s ease}
-.nx-arcade-footer .nx-outline{fill:none;stroke:transparent;stroke-width:1;vector-effect:non-scaling-stroke;pointer-events:none;stroke-linejoin:round;transition:stroke .12s ease,filter .12s ease}
-.nx-arcade-footer .nx-hotspot:is(.nx-pressed,:focus-visible) .nx-outline{stroke:#bdefff;stroke-width:2;filter:drop-shadow(0 0 3px #65d9ff)}
-.nx-arcade-footer .nx-hotspot.nx-pressed .nx-hit{fill:rgba(189,239,255,.07)}
-.nx-arcade-footer .nx-nav-glyph{color:#afcce9;fill:none;stroke:currentColor;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;transition:color .18s ease,filter .18s ease,transform .18s ease;transform-box:fill-box;transform-origin:center;pointer-events:none}
-.nx-arcade-footer .nx-nav-label{font:24px Arial,system-ui,sans-serif;fill:#afcce9;text-anchor:middle;pointer-events:none;transition:fill .18s ease}
-.nx-arcade-footer .nx-nav-marker{fill:#b4ff20;opacity:0;transition:opacity .18s ease;pointer-events:none}
-.nx-arcade-footer .nx-home-nav .nx-hotspot[aria-current="page"] .nx-nav-glyph,.nx-arcade-footer .nx-home-nav .nx-hotspot.nx-pressed .nx-nav-glyph{color:#b4ff20;filter:drop-shadow(0 0 5px #8cc51f)}
-.nx-arcade-footer .nx-home-nav .nx-hotspot[aria-current="page"] .nx-nav-label{fill:#b4ff20}
-.nx-arcade-footer .nx-home-nav .nx-hotspot[aria-current="page"] .nx-nav-marker{opacity:1}
-.nx-arcade-footer .nx-home-nav .nx-hotspot.nx-pressed .nx-nav-glyph{transform:scale(.91)}
-.nx-arcade-footer .nx-home-nav [data-nx-nav="play"][aria-current="page"] .nx-nav-glyph{fill:rgba(180,255,32,.18)}
-.nx-arcade-footer .nx-arcade-badge circle{fill:#b4ff20;stroke:#09141b;stroke-width:2}
-.nx-arcade-footer .nx-arcade-badge text{fill:#061009;font:900 16px Arial,sans-serif;pointer-events:none}
+/* NEON XI interface system v2 — shared tokens, type, bottom navigation and mode chooser.
+   Loaded by the home screen and by every side game, so this file is the single
+   source for the design tokens. Palette: docs/NEON_XI_COLOR_PALETTE.md. */
+
+@font-face{font-family:"Barlow";font-weight:500;font-style:normal;font-display:swap;src:url("../assets/ui/fonts/Barlow-Medium.woff") format("woff")}
+@font-face{font-family:"Barlow";font-weight:600;font-style:normal;font-display:swap;src:url("../assets/ui/fonts/Barlow-SemiBold.woff") format("woff")}
+@font-face{font-family:"Barlow Condensed";font-weight:600;font-style:normal;font-display:swap;src:url("../assets/ui/fonts/BarlowCondensed-SemiBold.woff") format("woff")}
+@font-face{font-family:"Barlow Condensed";font-weight:700;font-style:normal;font-display:swap;src:url("../assets/ui/fonts/BarlowCondensed-Bold.woff") format("woff")}
+@font-face{font-family:"Barlow Condensed";font-weight:800;font-style:normal;font-display:swap;src:url("../assets/ui/fonts/BarlowCondensed-ExtraBold.woff") format("woff")}
+@font-face{font-family:"Barlow Condensed";font-weight:800;font-style:italic;font-display:swap;src:url("../assets/ui/fonts/BarlowCondensed-ExtraBoldItalic.woff") format("woff")}
+
+:root{
+  /* Official palette */
+  --neon-primary:#BAFF18;
+  --neon-lime:#DCFF72;
+  --neon-positive:#31FF76;
+  --neon-frame:#9ADFFF;
+  --neon-led:#3DCFFF;
+  --neon-cyan:#00EAFF;
+
+  /* Foundation: deep black, charcoal, graphite */
+  --nxu-black:#050708;
+  --nxu-ink:#0A0D10;
+  --nxu-surface-1:#10151A;
+  --nxu-surface-2:#171D23;
+  --nxu-surface-3:#212931;
+  --nxu-line:rgba(255,255,255,.08);
+  --nxu-line-strong:rgba(255,255,255,.16);
+
+  /* Text */
+  --nxu-text:#F3F6F8;
+  --nxu-text-2:#AAB6C0;
+  --nxu-text-3:#75828D;
+  --nxu-on-lime:#0B1005;
+
+  /* Roles */
+  --nxu-action:var(--neon-primary);
+  --nxu-action-hover:var(--neon-lime);
+  --nxu-success:var(--neon-positive);
+  --nxu-info:var(--neon-frame);
+  --nxu-danger:#FF7A8A; /* functional only: destructive confirmations */
+
+  /* Type */
+  --nxu-display:"Barlow Condensed","Roboto Condensed","Arial Narrow",system-ui,sans-serif;
+  --nxu-body:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+
+  /* Space (4px grid), shape, motion */
+  --nxu-1:4px;--nxu-2:8px;--nxu-3:12px;--nxu-4:16px;--nxu-5:20px;--nxu-6:24px;--nxu-8:32px;
+  --nxu-radius-s:4px;--nxu-radius:8px;--nxu-radius-l:12px;
+  --nxu-cut:10px; /* chamfer used on primary actions only */
+  --nxu-ease:cubic-bezier(.2,.8,.2,1);
+  --nxu-fast:120ms;--nxu-med:220ms;
+  --nxu-nav-h:64px;
+}
+
+/* ---------- Bottom navigation (identical on home and in every side game) ---------- */
+.nx-nav{position:fixed;left:0;right:0;bottom:0;z-index:9000;box-sizing:border-box;padding:0 max(4px,env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(4px,env(safe-area-inset-left,0px));border-top:1px solid var(--nxu-line);background:rgba(8,11,13,.965);-webkit-backdrop-filter:blur(18px) saturate(1.3);backdrop-filter:blur(18px) saturate(1.3);font-family:var(--nxu-display);-webkit-tap-highlight-color:transparent;user-select:none}
+.nx-nav *{box-sizing:border-box}
+.nx-nav-inner{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));width:100%;max-width:520px;height:var(--nxu-nav-h);margin:0 auto}
+.nx-nav-item{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-width:0;padding:0;border:0;background:none;color:var(--nxu-text-3);text-decoration:none;cursor:pointer;outline:none;touch-action:manipulation;transition:color var(--nxu-fast) ease}
+.nx-nav-icon{position:relative;display:grid;place-items:center;width:44px;height:28px;transition:transform var(--nxu-fast) var(--nxu-ease),background-color var(--nxu-fast) ease}
+.nx-nav-icon svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.nx-nav-label{font-weight:600;font-size:11px;line-height:1;letter-spacing:.09em;white-space:nowrap}
+.nx-nav-item::before{content:"";position:absolute;top:-1px;left:50%;width:28px;height:2px;margin-left:-14px;background:var(--nxu-action);transform:scaleX(0);transition:transform var(--nxu-med) var(--nxu-ease)}
+.nx-nav-item[aria-current="page"]{color:var(--nxu-action)}
+.nx-nav-item[aria-current="page"]::before{transform:scaleX(1)}
+.nx-nav-item.nx-pressed .nx-nav-icon{transform:scale(.9)}
+.nx-nav-item:focus-visible .nx-nav-icon{outline:2px solid var(--nxu-info);outline-offset:2px;border-radius:var(--nxu-radius-s)}
+.nx-nav-primary{color:var(--nxu-text)}
+.nx-nav-primary .nx-nav-icon{width:52px;height:30px;background:var(--nxu-action);color:var(--nxu-on-lime);clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px)}
+.nx-nav-primary .nx-nav-icon svg{width:20px;height:20px;fill:currentColor;stroke:none}
+.nx-nav-primary::before{display:none}
+.nx-nav-badge{position:absolute;top:-3px;right:1px;display:grid;place-items:center;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:var(--nxu-action);color:var(--nxu-on-lime);box-shadow:0 0 0 2px #080b0d;font:700 11px/1 var(--nxu-display);letter-spacing:0;animation:nx-badge-in var(--nxu-med) var(--nxu-ease)}
+.nx-nav-badge[hidden]{display:none}
+@keyframes nx-badge-in{from{transform:scale(.4);opacity:0}}
+@media(hover:hover){.nx-nav-item:hover{color:var(--nxu-text)}.nx-nav-item[aria-current="page"]:hover{color:var(--nxu-action-hover)}.nx-nav-primary:hover .nx-nav-icon{background:var(--nxu-action-hover)}}
+@media(min-width:900px){
+  .nx-nav{left:50%;right:auto;bottom:16px;width:520px;margin-left:-260px;padding:0 8px;border:1px solid var(--nxu-line-strong);border-radius:var(--nxu-radius-l);box-shadow:0 18px 50px rgba(0,0,0,.55)}
+}
+
+/* Side games: reserve room for the bar */
+body.nx-arcade-has-footer{padding-bottom:calc(var(--nxu-nav-h) + env(safe-area-inset-bottom,0px))!important}
 body.nx-arcade-has-footer>.nx-social-launch{display:none!important}
-.nx-arcade-choice-shade{position:fixed;inset:0;z-index:500000;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(0,3,8,.79);backdrop-filter:blur(9px);font-family:Arial,system-ui,sans-serif}
-.nx-arcade-choice-shade.open{display:flex}
-.nx-arcade-choice{position:relative;width:min(100%,440px);border:1px solid rgba(178,237,255,.54);border-radius:22px;padding:24px 17px 19px;background:linear-gradient(152deg,#142330,#080e16 64%,#06150c);box-shadow:inset 0 0 30px rgba(89,190,241,.07),0 18px 90px #000,0 0 24px rgba(76,201,255,.11);color:#eaf6ff}
-.nx-arcade-choice:before{content:"";position:absolute;top:0;left:18%;right:18%;height:2px;background:linear-gradient(90deg,transparent,#b3f5ff,#b4ff20,transparent);box-shadow:0 0 14px #91d6f4}
-.nx-arcade-choice-eyebrow{color:#b4ff20;font:800 10px Arial,sans-serif;letter-spacing:.18em;text-align:center}
-.nx-arcade-choice h2{font:900 clamp(20px,5vw,27px)/1.2 Arial,sans-serif;letter-spacing:.06em;text-align:center;margin:9px 35px 18px}
-.nx-arcade-choice-close{position:absolute;right:11px;top:9px;min-width:38px;min-height:38px;border:0;background:transparent;color:#c8deea;font-size:26px;cursor:pointer}
-.nx-arcade-option{width:100%;min-height:80px;margin-top:10px;padding:13px 15px;border-radius:14px;display:flex;align-items:center;text-align:left;gap:14px;background:linear-gradient(120deg,rgba(21,45,38,.95),rgba(5,16,21,.97));color:#f1fbff;border:1px solid rgba(180,255,32,.47);box-shadow:inset 0 0 18px rgba(180,255,32,.045);font:800 14px Arial,sans-serif;letter-spacing:.035em;cursor:pointer;transition:transform .15s,box-shadow .15s}
-.nx-arcade-option:last-of-type{border-color:rgba(113,202,251,.55);background:linear-gradient(120deg,rgba(18,35,51,.98),rgba(5,15,22,.98))}
-.nx-arcade-option svg{width:27px;height:27px;flex:none;stroke:#b4ff20;stroke-width:1.8;fill:none}.nx-arcade-option:last-of-type svg{stroke:#7fdcff}
-.nx-arcade-option small{display:block;color:#a3b9c5;font:500 11px/1.4 Arial,sans-serif;letter-spacing:0;margin-top:5px}
-.nx-arcade-option:active{transform:scale(.98);box-shadow:0 0 19px rgba(180,255,32,.25)}
-.nx-arcade-option:focus-visible{outline:2px solid #dcff97;outline-offset:2px}
-.nx-arcade-choice-note{font:500 11px/1.45 Arial,sans-serif;color:#8fa7b4;text-align:center;margin:14px 3px 0}
-@media(max-height:460px) and (orientation:landscape){.nx-arcade-footer{width:min(100%,110vh)}body.nx-arcade-has-footer{padding-bottom:clamp(60px,25vh,102px)!important}}
-@media(prefers-reduced-motion:reduce){.nx-arcade-footer .nx-hit,.nx-arcade-footer .nx-outline,.nx-arcade-footer .nx-nav-glyph,.nx-arcade-footer .nx-nav-label,.nx-arcade-footer .nx-nav-marker,.nx-arcade-option{transition:none!important}}
+@media(min-width:900px){body.nx-arcade-has-footer{padding-bottom:calc(var(--nxu-nav-h) + 32px)!important}}
+@media(max-height:460px) and (orientation:landscape){:root{--nxu-nav-h:52px}.nx-nav-label{font-size:10px}.nx-nav-item{gap:3px}}
+
+/* ---------- Online mode chooser ---------- */
+.nx-arcade-choice-shade{position:fixed;inset:0;z-index:500000;display:flex;align-items:flex-end;justify-content:center;padding:0;background:rgba(3,5,6,.72);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);font-family:var(--nxu-body);visibility:hidden;opacity:0;transition:opacity var(--nxu-med) ease,visibility 0s linear var(--nxu-med)}
+.nx-arcade-choice-shade.open{visibility:visible;opacity:1;transition-delay:0s}
+.nx-arcade-choice{position:relative;box-sizing:border-box;width:min(100%,460px);padding:var(--nxu-6) var(--nxu-4) calc(var(--nxu-5) + env(safe-area-inset-bottom,0px));border:1px solid var(--nxu-line-strong);border-bottom:0;border-radius:var(--nxu-radius-l) var(--nxu-radius-l) 0 0;background:var(--nxu-surface-1);box-shadow:0 -24px 80px rgba(0,0,0,.6);color:var(--nxu-text);transform:translateY(24px);transition:transform var(--nxu-med) var(--nxu-ease)}
+.nx-arcade-choice-shade.open .nx-arcade-choice{transform:none}
+.nx-arcade-choice-eyebrow{color:var(--nxu-action);font:700 12px/1 var(--nxu-display);letter-spacing:.16em}
+.nx-arcade-choice h2{margin:var(--nxu-2) 44px var(--nxu-4) 0;font:800 italic 30px/1 var(--nxu-display);letter-spacing:.01em;text-align:left}
+.nx-arcade-choice-close{position:absolute;right:var(--nxu-3);top:var(--nxu-3);display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;border-radius:var(--nxu-radius);background:transparent;color:var(--nxu-text-2);font-size:26px;line-height:1;cursor:pointer}
+.nx-arcade-option{display:flex;align-items:center;gap:var(--nxu-4);width:100%;min-height:72px;margin-top:var(--nxu-2);padding:var(--nxu-3) var(--nxu-4);border:1px solid var(--nxu-line);border-radius:var(--nxu-radius);background:var(--nxu-surface-2);color:var(--nxu-text);text-align:left;font:700 17px/1.1 var(--nxu-display);letter-spacing:.05em;cursor:pointer;touch-action:manipulation;transition:transform var(--nxu-fast) var(--nxu-ease),border-color var(--nxu-fast) ease,background-color var(--nxu-fast) ease}
+.nx-arcade-option svg{flex:none;width:26px;height:26px;fill:none;stroke:var(--nxu-action);stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.nx-arcade-option:last-of-type svg{stroke:var(--nxu-info)}
+.nx-arcade-option small{display:block;margin-top:5px;color:var(--nxu-text-2);font:500 13px/1.35 var(--nxu-body);letter-spacing:0}
+.nx-arcade-option:active{transform:scale(.985);border-color:var(--nxu-action)}
+.nx-arcade-option:focus-visible,.nx-arcade-choice-close:focus-visible{outline:2px solid var(--nxu-info);outline-offset:2px}
+.nx-arcade-choice-note{margin:var(--nxu-4) 0 0;color:var(--nxu-text-3);font:500 12px/1.4 var(--nxu-body);text-align:left}
+@media(hover:hover){.nx-arcade-option:hover{border-color:var(--nxu-line-strong);background:var(--nxu-surface-3)}.nx-arcade-choice-close:hover{color:var(--nxu-text)}}
+@media(min-width:600px){.nx-arcade-choice-shade{align-items:center;padding:var(--nxu-5)}.nx-arcade-choice{border-bottom:1px solid var(--nxu-line-strong);border-radius:var(--nxu-radius-l);padding-bottom:var(--nxu-5)}}
+
+/* ---------- Transient feedback ---------- */
+#nx-arcade-feedback{position:fixed;z-index:510000;left:50%;bottom:calc(var(--nxu-nav-h) + 20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);box-sizing:border-box;width:min(calc(100% - 32px),380px);padding:12px 16px;border:1px solid var(--nxu-line-strong);border-radius:var(--nxu-radius);background:var(--nxu-surface-2);box-shadow:0 12px 40px rgba(0,0,0,.6);color:var(--nxu-text);font:500 14px/1.4 var(--nxu-body);text-align:center;animation:nx-feedback-in var(--nxu-med) var(--nxu-ease)}
+@keyframes nx-feedback-in{from{opacity:0;transform:translate(-50%,8px)}}
+
+@media(prefers-reduced-motion:reduce){
+  .nx-nav-item,.nx-nav-icon,.nx-nav-item::before,.nx-nav-badge,.nx-arcade-choice-shade,.nx-arcade-choice,.nx-arcade-option,#nx-arcade-feedback{transition:none!important;animation:none!important}
+}

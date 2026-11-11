@@ -24,18 +24,16 @@ try{
    const footer=page.locator('#nx-arcade-footer');
    await footer.waitFor({state:'visible',timeout});
    const result=await footer.evaluate(node=>{
-    const svg=node.querySelector('svg');
+    const inner=node.querySelector('.nx-nav-inner');
     const buttons=[...node.querySelectorAll('[data-nx-nav]')].map(a=>({action:a.dataset.nxNav,label:a.querySelector('.nx-nav-label')?.textContent,href:a.getAttribute('href'),current:a.getAttribute('aria-current'),bounds:a.getBoundingClientRect().toJSON()}));
-    return {viewBox:svg?.getAttribute('viewBox'),width:svg?.getBoundingClientRect().width,height:svg?.getBoundingClientRect().height,buttons};
+    return {width:node.getBoundingClientRect().width,height:inner?.getBoundingClientRect().height,buttons};
    });
-   assert.equal(result.viewBox,'0 1640 853 204',name+': incorrect canonical SVG viewport');
-   assert.deepEqual(result.buttons.map(b=>b.action),['home','play','friends','settings'],name+': wrong actions');
-   assert.deepEqual(result.buttons.map(b=>b.label),['Ana sayfa','Oyna','Arkadaşlar','Ayarlar'],name+': labels differ from home');
-   assert.equal(result.buttons.filter(b=>b.current==='page').length,1,name+': must have one active nav item');
-   assert.equal(result.buttons[1].current,'page',name+': play must be highlighted');
+   assert.deepEqual(result.buttons.map(b=>b.action),['home','friends','play','lobby','leaderboard'],name+': wrong actions');
+   assert.deepEqual(result.buttons.map(b=>b.label),['ANA SAYFA','SOSYAL','OYNA','LOBİ','LİDERLİK'],name+': labels differ from home');
+   assert.equal(result.buttons.filter(b=>b.current==='page').length,0,name+': side games are not a navigation destination');
    assert(Math.abs(result.width-390)<2,name+': wrong nav width');
-   assert(Math.abs(result.height-(390*204/853))<2,name+': wrong nav scale');
-   assert(result.buttons.every(x=>x.bounds.width>50&&x.bounds.height>30),name+': dead tap target');
+   assert(Math.abs(result.height-64)<2,name+': wrong nav height');
+   assert(result.buttons.every(x=>x.bounds.width>=64&&x.bounds.height>=44),name+': tap target below 44px');
    if(name==='xox'||name==='twin'){
     await page.waitForSelector('body[data-ct-screen="menu"]',{timeout});
     assert.equal(await page.locator('.menuNav').count(),0,name+': legacy duplicate footer remains');
@@ -66,8 +64,8 @@ try{
    await page.screenshot({path:path.join(output,name+'.png'),fullPage:false});
    report.cases.push({name,...result,oldFooterCount:await page.locator('.menuNav').count()});
    if(name==='wordle'){
-    await page.locator('[data-nx-nav="play"]').click();
-    await page.waitForURL(/\/side-games\/index\.html/,{timeout:15000});
+    await page.locator('[data-nx-nav="home"]').click();
+    await page.waitForURL(/\/index\.html$/,{timeout:15000});
    }
   }finally{await page.close()}
  }
