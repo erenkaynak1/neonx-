@@ -1959,7 +1959,7 @@ function chemLinks(team,slotId){
 }
 function chemMap(team){const out={};for(const s of formation(team).slots){if(!state.teams[team].slots[s.id])continue;out[s.id]=Math.min(10,chemLinks(team,s.id).reduce((sum,x)=>sum+x.total,0))}return out}
 function teamChem(team){const m=chemMap(team),v=Object.values(m);return v.length?v.reduce((a,b)=>a+b,0)/v.length:0}
-function boostFromChem(c){return Math.max(0,Math.min(25,c/10*25))}
+function boostFromChem(c){return Math.max(0,Math.min(8,c/10*8))}
 function boostedValue(v,c){return Math.round(v*(1+boostFromChem(c)/100))}
 function statEntries(p){if(p.pos==="GK"){const d=details(p);return Object.entries(d)}return Object.entries(mainObj(p))}
 function placementForPlayer(id){for(const team of ["A","B"]){for(const [slotId,pid] of Object.entries(state.teams[team].slots)){if(pid===id)return{team,slotId}}}return null}
@@ -7197,8 +7197,14 @@ render();
     values?.set(cacheKey,value);
     return value;
   }
+  function v7PositionFit(member) {
+    if(!member?.footballer||member.footballer.pos==="GK")return 1;
+    const system=window.KADRO_POSITION_SYSTEM,position=member.position||member.slot?.displayPos||member.slot?.pos;
+    if(!system?.positionFitMultiplier||!position||!member.footballer.positionProfile)return 1;
+    try{const value=Number(system.positionFitMultiplier(member.footballer,position));return Number.isFinite(value)?clamp(value,.78,1):1;}catch(error){return 1;}
+  }
   function stat(member,key,fallback=65) {
-    const base = baseStat(member,key,fallback) * chemistryModifier(member.team,member);
+    const base = baseStat(member,key,fallback) * chemistryModifier(member.team,member) * v7PositionFit(member);
     const load = window.NEON_TACTICAL_LOAD;
     if(!load || member.footballer.pos === "GK") return base;
     const condition = load.condition(tactic(member.team), baseStat(member,"pressingDiscipline",65), game.minute);
@@ -7211,12 +7217,13 @@ render();
     members.forEach(member => keys.forEach(key => vals.push(stat(member,key))));
     return vals.reduce((a,b)=>a+b,0)/Math.max(1,vals.length);
   }
+  const CHEM_MAX_BOOST=.08; // v7: chemistry polishes a squad, it must not outweigh ability or tactics.
   function chemistryFor(team,member) {
     try { return member.slot ? (chemMap(team)[member.slot.id] || 0) : 0; } catch (error) { return 0; }
   }
   function chemistryModifier(team,member) {
     const c = chemistryFor(team,member);
-    return 1 + Math.min(.25, Math.max(0,c/10*.25));
+    return 1 + Math.min(CHEM_MAX_BOOST, Math.max(0,c/10*CHEM_MAX_BOOST));
   }
 
   function initializeStats() {
@@ -7310,11 +7317,11 @@ render();
     if(slotPos!==primary){
       if(["LB","RB"].includes(slotPos)&&["LB","RB"].includes(primary))familiarity=.97;
       else if(slotPos==="AM"&&primary==="CM")familiarity=.94;
-      else familiarity=.90;
+      else familiarity=.84;
     }
     return clamp(natural*familiarity,35,99);
   }
-  function roleExecution(member) { return clamp(.78+roleSuitability(member)*.0032,.90,1.11); }
+  function roleExecution(member) { return clamp(.60+roleSuitability(member)*.0053,.82,1.10); }
   function roleTendency(member,key) { return Number(roleModel(member)?.tendencies?.[key])||0; }
   function teamStructure(team) {
     const members=activeSquad(team).filter(member=>member.footballer.pos!=="GK");
@@ -7348,6 +7355,26 @@ render();
     // The score must not grant hidden ability bonuses or silently change the coach's plan.
     return 0;
   }
+
+  const V7_PLAN_PROFILES={
+    press:{positions:["ST","LW","RW","AM","CM","DM"],weights:{pressingDiscipline:.30,pace:.25,stamina:.25,teamwork:.20}},
+    lowBlock:{positions:["CB","LB","RB","DM","CM"],weights:{positioning:.35,defending:.30,teamwork:.20,strength:.15}},
+    fast:{positions:["LW","RW","ST","AM","LB","RB"],weights:{pace:.45,dribbling:.30,decisionMaking:.25}},
+    secure:{positions:["CB","DM","CM","AM"],weights:{shortPassing:.35,composure:.30,decisionMaking:.20,vision:.15}},
+    wing:{positions:["LW","RW","LB","RB"],weights:{pace:.30,crossing:.35,dribbling:.35}},
+    center:{positions:["DM","CM","AM","ST"],weights:{shortPassing:.35,vision:.35,dribbling:.30}},
+    cross:{positions:["LW","RW","LB","RB","ST"],weights:{crossing:.55,heading:.45}},
+    through:{positions:["CM","AM","ST","LW","RW"],weights:{vision:.40,shortPassing:.30,composure:.30}},
+    shoot:{positions:["ST","LW","RW","AM","CM"],weights:{longShots:.40,shotPower:.30,finishing:.30}}
+  };
+  // 75 = neutral (factor 1). Suitable squads amplify the plan, unsuitable squads lose it and can be hurt by it.
+  function v7PlanFit(team,plan) {
+    const profile=V7_PLAN_PROFILES[plan];
+    if(!profile)return 75;
+    return v3UnitScore(team,profile.positions,profile.weights);
+  }
+  function v7PlanFactor(team,plan) { return clamp(1+(v7PlanFit(team,plan)-75)/14,-.4,1.8); }
+  function v7PlanEdge(team,plan,size=3) { return (v7PlanFactor(team,plan)-1)*size; }
   function v5TacticRoleAdjustment(team,side,phase,route="",action="") {
     const cfg=v3Config(team),s=teamStructure(team);
     let value=clamp((s.roleFit-70)*.18,-4,4.8);
@@ -7360,8 +7387,13 @@ render();
       if(action==="shot")value+=(s.finisher-1.0)*1.20;
       if(action==="cross")value+=(s.width-2.0)*.80+(s.aerial-.8)*1.10;
       if(action==="workBall")value+=(s.creator-2.2)*1.05+(s.runner-2.0)*.45;
-      if(cfg.transitionPlan==="Hızlı Hücum")value+=route==="transition"?4.5:phase===1?-.8:0;
-      if(cfg.transitionPlan==="Topu Güvenceye Al")value+=route==="transition"?-2.4:phase<=2?2.2:0;
+      if(cfg.transitionPlan==="Hızlı Hücum")value+=route==="transition"?4.5*v7PlanFactor(team,"fast"):phase===1?-.8:0;
+      if(cfg.transitionPlan==="Topu Güvenceye Al")value+=route==="transition"?-2.4:phase<=2?2.2*v7PlanFactor(team,"secure"):0;
+      if(cfg.attackDirection==="Kanatları Kullan"&&route==="wing")value+=v7PlanEdge(team,"wing");
+      if(cfg.attackDirection==="Merkezden Oyna"&&route==="center")value+=v7PlanEdge(team,"center");
+      if(cfg.finalAction==="Ortaları Artır"&&action==="cross")value+=v7PlanEdge(team,"cross");
+      if(cfg.finalAction==="Ceza Sahasına Pasla Gir"&&action==="workBall")value+=v7PlanEdge(team,"through");
+      if(cfg.finalAction==="Kaleyi Görünce Vur"&&action==="shot")value+=v7PlanEdge(team,"shoot");
     }else{
       if(phase===1)value+=(s.press-1.5)*1.25;
       if(phase===2)value+=(s.press-1.5)*.65+(s.cover-2.3)*.70;
@@ -7371,15 +7403,17 @@ render();
       if(cfg.pressingPlan==="Önde Baskı"){
         const discipline=average(team,["pressingDiscipline","teamwork"],m=>m.footballer.pos!=="GK");
         const condition=window.NEON_TACTICAL_LOAD?.condition(cfg,discipline,game.minute) ?? 100;
-        value+=phase===1?5.0*condition/100:phase>=4?-2.5:1.0;
+        const pressFactor=v7PlanFactor(team,"press");
+        value+=phase===1?5.0*condition/100*pressFactor:phase>=4?-2.5:1.0*pressFactor;
         if(route==="transition"){
           const recovery=v3UnitScore(team,["CB","LB","RB"],{pace:.65,positioning:.35});
           value-=clamp((80-discipline)/10,0,3)+clamp((76-recovery)*.12,0,4);
         }
       }
-      if(cfg.pressingPlan==="Alçak Blok")value+=phase===1?-4.0:phase>=4?4.0:1.5;
+      if(cfg.pressingPlan==="Alçak Blok"){const blockFactor=v7PlanFactor(team,"lowBlock");value+=phase===1?-4.0:phase>=4?4.0*blockFactor:1.5*blockFactor;}
       if(cfg.transitionPlan==="Hızlı Hücum")value-=Math.max(0,s.risk-s.restDefense)*.85;
     }
+    value+=(s.tacticalFit-94)*.25; // v7: role/tactic mismatch shown in analysis is a real cost.
     const missing=Math.max(0,10-s.outfieldCount);
     value-=missing*(side==="attack"?3.8:4.6);
     value+=v5GameStateAdjustment(team,side,phase);
@@ -7406,11 +7440,12 @@ render();
   function v5TransitionChance(team,losingTeam=other(team),phase=3) {
     const cfg=v3Config(team),opponent=v3Config(losingTeam),s=teamStructure(team),d=teamStructure(losingTeam);
     const regain=phase===1?.55:phase===2?.36:.23;
-    const intent=cfg.transitionPlan==="Hızlı Hücum"?1.25:cfg.transitionPlan==="Topu Güvenceye Al"?.55:1;
+    const intent=cfg.transitionPlan==="Hızlı Hücum"?1+.25*clamp(v7PlanFactor(team,"fast"),0,1.8):cfg.transitionPlan==="Topu Güvenceye Al"?.55:1;
+    const pressRegain=cfg.pressingPlan==="Önde Baskı"&&phase<=2?.07*v7PlanFactor(team,"press"):0;
     const exposure=(opponent.general==="Hücum Ağırlıklı"?.07:opponent.general==="Savunma Ağırlıklı"?-.04:0)
       +(opponent.pressingPlan==="Önde Baskı"?.05:opponent.pressingPlan==="Alçak Blok"?-.035:0)
       +clamp((d.risk-d.restDefense)*.012,-.06,.08);
-    return clamp((regain+exposure+(s.outlet+s.runner-3.2)*.012)*intent,.06,.78);
+    return clamp((regain+exposure+pressRegain+(s.outlet+s.runner-3.2)*.012)*intent,.06,.78);
   }
   function v6RecoverPossession(losingTeam,winningTeam,phase=3) {
     const transition=rng()<v5TransitionChance(winningTeam,losingTeam,phase);
@@ -7421,7 +7456,7 @@ render();
   function v6Control(team) {
     const cfg=v3Config(team),s=teamStructure(team);
     const ability=average(team,["shortPassing","decisionMaking","teamwork"],m=>m.footballer.pos!=="GK");
-    return ability+(cfg.transitionPlan==="Topu Güvenceye Al"?3:cfg.transitionPlan==="Hızlı Hücum"?-2:0)
+    return ability+(cfg.transitionPlan==="Topu Güvenceye Al"?3*v7PlanFactor(team,"secure"):cfg.transitionPlan==="Hızlı Hücum"?-2:0)
       +(cfg.pressingPlan==="Önde Baskı"?1:cfg.pressingPlan==="Alçak Blok"?-2:0)
       +clamp((s.creator+s.buildup-4)*.5,-3,3)-Math.max(0,10-s.outfieldCount)*4;
   }
