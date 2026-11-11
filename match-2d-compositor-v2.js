@@ -158,7 +158,8 @@
     const diagonal = Math.hypot(width,height) || 1;
     const jump = Math.hypot(x-record.simX,y-record.simY);
 
-    if(jump > diagonal*.30 || elapsedMs>180){
+    // v7: a slow frame must not teleport players; only a real scene reset (big jump) snaps.
+    if(jump > diagonal*.30){
       snapRecord(record,x,y,now);
       return;
     }
@@ -191,6 +192,12 @@
   function fixedUpdate(el,record,width,height){
     record.prevX = record.simX;
     record.prevY = record.simY;
+    // v7: the match layer already eases every player (smooth-damp). A second spring here only
+    // added lag and overshoot, so follow the eased source position directly.
+    record.simX = record.targetX;
+    record.simY = record.targetY;
+    record.vx = record.vy = 0;
+    return;
 
     const {omega,maxFactor} = responseFor(el);
     const diagonal = Math.hypot(width,height) || 1;
@@ -216,6 +223,7 @@
   function renderNode(el,record,alpha){
     const x = lerp(record.prevX,record.simX,alpha);
     const y = lerp(record.prevY,record.simY,alpha);
+    updateGait(el,record,x,y);
     if(Number.isFinite(record.renderX) && Number.isFinite(record.renderY) &&
        Math.abs(x-record.renderX)<RENDER_EPSILON && Math.abs(y-record.renderY)<RENDER_EPSILON) return;
 
@@ -223,6 +231,22 @@
     record.renderY = y;
     // One style mutation per moving node instead of separate X and Y mutations.
     el.style.setProperty('--nx2d-pos',`translate3d(${x.toFixed(2)}px,${y.toFixed(2)}px,0)`);
+  }
+
+  // v7: running gait + facing for the animated player figures (match-players-v7.js).
+  function updateGait(el,record,x,y){
+    if(isBallLike(el)||!Number.isFinite(record.renderX))return;
+    const t=performance.now(),dt=clamp((t-(record.gaitT||t))/1000,1/240,.1);record.gaitT=t;
+    const diag=Math.hypot(lastWidth,lastHeight)||1;
+    const svx=(x-record.renderX)/dt/diag,svy=(y-record.renderY)/dt/diag;
+    record.gvx=lerp(record.gvx||0,svx,.18);record.gvy=lerp(record.gvy||0,svy,.18);
+    const speed=Math.hypot(record.gvx,record.gvy);
+    const gait=speed>.075?'run':speed>.022?'jog':'idle';
+    if(el.dataset.gait!==gait)el.dataset.gait=gait;
+    if(speed>.018){
+      const face=Math.abs(record.gvx)>Math.abs(record.gvy)*.8?(record.gvx<0?'l':'r'):(record.gvy<0?'u':'d');
+      if(el.dataset.face!==face)el.dataset.face=face;
+    }
   }
 
   function updateAdaptiveQuality(fps){
@@ -270,7 +294,8 @@
     frameDt = clamp(frameDt,0,0.05);
     lastNow = now;
 
-    const snapAll = sizeChanged || becameVisible || longFrame;
+    const snapAll = sizeChanged || becameVisible; // v7: long frames no longer snap (teleport) players.
+    void longFrame;
     for(const [el,record] of records){
       if(!el.isConnected) continue;
       sampleTarget(el,record,width,height,now,snapAll);
