@@ -29,7 +29,7 @@
 <section class="sgm-how" aria-label="Nasıl oynanır"><div class="sgm-how-badge" aria-hidden="true">?</div><div><h3>NASIL OYNANIR?</h3><p>A bir futbolcunun adını söyler. B ters çevrilmiş sesi dinler, taklit ederek kaydeder ve kendi kaydının tersini dinleyip futbolcuyu tahmin eder.</p></div></section>
 </section>
 <section id="game" hidden>
-<div class="room-bar"><span>ODA <b id="room-label">------</b></span><button id="copy-link" class="small-btn">DAVET LİNKİNİ KOPYALA</button></div>
+<div class="room-bar" hidden style="display:none"><span>ODA <b id="room-label">------</b></span><button id="copy-link" class="small-btn">DAVET LİNKİNİ KOPYALA</button></div>
 <div class="players"><div class="player" id="player-a"><small>OYUNCU A</small><strong id="name-a">Bekleniyor…</strong></div><div class="versus">VS</div><div class="player" id="player-b"><small>OYUNCU B</small><strong id="name-b">Bekleniyor…</strong></div></div>
 <div class="step"><span id="step-no">TUR 1</span><b id="step-title">Rakip bekleniyor</b><p id="step-desc">İkinci oyuncu odaya katıldığında oyun başlayacak.</p></div>
 <div id="speaker-panel" class="action-panel" hidden><div class="panel-icon">🎙</div><h3>Futbolcuyu söyle</h3><p>İstediğin futbolcunun adını normal şekilde söyle. Sistem duyduğunu yazıya dökecek.</p><button id="record-name" class="btn primary mic-btn">🎙 KAYDI BAŞLAT</button><div id="heard-result" class="heard" hidden><strong id="heard-name"></strong><p>Doğru anladım mı?</p><div class="two"><button id="confirm-name" class="btn primary">EVET, DEVAM ET</button><button id="retry-name" class="btn secondary">TEKRAR SÖYLE</button></div></div><p class="hint" id="speech-fallback" hidden>Sistem ismi yanlış duyduysa aşağıdaki alandan düzeltebilirsin.</p><input id="manual-name" class="manual" placeholder="Futbolcu ismi (gerekirse)" hidden></div>
@@ -42,7 +42,7 @@
 </section>
 <div id="toast" role="status"></div>
 </main>
-<script type="module" src="./reverse-xi.js?v=10"></script>
-<script type="module" src="../../social/neon-social.js?v=20261112-google-signin"></script>
+<script type="module" src="./reverse-xi.js?v=11"></script>
+<script type="module" src="../../social/neon-social.js?v=20261112-reverse-fix"></script>
 <script src="../neon-arcade-ui-v1.js?v=20261111-home-v2"></script>
 </body></html>

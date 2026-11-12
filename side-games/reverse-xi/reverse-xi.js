@@ -12,8 +12,10 @@ const uid=()=>state.uid||(state.local?'local':'');
 // Single-phone mode keeps the room in memory and re-renders after every write, so the same
 // panels, recording and answer check run without Firebase.
 function applyPatch(target,patch){for(const [key,value] of Object.entries(patch)){const parts=key.split('/');let node=target;for(let i=0;i<parts.length-1;i++){node[parts[i]]=node[parts[i]]&&typeof node[parts[i]]==='object'?node[parts[i]]:{};node=node[parts[i]]}const last=parts[parts.length-1];if(value===null)delete node[last];else node[last]=value}}
+// A promise that never settles (slow network, Safari audio decode) used to leave buttons on "İŞLENİYOR…" forever.
+function withTimeout(promise,ms,message){let t;return Promise.race([promise,new Promise((_,reject)=>{t=setTimeout(()=>reject(new Error(message)),ms)})]).finally(()=>clearTimeout(t))}
 function roomWrite(patch){
- if(!state.local)return update(roomRef(),patch);
+ if(!state.local)return withTimeout(update(roomRef(),patch),20000,'Bağlantı çok yavaş, gönderilemedi. Tekrar dene.');
  applyPatch(state.localRoom,patch);
  const snapshot=JSON.parse(JSON.stringify(state.localRoom));
  return new Promise(resolve=>setTimeout(()=>{renderRoom(snapshot);validateIncomingGuess(snapshot);resolve()},0));
@@ -67,7 +69,12 @@ async function validateIncomingGuess(data){
  catch(e){state.validatingGuess='';toast('Cevap kontrol edilemedi: '+e.message)}
 }
 function openRoom(){$('intro').hidden=true;$('game').hidden=false;$('room-label').textContent=state.room;if(state.off)state.off();state.off=onValue(roomRef(),s=>{if(!s.exists()){toast('Oda kapatıldı.');return}const data=s.val();renderRoom(data);validateIncomingGuess(data)})}
-async function getStream(){const live=state.stream?.getAudioTracks?.().some(t=>t.readyState==='live');if(live)return state.stream;state.stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});return state.stream}
+// The microphone is opened for each recording and released right after. Keeping one stream for the
+// whole match let iOS/Android mute the track after a few turns (speech recognition or another app takes
+// the mic): recordings then came out silent. An open mic also keeps iOS in call-audio mode, which makes
+// the opponent's audio very quiet or silent on playback.
+function releaseStream(){const s=state.stream;state.stream=null;try{s?.getTracks().forEach(t=>t.stop())}catch{}}
+async function getStream(){releaseStream();state.stream=await withTimeout(navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}}),10000,'Mikrofon açılamadı. İzinleri kontrol edip tekrar dene.');return state.stream}
 function recognize(){return new Promise(async(resolve,reject)=>{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){reject(new Error('speech'));return}const rec=new SR();rec.lang='tr-TR';rec.interimResults=false;rec.maxAlternatives=4;rec.onresult=e=>resolve([...e.results[0]].map(x=>x.transcript).sort((a,b)=>b.length-a.length)[0]);rec.onerror=()=>reject(new Error('recognition'));rec.start();state.speech=rec})}
 function recordingMimeType(){
  const ua=navigator.userAgent||'';
@@ -76,14 +83,17 @@ function recordingMimeType(){
  return candidates.find(type=>typeof MediaRecorder.isTypeSupported==='function'&&MediaRecorder.isTypeSupported(type))||'';
 }
 function finishManualRecording(blob,mode,button){
- state.recordingMode='';state.recorder=null;state.pcmStop=null;button.classList.remove('recording');button.textContent='🎙 KAYDI BAŞLAT';
+ clearTimeout(state.stopWatchdog);state.recordingMode='';state.recorder=null;state.pcmStop=null;button.classList.remove('recording');button.textContent='🎙 KAYDI BAŞLAT';
+ releaseStream();if(state.audioContext&&state.audioContext.state==='running')state.audioContext.suspend().catch(()=>{});
  if(state.discardRecording){state.discardRecording=false;return}
  if(mode==='name'){
   state.originalBlob=blob;const transcript=state.transcript.trim();$('heard-name').textContent=transcript||'Ses yazıya dökülemedi';const ask=$('heard-result').querySelector('p');if(ask)ask.textContent=transcript?'Doğru anladım mı? Yanlışsa aşağıdan düzelt.':'Söylediğin futbolcunun adını aşağıya yaz.';$('heard-result').hidden=false;$('record-name').hidden=true;$('manual-name').value=transcript;$('speech-fallback').hidden=false;$('manual-name').hidden=false;if(!transcript)$('manual-name').focus();
  }else if(mode==='imitation'){
-  (async()=>{const turnKey=state.turnKey;lockButton('record-imitation','İŞLENİYOR…');try{toast('Ses ters çevriliyor…');const reverse=await reverseBlob(blob);if(turnKey!==state.turnKey)return;await roomWrite({reverseImitation:reverse,phase:'guess',imitationBy:uid()})}catch(e){unlockButton('record-imitation');toast(e.message||'Ses işlenemedi.')}})();
+  (async()=>{const turnKey=state.turnKey;lockButton('record-imitation','İŞLENİYOR…');try{toast('Ses ters çevriliyor…');const reverse=await withTimeout(reverseBlob(blob),15000,'Ses işlenemedi. Tekrar kaydet.');if(turnKey!==state.turnKey)return;await roomWrite({reverseImitation:reverse,phase:'guess',imitationBy:uid()})}catch(e){unlockButton('record-imitation');toast(e.message||'Ses işlenemedi.')}})();
  }
 }
+// A failed start (permission, timeout) must not leave the button on "KAYDI DURDUR".
+function recordingFailed(mode){try{state.speech?.stop()}catch{}state.speech=null;clearTimeout(state.stopWatchdog);state.recordingMode='';state.recorder=null;state.pcmStop=null;const b=$(mode==='name'?'record-name':'record-imitation');if(b){b.classList.remove('recording');b.textContent='🎙 KAYDI BAŞLAT'}releaseStream()}
 function isIOSAudio(){return /iPhone|iPad|iPod/.test(navigator.userAgent||'')||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1)}
 async function startManualRecording(mode){
  const stream=await getStream();state.recordingMode=mode;state.transcript='';
@@ -93,35 +103,47 @@ async function startManualRecording(mode){
   // Keep one AudioContext alive for the whole match. iOS Safari can fail
   // when a closed context is replaced during the next round.
   if(!state.audioContext||state.audioContext.state==='closed')state.audioContext=new AC();
-  const ctx=state.audioContext;await ctx.resume();
+  const ctx=state.audioContext;await withTimeout(ctx.resume(),2500,'Ses sistemi başlatılamadı. Tekrar dene.');
   const source=ctx.createMediaStreamSource(stream),processor=ctx.createScriptProcessor(4096,1,1),chunks=[];
   processor.onaudioprocess=e=>{chunks.push(new Float32Array(e.inputBuffer.getChannelData(0)));e.outputBuffer.getChannelData(0).fill(0)};
   source.connect(processor);processor.connect(ctx.destination);
   state.pcmStop=async()=>{
    processor.onaudioprocess=null;try{source.disconnect();processor.disconnect()}catch{}
    const total=chunks.reduce((n,x)=>n+x.length,0);
-   if(total===0){finishManualRecording(new Blob([],{type:'audio/wav'}),mode,button);toast('Mikrofondan ses alınamadı. Kaydı tekrar dene.');return}
+   if(total===0){state.discardRecording=true;finishManualRecording(new Blob([],{type:'audio/wav'}),mode,button);toast('Mikrofondan ses alınamadı. Kaydı tekrar dene.');return}
    const samples=new Float32Array(total);let offset=0;for(const chunk of chunks){samples.set(chunk,offset);offset+=chunk.length}
-   const blob=encodeWav(samples,ctx.sampleRate);finishManualRecording(blob,mode,button);
+   if(peak(samples)<SILENCE){state.discardRecording=true;finishManualRecording(new Blob([],{type:'audio/wav'}),mode,button);toast('Kayıtta ses yok. Mikrofona yakın konuşup tekrar kaydet.');return}
+   const blob=encodeWav(downsample(samples,ctx.sampleRate,TARGET_RATE),TARGET_RATE);finishManualRecording(blob,mode,button);
   };
  }else{
   if(!window.MediaRecorder)throw new Error('Bu tarayıcı ses kaydını desteklemiyor.');
   const mime=recordingMimeType(),rec=new MediaRecorder(stream,mime?{mimeType:mime}:undefined);state.recorder=rec;state.chunks=[];
   rec.ondataavailable=e=>{if(e.data.size)state.chunks.push(e.data)};
-  rec.onerror=()=>{state.recordingMode='';button.classList.remove('recording');button.textContent='🎙 KAYDI BAŞLAT';toast('Kayıt sırasında hata oluştu.')};
-  rec.onstop=()=>finishManualRecording(new Blob(state.chunks,{type:rec.mimeType||'audio/webm'}),mode,button);rec.start();
+  rec.onerror=()=>{state.discardRecording=true;finishManualRecording(new Blob([]),mode,button);toast('Kayıt sırasında hata oluştu. Tekrar dene.')};
+  rec.onstop=()=>{if(state.recorder!==rec)return;finishManualRecording(new Blob(state.chunks,{type:rec.mimeType||'audio/webm'}),mode,button)};rec.start();
  }
  if(mode==='name'){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(SR){const speech=new SR();speech.lang='tr-TR';speech.interimResults=true;speech.continuous=true;speech.maxAlternatives=3;speech.onresult=e=>{state.transcript=Array.from(e.results).map(r=>r[0]?.transcript||'').join(' ').trim()};speech.onerror=()=>{$('speech-fallback').hidden=false;$('manual-name').hidden=false};state.speech=speech;try{speech.start()}catch{$('speech-fallback').hidden=false;$('manual-name').hidden=false}}
   else{$('speech-fallback').hidden=false;$('manual-name').hidden=false}
  }
+ state.recordStartedAt=Date.now(); // a quick double tap must not stop the recording it just started
  toast('Kayıt başladı. Bitirdiğinde aynı mikrofon tuşuna tekrar bas.');
 }
 function stopManualRecording(){
  try{state.speech?.stop()}catch{}state.speech=null;
- if(state.pcmStop){const finish=state.pcmStop;state.pcmStop=null;finish();return}
- if(state.recorder&&state.recorder.state!=='inactive')state.recorder.stop();
+ const mode=state.recordingMode,button=$(mode==='name'?'record-name':'record-imitation');
+ if(state.pcmStop){const finish=state.pcmStop;state.pcmStop=null;Promise.resolve().then(finish).catch(()=>{state.discardRecording=true;finishManualRecording(new Blob([]),mode,button);toast('Kayıt tamamlanamadı. Tekrar dene.')});return}
+ const rec=state.recorder;
+ if(rec&&rec.state!=='inactive'){
+  // Some browsers never fire onstop when the mic track was cut; finish with what was captured.
+  clearTimeout(state.stopWatchdog);
+  state.stopWatchdog=setTimeout(()=>{if(state.recorder===rec&&state.recordingMode===mode)finishManualRecording(new Blob(state.chunks,{type:rec.mimeType||'audio/webm'}),mode,button)},2500);
+  try{rec.requestData?.()}catch{}try{rec.stop()}catch{finishManualRecording(new Blob(state.chunks,{type:rec.mimeType||'audio/webm'}),mode,button)}
+  return;
+ }
+ // Nothing is recording although the button says so: put the button back instead of leaving it stuck.
+ if(mode){state.discardRecording=true;finishManualRecording(new Blob([]),mode,button)}
 }
 async function decodeAudioWithElement(blob,ctx){
  return new Promise(async(resolve,reject)=>{
@@ -138,6 +160,7 @@ async function decodeAudioWithElement(blob,ctx){
    let offset=0;for(const chunk of chunks){out.set(chunk,offset);offset+=chunk.length}
    cleanup();resolve(buffer);
   };
+  setTimeout(()=>fail(new Error('Kayıt çözümlenemedi.')),12000);
   try{await ctx.resume();await audio.play()}catch(error){fail(error)}
  });
 }
@@ -147,24 +170,31 @@ function reverseWavBlob(blob){
   let p=12,offset=-1,size=0,bits=16,channels=1,rate=22050;
   while(p+8<=v.byteLength){const id=v.getUint32(p,false),n=v.getUint32(p+4,true),body=p+8;if(id===0x666d7420){channels=v.getUint16(body+2,true);rate=v.getUint32(body+4,true);bits=v.getUint16(body+14,true)}if(id===0x64617461){offset=body;size=n;break}p=body+n+(n&1)}
   if(offset<0||bits!==16||channels!==1)throw new Error('WAV biçimi desteklenmiyor.');
-  const count=Math.floor(size/2),samples=new Float32Array(count);for(let i=0;i<count;i++)samples[count-1-i]=v.getInt16(offset+i*2,true)/32768;return encodeWav(samples,rate);
+  const count=Math.floor(size/2),samples=new Float32Array(count);for(let i=0;i<count;i++)samples[count-1-i]=v.getInt16(offset+i*2,true)/32768;
+  if(peak(samples)<SILENCE)throw new Error('Kayıtta ses yok. Mikrofona yakın konuşup tekrar kaydet.');
+  return encodeWav(downsample(samples,rate,TARGET_RATE),Math.min(rate,TARGET_RATE));
  });
 }
 async function reverseBlob(blob){
  if((blob.type||'').includes('wav'))return blobData(await reverseWavBlob(blob));
  const AC=window.AudioContext||window.webkitAudioContext;if(!AC)throw new Error('Bu tarayıcı ses dönüştürmeyi desteklemiyor.');const ctx=new AC();
  try{let buffer;try{buffer=await ctx.decodeAudioData((await blob.arrayBuffer()).slice(0))}catch(e){console.warn('Reverse XI native decode fallback',{mimeType:blob.type,size:blob.size,error:e});buffer=await decodeAudioWithElement(blob,ctx)}
-  const rate=22050,length=Math.ceil(buffer.duration*rate),samples=new Float32Array(length),src=buffer.getChannelData(0);for(let i=0;i<length;i++){const pos=i*(buffer.sampleRate/rate),lo=Math.floor(pos),hi=Math.min(src.length-1,lo+1),frac=pos-lo;samples[length-1-i]=src[lo]*(1-frac)+src[hi]*frac}return await blobData(encodeWav(samples,rate));
- }catch(error){console.error('Reverse XI audio processing failed',{mimeType:blob.type,size:blob.size,error});throw new Error(isIOSAudio()?'iPhone ses kaydı işlenemedi. Mikrofon iznini kontrol edip yeniden dene.':'Ses işlenemedi. Tekrar kayıt yapmayı dene.')}
+  if(peak(buffer.getChannelData(0))<SILENCE)throw new SilentError();
+  const rate=TARGET_RATE,length=Math.ceil(buffer.duration*rate),samples=new Float32Array(length),src=buffer.getChannelData(0);for(let i=0;i<length;i++){const pos=i*(buffer.sampleRate/rate),lo=Math.floor(pos),hi=Math.min(src.length-1,lo+1),frac=pos-lo;samples[length-1-i]=src[lo]*(1-frac)+src[hi]*frac}return await blobData(encodeWav(samples,rate));
+ }catch(error){if(error instanceof SilentError)throw new Error('Kayıtta ses yok. Mikrofona yakın konuşup tekrar kaydet.');console.error('Reverse XI audio processing failed',{mimeType:blob.type,size:blob.size,error});throw new Error(isIOSAudio()?'iPhone ses kaydı işlenemedi. Mikrofon iznini kontrol edip yeniden dene.':'Ses işlenemedi. Tekrar kayıt yapmayı dene.')}
  finally{if(ctx.state!=='closed')await ctx.close().catch(()=>{})}
 }
+const TARGET_RATE=16000,SILENCE=0.004;
+class SilentError extends Error{}
+function peak(samples){let m=0;for(let i=0;i<samples.length;i+=4){const a=Math.abs(samples[i]);if(a>m)m=a}return m}
+function downsample(samples,from,to){if(!from||from<=to)return samples;const ratio=from/to,length=Math.floor(samples.length/ratio),out=new Float32Array(length);for(let i=0;i<length;i++){const start=Math.floor(i*ratio),end=Math.min(samples.length,Math.floor((i+1)*ratio));let sum=0;for(let j=start;j<end;j++)sum+=samples[j];out[i]=sum/Math.max(1,end-start)}return out}
 function encodeWav(samples,rate){const b=new ArrayBuffer(44+samples.length*2),v=new DataView(b);const write=(o,s)=>[...s].forEach((c,i)=>v.setUint8(o+i,c.charCodeAt(0)));write(0,'RIFF');v.setUint32(4,36+samples.length*2,true);write(8,'WAVE');write(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,rate,true);v.setUint32(28,rate*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);write(36,'data');v.setUint32(40,samples.length*2,true);for(let i=0;i<samples.length;i++)v.setInt16(44+i*2,Math.max(-1,Math.min(1,samples[i]))*32767,true);return new Blob([b],{type:'audio/wav'})}
 function blobData(blob){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(blob)})}
 async function captureName(){const stream=await getStream();return new Promise((resolve,reject)=>{const mime=recordingMimeType();const rec=new MediaRecorder(stream,mime?{mimeType:mime}:undefined);const parts=[];let transcript='',done=false;const finish=()=>{if(done)return;done=true;if(rec.state!=='inactive')rec.stop()};rec.ondataavailable=e=>{if(e.data.size)parts.push(e.data)};rec.onerror=()=>reject(new Error('Kayıt yapılamadı.'));rec.onstop=()=>resolve({blob:new Blob(parts,{type:rec.mimeType||'audio/webm'}),text:transcript});rec.start();const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(SR){const speech=new SR();speech.lang='tr-TR';speech.interimResults=false;speech.maxAlternatives=4;speech.onresult=e=>{transcript=[...e.results[0]].sort((a,b)=>b.confidence-a.confidence)[0].transcript;finish()};speech.onerror=()=>finish();try{speech.start()}catch{finish()}}else{$('speech-fallback').hidden=false;$('manual-name').hidden=false;toast('İsmi söyledikten sonra ekrandaki alana yaz.')}setTimeout(finish,8000)})}
-$('record-name').onclick=async()=>{try{if(state.recordingMode==='name'){stopManualRecording();return}if(state.recordingMode){toast('Önce devam eden kaydı durdur.');return}await startManualRecording('name')}catch(e){toast(e.message||'Mikrofon açılamadı.')}};
-$('confirm-name').onclick=async()=>{if(state.busy.confirm)return;const name=$('manual-name').value.trim();if(!name){toast('Futbolcu ismini yazıp onayla.');return}if(!state.originalBlob){toast('Ses kaydı bulunamadı. Tekrar kaydet.');return}const turnKey=state.turnKey;state.busy.confirm=true;lockButton('confirm-name','İŞLENİYOR…');try{const reverse=await reverseBlob(state.originalBlob);if(turnKey!==state.turnKey)return;state.secretAnswer=name;localStorage.setItem('nxReverseXI:'+state.room+':'+uid(),name);await roomWrite({reverseOriginal:reverse,phase:'imitate',answerBy:uid()});}catch(e){state.busy.confirm=false;unlockButton('confirm-name');toast(e.message||'Ses işlenemedi.')}};
+$('record-name').onclick=async()=>{if(state.startingRecording)return;try{if(state.recordingMode==='name'){if(Date.now()-(state.recordStartedAt||0)<600)return;stopManualRecording();return}if(state.recordingMode){toast('Önce devam eden kaydı durdur.');return}state.startingRecording=true;await startManualRecording('name')}catch(e){recordingFailed('name');toast(e.message||'Mikrofon açılamadı.')}finally{state.startingRecording=false}};
+$('confirm-name').onclick=async()=>{if(state.busy.confirm)return;const name=$('manual-name').value.trim();if(!name){toast('Futbolcu ismini yazıp onayla.');return}if(!state.originalBlob){toast('Ses kaydı bulunamadı. Tekrar kaydet.');return}const turnKey=state.turnKey;state.busy.confirm=true;lockButton('confirm-name','İŞLENİYOR…');try{const reverse=await withTimeout(reverseBlob(state.originalBlob),15000,'Ses işlenemedi. Tekrar söyle.');if(turnKey!==state.turnKey)return;state.secretAnswer=name;localStorage.setItem('nxReverseXI:'+state.room+':'+uid(),name);await roomWrite({reverseOriginal:reverse,phase:'imitate',answerBy:uid()});}catch(e){state.busy.confirm=false;unlockButton('confirm-name');toast(e.message||'Ses işlenemedi.')}};
 $('retry-name').onclick=()=>{$('heard-result').hidden=true;$('record-name').hidden=false;$('manual-name').hidden=true;$('speech-fallback').hidden=true;$('manual-name').value='';state.transcript='';state.originalBlob=null};
-$('record-imitation').onclick=async()=>{try{if(state.recordingMode==='imitation'){stopManualRecording();return}if(state.recordingMode){toast('Önce devam eden kaydı durdur.');return}await startManualRecording('imitation')}catch(e){toast(e.message||'Mikrofon kullanılamadı.')}};
+$('record-imitation').onclick=async()=>{if(state.startingRecording)return;try{if(state.recordingMode==='imitation'){if(Date.now()-(state.recordStartedAt||0)<600)return;stopManualRecording();return}if(state.recordingMode){toast('Önce devam eden kaydı durdur.');return}state.startingRecording=true;await startManualRecording('imitation')}catch(e){recordingFailed('imitation');toast(e.message||'Mikrofon kullanılamadı.')}finally{state.startingRecording=false}};
 $('send-guess').onclick=async()=>{if(state.busy.guess)return;const guess=$('guess-input').value.trim();if(!guess){toast('Tahminini yaz.');return}if(state.roomData?.phase!=='guess'){toast('Şu anda tahmin gönderilemez.');return}const guessId='g'+Date.now(),byName=state.local?(state.roomData?.players?.[mySide()]?.name||mySide()):mySide();state.busy.guess=true;lockButton('send-guess','…');try{$('guess-feedback').textContent='Cevap kontrol ediliyor…';await roomWrite({pendingGuess:{id:guessId,guess,byName:byName||'Oyuncu',createdAt:Date.now()},phase:'checking'})}catch(e){state.busy.guess=false;unlockButton('send-guess');$('guess-feedback').textContent='';toast('Tahmin gönderilemedi: '+e.message)}};
 $('next-turn').onclick=async()=>{const d=state.roomData;if(!d||d.phase!=='result'||state.busy.next)return;state.busy.next=true;lockButton('next-turn','…');const next=d.currentSpeaker==='A'?'B':'A';localStorage.removeItem('nxReverseXI:'+state.room+':'+uid());state.secretAnswer='';try{await roomWrite({currentSpeaker:next,turn:(d.turn||1)+1,phase:'speak',reverseOriginal:null,reverseImitation:null,lastResult:null,pendingGuess:null,answerBy:null,imitationBy:null})}catch(e){state.busy.next=false;unlockButton('next-turn');toast('Sonraki tura geçilemedi: '+e.message)}};
 if($('create-room'))$('create-room').onclick=()=>createRoom();if($('join-room'))$('join-room').onclick=()=>joinRoom($('room-code').value);$('room-code')?.addEventListener('keydown',e=>{if(e.key==='Enter')joinRoom($('room-code').value)});$('copy-link').onclick=async()=>{const url=location.origin+location.pathname+'?room='+state.room;try{await navigator.clipboard.writeText(url);toast('Davet bağlantısı kopyalandı.')}catch{toast('Oda kodu: '+state.room)}};
@@ -187,7 +217,7 @@ function lockButton(id,label){const b=$(id);if(!b)return;if(!b.dataset.label)b.d
 function unlockButton(id){const b=$(id);if(!b)return;b.disabled=false;if(b.dataset.label){b.textContent=b.dataset.label;delete b.dataset.label}}
 function resetTurnUI(){
  if(state.recordingMode){state.discardRecording=true;stopManualRecording()}
- try{state.speech?.stop()}catch{}state.speech=null;
+ try{state.speech?.stop()}catch{}state.speech=null;releaseStream();
  state.transcript='';state.originalBlob=null;state.busy={};
  ['confirm-name','send-guess','next-turn','record-imitation'].forEach(unlockButton);
  const rn=$('record-name');rn.hidden=false;rn.classList.remove('recording');rn.textContent='🎙 KAYDI BAŞLAT';
@@ -238,5 +268,10 @@ await ensureAuth().catch(e=>toast('Kimlik bağlantısı kurulamadı: '+e.message
 const startup=new URLSearchParams(location.search),initial=startup.get('room'),partyCode=startup.get('nxCode')||'',partyName=startup.get('nxName')||'NEON Oyuncu';
 if(startup.get('nxAuto')==='1'&&partyCode){
  if(startup.get('nxRole')==='host')await createRoom(partyCode,partyName);
- else await joinRoom(partyCode,partyName);
+ else{
+  // The host may still be creating the room when the guest arrives from matchmaking: wait for it.
+  const code=String(partyCode).toUpperCase().replace(/[^A-Z0-9]/g,'');
+  for(let i=0;i<30;i++){try{if((await get(ref(db,'reverseXI/rooms/'+code))).exists())break}catch{}await new Promise(r=>setTimeout(r,500))}
+  await joinRoom(partyCode,partyName);
+ }
 }else if(initial)joinRoom(initial);

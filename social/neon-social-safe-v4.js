@@ -7,7 +7,8 @@ const MODES={
   xox:{label:'Futbol XOX',path:'side-games/football-xox/index.html',players:2},
   twin:{label:'Kariyer İkizi',path:'side-games/career-twin/index.html',players:2},
   imposter:{label:'Futbol Imposter',path:'side-games/futbol-imposter.html',players:3},
-  wordle:{label:'Football Wordle',path:'side-games/football-wordle/online.html',players:2}
+  wordle:{label:'Football Wordle',path:'side-games/football-wordle/online.html',players:2},
+  reverse:{label:'RE:VERSE',path:'side-games/reverse-xi/index.html',players:2}
 };
 const LEGACY_MATCH_MODES=new Set(['draft','xox','twin']);
 // Random game shares one queue with neon-social.js (queuePath('random') = social/universalQueuesV2/random);
