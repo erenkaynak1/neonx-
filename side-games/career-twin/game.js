@@ -2,7 +2,7 @@
 (() => {
   const PREFIX='neonxi-career-twin-';
   const METRICS=[
-    ['height_cm','BOY'],['weight_kg','KİLO'],['birth_date','DOĞUM TARİHİ'],['club_count','KULÜP SAYISI'],['trophies','KUPA SAYISI'],['career_goals','KAYITLI GOL SAYISI'],['career_assists','KAYITLI ASİST SAYISI'],['peak_market_value_eur','EN YÜKSEK PİYASA DEĞERİ'],['career_appearances','KAYITLI MAÇ SAYISI']
+    ['height_cm','BOY'],['weight_kg','KİLO'],['birth_date','DOĞUM TARİHİ'],['club_count','KULÜP SAYISI'],['trophies','KUPA SAYISI'],['career_goals','KARİYER LİG GOLÜ'],['career_assists','ASİST (2012 SONRASI)'],['peak_market_value_eur','EN YÜKSEK PİYASA DEĞERİ'],['career_appearances','KARİYER LİG MAÇI']
   ].map(([key,label])=>({key,label}));
   const app=document.getElementById('app');
   let PLAYERS=[],SEARCH_PLAYERS=[],TARGET_PLAYERS=[],GAME_METRICS=[],BY_ID=new Map(),peer=null,hostConn=null,guestConn=null,hostGame=null,remote=null,localTurn='host';
