@@ -106,7 +106,7 @@ def num(v: Any) -> int | None:
         return None if v in (None, "") else int(round(float(v)))
     except (TypeError, ValueError):
         return None
-year = lambda v: v[:10] if v else None
+year = lambda v: v[:10] if v and re.match(r"^-?\d{4}-\d{2}-\d{2}", v) else None  # unknown values come back as blank-node URIs
 
 
 def master_tm_ids() -> set[str]:
@@ -183,8 +183,11 @@ def fetch_people(qids: list[str]) -> dict[str, dict[str, Any]]:
 
 
 NATIONAL_TYPES = {"Q6979593", "Q1194951", "Q23905105", "Q61837082", "Q6979740"}
-YOUTH_RE = re.compile(r"(under[- ]?\d{2}|\bU[- ]?\d{2}\b|youth|academy|juvenil|juniors?|primavera|reserves?|\bII\b|\bB\b|\bC\b|"
-                      r"atl[eè]tic\b|castilla|\bjong\b|olympic|amateurs?|sub[- ]?\d{2}|altyap|akademi)", re.I)
+# Youth/reserve markers. Single-letter suffixes only at the very end ("Bayern Munich II", "FC Barcelona C"),
+# never inside abbreviations such as "F.C." or "A.C.".
+YOUTH_RE = re.compile(r"(under[- ]?\d{2}|\bU[- ]?\d{2}\b|youth|academy|juvenil|primavera|\breserves?\b|"
+                      r"atl[eè]tic\b|castilla|\bjong\b|olympic|\bamateurs?\b|sub[- ]?\d{2}|"
+                      r"next gen|futures|altyap|akademi)", re.I)
 NATIONAL_RE = re.compile(r"national (under[- ]?\d+ )?(association )?(football|soccer) team|national team", re.I)
 
 
@@ -200,11 +203,16 @@ def fetch_teams(qids: list[str]) -> dict[str, dict[str, Any]]:
                 t = qid(row["type"])
                 if t not in rec["types"]:
                     rec["types"].append(t); rec["type_labels"].append(row.get("typeLabel") or "")
+    # "X II" / "X B" / "X C" is a reserve side only when "X" itself is a team ("Willem II" is a club).
+    names = {re.sub(r"[^a-z0-9]", "", (r.get("label") or "").lower()) for r in out.values()}
+    suffix = re.compile(r"^(.*\S)\s+(B|C|II|III)$")
     for rec in out.values():
         label = rec.get("label") or ""
+        m = suffix.match(label)
+        reserve_suffix = bool(m) and re.sub(r"[^a-z0-9]", "", m.group(1).lower()) in names
         types = " ".join(rec["type_labels"]).lower()
         national = bool(set(rec["types"]) & NATIONAL_TYPES) or "national" in types or bool(NATIONAL_RE.search(label))
-        youthish = bool(YOUTH_RE.search(label)) or any(w in types for w in ("youth", "reserve", "under-", "b team", "farm team", "academy"))
+        youthish = reserve_suffix or bool(YOUTH_RE.search(label)) or any(w in types for w in ("youth team", "reserve team", "youth football", "under-", "b team", "farm team", "academy"))
         if national:
             rec["kind"] = "national_youth" if youthish else "national"
         else:

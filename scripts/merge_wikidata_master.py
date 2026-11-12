@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import json
 import math
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -63,10 +64,33 @@ def position_of(labels: list[str]) -> tuple[str, str | None]:
     return "Missing", None
 
 
-def summarize(stints: list[dict[str, Any]], teams: dict[str, Any], labels: dict[str, str]) -> dict[str, Any]:
-    clubs = [s for s in stints if teams.get(s["team"], {}).get("kind") == "club"]
+def senior(spell: dict[str, Any], birth_year: int | None) -> bool:
+    """Drops boyhood clubs that Wikidata lists as ordinary clubs (no stats, ended before age 18)."""
+    if spell.get("apps") is not None or not birth_year:
+        return True
+    m = re.match(r"\d{4}", spell.get("end") or spell.get("start") or "")
+    return not m or int(m.group(0)) >= birth_year + 18
+
+
+def clean(spell: dict[str, Any], goalkeeper: bool = False) -> dict[str, Any]:
+    """Wikidata occasionally carries typos (negative or impossible totals); such figures become unknown."""
+    spell = dict(spell)
+    apps, goals = spell.get("apps"), spell.get("goals")
+    if apps is not None and not 0 <= apps <= 1200:
+        spell["apps"] = apps = None
+    if goals is not None and (goals < 0 or goals > 1000 or (apps is not None and goals > max(apps, 1) * 3)
+                              or (goalkeeper and goals > max(3, (apps or 0) * 0.1))):  # infobox "goals" of keepers are often goals conceded
+        spell["goals"] = None
+    return spell
+
+
+def summarize(stints: list[dict[str, Any]], teams: dict[str, Any], labels: dict[str, str], birth: str | None = None,
+              goalkeeper: bool = False) -> dict[str, Any]:
+    by = int(birth[:4]) if birth and re.match(r"\d{4}", birth) else None
+    stints = [clean(s, goalkeeper) for s in stints]
+    clubs = [s for s in stints if teams.get(s["team"], {}).get("kind") == "club" and senior(s, by)]
     nats = [s for s in stints if teams.get(s["team"], {}).get("kind") == "national"]
-    ordered = sorted(clubs, key=lambda s: (s.get("start") or "9999", s.get("end") or "9999"))
+    ordered = sorted(clubs, key=lambda s: (s.get("start") or "9999", s.get("end") or "9999"))  # ISO dates sort lexically
     path: list[str] = []
     for s in ordered:
         name = teams.get(s["team"], {}).get("label")
@@ -85,7 +109,7 @@ def summarize(stints: list[dict[str, Any]], teams: dict[str, Any], labels: dict[
         "international_goals": sum(s.get("goals") or 0 for s in caps) if caps else None,
         "career_clubs": path,
         "open_spell": open_spell,
-        "last_year": max((int((s.get("end") or s.get("start") or "0")[:4] or 0) for s in clubs), default=0),
+        "last_year": max((int(m.group(0)) for s in clubs for m in [re.match(r"\d{4}", s.get("end") or s.get("start") or "")] if m), default=0),
     }
 
 
@@ -106,7 +130,7 @@ def main() -> None:
             continue
         stats["matched"] += 1
         wd = players[q]
-        s = summarize(wd.get("stints", []), teams, labels)
+        s = summarize(wd.get("stints", []), teams, labels, wd.get("birth_date"), row.get("position") == "Goalkeeper")
         row["wikidata_id"] = q
         if s["career_clubs"]:
             row["career_clubs"] = s["career_clubs"]
@@ -118,7 +142,7 @@ def main() -> None:
         elif row.get("career_goals") is not None:
             row["career_stats_source"] = "transfermarkt_2012"
         for field, value in (("international_caps", s["international_caps"]), ("international_goals", s["international_goals"]),
-                             ("height_cm", wd.get("height_cm")), ("birth_date", wd.get("birth_date"))):
+                             ("height_cm", wd.get("height_cm") if 140 <= (wd.get("height_cm") or 0) <= 220 else None), ("birth_date", wd.get("birth_date"))):
             if row.get(field) in (None, 0) and value:
                 row[field] = value; stats["filled"] += 1
 
@@ -129,11 +153,11 @@ def main() -> None:
         tm = str(wd.get("tm_id") or "")
         if tm and tm in master_ids:
             continue
-        s = summarize(wd.get("stints", []), teams, labels)
+        position, sub = position_of([labels.get(p, "") for p in wd.get("positions", [])])
+        s = summarize(wd.get("stints", []), teams, labels, wd.get("birth_date"), position == "Goalkeeper")
         name = wd.get("label_en")
         if not name or not s["career_clubs"]:
             continue
-        position, sub = position_of([labels.get(p, "") for p in wd.get("positions", [])])
         if position == "Missing":
             continue
         nat = next((country(c) for c in wd.get("nationality", []) if country(c) in known_countries), None) \
@@ -148,7 +172,7 @@ def main() -> None:
             "status": "unknown" if s["open_spell"] and s["last_year"] >= datetime.now().year - 1 else "legend",
             "recognition_score": recognition, "nationality": nat, "national_team": None,
             "current_club": None, "current_league": None, "position": position, "sub_position": sub, "foot": None,
-            "birth_date": wd.get("birth_date"), "height_cm": wd.get("height_cm"), "weight_kg": None,
+            "birth_date": wd.get("birth_date"), "height_cm": wd.get("height_cm") if 140 <= (wd.get("height_cm") or 0) <= 220 else None, "weight_kg": None,
             "club_ids": [], "clubs": s["career_clubs"], "leagues": [], "club_count": s["club_count"], "trophies": None,
             "career_goals": s["career_goals"], "career_assists": None, "career_appearances": s["career_appearances"],
             "peak_market_value_eur": None, "current_market_value_eur": None,

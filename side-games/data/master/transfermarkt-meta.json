@@ -6,23 +6,31 @@
   "dataset_url": "https://pub-e682421888d945d684bcae8890b0ec20.r2.dev/data/transfermarkt-datasets.duckdb",
   "dataset_last_appearance": "2026-06-28",
   "latest_season": 2025,
-  "player_count": 50149,
+  "player_count": 65231,
   "status_counts": {
     "active": 28367,
-    "recent": 16403,
-    "legend": 5379,
-    "unknown": 0
+    "legend": 20393,
+    "unknown": 68,
+    "recent": 16403
   },
-  "historical_player_count": 21782,
+  "historical_player_count": 36796,
   "minimum_required": 50000,
   "maximum_runtime_players": null,
   "selection_policy": "The complete upstream player table is retained without a recognition cap.",
   "primary_key": "Transfermarkt player_id",
-  "career_scope": "Official senior-club appearances present in dcaribou/transfermarkt-datasets; national-team rows are excluded.",
+  "career_scope": "career_goals/career_appearances: whole-career league totals from Wikidata (Wikipedia infobox figures) when complete for every senior club spell; otherwise official appearances in dcaribou/transfermarkt-datasets (2012+). See career_stats_source per player.",
   "physical_data_policy": "weight_kg is intentionally null until a separate physical dataset is supplied; no value is estimated.",
   "unavailable_upstream_fields": [
     "weight_kg",
     "trophies"
   ],
-  "source_policy": "Profiles, club history, competition history, appearances, goals, assists and market values come only from dcaribou/transfermarkt-datasets."
+  "source_policy": "Transfermarkt (dcaribou/transfermarkt-datasets) for profiles, market values, current club and caps; Wikidata (CC0), joined by Transfermarkt player ID (P2446), for club history, career league totals, and players missing from the dataset (legends).",
+  "wikidata_generated_at": "2026-11-12T14:31:40.409738+00:00",
+  "wikidata_merge": {
+    "matched": 42563,
+    "club_count": 30616,
+    "career_stats": 4977,
+    "filled": 4192,
+    "added": 15082
+  }
 }
