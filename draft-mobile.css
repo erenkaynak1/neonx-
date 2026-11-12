@@ -527,8 +527,8 @@ body.nx-tactics-active .handoverBox {
     background-repeat: no-repeat;
     background-position: 155% 50%;
     background-size: 20% 100%;
-    -webkit-mask: url('./assets/neon-xi-logo-trace-mask.png') center / contain no-repeat;
-    mask: url('./assets/neon-xi-logo-trace-mask.png') center / contain no-repeat;
+    -webkit-mask: url('./assets/ui/logo-neon-xi-mask.svg') center / contain no-repeat;
+    mask: url('./assets/ui/logo-neon-xi-mask.svg') center / contain no-repeat;
     filter: drop-shadow(0 0 5px #fff) drop-shadow(0 0 11px rgba(186, 255, 24, .98));
     mix-blend-mode: screen;
     animation: nxDraftLogoTrace 3.8s linear infinite;
@@ -1530,8 +1530,8 @@ body.nx-prematch-active .nx-main-start { min-height: 50px; }
     background-repeat: no-repeat;
     background-position: 155% 50%;
     background-size: 20% 100%;
-    -webkit-mask: url('./assets/neon-xi-logo-trace-mask.png') center / contain no-repeat;
-    mask: url('./assets/neon-xi-logo-trace-mask.png') center / contain no-repeat;
+    -webkit-mask: url('./assets/ui/logo-neon-xi-mask.svg') center / contain no-repeat;
+    mask: url('./assets/ui/logo-neon-xi-mask.svg') center / contain no-repeat;
     filter: drop-shadow(0 0 5px #fff) drop-shadow(0 0 11px rgba(186, 255, 24, .98));
     mix-blend-mode: screen;
     animation: nxDraftLogoTrace 3.8s linear infinite;

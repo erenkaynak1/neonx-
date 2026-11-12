@@ -29,7 +29,7 @@
   renderMenu=function(root){
     root.classList.add('nx-imp-menu');
     const logo=make('div','nx-imp-logo');
-    logo.innerHTML='<div class="nx-imp-logo-art"><img src="../assets/neon-xi-logo-outline.png" alt="NEON XI"></div><span>SIDE GAME</span>';
+    logo.innerHTML='<div class="nx-imp-logo-art"><img src="../assets/ui/logo-neon-xi.svg" alt="NEON XI"></div><span>SIDE GAME</span>';
     root.append(logo);
     const title=make('div','title-wrap nx-imp-hero');
     title.append(make('div','crest','NEON XI · SIDE GAME'));

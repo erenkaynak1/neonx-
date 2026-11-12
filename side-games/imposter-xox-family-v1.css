@@ -151,8 +151,8 @@ body[data-nx-imp-screen="menu"] .nx-imp-menu::before{
   content:"";position:absolute;inset:0;pointer-events:none;
   background:linear-gradient(105deg,transparent 43%,#dcff7270 47%,#fff 50%,#dcff7270 53%,transparent 57%);
   background-size:300% 100%;background-position:100% 0;
-  mask:url('../assets/neon-xi-logo-outline.png') center/100% 100% no-repeat;
-  -webkit-mask:url('../assets/neon-xi-logo-outline.png') center/100% 100% no-repeat;
+  mask:url('../assets/ui/logo-neon-xi-mask.svg') center/100% 100% no-repeat;
+  -webkit-mask:url('../assets/ui/logo-neon-xi-mask.svg') center/100% 100% no-repeat;
   animation:nxImpLogoSweep 4.8s ease-in-out infinite
 }
 @keyframes nxImpLogoSweep{
