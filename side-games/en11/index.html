@@ -138,7 +138,8 @@
     .winner{color:var(--team-color);font:900 clamp(17px,5vw,23px) 'Orbitron',sans-serif;text-shadow:0 0 18px rgba(var(--team-rgb),.36)}
     .sourceNote{margin:0;color:#9caf9f;font-size:11px;line-height:1.4}
   </style>
-  <link rel="stylesheet" href="../sidegame-skin-v2.css?v=20261112-skin-v2">
+  <link rel="stylesheet" href="../neon-arcade-ui-v1.css?v=20261111-home-v2">
+  <link rel="stylesheet" href="../sidegame-skin-v2.css?v=20261112-sgm">
 </head>
 <body class="sg-skin sg-en11">
   <main class="app" id="app"></main>
@@ -207,40 +208,61 @@
     function hero(sub){
       return '<section class=\"hero\"><div class=\"eyebrow\">NEON XI · SIDE GAME</div><h1>EN <span>11</span></h1><div class=\"desc\">'+esc(sub||'Parametreyi seç, yedi kişilik kadronu kur ve rakibini geç.')+'</div></section>';
     }
-    function selectMetric(id){
-      const m=metric(id);if(!m||!metricReady(m))return;
-      S.metric=id;if(!m.directions.includes(S.direction))S.direction=m.default;
-      render();
+    // EN 11 menu, same layout as the XOX / Imposter / Career Twin menus. There is no parameter
+    // screen: a random parameter with enough verified data is drawn when a match starts.
+    const SGM_ICONS={
+      phone:'<rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M10 5h4M11 18.5h2"/>',
+      friends:'<circle cx="9" cy="8.5" r="3.1"/><path d="M3.5 20v-2c0-3.5 2.3-5.4 5.5-5.4s5.5 1.9 5.5 5.4v2M17 6a3 3 0 0 1 0 5.8m1.2 2c2 .6 3 2.2 3 4.6V20"/>',
+      search:'<circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5M8 10.5h5m-2.5-2.5v5"/>',
+      arrow:'<path d="m9 6 6 6-6 6"/>'
+    };
+    function sgmIcon(n){return '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">'+SGM_ICONS[n]+'</svg>'}
+    function sgmMode(view,label,detail,icon,disabled){
+      return '<button type="button" class="sgm-mode"'+(disabled?' disabled':' data-view="'+view+'"')+' aria-label="'+esc(label+'. '+detail)+'"><span class="sgm-mode-icon">'+sgmIcon(icon)+'</span><span class="sgm-mode-copy"><strong>'+esc(label)+'</strong><small>'+esc(detail)+'</small></span>'+(disabled?'<span class="sgm-soon">YAKINDA</span>':'<span class="sgm-mode-arrow">'+sgmIcon('arrow')+'</span>')+'</button>';
     }
-    function renderMetricGrid(){
-      const grid=document.getElementById('metricGrid');if(!grid)return;grid.innerHTML='';
-      METRICS.forEach(function(m){
-        const ready=metricReady(m);const b=document.createElement('button');
-        b.type='button';b.className='metric'+(S.metric===m.id?' active':'')+(!ready?' locked':'');
-        b.disabled=!ready;
-        b.innerHTML='<strong>'+esc(m.label)+'</strong><small>'+esc(m.detail)+'</small>'+(m.isNew&&!ready?'<span class=\"lock\">VERİ BEKLİYOR</span>':'');
-        if(ready)b.onclick=function(){selectMetric(m.id)};
-        grid.appendChild(b);
-      });
-      const m=metric(S.metric);const row=document.getElementById('directionRow');
-      if(row){row.innerHTML='<span class=\"directionLabel\">HEDEF</span>';m.directions.forEach(function(d){const b=document.createElement('button');b.type='button';b.className='chip'+(S.direction===d?' active':'');b.textContent=d==='high'?'EN YÜKSEK':'EN DÜŞÜK';b.onclick=function(){S.direction=d;render()};row.appendChild(b)})}
+    function sgmFrame(inner){
+      return '<div class="sgm"><a class="sgm-logo" href="../index.html" aria-label="Yan oyunlar"><img src="../../assets/ui/logo-neon-xi.svg" alt="NEON XI"><span>SIDE GAME</span></a>'+
+      '<div class="sgm-hero"><h1>EN <span>11</span></h1><p>Yedi kişilik kadronu kur, değerler sahada belirsin, rakibini geç.</p></div>'+
+      '<img class="sgm-emblem" src="../assets/en11-emblem-v1.svg" alt="" aria-hidden="true" decoding="async" draggable="false">'+inner+'</div>';
     }
     function renderMenu(){
-      app.innerHTML=shell()+hero('1 kaleci, 2 defans, 2 orta saha, 2 forvet. Her seçimde değer, oyuncu adının yanında sahada belirir.')+
-      '<section class=\"panel\"><h2 class=\"sectionTitle\">PARAMETREYİ SEÇİN</h2><div class=\"metricGrid\" id=\"metricGrid\"></div><div class=\"directionRow\" id=\"directionRow\"></div><div class=\"status sourceNote\">Transfermarkt · '+number(S.poolMeta&&S.poolMeta.player_count||0)+' futbolcu · son maç verisi '+esc(dataCutoffLabel())+'. Mevki havuzu, yazmaya başladığında yüklenir.</div><div class=\"status warn\">Kupa sayısı ve ilk A millî maç yaşı için doğrulanmış oyuncu verisi henüz bağlı değil. Bu parametreler hazır olduğunda açılacak.</div></section>'+
-      '<section class=\"panel\"><h2 class=\"sectionTitle\">OYUNCULAR</h2><div class=\"fieldGrid\"><div class=\"fieldWrap\"><label for=\"playerName\">SENİN ADIN</label><input class=\"field\" id=\"playerName\" maxlength=\"24\" placeholder=\"Adın\" value=\"'+esc(S.name)+'\"></div><div class=\"fieldWrap\"><label for=\"otherName\">RAKİP ADI · AYNI CİHAZ</label><input class=\"field\" id=\"otherName\" maxlength=\"24\" placeholder=\"Rakip\" value=\"'+esc(S.otherName)+'\"></div></div><div class=\"buttonRow\"><button class=\"btn primary\" id=\"localStart\">SIRAYLA OYNA</button><button class=\"btn secondary\" id=\"hostStart\">ONLINE ODA KUR</button></div><div class=\"status\">Online oyun için oda kodunu arkadaşınla paylaş. İki oyuncu da aynı parametreyi onaylayınca draft başlar.</div></section>'+
-      '<section class=\"panel\"><h2 class=\"sectionTitle\">ODA KODUYLA KATIL</h2><div class=\"fieldGrid\"><div class=\"fieldWrap\"><label for=\"joinName\">ADIN</label><input class=\"field\" id=\"joinName\" maxlength=\"24\" placeholder=\"Adın\"></div><div class=\"fieldWrap\"><label for=\"joinCode\">ODA KODU</label><input class=\"field\" id=\"joinCode\" inputmode=\"numeric\" maxlength=\"4\" placeholder=\"1234\"></div></div><button class=\"btn\" id=\"joinStart\" style=\"width:100%;margin-top:9px\">KODLA KATIL</button><div class=\"status error\" id=\"menuError\">'+esc(S.error)+'</div></section>'+
-      '<div class=\"foot\">EN 11 · DRAFT ARENASI</div>';
-      renderMetricGrid();
-      document.getElementById('localStart').onclick=function(){startLocal()};
-      document.getElementById('hostStart').onclick=function(){createRoom()};
-      document.getElementById('joinStart').onclick=function(){joinRoom(document.getElementById('joinCode').value.trim(),document.getElementById('joinName').value.trim())};
-      document.getElementById('joinCode').oninput=function(){this.value=this.value.replace(/\D/g,'').slice(0,4)};
+      const view=S.menuView||'modes';
+      const err='<div class="sgm-error" id="menuError">'+esc(S.error)+'</div>';
+      const back='<button type="button" class="sgm-back" id="menuBack">← GERİ</button>';
+      let inner;
+      if(view==='local'){
+        inner='<section class="sgm-panel" aria-label="Tek telefon"><h2 class="sgm-heading">TEK TELEFON'+back+'</h2><div class="sgm-sheet">'+
+          '<div class="sgm-field"><label for="playerName">SENİN ADIN</label><input id="playerName" maxlength="24" placeholder="Oyuncu 1" value="'+esc(S.name)+'"></div>'+
+          '<div class="sgm-field"><label for="otherName">RAKİBİN ADI</label><input id="otherName" maxlength="24" placeholder="Oyuncu 2" value="'+esc(S.otherName)+'"></div>'+
+          '<button type="button" class="sgm-btn primary" id="localStart">OYUNU BAŞLAT</button>'+
+          '<p class="sgm-note">Aynı cihazda sırayla seçim yaparsınız. Parametre maç başlarken rastgele belirlenir.</p>'+err+'</div></section>';
+      }else if(view==='online'){
+        inner='<section class="sgm-panel" aria-label="Arkadaşlarınla oyna"><h2 class="sgm-heading">ARKADAŞLARINLA OYNA'+back+'</h2><div class="sgm-sheet">'+
+          '<div class="sgm-field"><label for="playerName">ADIN</label><input id="playerName" maxlength="24" placeholder="Adın" value="'+esc(S.name)+'"></div>'+
+          '<button type="button" class="sgm-btn primary" id="hostStart">ODA KUR</button>'+
+          '<div class="sgm-divider">VEYA KODLA KATIL</div>'+
+          '<div class="sgm-row"><input id="joinCode" inputmode="numeric" maxlength="4" placeholder="Oda kodu" aria-label="Oda kodu"><button type="button" class="sgm-btn" id="joinStart">KATIL</button></div>'+
+          '<p class="sgm-note">Oda kur, kodu arkadaşına gönder. Parametre maç başlarken rastgele belirlenir.</p>'+err+'</div></section>';
+      }else{
+        inner='<section class="sgm-panel" aria-label="Oyun modu seç"><h2 class="sgm-heading">OYUN MODUNU SEÇ</h2><div class="sgm-grid">'+
+          sgmMode('local','TEK TELEFON','Aynı cihazda sırayla seçin','phone')+
+          sgmMode('online','ARKADAŞLARINLA OYNA','Oda kur ya da kodla katıl','friends')+
+          sgmMode('','RAKİP ARA','Çevrimiçi eşleşme','search',true)+
+          '</div>'+err+'</section>'+
+          '<section class="sgm-how" aria-label="Nasıl oynanır"><div class="sgm-how-badge" aria-hidden="true">?</div><div><h3>NASIL OYNANIR?</h3><p>Maç başında bir parametre rastgele belirlenir. 1 kaleci, 2 defans, 2 orta saha ve 2 forvet seçin; her oyuncunun değeri sahada belirir. Parametrede daha iyi kadro kazanır.</p></div></section>';
+      }
+      app.innerHTML=sgmFrame(inner);
+      app.querySelectorAll('[data-view]').forEach(function(b){b.onclick=function(){S.menuView=b.dataset.view;S.error='';render()}});
+      const mb=document.getElementById('menuBack');if(mb)mb.onclick=function(){S.menuView='modes';S.error='';render()};
+      const ls=document.getElementById('localStart');if(ls)ls.onclick=function(){startLocal()};
+      const hs=document.getElementById('hostStart');if(hs)hs.onclick=function(){createRoom()};
+      const js=document.getElementById('joinStart');if(js)js.onclick=function(){joinRoom(document.getElementById('joinCode').value.trim(),document.getElementById('playerName').value.trim())};
+      const jc=document.getElementById('joinCode');if(jc)jc.oninput=function(){this.value=this.value.replace(/\D/g,'').slice(0,4)};
     }
     function renderLobby(){
       const l=S.lobby||{};
-      app.innerHTML=shell()+hero(S.role==='guest'?'Oda ayarını incele ve parametreyi onayla.':'Oda hazır olunca arkadaşını bekle.')+
-      '<section class=\"panel lobbyCenter\"><div class=\"sectionTitle\">ODA KODU</div><div class=\"code\">'+esc(S.code)+'</div><div class=\"hint\">Kodu arkadaşına gönder; katılınca aynı parametreyi birlikte onaylayın.</div><div class=\"lobbyNames\"><div class=\"lobbyName\">'+esc(l.hostName||S.name||'Oyuncu 1')+'</div><div class=\"vs\">VS</div><div class=\"lobbyName\">'+esc(l.guestName||'Rakip bekleniyor')+'</div></div><div class=\"status\">PARAMETRE · <b>'+esc(metric(l.metric||S.metric).label)+'</b> · '+(l.direction==='low'?'EN DÜŞÜK':'EN YÜKSEK')+'</div><div class=\"status '+(l.guestReady?'':'warn')+'\">'+(l.guestReady?'İki oyuncu da hazır.':'Rakibin parametreyi onaylaması bekleniyor.')+'</div><div class=\"buttonRow\">'+(S.role==='guest'?'<button class=\"btn primary\" id=\"readyBtn\" '+(S.ready?'disabled':'')+'>'+(S.ready?'ONAYLANDI':'PARAMETREYİ ONAYLA')+'</button>':'<button class=\"btn primary\" id=\"beginOnline\" '+(!l.guestReady?'disabled':'')+'>DRAFT’I BAŞLAT</button>')+'<button class=\"btn\" id=\"backMenu\">GERİ DÖN</button></div><div class=\"status error\">'+esc(S.error)+'</div></section><div class=\"foot\">KADRO SEÇİMLERİ İKİ EKRANDA EŞ ZAMANLI GÖRÜNÜR</div>';
+      app.innerHTML=shell()+hero(S.role==='guest'?'Hazır olduğunda oda sahibine haber ver.':'Oda hazır olunca arkadaşını bekle.')+
+      '<section class=\"panel lobbyCenter\"><div class=\"sectionTitle\">ODA KODU</div><div class=\"code\">'+esc(S.code)+'</div><div class=\"hint\">Kodu arkadaşına gönder; katılınca hazır olun. Parametre maç başlarken rastgele belirlenir.</div><div class=\"lobbyNames\"><div class=\"lobbyName\">'+esc(l.hostName||S.name||'Oyuncu 1')+'</div><div class=\"vs\">VS</div><div class=\"lobbyName\">'+esc(l.guestName||'Rakip bekleniyor')+'</div></div><div class=\"status\">PARAMETRE · <b>Maç başlarken rastgele</b></div><div class=\"status '+(l.guestReady?'':'warn')+'\">'+(l.guestReady?'İki oyuncu da hazır.':'Rakibin hazır olması bekleniyor.')+'</div><div class=\"buttonRow\">'+(S.role==='guest'?'<button class=\"btn primary\" id=\"readyBtn\" '+(S.ready?'disabled':'')+'>'+(S.ready?'ONAYLANDI':'PARAMETREYİ ONAYLA')+'</button>':'<button class=\"btn primary\" id=\"beginOnline\" '+(!l.guestReady?'disabled':'')+'>DRAFT’I BAŞLAT</button>')+'<button class=\"btn\" id=\"backMenu\">GERİ DÖN</button></div><div class=\"status error\">'+esc(S.error)+'</div></section><div class=\"foot\">KADRO SEÇİMLERİ İKİ EKRANDA EŞ ZAMANLI GÖRÜNÜR</div>';
       const ready=document.getElementById('readyBtn');if(ready)ready.onclick=function(){S.ready=true;if(S.conn&&S.conn.open)S.conn.send({type:'ready'});render()};
       const begin=document.getElementById('beginOnline');if(begin)begin.onclick=function(){startOnlineGame()};
       document.getElementById('backMenu').onclick=function(){cleanup();S.screen='menu';S.error='';render()};
@@ -262,6 +284,7 @@
     function startLocal(){
       S.name=document.getElementById('playerName').value.trim()||'Oyuncu 1';
       S.otherName=document.getElementById('otherName').value.trim()||'Oyuncu 2';
+      pickRandomMetric();
       S.mode='local';S.role='local';S.ready=true;S.game=makeGame([S.name,S.otherName],S.metric,S.direction);
       S.viewTeam=0;S.lastAdvanceId=null;S.lastAutoTurn=null;S.lastAutoRevealId=null;S.rollId=null;S.rollDoneId=null;S.screen='game';render();
     }
@@ -316,7 +339,8 @@
     }
     function startOnlineGame(){
       if(S.role!=='host'||!S.lobby.guestReady)return;
-      S.game=makeGame([S.lobby.hostName,S.lobby.guestName],S.lobby.metric,S.lobby.direction);
+      pickRandomMetric();
+      S.game=makeGame([S.lobby.hostName,S.lobby.guestName],S.metric,S.direction);
       S.viewTeam=0;S.lastAdvanceId=null;S.lastAutoTurn=null;S.lastAutoRevealId=null;S.rollId=null;S.rollDoneId=null;S.screen='game';broadcastGame();render();
     }
     function currentPick(){if(!S.game)return null;return S.game.turns[S.game.turnIndex]||null}
@@ -448,7 +472,7 @@
       const title=g.winner==null?'BERABERE':esc(g.teams[g.winner].name)+' KAZANDI';
       overlayRoot.innerHTML='';
       app.insertAdjacentHTML('beforeend','<section class=\"panel finalPanel\"><h3 class=\"sectionTitle\">MAÇ SONUCU · '+esc(m.label)+'</h3><div class=\"finalScores\"><div class=\"finalTeam team-a\"><small>'+esc(g.teams[0].name)+'</small><b>'+esc(formatTotal(a,g.metric))+'</b></div><div class=\"versus\">VS</div><div class=\"finalTeam team-b\"><small>'+esc(g.teams[1].name)+'</small><b>'+esc(formatTotal(b,g.metric))+'</b></div></div><div class=\"winner\">'+title+'</div><div class=\"note\">'+(g.winner==null?'Aynı sonuç · rövanş zamanı.':'Yedi oyuncunun değerleri sahadaki kadro kutularında görünüyor.')+'</div><button class=\"btn primary\" id=\"rematch\" style=\"width:100%;margin-top:15px\">YENİ MAÇ</button></section>');
-      const btn=document.getElementById('rematch');btn.onclick=function(){if(S.mode==='online'&&S.role==='guest'){if(S.conn&&S.conn.open)S.conn.send({type:'rematch'});S.screen='lobby';S.game=null;render();return}if(S.mode==='online'&&S.role==='host'){S.game=null;S.screen='lobby';S.lobby.guestReady=false;sendLobby();render();return}S.game=makeGame([S.name,S.otherName],S.metric,S.direction);S.viewTeam=0;S.lastAdvanceId=null;S.lastAutoTurn=null;S.lastAutoRevealId=null;S.rollId=null;S.rollDoneId=null;render()};
+      const btn=document.getElementById('rematch');btn.onclick=function(){if(S.mode==='online'&&S.role==='guest'){if(S.conn&&S.conn.open)S.conn.send({type:'rematch'});S.screen='lobby';S.game=null;render();return}if(S.mode==='online'&&S.role==='host'){S.game=null;S.screen='lobby';S.lobby.guestReady=false;sendLobby();render();return}pickRandomMetric();S.game=makeGame([S.name,S.otherName],S.metric,S.direction);S.viewTeam=0;S.lastAdvanceId=null;S.lastAutoTurn=null;S.lastAutoRevealId=null;S.rollId=null;S.rollDoneId=null;render()};
     }
     function render(){
       if(S.screen==='menu'){overlayRoot.innerHTML='';renderMenu();return}
@@ -475,5 +499,7 @@
     init();
   })();
   </script>
+<script type="module" src="../../social/neon-social.js?v=20261112-sgm"></script>
+<script src="../neon-arcade-ui-v1.js?v=20261111-home-v2"></script>
 </body>
 </html>
