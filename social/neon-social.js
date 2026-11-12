@@ -76,7 +76,7 @@ function render(tab=state.tab){
 }
 function renderPlay(){
   const v=shade.querySelector('[data-view="play"]');
-  v.innerHTML=`<div class="nx-social-choice"><button class="nx-social-btn primary" data-act="party-play">ARKADAŞLARINLA OYNA</button><button class="nx-social-btn" data-act="match">RAKİP ARA</button></div><div class="nx-social-card"><label class="nx-social-label">OYUN MODU</label><select class="nx-social-select" id="nxMode">${Object.entries(MODES).filter(([,m])=>m.matchable).map(([k,m])=>`<option value="${k}" ${k===state.preferredMode?'selected':''}>${m.label}</option>`).join('')}</select></div>`;
+  v.innerHTML=`<div class="nx-social-choice"><button class="nx-social-btn primary" data-act="party-play">ARKADAŞLARINLA OYNA</button><button class="nx-social-btn" data-act="match">RAKİP ARA</button></div><div class="nx-social-card"><label class="nx-social-label">OYUN MODU</label><select class="nx-social-select" id="nxMode"><option value="random" ${state.preferredMode==='random'?'selected':''}>Rastgele oyun · oyun otomatik seçilir</option>${Object.entries(MODES).filter(([,m])=>m.matchable).map(([k,m])=>`<option value="${k}" ${k===state.preferredMode?'selected':''}>${m.label}</option>`).join('')}</select></div>`;
   v.querySelector('[data-act="party-play"]').onclick=()=>{if(!requireProfile())return;render('party')};v.querySelector('[data-act="match"]').onclick=()=>startMatch(v.querySelector('#nxMode').value);v.querySelector('#nxMode').onchange=e=>{state.preferredMode=e.target.value};
 }
 function renderFriends(){
@@ -128,6 +128,7 @@ async function launchParty(mode){const nonce=`${Date.now()}_${Math.random().toSt
 function navigateParty(launch){const {mode,nonce}=launch||{};if(!mode||!nonce||state.launchNonce===nonce||sessionStorage.getItem('nxPartyLaunch')===nonce)return;const members=Object.keys(launch.roles||{}),opponent=members.find(uid=>uid!==state.user.uid)||'',params={nxParty:state.partyId,nxLaunch:nonce};if(launch.roomCode&&launch.roles?.[state.user.uid])Object.assign(params,{nxAuto:'1',nxRole:launch.roles[state.user.uid],nxCode:launch.roomCode,nxPartySize:String(launch.partySize||members.length),nxName:state.profile?.username||state.party?.members?.[state.user.uid]?.username||'NEON Oyuncu',nxUid:state.user.uid,nxOpponent:opponent,nxMatch:launch.matchId||`p_${state.partyId}_${nonce}`});if(launch.tournament===true)Object.assign(params,{nxTournament:'1',nxTournamentSize:String(launch.tournamentSize||4)});const target=modeUrl(mode,params);state.launchNonce=nonce;sessionStorage.setItem('nxPartyLaunch',nonce);location.href=target}
 async function startMatch(mode){
   if(!requireProfile())return;
+  if(mode==='random')return startRandomMatch();
   const config=MODES[mode];
   if(!config?.matchable){message('Bu mod için çevrimiçi eşleştirme henüz bulunmuyor.',true);return}
   state.preferredMode=mode;
@@ -155,7 +156,35 @@ async function startMatch(mode){
     renderSearching(mode);
   }catch(e){message(e?.message||'Rakip araması başlatılamadı.',true);throw e}
 }
-function renderSearching(mode){const v=shade.querySelector('[data-view="play"]');v.innerHTML=`<div class="nx-social-searching"><b>${esc(MODES[mode].label)}</b><div>Rakip aranıyor…</div><button class="nx-social-btn nx-social-danger" data-act="cancel">ARAMAYI İPTAL ET</button></div>`;v.querySelector('[data-act="cancel"]').onclick=async()=>{state.queueOff?.();state.queueOff=null;await remove(ref(db,`social/matchQueues/${mode}/${state.user.uid}`));message('Arama iptal edildi.');render('play')}}
+function renderSearching(mode){const v=shade.querySelector('[data-view="play"]'),label=mode==='random'?'Rastgele oyun':MODES[mode].label,queue=mode==='random'?RANDOM_QUEUE:`social/matchQueues/${mode}`;v.innerHTML=`<div class="nx-social-searching"><b>${esc(label)}</b><div class="nx-search-pitch" aria-hidden="true"><span class="nx-search-goal left"></span><span class="nx-search-ball"></span><span class="nx-search-goal right"></span></div><div>Rakip aranıyor…</div>${mode==='random'?'<small class="nx-search-note">Rakip bulununca oyun rastgele seçilir.</small>':''}<button class="nx-social-btn nx-social-danger" data-act="cancel">ARAMAYI İPTAL ET</button></div>`;v.querySelector('[data-act="cancel"]').onclick=async()=>{state.queueOff?.();state.queueOff=null;await remove(ref(db,`${queue}/${state.user.uid}`));message('Arama iptal edildi.');render('play')}}
+// Random game: players who choose it meet in one shared queue; whoever completes the pair picks
+// the game for both, so they always land in the same game. Two-player matchable modes only.
+const RANDOM_QUEUE='social/universalQueuesV2/random',RANDOM_GAMES=['draft','xox','twin'];
+async function startRandomMatch(){
+  state.preferredMode='random';
+  const uid=state.user.uid,joinedAt=Date.now();
+  message('Rastgele oyun için rakip aranıyor…');
+  try{
+    await set(ref(db,`${RANDOM_QUEUE}/${uid}`),{uid,username:state.profile.username,status:'waiting',joinedAt});
+    onDisconnect(ref(db,`${RANDOM_QUEUE}/${uid}`)).remove().catch(()=>{});
+    await runTransaction(ref(db,RANDOM_QUEUE),q=>{
+      q=q||{};if(q[uid]?.status!=='waiting')return q;
+      const other=Object.values(q).filter(x=>x&&x.uid!==uid&&x.status==='waiting'&&Math.abs(joinedAt-Number(x.joinedAt||0))<120000).sort((a,b)=>a.joinedAt-b.joinedAt)[0];
+      if(!other)return q;
+      const host=Number(other.joinedAt||joinedAt)<=joinedAt?other.uid:uid,gameMode=RANDOM_GAMES[Math.floor(Math.random()*RANDOM_GAMES.length)],roomCode=codeFor(gameMode),matchId=`m_random_${gameMode}_${Math.min(joinedAt,Number(other.joinedAt||joinedAt))}_${host.slice(0,7)}`;
+      for(const p of [q[uid],other])q[p.uid]={...q[p.uid],status:'matched',gameMode,matchId,roomCode,role:p.uid===host?'host':'guest',hostUid:host,members:[uid,other.uid],opponentUid:p.uid===uid?other.uid:uid,partySize:2};
+      return q;
+    },{applyLocally:false});
+    state.queueOff?.();
+    state.queueOff=onValue(ref(db,`${RANDOM_QUEUE}/${uid}`),snapshot=>{
+      const x=snapshot.val();if(x?.status!=='matched'||!MODES[x.gameMode])return;
+      state.queueOff?.();state.queueOff=null;
+      message(`Rakip bulundu · ${MODES[x.gameMode].label} açılıyor…`);
+      setTimeout(()=>{location.href=modeUrl(x.gameMode,{nxAuto:'1',nxRole:x.role||(x.hostUid===uid?'host':'guest'),nxCode:x.roomCode,nxPartySize:'2',nxName:state.profile.username,nxUid:uid,nxOpponent:x.opponentUid||'',nxMatch:x.matchId})},600);
+    });
+    renderSearching('random');
+  }catch(e){message(e?.message||'Rakip araması başlatılamadı.',true);throw e}
+}
 
 async function chooseMode(mode,choice){
   if(!MODES[mode])throw new Error('Geçersiz oyun modu.');

@@ -4,7 +4,7 @@ if(!document.querySelector('[data-nx-social-presentation]')){
   const link=document.createElement('link');link.rel='stylesheet';link.href=sheet.href;link.dataset.nxSocialPresentation='';document.head.appendChild(link);
 }
 // Interface system v2: shared tokens first, then the social skin. Pages that already link them are left alone.
-for(const [needle,href] of [['neon-arcade-ui-v1.css','../side-games/neon-arcade-ui-v1.css?v=20261111-home-v2'],['neon-social-skin-v2.css','./neon-social-skin-v2.css?v=20261111-home-v2']]){
+for(const [needle,href] of [['neon-arcade-ui-v1.css','../side-games/neon-arcade-ui-v1.css?v=20261111-home-v2'],['neon-social-skin-v2.css','./neon-social-skin-v2.css?v=20261112-random']]){
   if(document.querySelector(`link[href*="${needle}"]`))continue;
   const link=document.createElement('link');link.rel='stylesheet';link.href=new URL(href,import.meta.url).href;document.head.appendChild(link);
 }
