@@ -1,6 +1,6 @@
 import {socialIcon, activateDialog, deactivateDialog} from './neon-social-presentation.js';
 import {initializeApp,getApp,getApps} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js';
-import {GoogleAuthProvider,getAuth,linkWithPopup,onAuthStateChanged,signInAnonymously,signInWithPopup,signOut} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js';
+import {GoogleAuthProvider,getAuth,getRedirectResult,linkWithPopup,onAuthStateChanged,signInAnonymously,signInWithCredential,signInWithPopup,signOut} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js';
 import {getDatabase,get,onDisconnect,onValue,ref,remove,runTransaction,serverTimestamp,set,update} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js';
 
 const CONFIG={apiKey:'AIzaSyBLpXHGGTHXykKrnu8_Hv1i71oc3tpTNvY',authDomain:'neonxi.firebaseapp.com',databaseURL:'https://neonxi-default-rtdb.europe-west1.firebasedatabase.app',projectId:'neonxi',storageBucket:'neonxi.firebasestorage.app',messagingSenderId:'667191549799',appId:'1:667191549799:web:1e40feacbee09ed7f3d9c2'};
@@ -21,21 +21,44 @@ const safeKey=value=>String(value||'match').replace(/[.#$\[\]/]/g,'_').slice(0,1
 
 function message(text,error=false){if(!statusEl)return;statusEl.textContent=text;statusEl.classList.toggle('error',error)}
 const googleProvider=new GoogleAuthProvider();googleProvider.setCustomParameters({prompt:'select_account'});
+// Warm the Firebase auth helper iframe right away. If it is still loading when the player taps,
+// the Google window opens too late, the browser blocks it, and a later "allow" opens a tab that
+// fails with "missing initial state". getRedirectResult only initialises the helper here.
+getRedirectResult(auth).catch(()=>null);
+const IN_APP_BROWSER=/FBAN|FBAV|FB_IAB|Instagram|Line\/|Twitter|TikTok|musical_ly|Snapchat|GSA\/|; wv\)/i.test(navigator.userAgent||'');
+const authHelp=code=>code==='auth/popup-blocked'
+  ?(IN_APP_BROWSER?'Bu uygulama içi tarayıcı Google penceresini engelliyor. Sayfayı Safari veya Chrome\'da açıp tekrar dene.'
+    :'Tarayıcı Google penceresini engelledi. Tarayıcının "izin ver" uyarısını kullanma; "Google ile devam et" butonuna bir kez daha dokun.')
+  :code==='auth/popup-closed-by-user'||code==='auth/cancelled-popup-request'?'Google giriş penceresi kapatıldı.'
+  :code==='auth/unauthorized-domain'?'Bu alan adı Firebase Google girişinde yetkilendirilmemiş.'
+  :code==='auth/operation-not-allowed'?'Firebase panelinde Google giriş sağlayıcısı etkinleştirilmemiş.'
+  :code==='auth/network-request-failed'?'Bağlantı kurulamadı. İnternetini kontrol edip tekrar dene.'
+  :code==='auth/web-storage-unsupported'?'Tarayıcın site verilerini engelliyor. Gizli sekmeden çıkıp veya çerezlere izin verip tekrar dene.'
+  :'';
 
 async function signInGoogle(){
   message('Google hesabı açılıyor…');
   const current=auth.currentUser,guestUid=current?.isAnonymous?current.uid:'';
   try{
-    const result=current?.isAnonymous?await linkWithPopup(current,googleProvider):await signInWithPopup(auth,googleProvider);
+    // The popup must open in this same tap: no awaits before it.
+    let result;
+    try{result=current?.isAnonymous?await linkWithPopup(current,googleProvider):await signInWithPopup(auth,googleProvider)}
+    catch(e){
+      if(e?.code!=='auth/credential-already-in-use'&&e?.code!=='auth/email-already-in-use')throw e;
+      // That Google account already owns a profile: reuse the credential, no second popup (it would be blocked).
+      const credential=GoogleAuthProvider.credentialFromError(e);
+      if(!credential)throw e;
+      result=await signInWithCredential(auth,credential);
+      state.user=result.user;message('Bu Google hesabındaki mevcut oyuncu profili açıldı.');return result;
+    }
     state.user=result.user;
     if(guestUid&&result.user.uid===guestUid&&state.profile)await update(ref(db,`social/profiles/${guestUid}`),{accountType:'google',googleEmail:result.user.email||'',displayName:result.user.displayName||'',updatedAt:serverTimestamp()});
     message('Google hesabınla giriş yapıldı.');
+    return result;
   }catch(e){
-    if(e?.code==='auth/credential-already-in-use'||e?.code==='auth/email-already-in-use'){
-      const result=await signInWithPopup(auth,googleProvider);state.user=result.user;message('Bu Google hesabındaki mevcut oyuncu profili açıldı.');return;
-    }
-    const detail=e?.code==='auth/popup-closed-by-user'?'Google giriş penceresi kapatıldı.':e?.code==='auth/unauthorized-domain'?'Bu alan adı Firebase Google girişinde yetkilendirilmemiş.':e?.code==='auth/operation-not-allowed'?'Firebase panelinde Google giriş sağlayıcısı etkinleştirilmemiş.':(e?.message||'Google ile giriş yapılamadı.');
-    message(detail,true);throw e;
+    message(authHelp(e?.code)||e?.message||'Google ile giriş yapılamadı.',true);
+    if(e&&typeof e==='object')e.neonMessage=authHelp(e.code);
+    throw e;
   }
 }
 async function continueAsGuest(){message('Misafir hesabı hazırlanıyor…');try{const result=auth.currentUser?{user:auth.currentUser}:await signInAnonymously(auth);state.user=result.user;message('Misafir olarak devam ediyorsun. Şimdi oyun içi adını seç.')}catch(e){const detail=e?.code==='auth/operation-not-allowed'?'Firebase panelinde Anonim giriş sağlayıcısı etkinleştirilmemiş.':(e?.message||'Misafir hesabı oluşturulamadı.');message(detail,true);throw e}}
