@@ -10,6 +10,9 @@ const MODES={
   wordle:{label:'Football Wordle',path:'side-games/football-wordle/online.html',players:2}
 };
 const LEGACY_MATCH_MODES=new Set(['draft','xox','twin']);
+// Random game shares one queue with neon-social.js (queuePath('random') = social/universalQueuesV2/random);
+// the pair completer picks the game for both.
+const RANDOM_GAMES=['draft','xox','twin'];
 const base=new URL('../',import.meta.url);
 const state={
   auth:null,db:null,user:null,
@@ -94,9 +97,9 @@ function targetUrl(mode,data,me){
 }
 function searchingMarkup(mode){
   const v=document.querySelector('.nx-social-view[data-view="play"]');if(!v)return;
-  const c=MODES[mode];
+  const c=mode==='random'?{label:'Rastgele oyun',players:2}:MODES[mode];
   v.dataset.nxSafeSearching='1';
-  v.innerHTML=`<div class="nx-social-searching"><b>${esc(c.label)}</b><div>${c.players===2?'Rakip':'Oyuncular'} aranıyor…</div><small style="display:block;margin:7px 0 13px;color:#91a397">Arkadaş olmanız gerekmez${c.players>2?` · ${c.players} oyuncu olduğunda oyun başlayacak.`:'.'}</small><button class="nx-social-btn nx-social-danger" type="button" data-nx-safe-cancel>ARAMAYI İPTAL ET</button></div>`;
+  v.innerHTML=`<div class="nx-social-searching"><b>${esc(c.label)}</b><div class="nx-search-pitch" aria-hidden="true"><span class="nx-search-goal left"></span><span class="nx-search-ball"></span><span class="nx-search-goal right"></span></div><div>${c.players===2?'Rakip':'Oyuncular'} aranıyor…</div><small style="display:block;margin:7px 0 13px;color:#91a397">${mode==='random'?'Rakip bulununca oyun rastgele seçilir.':'Arkadaş olmanız gerekmez'+(c.players>2?` · ${c.players} oyuncu olduğunda oyun başlayacak.`:'.')}</small><button class="nx-social-btn nx-social-danger" type="button" data-nx-safe-cancel>ARAMAYI İPTAL ET</button></div>`;
   v.querySelector('[data-nx-safe-cancel]').onclick=()=>cancelSearch(true);
 }
 async function clearQueueEntries(mode,uid){
@@ -112,9 +115,9 @@ async function cancelSearch(reopen=false){
   if(reopen){status('Eşleşme araması iptal edildi.');window.NEON_SOCIAL?.open?.('play');setTimeout(patchPlay,0)}
 }
 async function startSearch(mode){
-  const c=MODES[mode],me=identity();if(!c)return;if(!me){window.NEON_SOCIAL?.open?.('friends');return}
+  const c=mode==='random'?{label:'Rastgele oyun',players:2}:MODES[mode],me=identity();if(!c)return;if(!me){window.NEON_SOCIAL?.open?.('friends');return}
   await cancelSearch(false);
-  const path=queuePath(mode),self=ref(state.db,`${path}/${me.uid}`),joinedAt=Date.now(),legacy=LEGACY_MATCH_MODES.has(mode);
+  const path=queuePath(mode),self=ref(state.db,`${path}/${me.uid}`),joinedAt=Date.now(),legacy=LEGACY_MATCH_MODES.has(mode)||mode==='random';
   state.queue={mode,uid:me.uid,path};await clearQueueEntries(mode,me.uid);await set(self,{uid:me.uid,username:me.username,status:'waiting',joinedAt});onDisconnect(self).remove().catch(()=>{});
   searchingMarkup(mode);status(`${c.label}: eşleşme aranıyor…`);
   await runTransaction(ref(state.db,path),q=>{
@@ -124,8 +127,9 @@ async function startSearch(mode){
       const other=Object.values(q).filter(x=>x&&x.uid!==me.uid&&x.status==='waiting'&&now-Number(x.joinedAt||0)<120000).sort((a,b)=>Number(a.joinedAt||0)-Number(b.joinedAt||0))[0];
       if(!other)return q;
       const host=Number(other.joinedAt||joinedAt)<=joinedAt?other.uid:me.uid,matchId=`m_${Math.min(joinedAt,Number(other.joinedAt||joinedAt))}_${host.slice(0,7)}`,roomCode=code();
-      q[me.uid]={...q[me.uid],status:'matched',matchId,roomCode,role:me.uid===host?'host':'guest',opponentUid:other.uid};
-      q[other.uid]={...q[other.uid],status:'matched',matchId,roomCode,role:other.uid===host?'host':'guest',opponentUid:me.uid};
+      const gameMode=mode==='random'?RANDOM_GAMES[Math.floor(Math.random()*RANDOM_GAMES.length)]:undefined,extra=gameMode?{gameMode}:{};
+      q[me.uid]={...q[me.uid],...extra,status:'matched',matchId,roomCode,role:me.uid===host?'host':'guest',opponentUid:other.uid};
+      q[other.uid]={...q[other.uid],...extra,status:'matched',matchId,roomCode,role:other.uid===host?'host':'guest',opponentUid:me.uid};
       return q;
     }
     const waiting=Object.values(q).filter(x=>x&&x.status==='waiting'&&now-Number(x.joinedAt||0)<120000).sort((a,b)=>Number(a.joinedAt||0)-Number(b.joinedAt||0));
@@ -137,7 +141,8 @@ async function startSearch(mode){
   },{applyLocally:false});
   state.queueOff=onValue(self,s=>{
     const data=s.val();if(data?.status!=='matched')return;
-    const url=targetUrl(mode,data,me);state.queueOff?.();state.queueOff=null;state.queue=null;status('Eşleşme bulundu. Oyun açılıyor…');
+    const game=mode==='random'?data.gameMode:mode;if(!MODES[game])return;
+    const url=targetUrl(game,data,me);state.queueOff?.();state.queueOff=null;state.queue=null;status(mode==='random'?`Eşleşme bulundu · ${MODES[game].label} açılıyor…`:'Eşleşme bulundu. Oyun açılıyor…');
     if(url)setTimeout(()=>{location.href=url},250);
   });
 }
@@ -200,6 +205,7 @@ function patchPlay(){
   identity();
   if(state.queue){if(!v.dataset.nxSafeSearching)searchingMarkup(state.queue.mode);return}
   const select=v.querySelector('#nxMode');if(!select)return;
+  if(!select.querySelector('option[value="random"]')){const r=document.createElement('option');r.value='random';r.textContent='Rastgele oyun · oyun otomatik seçilir';select.prepend(r)}
   for(const [key,c] of Object.entries(MODES))if(!select.querySelector(`option[value="${key}"]`)){const o=document.createElement('option');o.value=key;o.textContent=c.label;select.appendChild(o)}
   const match=v.querySelector('[data-act="match"]');if(match&&match.textContent!=='RAKİP ARA')match.textContent='RAKİP ARA';
   if(!v.querySelector('.nx-safe-match-hint')){const h=document.createElement('div');h.className='nx-safe-match-hint';h.textContent='Arkadaş gerekmez · seçtiğin oyunda çevrimiçi oyuncularla otomatik eşleşirsin.';v.querySelector('.nx-social-choice')?.after(h)}
