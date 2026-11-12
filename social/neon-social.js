@@ -82,8 +82,11 @@ function renderPlay(){
 function renderFriends(){
   const v=shade.querySelector('[data-view="friends"]'),guest=state.user.isAnonymous,accountLabel=guest?'MİSAFİR HESABI':'GOOGLE HESABI',accountText=guest?'Yalnızca bu tarayıcıda korunur':(state.user.email||state.user.displayName||'Bağlı'),connect=guest?'<button class="nx-social-btn primary" data-act="connect-google">GOOGLE’A BAĞLA</button>':'';
   if(!state.profile){
-    const suggested=clean(state.user.displayName||'').replace(/\s/g,'');
+    // Listener snapshots re-render this view; keep what the player already typed (and focus) instead of resetting it.
+    const prev=v.querySelector('#nxUsername'),typed=prev?prev.value:null,hadFocus=Boolean(prev&&document.activeElement===prev);
+    const suggested=typed??clean(state.user.displayName||'').replace(/\s/g,'');
     v.innerHTML=`<div class="nx-social-card"><span class="nx-social-label">${accountLabel}</span><b>${esc(accountText)}</b>${guest?'<p class="nx-social-muted">Tarayıcı verileri silinirse bu hesaba tekrar ulaşılamaz.</p>':''}${connect}</div><div class="nx-social-card nx-username-gate"><label class="nx-social-label">OYUN İÇİ KULLANICI ADINI SEÇ</label><div class="nx-social-row"><input class="nx-social-input" id="nxUsername" maxlength="20" value="${esc(suggested)}" placeholder="oyuncu_adi"><button class="nx-social-btn primary" data-act="claim">OLUŞTUR</button></div><div class="nx-social-muted">3–20 karakter; harf, rakam ve alt çizgi. Bu ad arkadaş aramasında ve liderlikte görünecek.</div></div><button class="nx-social-btn nx-social-danger" data-act="logout">ÇIKIŞ YAP</button>`;
+    if(hadFocus){const input=v.querySelector('#nxUsername');input.focus();input.setSelectionRange(input.value.length,input.value.length)}
     v.querySelector('[data-act="claim"]').onclick=()=>claim(v.querySelector('#nxUsername').value);v.querySelector('[data-act="connect-google"]')?.addEventListener('click',()=>signInGoogle().catch(()=>{}));v.querySelector('[data-act="logout"]').onclick=signOutGoogle;return;
   }
   const req=Object.entries(state.requests||{}),friends=Object.entries(state.friends||{});
