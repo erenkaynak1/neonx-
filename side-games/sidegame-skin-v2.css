@@ -274,3 +274,76 @@ body.sg-skin .sgm-how p{margin:0!important;color:var(--sg-muted)!important;font:
 body.sg-reverse.rx-local #copy-link{display:none!important}
 body.sg-reverse #pass-panel{text-align:center}
 body.sg-reverse #pass-panel h3{font:800 22px/1.1 var(--sg-display)!important;letter-spacing:.04em;color:var(--sg-ink)}
+
+/* =====================================================================
+   EN 11 — in-game squad/pitch. One night pitch for both teams (the team
+   colour is an accent on the frame, slots and values, not a pitch tint),
+   slate glass player cards, Barlow type.
+   ===================================================================== */
+body.sg-en11 #app .gameTop h2{font:italic 800 24px/1 var(--sg-display)!important;letter-spacing:.02em!important}
+body.sg-en11 #app .gameTop p{color:var(--sg-muted)!important;font-size:13px!important}
+body.sg-en11 #app .paramBadge{border:1px solid rgba(186,255,24,.45)!important;border-radius:999px!important;background:rgba(186,255,24,.08)!important;color:var(--sg-lime-2)!important;font:700 12px/1.15 var(--sg-display)!important;letter-spacing:.06em!important;padding:7px 12px!important}
+body.sg-en11 #app .teamTab{border:1px solid var(--sg-line)!important;border-radius:12px!important;background:var(--sg-tile)!important;color:var(--sg-muted)!important;font:700 14px/1 var(--sg-display)!important;letter-spacing:.06em!important;padding:11px 8px!important;box-shadow:none!important}
+body.sg-en11 #app .teamTab.active{border-color:rgba(var(--team-rgb,186,255,24),.75)!important;background:rgba(var(--team-rgb,186,255,24),.1)!important;color:var(--team-color,var(--sg-lime))!important}
+body.sg-en11 #app .scoreTeam{border:1px solid var(--sg-line)!important;border-radius:14px!important;background:var(--sg-tile)!important;padding:10px 12px!important;box-shadow:none!important}
+body.sg-en11 #app .scoreTeam small{color:var(--sg-muted)!important;font:700 12px/1 var(--sg-display)!important;letter-spacing:.06em!important}
+body.sg-en11 #app .scoreTeam b{color:var(--sg-ink)!important;font:800 26px/1 var(--sg-display)!important;margin-top:4px!important;text-shadow:none!important}
+body.sg-en11 #app .scoreTeam.selected{border-color:rgba(var(--team-rgb,186,255,24),.6)!important;background:rgba(var(--team-rgb,186,255,24),.08)!important}
+body.sg-en11 #app .scoreTeam.selected b{color:var(--team-color,var(--sg-lime))!important}
+body.sg-en11 #app .turnCard{position:relative!important;overflow:hidden!important;border:1px solid var(--sg-line)!important;border-radius:14px!important;background:var(--sg-card)!important;padding:12px 14px 12px 18px!important;box-shadow:0 10px 22px rgba(0,0,0,.3)!important}
+body.sg-en11 #app .turnCard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--team-color,var(--sg-lime));box-shadow:0 0 12px rgba(var(--team-rgb,186,255,24),.6)}
+body.sg-en11 #app .turnCard strong{color:var(--sg-ink)!important;font:800 16px/1.1 var(--sg-display)!important;letter-spacing:.04em!important;text-shadow:none!important}
+body.sg-en11 #app .turnCard span{color:var(--sg-muted)!important;font-size:13px!important}
+
+/* pitch */
+body.sg-en11 #app .pitch{
+  border:1px solid rgba(255,255,255,.1)!important;border-radius:22px!important;
+  background:
+    radial-gradient(ellipse 80% 45% at 50% -8%,rgba(214,255,170,.2),transparent 70%),
+    radial-gradient(ellipse 120% 70% at 50% 50%,transparent 55%,rgba(0,0,0,.45)),
+    repeating-linear-gradient(180deg,rgba(255,255,255,.035) 0 8.333%,rgba(0,0,0,.03) 8.333% 16.666%),
+    linear-gradient(180deg,#14502a,#0e3c1f 50%,#0a2c17)!important;
+  box-shadow:inset 0 0 60px rgba(0,0,0,.45),0 0 0 1px rgba(var(--team-rgb,186,255,24),.28),0 0 28px rgba(var(--team-rgb,186,255,24),.16),0 18px 36px rgba(0,0,0,.45)!important;
+}
+body.sg-en11 #app .pitch::before{border:2px solid rgba(236,255,228,.42)!important;border-radius:4px!important;box-shadow:0 0 10px rgba(214,255,190,.1)!important}
+body.sg-en11 #app .pitch::after{border-top:2px solid rgba(236,255,228,.42)!important;box-shadow:0 0 10px rgba(214,255,190,.1)!important}
+body.sg-en11 #app :is(.pitchBox,.centerCircle){border-color:rgba(236,255,228,.42)!important;border-width:2px!important;box-shadow:0 0 10px rgba(214,255,190,.1)!important}
+body.sg-en11 #app .centerCircle::after{content:"";position:absolute;left:50%;top:50%;width:6px;height:6px;border-radius:50%;background:rgba(236,255,228,.6);transform:translate(-50%,-50%)}
+body.sg-en11 #app .roleLabel{
+  padding:4px 11px!important;border:1px solid rgba(255,255,255,.14)!important;border-radius:999px!important;background:rgba(5,9,8,.62)!important;
+  color:#e3ece6!important;font:700 11px/1 var(--sg-display)!important;letter-spacing:.2em!important;text-shadow:none!important;
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+}
+/* player cards */
+body.sg-en11 #app .slot{
+  min-height:56px!important;border:1px solid rgba(255,255,255,.12)!important;border-radius:14px!important;
+  background:linear-gradient(180deg,rgba(23,29,35,.92),rgba(12,16,20,.94))!important;
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  box-shadow:0 10px 20px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.05)!important;padding:8px 12px!important;
+}
+body.sg-en11 #app .slot.occupied{border-color:rgba(var(--team-rgb,186,255,24),.42)!important;box-shadow:0 10px 20px rgba(0,0,0,.42),0 0 14px rgba(var(--team-rgb,186,255,24),.12),inset 0 1px 0 rgba(255,255,255,.05)!important}
+body.sg-en11 #app .slotName{color:var(--sg-ink)!important;font:700 16px/1.1 var(--sg-display)!important;letter-spacing:.01em!important}
+body.sg-en11 #app .slotValue{
+  border:1px solid rgba(var(--team-rgb,186,255,24),.5)!important;border-radius:999px!important;background:rgba(var(--team-rgb,186,255,24),.14)!important;
+  padding:4px 9px!important;color:var(--team-color,var(--sg-lime))!important;font:800 14px/1 var(--sg-display)!important;letter-spacing:.02em!important;text-shadow:none!important;
+}
+body.sg-en11 #app .slot.empty.slotTap{
+  justify-content:center!important;border:1.5px dashed rgba(var(--team-rgb,186,255,24),.5)!important;background:rgba(6,10,12,.55)!important;box-shadow:none!important;
+  color:rgba(236,244,240,.72)!important;font:700 13px/1 var(--sg-display)!important;letter-spacing:.12em!important;
+}
+body.sg-en11 #app .slot.empty.slotEntry{
+  border:1.5px solid var(--team-color,var(--sg-lime))!important;background:rgba(10,14,18,.94)!important;
+  box-shadow:0 0 0 4px rgba(var(--team-rgb,186,255,24),.14),0 0 24px rgba(var(--team-rgb,186,255,24),.28)!important;color:var(--team-color,var(--sg-lime))!important;
+}
+body.sg-en11 #app .slotInput{color:var(--sg-ink)!important;font:600 15px/1.2 var(--sg-body)!important}
+body.sg-en11 #app .slotInput::placeholder{color:var(--sg-faint)!important;font:600 14px/1.2 var(--sg-body)!important;letter-spacing:0!important}
+body.sg-en11 #app .rollNumber.inline{font:800 14px/1 var(--sg-display)!important;color:var(--team-color,var(--sg-lime))!important}
+/* search results */
+body.sg-en11 #app .result{border:1px solid var(--sg-line)!important;border-radius:12px!important;background:var(--sg-tile)!important;padding:10px 12px!important}
+body.sg-en11 #app .result:hover{border-color:rgba(var(--team-rgb,186,255,24),.5)!important}
+body.sg-en11 #app .result strong{color:var(--sg-ink)!important;font:700 16px/1.1 var(--sg-display)!important}
+body.sg-en11 #app .result small{color:var(--sg-muted)!important;font-size:12px!important}
+body.sg-en11 #app .resultSource{color:var(--sg-muted)!important;font:700 12px/1 var(--sg-display)!important;letter-spacing:.06em!important}
+body.sg-en11 #app .emptyResults{color:var(--sg-muted)!important}
+body.sg-en11 .winner{font:italic 800 clamp(26px,8vw,36px)/1 var(--sg-display)!important}
+body.sg-en11 #app[data-team-color] .sectionTitle::before{background:var(--team-color)!important;box-shadow:0 0 10px rgba(var(--team-rgb),.6)!important}
