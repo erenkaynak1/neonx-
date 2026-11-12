@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 640" role="img" aria-labelledby="t d">
+<title id="t">Futbol Imposter amblemi</title>
+<desc id="d">Sekizgen neon kalkan üzerinde, sırt numarası yerine soru işareti taşıyan kimliği gizli bir futbol forması.</desc>
+<defs>
+  <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#efffb8"/><stop offset=".3" stop-color="#baff18"/><stop offset=".7" stop-color="#31ff76"/><stop offset="1" stop-color="#9dff3a"/>
+  </linearGradient>
+  <linearGradient id="metal" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#3a4a43"/><stop offset=".18" stop-color="#d8e6dc"/><stop offset=".36" stop-color="#4b5f56"/><stop offset=".62" stop-color="#16231e"/><stop offset=".86" stop-color="#7f948a"/><stop offset="1" stop-color="#1d2b25"/>
+  </linearGradient>
+  <radialGradient id="glass" cx=".5" cy=".28" r=".85">
+    <stop offset="0" stop-color="#14402a"/><stop offset=".45" stop-color="#06190f"/><stop offset="1" stop-color="#010604"/>
+  </radialGradient>
+  <linearGradient id="shirt" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#18261f"/><stop offset=".55" stop-color="#0a120e"/><stop offset="1" stop-color="#040806"/>
+  </linearGradient>
+  <linearGradient id="shirtSheen" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#ffffff" stop-opacity="0"/><stop offset=".35" stop-color="#ffffff" stop-opacity=".07"/><stop offset=".5" stop-color="#ffffff" stop-opacity="0"/>
+  </linearGradient>
+  <linearGradient id="mark" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#f4ffc9"/><stop offset=".4" stop-color="#c8ff3a"/><stop offset="1" stop-color="#31ff76"/>
+  </linearGradient>
+  <filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="14"/></filter>
+  <filter id="tight" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5"/></filter>
+  <clipPath id="inner"><path d="M360 82 522 150 590 270 548 438 360 552 172 438 130 270 198 150Z"/></clipPath>
+</defs>
+
+<!-- side blades -->
+<g fill="url(#metal)" stroke="#030a07" stroke-width="5" stroke-linejoin="round">
+  <path d="M150 250 42 268 112 300 38 336 70 362 176 330 196 284Z"/>
+  <path d="M570 250 678 268 608 300 682 336 650 362 544 330 524 284Z"/>
+</g>
+<g stroke="#baff18" stroke-width="3" fill="none" opacity=".75" stroke-linecap="round">
+  <path d="M60 272 168 262M64 340 172 314"/><path d="M660 272 552 262M656 340 548 314"/>
+</g>
+
+<!-- outer glow + metal frame -->
+<path d="M360 52 545 130 622 268 574 458 360 588 146 458 98 268 175 130Z" fill="#9dff2a" opacity=".38" filter="url(#soft)"/>
+<path d="M360 52 545 130 622 268 574 458 360 588 146 458 98 268 175 130Z" fill="url(#metal)" stroke="#020806" stroke-width="8" stroke-linejoin="round"/>
+<path d="M360 70 532 142 604 268 560 448 360 570 160 448 116 268 188 142Z" fill="#020806"/>
+<path d="M360 82 522 150 590 270 548 438 360 552 172 438 130 270 198 150Z" fill="url(#glass)" stroke="url(#rim)" stroke-width="6" stroke-linejoin="round"/>
+
+<g clip-path="url(#inner)">
+  <!-- stadium light cone + pitch arcs -->
+  <path d="M300 82h120l90 330H210Z" fill="#baff18" opacity=".06"/>
+  <g fill="none" stroke="#31ff76" opacity=".16" stroke-width="2">
+    <ellipse cx="360" cy="560" rx="230" ry="70"/><ellipse cx="360" cy="560" rx="120" ry="34"/><path d="M130 560H590"/>
+  </g>
+  <!-- jersey: shadow, body, sheen -->
+  <path d="M318 176 360 214 402 176 474 200 538 262 500 312 466 290 462 492H258L254 290 220 312 182 262 246 200Z" fill="#000" opacity=".55" transform="translate(0 10)" filter="url(#tight)"/>
+  <path d="M318 176 360 214 402 176 474 200 538 262 500 312 466 290 462 492H258L254 290 220 312 182 262 246 200Z" fill="url(#shirt)" stroke="url(#rim)" stroke-width="4.5" stroke-linejoin="round"/>
+  <path d="M318 176 360 214 402 176 474 200 538 262 500 312 466 290 462 492H258L254 290 220 312 182 262 246 200Z" fill="url(#shirtSheen)"/>
+  <!-- collar + sleeve cuffs + side seams -->
+  <path d="M318 176 360 214 402 176" fill="none" stroke="#baff18" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M188 270 224 304M532 270 496 304" stroke="#baff18" stroke-width="6" stroke-linecap="round"/>
+  <path d="M256 300 258 488M464 300 462 488" stroke="#31ff76" stroke-width="2" opacity=".35"/>
+  <!-- raglan seams, hem band and a small ball crest so it reads as a football kit -->
+  <path d="M334 190 252 292M386 190 468 292" stroke="#31ff76" stroke-width="2.5" opacity=".5" fill="none"/>
+  <path d="M259 470H461" stroke="#baff18" stroke-width="5" opacity=".75"/>
+  <g transform="translate(308 254)" fill="none" stroke="#baff18" stroke-width="2.5" stroke-linejoin="round">
+    <circle r="13"/><path d="M0-5 5-1.6 3 4.2H-3L-5-1.6Z" fill="#baff18"/><path d="M0-5V-13M5-1.6 12-4M3 4.2 7 10.5M-3 4.2-7 10.5M-5-1.6-12-4" stroke-width="1.6"/>
+  </g>
+  <g transform="translate(412 254)"><rect x="-13" y="-9" width="26" height="18" rx="3" fill="none" stroke="#31ff76" stroke-width="2" opacity=".6"/><path d="M-7 0h14" stroke="#31ff76" stroke-width="2" opacity=".6"/></g>
+  <!-- the hidden identity: a glowing question mark in place of the shirt number -->
+  <g transform="translate(360 362)">
+    <path d="M-44-50c0-34 22-56 50-56 30 0 50 20 50 48 0 24-14 36-34 48-12 7-16 13-16 26v8" fill="none" stroke="#baff18" stroke-width="34" stroke-linecap="round" stroke-linejoin="round" opacity=".45" filter="url(#tight)"/>
+    <path d="M-44-50c0-34 22-56 50-56 30 0 50 20 50 48 0 24-14 36-34 48-12 7-16 13-16 26v8" fill="none" stroke="url(#mark)" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="6" cy="72" r="16" fill="url(#mark)"/>
+  </g>
+</g>
+
+<!-- lower chevrons -->
+<path d="M196 448 360 546 524 448" fill="none" stroke="url(#rim)" stroke-width="4" opacity=".9"/>
+<path d="M344 560 360 574 376 560" fill="none" stroke="#baff18" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<g fill="#baff18"><circle cx="360" cy="70" r="5"/></g>
+</svg>
