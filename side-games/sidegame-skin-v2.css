@@ -270,3 +270,7 @@ body.sg-skin .sgm-how-badge{display:grid;place-items:center;width:44px;height:44
 body.sg-skin .sgm-how h3{margin:0 0 4px!important;color:var(--sg-ink)!important;font:800 clamp(14px,3.9cqw,17px)/1 var(--sg-display)!important;letter-spacing:.08em!important}
 body.sg-skin .sgm-how p{margin:0!important;color:var(--sg-muted)!important;font:500 clamp(11.5px,3.2cqw,13.5px)/1.4 var(--sg-body)!important}
 @media (prefers-reduced-motion:reduce){body.sg-skin .sgm-mode{transition:none}}
+/* Re:Verse single-phone mode: no room to share */
+body.sg-reverse.rx-local #copy-link{display:none!important}
+body.sg-reverse #pass-panel{text-align:center}
+body.sg-reverse #pass-panel h3{font:800 22px/1.1 var(--sg-display)!important;letter-spacing:.04em;color:var(--sg-ink)}
