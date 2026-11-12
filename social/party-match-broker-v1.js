@@ -270,4 +270,4 @@ onAuthStateChanged(auth,async user=>{
   try{await acknowledgeArrival(user)}catch(e){console.warn('[NEON XI] broker ack skipped',e)}
 });
 
-window.NEON_PARTY_BROKER={version:'1.4',modes:Object.keys(MODES)};
+window.NEON_PARTY_BROKER={version:'1.5',modes:Object.keys(MODES),start:startBrokeredParty};
