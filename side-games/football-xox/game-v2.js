@@ -35,7 +35,7 @@
     // Menu-only presentation; existing local/social/matchmaking handlers stay shared.
     app.querySelector('.topbar')?.remove();
     const logo=E('div','xoxMenuLogo');
-    logo.innerHTML='<div class="xoxLogoArt"><img src="../../assets/neon-xi-logo-outline.png" alt="NEON XI"></div><span>SIDE GAME</span>';
+    logo.innerHTML='<div class="xoxLogoArt"><img src="../../assets/ui/logo-neon-xi.svg" alt="NEON XI"></div><span>SIDE GAME</span>';
     app.appendChild(logo);
     brand();
     const motif=E('img','xoxMenuMotif');

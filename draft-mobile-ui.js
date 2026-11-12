@@ -136,7 +136,7 @@
     logo.id = "nxDraftTopLogo";
     logo.className = "nxDraftTopLogo";
     const image = document.createElement("img");
-    image.src = "./assets/neon-xi-logo-outline.png";
+    image.src = "./assets/ui/logo-neon-xi.svg";
     image.alt = "NEON XI";
     logo.appendChild(image);
     topbar.querySelector(".topMeta")?.insertAdjacentElement("beforebegin", logo);

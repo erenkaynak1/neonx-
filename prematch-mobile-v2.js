@@ -78,7 +78,7 @@
     if(header.querySelector('.nx-prematch-logo')) return;
     const img=document.createElement('img');
     img.className='nx-prematch-logo';
-    img.src='./assets/neon-xi-logo-outline.png';
+    img.src='./assets/ui/logo-neon-xi.svg';
     img.alt='NEON XI';
     img.decoding='async';
     img.fetchPriority='high';

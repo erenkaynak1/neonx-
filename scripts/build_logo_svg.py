@@ -1,4 +1,5 @@
-# Usage: python3 scripts/build_logo_svg.py assets/ui/logo-neon-xi.svg   (needs: pip install shapely)
+# Usage: python3 scripts/build_logo_svg.py assets/ui/logo-neon-xi.svg
+#        python3 scripts/build_logo_svg.py assets/ui/logo-neon-xi-mask.svg --mask   (needs: pip install shapely)
 """Builds a clean vector NEON XI wordmark matching the proportions of assets/neon-xi-logo-outline.png
 (1024x225 canvas, measured letter boxes), rendered as neon tubes with SVG filters."""
 import sys
@@ -73,5 +74,10 @@ svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 225" role="i
 <use href="#g" fill="none" stroke="#f3ffd2" stroke-width="1.8" stroke-linejoin="round"/>
 </svg>
 '''
-open(sys.argv[1], "w").write(svg)
+# --mask: white tube lines only (no halo, no body fill) for CSS mask-image shine sweeps.
+mask_svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 225">
+<path d="{d}" fill="none" stroke="#fff" stroke-width="7" stroke-linejoin="round"/>
+</svg>
+'''
+open(sys.argv[1], "w").write(mask_svg if "--mask" in sys.argv[2:] else svg)
 print("bytes", len(svg))

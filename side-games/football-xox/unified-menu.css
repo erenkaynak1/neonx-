@@ -8,7 +8,7 @@ body[data-ct-screen="menu"] .topbar{display:none}
 body[data-ct-screen="menu"] .xoxMenuLogo{position:absolute;left:5.4%;top:max(5.2%,env(safe-area-inset-top));width:30.5%;text-align:center}
 .xoxMenuLogo img{display:block;width:100%;height:auto}
 .xoxLogoArt{position:relative;isolation:isolate}
-.xoxLogoArt::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(105deg,transparent 43%,#dcff7270 47%,#ffffff 50%,#dcff7270 53%,transparent 57%);background-size:300% 100%;background-position:100% 0;mask:url('../../assets/neon-xi-logo-outline.png') center/100% 100% no-repeat;-webkit-mask:url('../../assets/neon-xi-logo-outline.png') center/100% 100% no-repeat;animation:xox-logo-sweep 4.8s ease-in-out infinite}
+.xoxLogoArt::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(105deg,transparent 43%,#dcff7270 47%,#ffffff 50%,#dcff7270 53%,transparent 57%);background-size:300% 100%;background-position:100% 0;mask:url('../../assets/ui/logo-neon-xi-mask.svg') center/100% 100% no-repeat;-webkit-mask:url('../../assets/ui/logo-neon-xi-mask.svg') center/100% 100% no-repeat;animation:xox-logo-sweep 4.8s ease-in-out infinite}
 @keyframes xox-logo-sweep{0%,6%{background-position:100% 0;opacity:0}10%{opacity:1}44%{background-position:0% 0;opacity:1}48%,100%{background-position:0% 0;opacity:0}}
 @media(prefers-reduced-motion:reduce){.xoxLogoArt::after{animation:none;opacity:0}}
 .xoxMenuLogo span{display:block;font:500 1.5cqw Barlow,Arial,sans-serif;letter-spacing:.65em;color:#c4ecb0;margin-top:1.5%}

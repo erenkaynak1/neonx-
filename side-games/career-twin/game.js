@@ -23,7 +23,7 @@
     // XOX-family presentation only. Game modes and existing handlers are unchanged.
     app.querySelector('.topbar')?.remove();
     const logo=E('div','ctMenuLogo');
-    logo.innerHTML='<div class="ctLogoArt"><img src="../../assets/neon-xi-logo-outline.png" alt="NEON XI"></div><span>SIDE GAME</span>';
+    logo.innerHTML='<div class="ctLogoArt"><img src="../../assets/ui/logo-neon-xi.svg" alt="NEON XI"></div><span>SIDE GAME</span>';
     app.appendChild(logo);
     brand('Hedef futbolcuya en yakın kariyeri seç');
     const motif=E('div','ctMenuMotif');
