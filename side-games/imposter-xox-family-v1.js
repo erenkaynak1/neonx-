@@ -37,7 +37,7 @@
     title.append(headline,make('div','subtitle','Bir kişi gerçeği bilmiyor. Aranızdaki imposteri bul.'));
     root.append(title);
     const symbol=make('img','nx-imp-symbol');
-    symbol.src='./assets/imposter-emblem-v1.svg';symbol.alt='';symbol.decoding='async';symbol.draggable=false;
+    symbol.src='./assets/imposter-emblem-v2.svg';symbol.alt='';symbol.decoding='async';symbol.draggable=false;
     symbol.setAttribute('aria-hidden','true');root.append(symbol);
     const panel=make('section','nx-imp-menu-panel');
     panel.setAttribute('aria-label','Oyun modu seç');
