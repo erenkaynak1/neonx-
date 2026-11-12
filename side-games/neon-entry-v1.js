@@ -111,7 +111,7 @@
     Promise.resolve(result).catch(error=>{
       intent='';
       const code=String(error?.code||'');
-      setStatus(code==='auth/popup-closed-by-user'?'Google giriş penceresi kapatıldı.':code==='auth/popup-blocked'?'Tarayıcı Google giriş penceresini engelledi.':code==='auth/unauthorized-domain'?'Firebase için bu alan adını yetkilendirmen gerekiyor.':(error?.message||'Giriş yapılamadı. Tekrar dene.'));
+      setStatus(error?.neonMessage||(code==='auth/popup-closed-by-user'?'Google giriş penceresi kapatıldı.':code==='auth/popup-blocked'?'Tarayıcı Google giriş penceresini engelledi.':code==='auth/unauthorized-domain'?'Firebase için bu alan adını yetkilendirmen gerekiyor.':(error?.message||'Giriş yapılamadı. Tekrar dene.')));
     }).finally(()=>{setBusy(false);if(authUser)setStatus('')});
   }
   entry.addEventListener('click',e=>{
