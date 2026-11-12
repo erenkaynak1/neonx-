@@ -8,14 +8,23 @@ const $=id=>document.getElementById(id),state={uid:'',room:'',roomData:null,off:
 const toast=msg=>{const el=$('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('show'),3000)};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const roomRef=()=>ref(db,'reverseXI/rooms/'+state.room);
-const uid=()=>state.uid;
+const uid=()=>state.uid||(state.local?'local':'');
+// Single-phone mode keeps the room in memory and re-renders after every write, so the same
+// panels, recording and answer check run without Firebase.
+function applyPatch(target,patch){for(const [key,value] of Object.entries(patch)){const parts=key.split('/');let node=target;for(let i=0;i<parts.length-1;i++){node[parts[i]]=node[parts[i]]&&typeof node[parts[i]]==='object'?node[parts[i]]:{};node=node[parts[i]]}const last=parts[parts.length-1];if(value===null)delete node[last];else node[last]=value}}
+function roomWrite(patch){
+ if(!state.local)return update(roomRef(),patch);
+ applyPatch(state.localRoom,patch);
+ const snapshot=JSON.parse(JSON.stringify(state.localRoom));
+ return new Promise(resolve=>setTimeout(()=>{renderRoom(snapshot);validateIncomingGuess(snapshot);resolve()},0));
+}
 const normalize=s=>String(s||'').toLocaleLowerCase('tr-TR').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ı/g,'i').replace(/æ/g,'ae').replace(/œ/g,'oe').replace(/ß/g,'ss').replace(/ø/g,'o').replace(/ł/g,'l').replace(/đ/g,'d').replace(/þ/g,'th').replace(/ð/g,'d').replace(/[^a-z0-9]/g,'');
 function distance(a,b){const row=Array.from({length:b.length+1},(_,i)=>i);for(let i=1;i<=a.length;i++){let prev=row[0];row[0]=i;for(let j=1;j<=b.length;j++){const old=row[j];row[j]=Math.min(row[j]+1,row[j-1]+1,prev+(a[i-1]===b[j-1]?0:1));prev=old}}return row[b.length]}
 function answerMatches(guess,answer){const g=normalize(guess),a=normalize(answer);if(!g||!a)return false;if(g===a)return true;if(g.length>=4&&a.includes(g))return true;const aliases=(answer+'|'+answer.replace(/khvicha/i,'khvicha')+'|'+answer.replace(/kvaratskhelia/i,'kvaratskhelia')).split('|').map(normalize);if(aliases.includes(g))return true;if(Math.min(g.length,a.length)>=5&&Math.abs(g.length-a.length)<=Math.max(2,Math.floor(a.length*.2))&&distance(g,a)<=Math.max(2,Math.floor(a.length*.2)))return true;return false}
 async function ensureAuth(){if(auth.currentUser){state.uid=auth.currentUser.uid;return}await new Promise((resolve,reject)=>{const off=onAuthStateChanged(auth,async user=>{off();try{if(user){state.uid=user.uid;resolve()}else{const result=await signInAnonymously(auth);state.uid=result.user.uid;resolve()}}catch(e){reject(e)}} ,reject)})}
 function makeCode(){return Array.from({length:6},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*32)]).join('')}
 function renderRoom(data){state.roomData=data;const speakerSide=data.currentSpeaker||'A';if(mySide()===speakerSide)state.secretAnswer=state.secretAnswer||localStorage.getItem('nxReverseXI:'+state.room+':'+uid())||'';$('name-a').textContent=data.players?.A?.name||'Bekleniyor…';$('name-b').textContent=data.players?.B?.name||'Bekleniyor…';$('player-a').classList.toggle('active',data.currentSpeaker==='A');$('player-b').classList.toggle('active',data.currentSpeaker==='B');$('step-no').textContent='TUR '+(data.turn||1);$('room-label').textContent=state.room;$('chat-lines').innerHTML=Object.values(data.guesses||{}).map(x=>'<div class="chat-item"><b>'+esc(x.byName)+':</b> '+esc(x.guess)+' · '+(x.correct?'DOĞRU':'YANLIŞ')+'</div>').join('')||'<span class="hint">Henüz tahmin yok.</span>';updateStage()}
-function mySide(){const d=state.roomData;if(d?.players?.A?.uid===uid())return'A';if(d?.players?.B?.uid===uid())return'B';return''}
+function mySide(){const d=state.roomData;if(state.local&&d){const speaker=d.currentSpeaker||'A',imitator=speaker==='A'?'B':'A',phase=d.phase||'speak';return phase==='imitate'||phase==='guess'?imitator:speaker}if(d?.players?.A?.uid===uid())return'A';if(d?.players?.B?.uid===uid())return'B';return''}
 function updateStage(){const d=state.roomData;if(!d)return;['speaker-panel','listen-panel','guess-panel','result-panel','waiting-panel'].forEach(id=>$(id).hidden=true);if(!d.players?.B){$('step-title').textContent='Arkadaşını bekliyoruz';$('step-desc').textContent='Oda kodunu arkadaşınla paylaş. Katıldığında ilk tur başlayacak.';$('waiting-panel').hidden=false;return}const side=mySide(),speaker=d.currentSpeaker||'A',imitator=speaker==='A'?'B':'A',phase=d.phase||'speak';let title='',desc='';if(phase==='speak'){title=speaker+' oyuncusu futbolcu ismini söylüyor';desc='İsmi normal şekilde söyle ve sistemin doğru anladığını onayla.';if(side===speaker)$('speaker-panel').hidden=false;else $('waiting-panel').hidden=false}else if(phase==='imitate'){title=imitator+' oyuncusu ters sesi taklit ediyor';desc='Ters sesi dinle ve duyduğun şekilde kaydet.';if(side===imitator){$('listen-panel').hidden=false;setAudio('reverse-audio',d.reverseOriginal)}else $('waiting-panel').hidden=false}else if(phase==='guess'){title=imitator+' oyuncusu tahmin ediyor';desc='Kendi sesinin tekrar ters çevrilmiş hâlini dinleyip futbolcuyu bul.';if(side===imitator){$('guess-panel').hidden=false;setAudio('final-audio',d.reverseImitation)}else $('waiting-panel').hidden=false}else if(phase==='checking'){title='Cevap kontrol ediliyor';desc='A oyuncusu cevabı doğruluyor.';$('waiting-panel').hidden=false}else if(phase==='result'){title='Tur tamamlandı';desc='Sıradaki tur için devam et.';$('result-panel').hidden=false;$('result-title').textContent=d.lastResult?.correct?'DOĞRU TAHMİN!':'TUR TAMAMLANDI';$('result-copy').textContent='Doğru cevap: '+(d.lastResult?.answer||'')+' · Tahmin: '+(d.lastResult?.guess||'');$('next-turn').hidden=side!==d.currentSpeaker}}
 function setAudio(id,data){const el=$(id);if(!data)return;if(el.dataset.src===data)return;el.dataset.src=data;el.src=data}
 async function createRoom(roomCode='',playerName=''){
@@ -54,7 +63,7 @@ async function validateIncomingGuess(data){
  if(!secret){state.validatingGuess='';toast('Soru sahibinin cevap anahtarı bulunamadı.');return}
  const guess=data.pendingGuess.guess;
  const result={guess,correct:answerMatches(guess,secret),answer:secret,byName:data.pendingGuess.byName||'Oyuncu',createdAt:data.pendingGuess.createdAt||Date.now()};
- try{await update(roomRef(),{['guesses/'+data.pendingGuess.id]:result,lastResult:result,phase:'result'})}
+ try{await roomWrite({['guesses/'+data.pendingGuess.id]:result,lastResult:result,phase:'result'})}
  catch(e){state.validatingGuess='';toast('Cevap kontrol edilemedi: '+e.message)}
 }
 function openRoom(){$('intro').hidden=true;$('game').hidden=false;$('room-label').textContent=state.room;if(state.off)state.off();state.off=onValue(roomRef(),s=>{if(!s.exists()){toast('Oda kapatıldı.');return}const data=s.val();renderRoom(data);validateIncomingGuess(data)})}
@@ -71,7 +80,7 @@ function finishManualRecording(blob,mode,button){
  if(mode==='name'){
   state.originalBlob=blob;const transcript=state.transcript.trim();$('heard-name').textContent=transcript||'Ses çözümlenemedi';$('heard-result').hidden=false;$('record-name').hidden=true;$('manual-name').value=transcript;$('speech-fallback').hidden=false;$('manual-name').hidden=false;if(!transcript)$('manual-name').focus();
  }else if(mode==='imitation'){
-  (async()=>{try{toast('Ses ters çevriliyor…');const reverse=await reverseBlob(blob);await update(roomRef(),{reverseImitation:reverse,phase:'guess',imitationBy:uid()})}catch(e){toast(e.message||'Ses işlenemedi.')}})();
+  (async()=>{try{toast('Ses ters çevriliyor…');const reverse=await reverseBlob(blob);await roomWrite({reverseImitation:reverse,phase:'guess',imitationBy:uid()})}catch(e){toast(e.message||'Ses işlenemedi.')}})();
  }
 }
 function isIOSAudio(){return /iPhone|iPad|iPod/.test(navigator.userAgent||'')||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1)}
@@ -152,13 +161,51 @@ function encodeWav(samples,rate){const b=new ArrayBuffer(44+samples.length*2),v=
 function blobData(blob){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(blob)})}
 async function captureName(){const stream=await getStream();return new Promise((resolve,reject)=>{const mime=recordingMimeType();const rec=new MediaRecorder(stream,mime?{mimeType:mime}:undefined);const parts=[];let transcript='',done=false;const finish=()=>{if(done)return;done=true;if(rec.state!=='inactive')rec.stop()};rec.ondataavailable=e=>{if(e.data.size)parts.push(e.data)};rec.onerror=()=>reject(new Error('Kayıt yapılamadı.'));rec.onstop=()=>resolve({blob:new Blob(parts,{type:rec.mimeType||'audio/webm'}),text:transcript});rec.start();const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(SR){const speech=new SR();speech.lang='tr-TR';speech.interimResults=false;speech.maxAlternatives=4;speech.onresult=e=>{transcript=[...e.results[0]].sort((a,b)=>b.confidence-a.confidence)[0].transcript;finish()};speech.onerror=()=>finish();try{speech.start()}catch{finish()}}else{$('speech-fallback').hidden=false;$('manual-name').hidden=false;toast('İsmi söyledikten sonra ekrandaki alana yaz.')}setTimeout(finish,8000)})}
 $('record-name').onclick=async()=>{try{if(state.recordingMode==='name'){stopManualRecording();return}if(state.recordingMode){toast('Önce devam eden kaydı durdur.');return}await startManualRecording('name')}catch(e){toast(e.message||'Mikrofon açılamadı.')}};
-$('confirm-name').onclick=async()=>{const name=$('manual-name').value.trim();if(!name){toast('Futbolcu ismini yazıp onayla.');return}if(!state.originalBlob){toast('Ses kaydı bulunamadı. Tekrar kaydet.');return}try{const reverse=await reverseBlob(state.originalBlob);state.secretAnswer=name;localStorage.setItem('nxReverseXI:'+state.room+':'+uid(),name);await update(roomRef(),{reverseOriginal:reverse,phase:'imitate',answerBy:uid()});}catch(e){toast(e.message||'Ses işlenemedi.')}};
+$('confirm-name').onclick=async()=>{const name=$('manual-name').value.trim();if(!name){toast('Futbolcu ismini yazıp onayla.');return}if(!state.originalBlob){toast('Ses kaydı bulunamadı. Tekrar kaydet.');return}try{const reverse=await reverseBlob(state.originalBlob);state.secretAnswer=name;localStorage.setItem('nxReverseXI:'+state.room+':'+uid(),name);await roomWrite({reverseOriginal:reverse,phase:'imitate',answerBy:uid()});}catch(e){toast(e.message||'Ses işlenemedi.')}};
 $('retry-name').onclick=()=>{$('heard-result').hidden=true;$('record-name').hidden=false;$('manual-name').hidden=true;$('speech-fallback').hidden=true;$('manual-name').value='';state.transcript='';state.originalBlob=null};
 $('record-imitation').onclick=async()=>{try{if(state.recordingMode==='imitation'){stopManualRecording();return}if(state.recordingMode){toast('Önce devam eden kaydı durdur.');return}await startManualRecording('imitation')}catch(e){toast(e.message||'Mikrofon kullanılamadı.')}};
-$('send-guess').onclick=async()=>{const guess=$('guess-input').value.trim();if(!guess){toast('Tahminini yaz.');return}if(state.roomData?.phase!=='guess'){toast('Şu anda tahmin gönderilemez.');return}const guessId='g'+Date.now(),byName=mySide();try{await update(roomRef(),{pendingGuess:{id:guessId,guess,byName:byName||'Oyuncu',createdAt:Date.now()},phase:'checking'});$('guess-feedback').textContent='Cevap kontrol ediliyor…'}catch(e){toast('Tahmin gönderilemedi: '+e.message)}};
-$('next-turn').onclick=async()=>{const d=state.roomData;if(!d||d.phase!=='result')return;const next=d.currentSpeaker==='A'?'B':'A';localStorage.removeItem('nxReverseXI:'+state.room+':'+uid());state.secretAnswer='';await update(roomRef(),{currentSpeaker:next,turn:(d.turn||1)+1,phase:'speak',reverseOriginal:null,reverseImitation:null,lastResult:null,pendingGuess:null,answerBy:null,imitationBy:null})};
-$('create-room').onclick=()=>createRoom();$('join-room').onclick=()=>joinRoom($('room-code').value);$('room-code').addEventListener('keydown',e=>{if(e.key==='Enter')joinRoom($('room-code').value)});$('copy-link').onclick=async()=>{const url=location.origin+location.pathname+'?room='+state.room;try{await navigator.clipboard.writeText(url);toast('Davet bağlantısı kopyalandı.')}catch{toast('Oda kodu: '+state.room)}};
-document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{state.mode=b.dataset.mode;document.querySelectorAll('[data-mode]').forEach(x=>x.classList.toggle('active',x===b));$('duel-start').hidden=state.mode!=='duel';$('solo-start').hidden=state.mode!=='solo'});
+$('send-guess').onclick=async()=>{const guess=$('guess-input').value.trim();if(!guess){toast('Tahminini yaz.');return}if(state.roomData?.phase!=='guess'){toast('Şu anda tahmin gönderilemez.');return}const guessId='g'+Date.now(),byName=state.local?(state.roomData?.players?.[mySide()]?.name||mySide()):mySide();try{await roomWrite({pendingGuess:{id:guessId,guess,byName:byName||'Oyuncu',createdAt:Date.now()},phase:'checking'});$('guess-feedback').textContent='Cevap kontrol ediliyor…'}catch(e){toast('Tahmin gönderilemedi: '+e.message)}};
+$('next-turn').onclick=async()=>{const d=state.roomData;if(!d||d.phase!=='result')return;const next=d.currentSpeaker==='A'?'B':'A';localStorage.removeItem('nxReverseXI:'+state.room+':'+uid());state.secretAnswer='';await roomWrite({currentSpeaker:next,turn:(d.turn||1)+1,phase:'speak',reverseOriginal:null,reverseImitation:null,lastResult:null,pendingGuess:null,answerBy:null,imitationBy:null})};
+if($('create-room'))$('create-room').onclick=()=>createRoom();if($('join-room'))$('join-room').onclick=()=>joinRoom($('room-code').value);$('room-code')?.addEventListener('keydown',e=>{if(e.key==='Enter')joinRoom($('room-code').value)});$('copy-link').onclick=async()=>{const url=location.origin+location.pathname+'?room='+state.room;try{await navigator.clipboard.writeText(url);toast('Davet bağlantısı kopyalandı.')}catch{toast('Oda kodu: '+state.room)}};
+document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{state.mode=b.dataset.mode;document.querySelectorAll('[data-mode]').forEach(x=>x.classList.toggle('active',x===b));if($('duel-start'))$('duel-start').hidden=state.mode!=='duel';if($('solo-start'))$('solo-start').hidden=state.mode!=='solo'});
+$('party-friends')?.addEventListener('click',()=>{if(window.NEON_ARCADE_UI?.choose)window.NEON_ARCADE_UI.choose('reverse','friends');else toast('Sosyal bağlantı yükleniyor, birazdan tekrar dene.')});
+function startLocal(){
+ const nameA=($('local-a')?.value||'').trim().slice(0,24)||'Oyuncu A',nameB=($('local-b')?.value||'').trim().slice(0,24)||'Oyuncu B';
+ state.local=true;state.room='LOCAL';state.secretAnswer='';state.passAck=0;
+ state.localRoom={game_type:'reverse-xi',status:'playing',players:{A:{uid:'local',name:nameA},B:{uid:'local',name:nameB}},currentSpeaker:'A',turn:1,phase:'speak',guesses:{}};
+ $('intro').hidden=true;$('game').hidden=false;document.body.classList.add('rx-local');
+ $('room-label').textContent='TEK TELEFON';
+ const roomLabelPrefix=$('room-label').previousSibling;if(roomLabelPrefix&&roomLabelPrefix.nodeType===3)roomLabelPrefix.textContent='MOD ';
+ renderRoom(JSON.parse(JSON.stringify(state.localRoom)));
+}
+// Before the imitator takes over, the phone changes hands: hide every panel until they confirm.
+const baseUpdateStage=updateStage;
+updateStage=function(){
+ baseUpdateStage();
+ const d=state.roomData;if(!d)return;
+ // The base renderer computes a step title per phase but never writes it; show it with player names.
+ if(d.players?.B){
+  const sp=d.currentSpeaker||'A',im=sp==='A'?'B':'A',nm=k=>d.players?.[k]?.name||k,ph=d.phase||'speak';
+  const copy={speak:[nm(sp)+' futbolcuyu söylüyor','İsmi normal şekilde söyle ve doğru anlaşıldığını onayla.'],imitate:[nm(im)+' ters sesi taklit ediyor','Ters sesi dinle ve duyduğun gibi kaydet.'],guess:[nm(im)+' tahmin ediyor','Kendi kaydının tersini dinleyip futbolcuyu bul.'],checking:['Cevap kontrol ediliyor','Tahmin doğrulanıyor.'],result:['Tur tamamlandı','Sıradaki tur için devam et.']}[ph];
+  if(copy){$('step-title').textContent=copy[0];$('step-desc').textContent=copy[1]}
+ }
+ if(!state.local)return;
+ $('room-label').textContent='TEK TELEFON';
+ if(d.phase==='result')$('next-turn').hidden=false;
+ const gate=$('pass-panel');if(!gate)return;
+ const speaker=d.currentSpeaker||'A',imitator=speaker==='A'?'B':'A';
+ const needsPass=d.phase==='imitate'&&state.passAck!==d.turn;
+ gate.hidden=!needsPass;
+ if(needsPass){
+  ['speaker-panel','listen-panel','guess-panel','result-panel','waiting-panel'].forEach(id=>$(id).hidden=true);
+  const name=d.players?.[imitator]?.name||imitator;
+  $('pass-title').textContent='Telefonu '+name+' oyuncusuna ver';
+  $('step-title').textContent='Sıra '+name+' oyuncusunda';$('step-desc').textContent='Futbolcu seçildi. Telefonu ver; ters sesi '+name+' dinleyecek.';
+ }
+};
+$('pass-ready')?.addEventListener('click',()=>{state.passAck=state.roomData?.turn||0;updateStage()});
+$('local-start')?.addEventListener('click',startLocal);
+$('local-open')?.addEventListener('click',()=>{$('local-sheet').hidden=false;$('local-open').classList.add('active');$('local-a')?.focus()});
 $('start-solo').onclick=()=>toast('Solo AI modu sonraki geliştirme adımında etkinleştirilecek. Multiplayer çekirdeği hazırlandı.');
 window.addEventListener('beforeunload',()=>state.stream?.getTracks().forEach(t=>t.stop()));
 await ensureAuth().catch(e=>toast('Kimlik bağlantısı kurulamadı: '+e.message));
