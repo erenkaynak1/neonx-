@@ -25,7 +25,7 @@ for(const g of games){
   assert(fs.existsSync(path.join(root,'side-games',g.href)),'Broken game link: '+g.href);
   assert.deepEqual(webpSize(path.join(root,'assets/ui',g.art)),[704,396],'Thumbnail must be 704x396: '+g.art);
 }
-for(const asset of ['bg-city.webp','hero-draft.webp','logo-neon-xi.webp'])assert(fs.existsSync(path.join(root,'assets/ui',asset)),'Missing interface asset: '+asset);
+for(const asset of ['bg-city.webp','hero-draft.webp','logo-neon-xi.svg'])assert(fs.existsSync(path.join(root,'assets/ui',asset)),'Missing interface asset: '+asset);
 assert(fs.existsSync(path.join(root,'side-games/how-to-play.html')),'Help page missing');
 
 // Compatibility hooks other modules and the lab scripts rely on.

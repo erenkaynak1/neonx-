@@ -11,7 +11,7 @@ html.nx-home-v2 #bootScreen:not(:has(#bootHome.active)):not(:has(#bootTournament
 @keyframes nxv-rise{from{opacity:0;transform:translateY(10px)}}
 
 /* Brand: the real logo instead of the legacy wordmark text */
-html.nx-home-v2 #bootScreen .bootBrand{height:44px;margin:0 0 var(--nxu-6)!important;background:url("../assets/ui/logo-neon-xi.webp") center/auto 32px no-repeat;text-align:left}
+html.nx-home-v2 #bootScreen .bootBrand{height:44px;margin:0 0 var(--nxu-6)!important;background:url("../assets/ui/logo-neon-xi.svg") center/auto 32px no-repeat;text-align:left}
 html.nx-home-v2 #bootScreen .bootBrand>*{position:absolute!important;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 
 /* ---------- Type ---------- */

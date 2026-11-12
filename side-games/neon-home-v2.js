@@ -107,7 +107,7 @@ input,select{border-radius:8px!important}`;
             <button type="button" class="nxh-icon-btn" data-action="settings" aria-label="Ayarlar">${icon("settings")}</button>
           </div>
         </header>
-        <div class="nxh-brand"><img src="${ASSETS}logo-neon-xi.webp" width="640" height="141" alt="NEON XI" decoding="async" fetchpriority="high"><span aria-hidden="true">FUTBOL YÖNETİMİ</span></div>
+        <div class="nxh-brand"><img src="${ASSETS}logo-neon-xi.svg" width="640" height="141" alt="NEON XI" decoding="async" fetchpriority="high"><span aria-hidden="true">FUTBOL YÖNETİMİ</span></div>
         <div class="nxh-main">
           <button type="button" class="nxh-party" data-action="lobby" hidden><span class="nxh-party-faces" aria-hidden="true"></span><span class="nxh-party-copy"><b>AKTİF PARTİ</b><span></span></span>${icon("chevron")}</button>
           <section class="nxh-hero" aria-labelledby="nxh-draft-title">
