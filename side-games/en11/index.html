@@ -460,9 +460,15 @@
       }
       renderMenu();
     }
+    // Each visit starts on a random parameter that has enough verified data; the player can still change it.
+    function pickRandomMetric(){
+      const ready=METRICS.filter(metricReady);if(!ready.length)return;
+      const m=ready[Math.floor(Math.random()*ready.length)];
+      S.metric=m.id;S.direction=m.default;
+    }
     function init(){
       app.innerHTML=shell()+hero('Veri kaynağı hazırlanıyor…')+'<section class=\"panel\"><div class=\"status\">Oyuncu ve mevki bilgisi yükleniyor.</div></section>';
-      fetch('./data/meta.json',{cache:'force-cache'}).then(function(r){if(!r.ok)throw new Error('meta');return r.json()}).then(function(meta){if(!meta||!meta.metric_coverage||!meta.player_count)throw new Error('invalid meta');S.poolMeta=meta;S.screen='menu';render()}).catch(function(){S.error='Oyuncu veri bilgisi yüklenemedi. Sayfayı yeniden açıp tekrar dene.';S.screen='menu';render()});
+      fetch('./data/meta.json',{cache:'force-cache'}).then(function(r){if(!r.ok)throw new Error('meta');return r.json()}).then(function(meta){if(!meta||!meta.metric_coverage||!meta.player_count)throw new Error('invalid meta');S.poolMeta=meta;pickRandomMetric();S.screen='menu';render()}).catch(function(){S.error='Oyuncu veri bilgisi yüklenemedi. Sayfayı yeniden açıp tekrar dene.';S.screen='menu';render()});
     }
     window.addEventListener('beforeunload',cleanup);
     init();
