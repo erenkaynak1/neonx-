@@ -26,7 +26,7 @@ assert.ok(index.includes("replace(/\\r\\n?/g,'\\n')"));
 assert.ok(!core.includes('key==="crossing"?80'));
 // Verify live stat integration, using the actual engine stat function.
 const source=core.match(/function stat\(member,key,fallback=65\) \{([\s\S]*?)\n  \}/)[0];
-const context={baseStat:()=>80,chemistryModifier:()=>1,tactic:()=>high,game:{minute:0},window:{NEON_TACTICAL_LOAD:{condition,multiplier}}};
+const context={baseStat:()=>80,chemistryModifier:()=>1,v7PositionFit:()=>1,tactic:()=>high,game:{minute:0},window:{NEON_TACTICAL_LOAD:{condition,multiplier}}};
 vm.createContext(context);vm.runInContext(source+';this.read=stat;',context);
 const member={team:'A',footballer:{pos:'CM'}};const fresh=context.read(member,'pace');context.game.minute=90;
 assert.ok(context.read(member,'pace')<fresh);assert.equal(context.read({team:'A',footballer:{pos:'GK'}},'pace'),80);

@@ -1959,7 +1959,7 @@ function chemLinks(team,slotId){
 }
 function chemMap(team){const out={};for(const s of formation(team).slots){if(!state.teams[team].slots[s.id])continue;out[s.id]=Math.min(10,chemLinks(team,s.id).reduce((sum,x)=>sum+x.total,0))}return out}
 function teamChem(team){const m=chemMap(team),v=Object.values(m);return v.length?v.reduce((a,b)=>a+b,0)/v.length:0}
-function boostFromChem(c){return Math.max(0,Math.min(25,c/10*25))}
+function boostFromChem(c){return Math.max(0,Math.min(8,c/10*8))}
 function boostedValue(v,c){return Math.round(v*(1+boostFromChem(c)/100))}
 function statEntries(p){if(p.pos==="GK"){const d=details(p);return Object.entries(d)}return Object.entries(mainObj(p))}
 function placementForPlayer(id){for(const team of ["A","B"]){for(const [slotId,pid] of Object.entries(state.teams[team].slots)){if(pid===id)return{team,slotId}}}return null}
@@ -7197,8 +7197,14 @@ render();
     values?.set(cacheKey,value);
     return value;
   }
+  function v7PositionFit(member) {
+    if(!member?.footballer||member.footballer.pos==="GK")return 1;
+    const system=window.KADRO_POSITION_SYSTEM,position=member.position||member.slot?.displayPos||member.slot?.pos;
+    if(!system?.positionFitMultiplier||!position||!member.footballer.positionProfile)return 1;
+    try{const value=Number(system.positionFitMultiplier(member.footballer,position));return Number.isFinite(value)?clamp(value,.78,1):1;}catch(error){return 1;}
+  }
   function stat(member,key,fallback=65) {
-    const base = baseStat(member,key,fallback) * chemistryModifier(member.team,member);
+    const base = baseStat(member,key,fallback) * chemistryModifier(member.team,member) * v7PositionFit(member);
     const load = window.NEON_TACTICAL_LOAD;
     if(!load || member.footballer.pos === "GK") return base;
     const condition = load.condition(tactic(member.team), baseStat(member,"pressingDiscipline",65), game.minute);
@@ -7211,12 +7217,13 @@ render();
     members.forEach(member => keys.forEach(key => vals.push(stat(member,key))));
     return vals.reduce((a,b)=>a+b,0)/Math.max(1,vals.length);
   }
+  const CHEM_MAX_BOOST=.08; // v7: chemistry polishes a squad, it must not outweigh ability or tactics.
   function chemistryFor(team,member) {
     try { return member.slot ? (chemMap(team)[member.slot.id] || 0) : 0; } catch (error) { return 0; }
   }
   function chemistryModifier(team,member) {
     const c = chemistryFor(team,member);
-    return 1 + Math.min(.25, Math.max(0,c/10*.25));
+    return 1 + Math.min(CHEM_MAX_BOOST, Math.max(0,c/10*CHEM_MAX_BOOST));
   }
 
   function initializeStats() {
@@ -7310,11 +7317,11 @@ render();
     if(slotPos!==primary){
       if(["LB","RB"].includes(slotPos)&&["LB","RB"].includes(primary))familiarity=.97;
       else if(slotPos==="AM"&&primary==="CM")familiarity=.94;
-      else familiarity=.90;
+      else familiarity=.84;
     }
     return clamp(natural*familiarity,35,99);
   }
-  function roleExecution(member) { return clamp(.78+roleSuitability(member)*.0032,.90,1.11); }
+  function roleExecution(member) { return clamp(.60+roleSuitability(member)*.0053,.82,1.10); }
   function roleTendency(member,key) { return Number(roleModel(member)?.tendencies?.[key])||0; }
   function teamStructure(team) {
     const members=activeSquad(team).filter(member=>member.footballer.pos!=="GK");
@@ -7348,6 +7355,26 @@ render();
     // The score must not grant hidden ability bonuses or silently change the coach's plan.
     return 0;
   }
+
+  const V7_PLAN_PROFILES={
+    press:{positions:["ST","LW","RW","AM","CM","DM"],weights:{pressingDiscipline:.30,pace:.25,stamina:.25,teamwork:.20}},
+    lowBlock:{positions:["CB","LB","RB","DM","CM"],weights:{positioning:.35,defending:.30,teamwork:.20,strength:.15}},
+    fast:{positions:["LW","RW","ST","AM","LB","RB"],weights:{pace:.45,dribbling:.30,decisionMaking:.25}},
+    secure:{positions:["CB","DM","CM","AM"],weights:{shortPassing:.35,composure:.30,decisionMaking:.20,vision:.15}},
+    wing:{positions:["LW","RW","LB","RB"],weights:{pace:.30,crossing:.35,dribbling:.35}},
+    center:{positions:["DM","CM","AM","ST"],weights:{shortPassing:.35,vision:.35,dribbling:.30}},
+    cross:{positions:["LW","RW","LB","RB","ST"],weights:{crossing:.55,heading:.45}},
+    through:{positions:["CM","AM","ST","LW","RW"],weights:{vision:.40,shortPassing:.30,composure:.30}},
+    shoot:{positions:["ST","LW","RW","AM","CM"],weights:{longShots:.40,shotPower:.30,finishing:.30}}
+  };
+  // 75 = neutral (factor 1). Suitable squads amplify the plan, unsuitable squads lose it and can be hurt by it.
+  function v7PlanFit(team,plan) {
+    const profile=V7_PLAN_PROFILES[plan];
+    if(!profile)return 75;
+    return v3UnitScore(team,profile.positions,profile.weights);
+  }
+  function v7PlanFactor(team,plan) { return clamp(1+(v7PlanFit(team,plan)-75)/14,-.4,1.8); }
+  function v7PlanEdge(team,plan,size=3) { return (v7PlanFactor(team,plan)-1)*size; }
   function v5TacticRoleAdjustment(team,side,phase,route="",action="") {
     const cfg=v3Config(team),s=teamStructure(team);
     let value=clamp((s.roleFit-70)*.18,-4,4.8);
@@ -7360,8 +7387,13 @@ render();
       if(action==="shot")value+=(s.finisher-1.0)*1.20;
       if(action==="cross")value+=(s.width-2.0)*.80+(s.aerial-.8)*1.10;
       if(action==="workBall")value+=(s.creator-2.2)*1.05+(s.runner-2.0)*.45;
-      if(cfg.transitionPlan==="Hızlı Hücum")value+=route==="transition"?4.5:phase===1?-.8:0;
-      if(cfg.transitionPlan==="Topu Güvenceye Al")value+=route==="transition"?-2.4:phase<=2?2.2:0;
+      if(cfg.transitionPlan==="Hızlı Hücum")value+=route==="transition"?4.5*v7PlanFactor(team,"fast"):phase===1?-.8:0;
+      if(cfg.transitionPlan==="Topu Güvenceye Al")value+=route==="transition"?-2.4:phase<=2?2.2*v7PlanFactor(team,"secure"):0;
+      if(cfg.attackDirection==="Kanatları Kullan"&&route==="wing")value+=v7PlanEdge(team,"wing");
+      if(cfg.attackDirection==="Merkezden Oyna"&&route==="center")value+=v7PlanEdge(team,"center");
+      if(cfg.finalAction==="Ortaları Artır"&&action==="cross")value+=v7PlanEdge(team,"cross");
+      if(cfg.finalAction==="Ceza Sahasına Pasla Gir"&&action==="workBall")value+=v7PlanEdge(team,"through");
+      if(cfg.finalAction==="Kaleyi Görünce Vur"&&action==="shot")value+=v7PlanEdge(team,"shoot");
     }else{
       if(phase===1)value+=(s.press-1.5)*1.25;
       if(phase===2)value+=(s.press-1.5)*.65+(s.cover-2.3)*.70;
@@ -7371,15 +7403,17 @@ render();
       if(cfg.pressingPlan==="Önde Baskı"){
         const discipline=average(team,["pressingDiscipline","teamwork"],m=>m.footballer.pos!=="GK");
         const condition=window.NEON_TACTICAL_LOAD?.condition(cfg,discipline,game.minute) ?? 100;
-        value+=phase===1?5.0*condition/100:phase>=4?-2.5:1.0;
+        const pressFactor=v7PlanFactor(team,"press");
+        value+=phase===1?5.0*condition/100*pressFactor:phase>=4?-2.5:1.0*pressFactor;
         if(route==="transition"){
           const recovery=v3UnitScore(team,["CB","LB","RB"],{pace:.65,positioning:.35});
           value-=clamp((80-discipline)/10,0,3)+clamp((76-recovery)*.12,0,4);
         }
       }
-      if(cfg.pressingPlan==="Alçak Blok")value+=phase===1?-4.0:phase>=4?4.0:1.5;
+      if(cfg.pressingPlan==="Alçak Blok"){const blockFactor=v7PlanFactor(team,"lowBlock");value+=phase===1?-4.0:phase>=4?4.0*blockFactor:1.5*blockFactor;}
       if(cfg.transitionPlan==="Hızlı Hücum")value-=Math.max(0,s.risk-s.restDefense)*.85;
     }
+    value+=(s.tacticalFit-94)*.25; // v7: role/tactic mismatch shown in analysis is a real cost.
     const missing=Math.max(0,10-s.outfieldCount);
     value-=missing*(side==="attack"?3.8:4.6);
     value+=v5GameStateAdjustment(team,side,phase);
@@ -7406,11 +7440,12 @@ render();
   function v5TransitionChance(team,losingTeam=other(team),phase=3) {
     const cfg=v3Config(team),opponent=v3Config(losingTeam),s=teamStructure(team),d=teamStructure(losingTeam);
     const regain=phase===1?.55:phase===2?.36:.23;
-    const intent=cfg.transitionPlan==="Hızlı Hücum"?1.25:cfg.transitionPlan==="Topu Güvenceye Al"?.55:1;
+    const intent=cfg.transitionPlan==="Hızlı Hücum"?1+.25*clamp(v7PlanFactor(team,"fast"),0,1.8):cfg.transitionPlan==="Topu Güvenceye Al"?.55:1;
+    const pressRegain=cfg.pressingPlan==="Önde Baskı"&&phase<=2?.07*v7PlanFactor(team,"press"):0;
     const exposure=(opponent.general==="Hücum Ağırlıklı"?.07:opponent.general==="Savunma Ağırlıklı"?-.04:0)
       +(opponent.pressingPlan==="Önde Baskı"?.05:opponent.pressingPlan==="Alçak Blok"?-.035:0)
       +clamp((d.risk-d.restDefense)*.012,-.06,.08);
-    return clamp((regain+exposure+(s.outlet+s.runner-3.2)*.012)*intent,.06,.78);
+    return clamp((regain+exposure+pressRegain+(s.outlet+s.runner-3.2)*.012)*intent,.06,.78);
   }
   function v6RecoverPossession(losingTeam,winningTeam,phase=3) {
     const transition=rng()<v5TransitionChance(winningTeam,losingTeam,phase);
@@ -7421,7 +7456,7 @@ render();
   function v6Control(team) {
     const cfg=v3Config(team),s=teamStructure(team);
     const ability=average(team,["shortPassing","decisionMaking","teamwork"],m=>m.footballer.pos!=="GK");
-    return ability+(cfg.transitionPlan==="Topu Güvenceye Al"?3:cfg.transitionPlan==="Hızlı Hücum"?-2:0)
+    return ability+(cfg.transitionPlan==="Topu Güvenceye Al"?3*v7PlanFactor(team,"secure"):cfg.transitionPlan==="Hızlı Hücum"?-2:0)
       +(cfg.pressingPlan==="Önde Baskı"?1:cfg.pressingPlan==="Alçak Blok"?-2:0)
       +clamp((s.creator+s.buildup-4)*.5,-3,3)-Math.max(0,10-s.outfieldCount)*4;
   }
@@ -16519,6 +16554,7 @@ window.KADRO_HARD_MATCH_SYNC = {
 
   function tacticCounter(attacking, defending) {
     const reasons = [];
+    const favours = [];
     let attacker = 0;
     let defender = 0;
     const routeCounter = {
@@ -16534,20 +16570,23 @@ window.KADRO_HARD_MATCH_SYNC = {
       if (defending.defenseDirection === routeCounter[attacking.attackDirection]) {
         defender += 1.25;
         reasons.push(`${defending.defenseDirection}, ${attacking.attackDirection} planına doğrudan cevap veriyor.`);
+        favours.push("defender");
       } else {
         attacker += .45;
         reasons.push(`${attacking.attackDirection}, rakibin savunma yönü tarafından doğrudan karşılanmıyor.`);
+        favours.push("attacker");
       }
     }
     if (actionCounter[attacking.finalAction]) {
       if (defending.defenseTactic === actionCounter[attacking.finalAction]) {
         defender += 1.1;
         reasons.push(`${defending.defenseTactic}, ${attacking.finalAction} tercihini sınırlayabilir.`);
+        favours.push("defender");
       } else {
         attacker += .35;
       }
     }
-    return { attacker, defender, reasons };
+    return { attacker, defender, reasons, favours };
   }
 
   function assessment() {
@@ -16560,8 +16599,15 @@ window.KADRO_HARD_MATCH_SYNC = {
       ...aAttack.reasons.map(text => `${teamName("A")}: ${text}`),
       ...bAttack.reasons.map(text => `${teamName("B")}: ${text}`)
     ];
+    // Credit each reason to the side it favours (a counter by the defender is the defender's edge).
+    const items = [
+      ...aAttack.reasons.map((text,i) => ({ team:aAttack.favours[i] === "defender" ? "B" : "A", text })),
+      ...bAttack.reasons.map((text,i) => ({ team:bAttack.favours[i] === "defender" ? "A" : "B", text }))
+    ];
     if (Math.abs(scoreA-scoreB) < .45) {
       return {
+        winner:"",
+        items,
         title:"Taktik eşleşme dengeli",
         reason:reasons[0] || "İki takımın genel tercihleri birbirine belirgin bir doğrudan üstünlük kurmuyor."
       };
@@ -16569,24 +16615,74 @@ window.KADRO_HARD_MATCH_SYNC = {
     const winner = scoreA > scoreB ? "A" : "B";
     const ownReasons = winner === "A" ? [...aAttack.reasons,...bAttack.reasons] : [...bAttack.reasons,...aAttack.reasons];
     return {
+      winner,
+      items,
       title:`Tahmini taktiksel üstünlük: ${teamName(winner)}`,
       reason:ownReasons[0] || `${teamName(winner)}, rakibin seçimlerine karşı daha uyumlu bir taktik eşleşmeye sahip.`
     };
   }
 
-  function tacticRows(team) {
-    const tactic = normalize(team);
-    return [
-      ["Genel plan",tactic.general],
-      ["Hücum yönü",tactic.attackDirection],
-      ["Son aksiyon",tactic.finalAction],
-      ["Geçiş",tactic.transitionPlan],
-      ["Blok ve pres",tactic.pressingPlan],
-      ["Savunma yönü",tactic.defenseDirection],
-      ["Savunma taktiği",tactic.defenseTactic]
-    ].map(([label,value],index) =>
-      `<div class="nx-tactic-row" style="--delay:${(1.15+index*.17).toFixed(2)}s"><span>${label}</span><b>${value}</b></div>`
+  const escHtml = value => String(value ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+  const TACTIC_FIELDS = [
+    ["general","Genel plan","Dengeli"],
+    ["attackDirection","Hücum yönü","Dengeli"],
+    ["finalAction","Son aksiyon","Dengeli"],
+    ["transitionPlan","Geçiş","Dengeli Geçiş"],
+    ["pressingPlan","Blok ve pres","Orta Blok"],
+    ["defenseDirection","Savunma yönü","Dengeli"],
+    ["defenseTactic","Savunma taktiği","Dengeli Savunma"]
+  ];
+  const ROUTE_COUNTER = { "Kanatları Kullan":"Kanatları Kapat", "Merkezden Oyna":"Merkezi Kapat" };
+  const ACTION_COUNTER = {
+    "Kaleyi Görünce Vur":"Şut Savunması",
+    "Ortaları Artır":"Yan Top Savunması",
+    "Ceza Sahasına Pasla Gir":"Pas Kanallarını Kapat"
+  };
+
+  // Marks which cells take part in a direct counter, using the same pairs as tacticCounter().
+  function counterMarks(own, rival) {
+    const marks = {};
+    const route = ROUTE_COUNTER[own.attackDirection];
+    if (route && rival.defenseDirection === route) marks.attackDirection = "blocked";
+    const action = ACTION_COUNTER[own.finalAction];
+    if (action && rival.defenseTactic === action) marks.finalAction = "blocked";
+    const routeAgainst = ROUTE_COUNTER[rival.attackDirection];
+    if (routeAgainst && own.defenseDirection === routeAgainst) marks.defenseDirection = "counter";
+    const actionAgainst = ACTION_COUNTER[rival.finalAction];
+    if (actionAgainst && own.defenseTactic === actionAgainst) marks.defenseTactic = "counter";
+    return marks;
+  }
+
+  function tacticCell(team, field, fallback, tactic, marks) {
+    const value = tactic[field] || fallback;
+    const mark = marks[field];
+    const classes = ["nx-cmp-val", `side-${team.toLowerCase()}`];
+    if (value !== fallback) classes.push("is-custom");
+    if (mark) classes.push(`is-${mark}`);
+    const tag = mark === "blocked" ? "karşılandı" : mark === "counter" ? "karşılık" : "";
+    return `<b class="${classes.join(" ")}"><span class="nx-cmp-text">${escHtml(value)}</span>${tag ? `<em>${tag}</em>` : ""}</b>`;
+  }
+
+  function tacticCompare() {
+    const a = normalize("A"), b = normalize("B");
+    const marksA = counterMarks(a,b), marksB = counterMarks(b,a);
+    const rows = TACTIC_FIELDS.map(([field,label,fallback],index) =>
+      `<div class="nx-cmp-row" data-field="${field}" style="--delay:${(1.15+index*.12).toFixed(2)}s">${tacticCell("A",field,fallback,a,marksA)}<span class="nx-cmp-label">${label}</span>${tacticCell("B",field,fallback,b,marksB)}</div>`
     ).join("");
+    const side = team => `<div class="nx-cmp-team side-${team.toLowerCase()}"><i class="nx-ready-dot" data-ready-dot="${team}"></i><strong>${escHtml(teamName(team))}</strong><span class="nx-ready-text" data-ready-text="${team}">HAZIR DEĞİL</span></div>`;
+    return `<section class="nx-pm-compare" aria-label="Genel taktik seçimleri karşılaştırması">
+      <div class="nx-cmp-head">${side("A")}<div class="nx-cmp-title">Genel taktik seçimleri</div>${side("B")}</div>
+      <div class="nx-cmp-rows">${rows}</div>
+      <div class="nx-cmp-legend"><span><i class="lg-custom"></i>Özel seçim</span><span><i class="lg-counter"></i>Rakibin hücumunu karşılıyor</span><span><i class="lg-blocked"></i>Rakip savunma karşılıyor</span></div>
+    </section>`;
+  }
+
+  function advantageCard(edge) {
+    const items = (edge.items || []).slice(0,4).map(item =>
+      `<li class="side-${item.team.toLowerCase()}"><b>${escHtml(teamName(item.team))}</b>${escHtml(item.text)}</li>`
+    ).join("");
+    const tone = edge.winner ? `edge-${edge.winner.toLowerCase()}` : "edge-even";
+    return `<div class="nx-advantage ${tone}"><span>TAHMİNİ EŞLEŞME</span><strong>${escHtml(edge.title)}</strong>${items ? `<ul class="nx-adv-list">${items}</ul>` : `<p>${escHtml(edge.reason)}</p>`}</div>`;
   }
 
   function balancePosition(left,right) {
@@ -16603,11 +16699,16 @@ window.KADRO_HARD_MATCH_SYNC = {
     const finalPosition = `${balancePosition(a.final,b.final).toFixed(2)}%`;
     const winner = a.final >= b.final ? "A" : "B";
     const finalEdge = Math.abs(a.final-b.final);
+    const verdict = finalEdge < .05 ? "Güç dengede" : `${escHtml(teamName(winner))} önde · +${finalEdge.toFixed(1)}`;
+    const side = (team,value) => {
+      const delta = value.final-value.base;
+      return `<div class="nx-balance-side"><strong>${escHtml(teamName(team))}</strong><div class="nx-power-numbers" title="Saf güç → kimyalı güç"><b>${value.base.toFixed(1)}</b><i aria-hidden="true">→</i><em>${value.final.toFixed(1)}</em></div><span class="nx-chem-chip">Kimya ${value.chemistry.toFixed(1)}/10 · ${delta >= 0 ? "+" : "−"}${Math.abs(delta).toFixed(1)} güç</span></div>`;
+    };
     return `<section class="nx-power-balance impact-${winner.toLowerCase()}" id="nxPowerBalance" style="--balance-base:${basePosition};--balance-final:${finalPosition}">
       <div class="nx-balance-phase"><span>GÜÇ SENKRONİZASYONU</span><b data-balance-phase>İki taraf yükleniyor</b></div>
       <div class="nx-balance-head">
-        <div class="nx-balance-side"><strong>${teamName("A")}</strong><span>Saf güç → kimyalı güç</span><div class="nx-power-numbers"><b>${a.base.toFixed(1)}</b><em>${a.final.toFixed(1)}</em></div></div>
-        <div class="nx-balance-side"><strong>${teamName("B")}</strong><span>Saf güç → kimyalı güç</span><div class="nx-power-numbers"><b>${b.base.toFixed(1)}</b><em>${b.final.toFixed(1)}</em></div></div>
+        ${side("A",a)}
+        ${side("B",b)}
       </div>
       <div class="nx-balance-track" role="img" aria-label="${teamName("A")} ve ${teamName("B")} güç dengesi">
         <i class="nx-balance-fill-a"></i><i class="nx-balance-fill-b"></i>
@@ -16615,21 +16716,8 @@ window.KADRO_HARD_MATCH_SYNC = {
       </div>
       <div class="nx-balance-axis"><span>${teamName("A")} üstün</span><span>eşit güç</span><span>${teamName("B")} üstün</span></div>
       <div class="nx-balance-values">
-        <span>Kimya ${a.chemistry.toFixed(1)}/10</span>
-        <strong>${teamName(winner)} · +${finalEdge.toFixed(1)} nihai üstünlük</strong>
-        <span>Kimya ${b.chemistry.toFixed(1)}/10</span>
+        <strong class="nx-verdict side-${winner.toLowerCase()}">${verdict}</strong>
       </div>
-    </section>`;
-  }
-
-  function teamCard(team) {
-    return `<section class="nx-pm-team team-${team.toLowerCase()}" data-pm-team="${team}">
-      <div class="nx-pm-namebar">
-        <div class="nx-pm-name"><i class="nx-ready-dot" data-ready-dot="${team}"></i><strong>${teamName(team)}</strong></div>
-        <span class="nx-ready-text" data-ready-text="${team}">HAZIR DEĞİL</span>
-      </div>
-      <div class="nx-tactic-title">Genel taktik seçimleri</div>
-      <div class="nx-tactic-list">${tacticRows(team)}</div>
     </section>`;
   }
 
@@ -16738,11 +16826,11 @@ window.KADRO_HARD_MATCH_SYNC = {
     complete.classList.add("nx-prematch");
     box.innerHTML = `<div class="nx-pm-head"><span class="nx-pm-kicker">NEON XI · MAÇ ÖNCESİ ANALİZ</span><h2>Güç ve Taktik Karşılaştırması</h2><p>Orta çizgi eşitliği gösterir; denge önce saf güçte kurulur, ardından kimya etkisiyle hareket eder.</p></div>
       ${powerBalance()}
-      <div class="nx-pm-teams">${teamCard("A")}${teamCard("B")}</div>
-      <div class="nx-advantage"><span>TAHMİNİ EŞLEŞME</span><strong>${edge.title}</strong><p>${edge.reason}</p></div>
+      ${tacticCompare()}
+      ${advantageCard(edge)}
       <div class="nx-ready-zone"><div class="nx-ready-actions">
-        <button class="btn" type="button" data-prematch-ready="A">${teamName("A")} · Hazırım</button>
-        <button class="btn" type="button" data-prematch-ready="B">${teamName("B")} · Hazırım</button>
+        <button class="btn side-a" type="button" data-prematch-ready="A">${escHtml(teamName("A"))} · Hazırım</button>
+        <button class="btn side-b" type="button" data-prematch-ready="B">${escHtml(teamName("B"))} · Hazırım</button>
       </div><div class="nx-ready-status" id="nxPrematchStatus"></div>
       <button class="btn primary nx-main-start" id="nxPrematchStart" type="button" disabled>İKİ TARAFIN HAZIR OLMASI BEKLENİYOR</button></div>`;
     complete.classList.remove("hidden");
