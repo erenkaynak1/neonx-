@@ -1,17 +1,17 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-11-12T14:36:59.200Z",
+  "generated_at": "2026-11-12T14:46:04.075Z",
   "provider": "dcaribou/transfermarkt-datasets",
   "provider_revision": "e44f186d6f06dd8452aaf54c7921ba66c961f637",
-  "source_snapshot_at": "2026-11-09T13:05:46.793751+00:00",
+  "source_snapshot_at": "2026-11-12T14:38:36.314603+00:00",
   "source_cutoff": "2026-06-28",
   "latest_season": 2025,
-  "player_count": 64645,
+  "player_count": 64646,
   "position_counts": {
     "Goalkeeper": 7349,
     "Defender": 20468,
     "Midfield": 18989,
-    "Attack": 17839
+    "Attack": 17840
   },
   "metric_coverage": {
     "Goalkeeper": {
@@ -48,14 +48,14 @@
       "peakValue": 12015
     },
     "Attack": {
-      "internationalGoals": 8339,
-      "internationalCaps": 8610,
-      "careerGoals": 9988,
+      "internationalGoals": 8340,
+      "internationalCaps": 8611,
+      "careerGoals": 9989,
       "careerAssists": 8534,
-      "careerAppearances": 10010,
-      "clubCount": 14819,
-      "heightCm": 15514,
-      "age": 17833,
+      "careerAppearances": 10011,
+      "clubCount": 14820,
+      "heightCm": 15515,
+      "age": 17834,
       "peakValue": 11369
     }
   },

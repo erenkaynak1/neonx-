@@ -1,19 +1,19 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-11-09T13:05:46.793751+00:00",
+  "generated_at": "2026-11-12T14:38:36.314603+00:00",
   "provider": "dcaribou/transfermarkt-datasets",
   "provider_revision": "e44f186d6f06dd8452aaf54c7921ba66c961f637",
   "dataset_url": "https://pub-e682421888d945d684bcae8890b0ec20.r2.dev/data/transfermarkt-datasets.duckdb",
   "dataset_last_appearance": "2026-06-28",
   "latest_season": 2025,
-  "player_count": 65231,
+  "player_count": 65232,
   "status_counts": {
     "active": 28367,
-    "legend": 20393,
+    "legend": 20394,
     "unknown": 68,
     "recent": 16403
   },
-  "historical_player_count": 36796,
+  "historical_player_count": 36797,
   "minimum_required": 50000,
   "maximum_runtime_players": null,
   "selection_policy": "The complete upstream player table is retained without a recognition cap.",
@@ -25,12 +25,12 @@
     "trophies"
   ],
   "source_policy": "Transfermarkt (dcaribou/transfermarkt-datasets) for profiles, market values, current club and caps; Wikidata (CC0), joined by Transfermarkt player ID (P2446), for club history, career league totals, and players missing from the dataset (legends).",
-  "wikidata_generated_at": "2026-11-12T14:31:40.409738+00:00",
+  "wikidata_generated_at": "2026-11-12T14:45:57.459040+00:00",
   "wikidata_merge": {
     "matched": 42563,
-    "club_count": 30616,
-    "career_stats": 4977,
+    "club_count": 30617,
+    "career_stats": 4975,
     "filled": 4192,
-    "added": 15082
+    "added": 15083
   }
 }

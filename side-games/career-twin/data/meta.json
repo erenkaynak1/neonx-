@@ -1,10 +1,10 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-11-12T14:37:02.323487+00:00",
+  "generated_at": "2026-11-12T14:46:08.119812+00:00",
   "master_pool": "side-games/data/master/transfermarkt-players.json",
   "provider": "dcaribou/transfermarkt-datasets",
   "provider_revision": "e44f186d6f06dd8452aaf54c7921ba66c961f637",
-  "player_count": 65231,
+  "player_count": 65232,
   "target_eligible_count": 26984,
   "metric_minimum_players": 100,
   "active_metrics": [
@@ -21,15 +21,15 @@
     "trophies"
   ],
   "metric_coverage": {
-    "height_cm": 56379,
+    "height_cm": 56380,
     "weight_kg": 0,
-    "birth_date": 65195,
-    "club_count": 51706,
+    "birth_date": 65196,
+    "club_count": 51707,
     "trophies": 0,
-    "career_goals": 34108,
+    "career_goals": 34109,
     "career_assists": 28487,
     "peak_market_value_eur": 41528,
-    "career_appearances": 34191
+    "career_appearances": 34192
   },
   "career_scope": "career_goals/career_appearances: whole-career league totals from Wikidata (Wikipedia infobox figures) when complete for every senior club spell; otherwise official appearances in dcaribou/transfermarkt-datasets (2012+). See career_stats_source per player.",
   "physical_data_policy": "weight_kg is intentionally null until a separate physical dataset is supplied; no value is estimated.",
