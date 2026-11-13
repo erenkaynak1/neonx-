@@ -38,7 +38,9 @@ async function createRoom(roomCode='',playerName=''){
   const name=String(playerName||'Oyuncu '+Math.floor(100+Math.random()*900)).trim().slice(0,24);
   await set(roomRef(),{createdAt:serverTimestamp(),hostUid:uid(),game_type:'reverse-xi',room_code:code,status:'waiting',players:{A:{uid:uid(),name}},currentSpeaker:'A',turn:1,phase:'speak',guesses:{}});
   openRoom();
-  history.replaceState(null,'',location.pathname+'?room='+code)
+  // Party/matchmaking launches keep their URL: the party broker reads nxParty/nxLaunch/nxCode from it
+  // to tell the other players the room is ready. Rewriting it to ?room= left the second player behind.
+  if(!new URLSearchParams(location.search).has('nxAuto'))history.replaceState(null,'',location.pathname+'?room='+code)
  }catch(e){toast('Oda oluşturulamadı: '+e.message)}
 }
 async function joinRoom(code,playerName=''){
@@ -55,7 +57,9 @@ async function joinRoom(code,playerName=''){
   state.room=code;
   await update(r,{game_type:'reverse-xi',room_code:code,status:'playing',players:{...d.players,B:{uid:uid(),name}}});
   openRoom();
-  history.replaceState(null,'',location.pathname+'?room='+code)
+  // Party/matchmaking launches keep their URL: the party broker reads nxParty/nxLaunch/nxCode from it
+  // to tell the other players the room is ready. Rewriting it to ?room= left the second player behind.
+  if(!new URLSearchParams(location.search).has('nxAuto'))history.replaceState(null,'',location.pathname+'?room='+code)
  }catch(e){toast('Odaya katılınamadı: '+e.message)}
 }
 async function validateIncomingGuess(data){

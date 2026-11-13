@@ -152,7 +152,7 @@ function friendRow(uid,x,online){
   const username=x?.username||'Oyuncu',initial=(username.trim()[0]||'N').toUpperCase(),menu=state.menuUid===uid;
   return `<div class="nx-drawer-friend-row" data-nx-friend-row="${esc(uid)}">
     <div class="nx-drawer-friend-main">
-      <span class="nx-drawer-avatar">${esc(initial)}</span>
+      <span class="nx-drawer-avatar" data-uid="${esc(uid)}">${esc(initial)}</span>
       <span class="nx-drawer-friend-copy"><b>@${esc(username)}</b><span class="nx-drawer-presence ${online?'online':''}"><i class="nx-drawer-dot ${online?'online':''}"></i>${online?'Çevrimiçi':'Çevrimdışı'}</span></span>
       <button class="nx-drawer-more" type="button" data-nx-friend-more="${esc(uid)}" aria-label="Arkadaş işlemleri">•••</button>
     </div>
@@ -199,7 +199,7 @@ function renderLobby(body){
   const options=Object.entries(MODES).map(([key,x])=>`<option value="${key}" ${key===mode?'selected':''}>${esc(x.label)}</option>`).join('');
   const memberRows=members.sort((a,b)=>a[0]===leaderUid?-1:b[0]===leaderUid?1:Number(a[1]?.joinedAt||0)-Number(b[1]?.joinedAt||0)).map(([uid,x])=>{
     const online=uid===state.user?.uid||connections(state.presence[uid])>0,ready=uid===leaderUid||x?.ready===true,name=x?.username||'Oyuncu',confirming=state.kickUid===uid;
-    return `<div class="nx-lobby-member"><span class="nx-drawer-avatar">${esc((name.trim()[0]||'N').toUpperCase())}</span><span class="nx-lobby-member-copy"><b>@${esc(name)}</b><small>${uid===leaderUid?'Lobi lideri':online?'Çevrimiçi':'Bağlantı bekleniyor'}</small></span>${isLeader&&uid!==state.user.uid?(confirming?`<span class="nx-lobby-kick-actions"><button class="nx-lobby-kick" type="button" data-nx-cancel-kick>VAZGEÇ</button><button class="nx-lobby-kick" type="button" data-nx-confirm-kick="${esc(uid)}">ÇIKAR</button></span>`:`<button class="nx-lobby-kick" type="button" data-nx-kick="${esc(uid)}">${ready?'HAZIR':'BEKLİYOR'} · AT</button>`):`<span class="nx-lobby-state ${ready?'ready':''}">${ready?'HAZIR':'BEKLİYOR'}</span>`}</div>`
+    return `<div class="nx-lobby-member"><span class="nx-drawer-avatar" data-uid="${esc(uid)}">${esc((name.trim()[0]||'N').toUpperCase())}</span><span class="nx-lobby-member-copy"><b>@${esc(name)}</b><small>${uid===leaderUid?'Lobi lideri':online?'Çevrimiçi':'Bağlantı bekleniyor'}</small></span>${isLeader&&uid!==state.user.uid?(confirming?`<span class="nx-lobby-kick-actions"><button class="nx-lobby-kick" type="button" data-nx-cancel-kick>VAZGEÇ</button><button class="nx-lobby-kick" type="button" data-nx-confirm-kick="${esc(uid)}">ÇIKAR</button></span>`:`<button class="nx-lobby-kick" type="button" data-nx-kick="${esc(uid)}">${ready?'HAZIR':'BEKLİYOR'} · AT</button>`):`<span class="nx-lobby-state ${ready?'ready':''}">${ready?'HAZIR':'BEKLİYOR'}</span>`}</div>`
   }).join('');
   const slots=Math.min(3,Math.max(0,cfg.maxParty-memberCount)),friends=Object.entries(state.friends||{}).sort((a,b)=>connections(state.presence[b[0]])-connections(state.presence[a[0]]));
   const reason=!validCount?`${cfg.label} için ${cfg.minParty===cfg.maxParty?`tam ${cfg.minParty}`:`${cfg.minParty}-${cfg.maxParty}`} oyuncu gerekli.`:waiting.length?`${waiting.length} oyuncunun hazır olması bekleniyor.`:'Tüm oyuncular hazır.';
