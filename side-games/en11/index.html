@@ -475,14 +475,22 @@
       app.insertAdjacentHTML('beforeend','<section class=\"panel finalPanel\"><h3 class=\"sectionTitle\">MAÇ SONUCU · '+esc(m.label)+'</h3><div class=\"finalScores\"><div class=\"finalTeam team-a\"><small>'+esc(g.teams[0].name)+'</small><b>'+esc(formatTotal(a,g.metric))+'</b></div><div class=\"versus\">VS</div><div class=\"finalTeam team-b\"><small>'+esc(g.teams[1].name)+'</small><b>'+esc(formatTotal(b,g.metric))+'</b></div></div><div class=\"winner\">'+title+'</div><div class=\"note\">'+(g.winner==null?'Aynı sonuç · rövanş zamanı.':'Yedi oyuncunun değerleri sahadaki kadro kutularında görünüyor.')+'</div><button class=\"btn primary\" id=\"rematch\" style=\"width:100%;margin-top:15px\">YENİ MAÇ</button></section>');
       const btn=document.getElementById('rematch');btn.onclick=function(){if(S.mode==='online'&&S.role==='guest'){if(S.conn&&S.conn.open)S.conn.send({type:'rematch'});S.screen='lobby';S.game=null;render();return}if(S.mode==='online'&&S.role==='host'){S.game=null;S.screen='lobby';S.lobby.guestReady=false;sendLobby();render();return}pickRandomMetric();S.game=makeGame([S.name,S.otherName],S.metric,S.direction);S.viewTeam=0;S.lastAdvanceId=null;S.lastAutoTurn=null;S.lastAutoRevealId=null;S.rollId=null;S.rollDoneId=null;render()};
     }
+    // Announce the randomly chosen parameter once per match, before the first pick.
+    function maybeIntro(){
+      const g=S.game;if(!g||g.phase!=='draft'||g.turnIndex!==0||!window.EN11_INTRO)return;
+      const first=g.turns&&g.turns[0]?g.turns[0].team:0,key=[g.metric,g.direction,first].concat(g.teams.map(function(t){return t.name})).join('|');
+      if(S.introKey===key)return;S.introKey=key;const m=metric(g.metric);
+      window.EN11_INTRO.show({label:m.label,detail:m.detail,direction:g.direction,mode:m.mode,firstName:g.teams[first]?g.teams[first].name:'',players:7});
+    }
     function render(){
+      if(S.screen!=='game'||!S.game)S.introKey='';
       if(S.screen==='menu'){overlayRoot.innerHTML='';renderMenu();return}
       if(S.screen==='lobby'){overlayRoot.innerHTML='';renderLobby();return}
       if(S.screen==='game'){
         if(!S.game){renderMenu();return}
         if(S.game.phase==='reveal'){renderGame();renderReveal();return}
         if(S.game.phase==='final'){renderGame();renderFinal();return}
-        overlayRoot.innerHTML='';renderGame();return;
+        overlayRoot.innerHTML='';renderGame();maybeIntro();return;
       }
       renderMenu();
     }
@@ -500,6 +508,7 @@
     init();
   })();
   </script>
+<script src="./en11-intro-v1.js?v=20261113-intro"></script>
 <script type="module" src="../../social/neon-social.js?v=20261113-profile"></script>
 <script type="module" src="../../social/party-ready-notify-v1.js?v=20261113-ready"></script>
 <script src="../neon-arcade-ui-v1.js?v=20261111-home-v2"></script>
