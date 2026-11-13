@@ -196,6 +196,8 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
                 count(*)::BIGINT AS career_appearances,
                 sum(COALESCE(a.goals, 0))::BIGINT AS career_goals,
                 sum(COALESCE(a.assists, 0))::BIGINT AS career_assists,
+                sum(COALESCE(a.yellow_cards, 0))::BIGINT AS career_yellow_cards,
+                sum(COALESCE(a.red_cards, 0))::BIGINT AS career_red_cards,
                 count(DISTINCT a.player_club_id)::INTEGER AS club_count,
                 list(DISTINCT a.player_club_id ORDER BY a.player_club_id) AS club_ids,
                 list(DISTINCT c.name ORDER BY c.name) AS clubs,
@@ -270,6 +272,9 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
             "career_goals": integer(history.get("career_goals")),
             "career_assists": integer(history.get("career_assists")),
             "career_appearances": integer(history.get("career_appearances")),
+            # Cards exist only in the appearance log (2012 onwards); players without one stay null.
+            "career_yellow_cards": integer(history.get("career_yellow_cards")),
+            "career_red_cards": integer(history.get("career_red_cards")),
             "peak_market_value_eur": integer(profile.get("highest_market_value_in_eur")),
             "current_market_value_eur": integer(profile.get("market_value_in_eur")),
             "international_caps": integer(profile.get("international_caps")),

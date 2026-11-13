@@ -175,6 +175,7 @@ def main() -> None:
             "birth_date": wd.get("birth_date"), "height_cm": wd.get("height_cm") if 140 <= (wd.get("height_cm") or 0) <= 220 else None, "weight_kg": None,
             "club_ids": [], "clubs": s["career_clubs"], "leagues": [], "club_count": s["club_count"], "trophies": None,
             "career_goals": s["career_goals"], "career_assists": None, "career_appearances": s["career_appearances"],
+            "career_yellow_cards": None, "career_red_cards": None,
             "peak_market_value_eur": None, "current_market_value_eur": None,
             "international_caps": s["international_caps"], "international_goals": s["international_goals"],
             "last_season": s["last_year"] or None, "first_appearance": None, "last_appearance": None,
