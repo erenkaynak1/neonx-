@@ -21,7 +21,7 @@ function avatarOf(uid){
   if(!state.pending.has(uid))state.pending.set(uid,get(ref(db,`social/profiles/${uid}/avatar`)).then(s=>{const v=String(s.val()||'');state.avatars.set(uid,v);return v}).catch(()=>'').finally(()=>state.pending.delete(uid)));
   return state.pending.get(uid);
 }
-function paint(el,uid,id){const A=window.NEON_AVATARS;if(!A)return;const resolved=A.resolve(id,uid);if(el.dataset.nxAvatar===resolved&&el.querySelector('img.nx-avatar-img'))return;el.dataset.nxAvatar=resolved;el.innerHTML=A.html(resolved);el.classList.add('nx-has-avatar')}
+function paint(el,uid,id){const A=window.NEON_AVATARS;if(!A)return;const resolved=A.resolve(id,uid);if(el.dataset.nxAvatar===resolved&&el.querySelector('img.nx-avatar-img'))return;el.dataset.nxAvatar=resolved;el.innerHTML=A.html(resolved,'small');el.classList.add('nx-has-avatar')}
 function paintAll(){
   if(!window.NEON_AVATARS)return;
   document.querySelectorAll('.nx-drawer-avatar[data-uid]').forEach(el=>{const uid=el.dataset.uid;if(uid===state.uid){paint(el,uid,state.avatar);return}if(state.avatars.has(uid))paint(el,uid,state.avatars.get(uid));else{paint(el,uid,'');avatarOf(uid).then(id=>paint(el,uid,id))}});
