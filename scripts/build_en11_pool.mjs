@@ -31,6 +31,9 @@ const FIELDS = {
   internationalCaps: 'international_caps',
   internationalGoals: 'international_goals',
   peakValue: 'peak_market_value_eur',
+  currentValue: 'current_market_value_eur',
+  yellowCards: 'career_yellow_cards',
+  redCards: 'career_red_cards',
   sourceSlug: 'slug',
 };
 const METRIC_FIELDS = {
@@ -43,6 +46,9 @@ const METRIC_FIELDS = {
   heightCm: 'heightCm',
   age: 'birthDate',
   peakValue: 'peakValue',
+  currentValue: 'currentValue',
+  yellowCards: 'yellowCards',
+  redCards: 'redCards',
 };
 const CORRECTABLE_FIELDS = new Set([
   'birthDate', 'heightCm', 'clubCount', 'careerGoals', 'careerAssists',

@@ -51,7 +51,8 @@ def create_fixture(path: Path, player_count: int = 300) -> None:
         );
         CREATE TABLE appearances(
           appearance_id VARCHAR, game_id INTEGER, player_id INTEGER, player_club_id INTEGER,
-          date DATE, competition_id VARCHAR, goals INTEGER, assists INTEGER
+          date DATE, competition_id VARCHAR, goals INTEGER, assists INTEGER,
+          yellow_cards INTEGER, red_cards INTEGER
         );
         """
     )
@@ -113,10 +114,12 @@ def create_fixture(path: Path, player_count: int = 300) -> None:
                     league_id,
                     1 if appearance == 0 else 0,
                     1 if appearance == 1 else 0,
+                    1 if appearance == 2 else 0,
+                    0,
                 )
             )
     connection.executemany("INSERT INTO players VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", player_rows)
-    connection.executemany("INSERT INTO appearances VALUES (?, ?, ?, ?, ?, ?, ?, ?)", appearance_rows)
+    connection.executemany("INSERT INTO appearances VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", appearance_rows)
     connection.close()
 
 
@@ -184,6 +187,8 @@ class SideGamePoolPipelineTest(unittest.TestCase):
             self.assertEqual(master_meta["historical_player_count"], 100)
             self.assertEqual(xox_meta["historical_player_count"], 100)
             self.assertTrue(all(player["weight_kg"] is None for player in master))
+            # Card totals come from the appearance log (one yellow, no red per fixture player).
+            self.assertTrue(all(player["career_yellow_cards"] == 1 and player["career_red_cards"] == 0 for player in master))
             self.assertIn("weight_kg", career_meta["disabled_metrics"])
             self.assertNotIn("weight_kg", career_meta["active_metrics"])
 

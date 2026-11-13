@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-11-12T14:46:08.119812+00:00",
+  "generated_at": "2026-11-13T23:56:12.509611+00:00",
   "master_pool": "side-games/data/master/transfermarkt-players.json",
   "provider": "dcaribou/transfermarkt-datasets",
   "provider_revision": "e44f186d6f06dd8452aaf54c7921ba66c961f637",

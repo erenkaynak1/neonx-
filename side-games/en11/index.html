@@ -37,6 +37,13 @@
     .metric.locked strong{color:#8d9b90}
     .metric small{display:block;color:var(--muted);font-size:11px;margin-top:4px;line-height:1.15}
     .metric .lock{position:absolute;right:9px;top:9px;color:#819287;font-size:9px;font-weight:800;letter-spacing:.1em}
+    .hiddenValue{color:var(--muted);font:700 10px/1 'Rajdhani',sans-serif;letter-spacing:.18em;opacity:.8}.hiddenValue::before{content:'🔒 ';font-size:9px}
+    .valuesPending .slot.occupied .slotValue{visibility:hidden}
+    .valuesReveal .slot.occupied .slotValue{animation:valuePop .5s cubic-bezier(.2,.8,.2,1) both}
+    .valuesReveal .formationRow:nth-child(2) .slotValue{animation-delay:.25s}.valuesReveal .formationRow:nth-child(3) .slotValue{animation-delay:.5s}.valuesReveal .formationRow:nth-child(4) .slotValue{animation-delay:.75s}
+    @keyframes valuePop{from{opacity:0;transform:scale(1.8);filter:blur(4px)}to{opacity:1;transform:none;filter:none}}
+    .gapNote{display:block;margin-top:3px;color:var(--muted);font:700 10px/1 'Rajdhani',sans-serif;letter-spacing:.08em;font-style:normal;text-transform:uppercase}
+    .targetChip{display:grid;justify-items:center;gap:2px;color:var(--muted);font:700 9px/1 'Rajdhani',sans-serif;letter-spacing:.16em}.targetChip b{color:var(--lime);font:900 15px/1 'Orbitron',sans-serif;letter-spacing:0;text-shadow:0 0 12px rgba(186,255,24,.5)}
     .directionRow{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:11px}
     .directionLabel{color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.08em;margin-right:3px}
     .chip{border:1px solid rgba(141,185,155,.2);background:rgba(255,255,255,.025);border-radius:999px;padding:7px 12px;font-size:11px;font-weight:800;color:#a9bdb0}
@@ -162,13 +169,17 @@
     const METRICS=[
       {id:'internationalGoals',label:'Millî takım golü',detail:'Üst düzey millî takım gol toplamı',mode:'sum',directions:['high'],default:'high'},
       {id:'internationalCaps',label:'Millî takım maçı',detail:'Üst düzey millî takım maç toplamı',mode:'sum',directions:['high'],default:'high'},
-      {id:'careerGoals',label:'Kariyer golü',detail:'Kulüp kariyeri boyunca lig golleri',mode:'sum',directions:['high'],default:'high'},
-      {id:'careerAssists',label:'Kariyer asisti',detail:'2012 sonrası resmî kulüp maçlarında asist',mode:'sum',directions:['high'],default:'high'},
+      {id:'careerGoals',label:'Kariyer golü',detail:'Kulüp kariyeri boyunca lig golleri',mode:'sum',directions:['high'],default:'high',targets:[150,350,600]},
+      {id:'careerAssists',label:'Kariyer asisti',detail:'2012 sonrası resmî kulüp maçlarında asist',mode:'sum',directions:['high'],default:'high',targets:[100,200,350]},
       {id:'careerAppearances',label:'Kariyer maçı',detail:'Kulüp kariyeri boyunca lig maçları',mode:'sum',directions:['high'],default:'high'},
       {id:'clubCount',label:'Forma giyilen kulüp',detail:'Farklı A takım kulübü sayısı (altyapı ve B takımları hariç)',mode:'sum',directions:['high','low'],default:'high',isNew:true},
       {id:'heightCm',label:'Kadro boyu',detail:'Yedi oyuncunun boy ortalaması',mode:'avg',directions:['high','low'],default:'high'},
       {id:'age',label:'Kadro yaşı',detail:'Yedi oyuncunun güncel yaş ortalaması',mode:'avg',directions:['high','low'],default:'low'},
       {id:'peakValue',label:'En yüksek piyasa değeri',detail:'Oyuncuların zirve değer toplamı',mode:'sum',directions:['high'],default:'high'},
+      // Target mode (direction 'target'): the squad whose total lands closest to one of `targets` wins.
+      {id:'currentValue',label:'Güncel piyasa değeri',detail:'Oyuncuların bugünkü piyasa değeri toplamı',mode:'sum',directions:['high'],default:'high',targets:[100000000,250000000,450000000],isNew:true},
+      {id:'yellowCards',label:'Sarı kart',detail:'2012 sonrası resmî kulüp maçlarında görülen sarı kartlar',mode:'sum',directions:['high'],default:'high',targets:[150,250,350],isNew:true},
+      {id:'redCards',label:'Kırmızı kart',detail:'2012 sonrası resmî kulüp maçlarında görülen kırmızı kartlar',mode:'sum',directions:['high'],default:'high',isNew:true},
       {id:'trophies',label:'Kazanılan kupa sayısı',detail:'Doğrulanmış kupa verisi bekleniyor',mode:'sum',directions:['high'],default:'high',enabled:false,isNew:true},
       {id:'debutAge',label:'İlk A millî maç yaşı',detail:'İlk millî maç tarihi verisi bekleniyor',mode:'avg',directions:['low'],default:'low',enabled:false,isNew:true}
     ];
@@ -182,8 +193,15 @@
     function dataCutoffLabel(){const raw=S.poolMeta&&S.poolMeta.source_cutoff;if(!raw)return 'kaynak tarihi bilinmiyor';const d=new Date(raw+'T00:00:00Z');return Number.isNaN(d.getTime())?raw:new Intl.DateTimeFormat('tr-TR',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}).format(d)}
     function valueFor(p,id){if(id==='age')return ageFor(p);const v=p[id];return typeof v==='number'&&Number.isFinite(v)?v:null}
     function number(v){return new Intl.NumberFormat('tr-TR',{maximumFractionDigits:1}).format(v)}
-    function formatPlayerValue(v,id){if(v==null)return '—';if(id==='heightCm')return number(v)+' cm';if(id==='age'||id==='debutAge')return number(v)+' yaş';if(id==='peakValue')return number(v/1000000)+' M€';return number(v)}
-    function formatTotal(v,id){if(v==null)return '—';const m=metric(id);if(m&&m.mode==='avg')return number(v)+(id==='heightCm'?' cm':' yaş');if(id==='peakValue')return number(v/1000000)+' M€';return number(v)}
+    function formatPlayerValue(v,id){if(v==null)return '—';if(id==='heightCm')return number(v)+' cm';if(id==='age'||id==='debutAge')return number(v)+' yaş';if(id==='peakValue'||id==='currentValue')return number(v/1000000)+' M€';return number(v)}
+    function formatTotal(v,id){if(v==null)return '—';const m=metric(id);if(m&&m.mode==='avg')return number(v)+(id==='heightCm'?' cm':' yaş');if(id==='peakValue'||id==='currentValue')return number(v/1000000)+' M€';return number(v)}
+    // Target mode helpers: what the badge says, and how far a total is from the target.
+    function isTarget(g){return !!g&&g.direction==='target'&&typeof g.target==='number'}
+    // Target matches are played blind: no player value, total or distance is shown until both squads are complete.
+    function isBlind(g){return isTarget(g)&&g.phase!=='final'}
+    function pickCount(team){return Object.keys(team.squad).reduce(function(n,role){return n+team.squad[role].length},0)}
+    function goalLabel(g){return isTarget(g)?'HEDEF '+formatTotal(g.target,g.metric):(g.direction==='high'?'EN YÜKSEK':'EN DÜŞÜK')}
+    function gapText(total,g){if(!isTarget(g))return '';const d=total-g.target;if(Math.abs(d)<0.0001)return 'TAM HEDEFTE';return formatTotal(Math.abs(d),g.metric)+(d<0?' kaldı':' fazla')}
     function minRequired(pos){return pos==='Goalkeeper'?2:4}
     function availableCount(m,pos){
       const counts=S.poolMeta&&S.poolMeta.metric_coverage&&S.poolMeta.metric_coverage[pos];
@@ -194,7 +212,7 @@
       if(S.poolByRole[role])return Promise.resolve(S.poolByRole[role]);
       if(S.poolLoads[role])return S.poolLoads[role];
       const slug=ROLE_POOL_FILE[role];if(!slug)return Promise.reject(new Error('position'));
-      S.poolLoads[role]=fetch('./data/players-'+slug+'.json',{cache:'force-cache'}).then(function(r){if(!r.ok)throw new Error('pool');return r.json()}).then(function(data){
+      S.poolLoads[role]=fetch('./data/players-'+slug+'.json?v='+encodeURIComponent(S.poolMeta&&S.poolMeta.generated_at||''),{cache:'force-cache'}).then(function(r){if(!r.ok)throw new Error('pool');return r.json()}).then(function(data){
         const rows=Array.isArray(data)?data.filter(function(p){return p&&p.id&&p.name&&p.position===role}).map(function(p){p._searchName=norm(p.name);return p}):[];
         if(!rows.length)throw new Error('empty pool');
         return window.NX_EN11.applyCorrections(rows).then(function(){S.poolByRole[role]=rows;return rows});
@@ -278,15 +296,15 @@
         {team:start,role:'Attack'},{team:other,role:'Attack'},{team:other,role:'Attack'},{team:start,role:'Attack'}
       ];
     }
-    function makeGame(names,metricId,direction){
+    function makeGame(names,metricId,direction,target){
       const start=Math.random()<.5?0:1;
-      return{metric:metricId,direction:direction,mode:metric(metricId).mode,teams:names.map(function(n){return{name:n,squad:emptySquad()}}),turns:createTurns(start),turnIndex:0,used:[],phase:'draft',reveal:null,winner:null};
+      return{metric:metricId,direction:direction,target:direction==='target'&&typeof target==='number'?target:null,mode:metric(metricId).mode,teams:names.map(function(n){return{name:n,squad:emptySquad()}}),turns:createTurns(start),turnIndex:0,used:[],phase:'draft',reveal:null,winner:null};
     }
     function startLocal(){
       S.name=document.getElementById('playerName').value.trim()||'Oyuncu 1';
       S.otherName=document.getElementById('otherName').value.trim()||'Oyuncu 2';
       pickRandomMetric();
-      S.mode='local';S.role='local';S.ready=true;S.game=makeGame([S.name,S.otherName],S.metric,S.direction);
+      S.mode='local';S.role='local';S.ready=true;S.game=makeGame([S.name,S.otherName],S.metric,S.direction,S.target);
       S.viewTeam=0;S.lastAdvanceId=null;S.lastAutoTurn=null;S.lastAutoRevealId=null;S.rollId=null;S.rollDoneId=null;S.screen='game';render();
     }
     async function loadPeer(){
@@ -341,7 +359,7 @@
     function startOnlineGame(){
       if(S.role!=='host'||!S.lobby.guestReady)return;
       pickRandomMetric();
-      S.game=makeGame([S.lobby.hostName,S.lobby.guestName],S.metric,S.direction);
+      S.game=makeGame([S.lobby.hostName,S.lobby.guestName],S.metric,S.direction,S.target);
       S.viewTeam=0;S.lastAdvanceId=null;S.lastAutoTurn=null;S.lastAutoRevealId=null;S.rollId=null;S.rollDoneId=null;S.screen='game';broadcastGame();render();
     }
     function currentPick(){if(!S.game)return null;return S.game.turns[S.game.turnIndex]||null}
@@ -364,7 +382,7 @@
         return '<button type=\"button\" class=\"slot empty slotTap\" data-team-index=\"'+teamIndex+'\" data-role=\"'+role+'\" aria-label=\"'+ROLE_LABEL[role]+' boş oyuncu yuvası\">+ '+ROLE_LABEL[role]+'</button>';
       }
       const reveal=S.game.reveal;const rolling=S.game.phase==='reveal'&&reveal&&reveal.team===teamIndex&&Number(reveal.player.id)===Number(p.id)&&S.rollDoneId!==reveal.id;
-      const value=rolling?'<span id=\"rollNumber\" class=\"rollNumber inline rolling\" aria-live=\"polite\">000</span>':esc(formatPlayerValue(p.value,id));
+      const value=isBlind(S.game)?'<span class=\"hiddenValue\" aria-label=\"Değer maç sonunda açılacak\">GİZLİ</span>':rolling?'<span id=\"rollNumber\" class=\"rollNumber inline rolling\" aria-live=\"polite\">000</span>':esc(formatPlayerValue(p.value,id));
       return '<div class=\"slot occupied\"><span class=\"slotName\" title=\"'+esc(p.name)+'\">'+esc(p.name)+'</span><span class=\"slotValue\">'+value+'</span></div>';
     }
     function renderBoard(teamIndex){
@@ -384,15 +402,15 @@
       app.dataset.teamColor=String(S.viewTeam);
       const currentTeam=pick?g.teams[pick.team]:null;const m=metric(g.metric);const myIndex=S.mode==='online'&&S.role==='guest'?1:0;
       const viewName=S.viewTeam===0?(g.teams[0].name):(g.teams[1].name);
-      let html=shell()+'<div class=\"gameTop\"><div><h2>EN 11 · DRAFT</h2><p>'+esc(g.turnIndex)+' / 14 seçim tamamlandı</p></div><div class=\"paramBadge\">'+esc(m.label)+' · '+(g.direction==='high'?'EN YÜKSEK':'EN DÜŞÜK')+'</div></div>';
+      let html=shell()+'<div class=\"gameTop\"><div><h2>EN 11 · DRAFT</h2><p>'+esc(g.turnIndex)+' / 14 seçim tamamlandı</p></div><div class=\"paramBadge\">'+esc(m.label)+' · '+esc(goalLabel(g))+'</div></div>';
       html+='<div class=\"teamTabs\"><button class=\"teamTab '+(S.viewTeam===0?'active':'')+'\" id=\"view0\">'+(myIndex===0?'BENİM':'RAKİP')+' · '+esc(g.teams[0].name)+'</button><button class=\"teamTab rival '+(S.viewTeam===1?'active':'')+'\" id=\"view1\">'+(myIndex===1?'BENİM':'RAKİP')+' · '+esc(g.teams[1].name)+'</button></div>';
-      html+='<div class=\"scoreStrip\"><div class=\"scoreTeam '+(S.viewTeam===0?'selected':'')+'\"><small>'+esc(g.teams[0].name)+'</small><b>'+esc(formatTotal(teamMetric(g.teams[0]),g.metric))+'</b></div><div class=\"versus\">VS</div><div class=\"scoreTeam right '+(S.viewTeam===1?'selected':'')+'\"><small>'+esc(g.teams[1].name)+'</small><b>'+esc(formatTotal(teamMetric(g.teams[1]),g.metric))+'</b></div></div>';
-      if(pick)html+='<div class=\"turnCard\"><strong>'+esc(currentTeam.name)+' SIRADA · '+ROLE_LABEL[pick.role]+'</strong><span>'+(g.phase==='reveal'?'Seçilen oyuncunun değeri kadro kutusunda açılıyor.':canPick()?'Boş mevki kutusuna dokunup futbolcu adını yaz.':'Rakibin seçimi bekleniyor; kadroları inceleyebilirsin.')+'</span></div>';
+      html+='<div class=\"scoreStrip\"><div class=\"scoreTeam '+(S.viewTeam===0?'selected':'')+'\"><small>'+esc(g.teams[0].name)+'</small><b>'+(isBlind(g)?'?':esc(formatTotal(teamMetric(g.teams[0]),g.metric)))+'</b>'+(isTarget(g)?'<em class=\"gapNote\">'+(isBlind(g)?pickCount(g.teams[0])+' / 7 SEÇİM':esc(gapText(teamMetric(g.teams[0]),g)))+'</em>':'')+'</div><div class=\"versus\">'+(isTarget(g)?'<span class=\"targetChip\">HEDEF<b>'+esc(formatTotal(g.target,g.metric))+'</b></span>':'VS')+'</div><div class=\"scoreTeam right '+(S.viewTeam===1?'selected':'')+'\"><small>'+esc(g.teams[1].name)+'</small><b>'+(isBlind(g)?'?':esc(formatTotal(teamMetric(g.teams[1]),g.metric)))+'</b>'+(isTarget(g)?'<em class=\"gapNote\">'+(isBlind(g)?pickCount(g.teams[1])+' / 7 SEÇİM':esc(gapText(teamMetric(g.teams[1]),g)))+'</em>':'')+'</div></div>';
+      if(pick)html+='<div class=\"turnCard\"><strong>'+esc(currentTeam.name)+' SIRADA · '+ROLE_LABEL[pick.role]+'</strong><span>'+(g.phase==='reveal'?(isBlind(g)?'Seçim kilitlendi. Değerler maç sonunda açılacak.':'Seçilen oyuncunun değeri kadro kutusunda açılıyor.'):canPick()?'Boş mevki kutusuna dokunup futbolcu adını yaz.':'Rakibin seçimi bekleniyor; kadroları inceleyebilirsin.')+'</span></div>';
       html+=renderBoard(S.viewTeam);
       if(pick&&canPick()){
-        html+='<section class=\"panel pickPanel\"><h3 class=\"sectionTitle\">'+esc(currentTeam.name)+' · '+ROLE_LABEL[pick.role]+' SEÇİMİ</h3><div class=\"hint\">Yuvaya dokunup oyuncu adını yaz. Eşleşen futbolcuyu listeden seç; istatistik seçimin ardından aynı kutuda açılır.</div><div class=\"results\" id=\"results\"></div></section>';
+        html+='<section class=\"panel pickPanel\"><h3 class=\"sectionTitle\">'+esc(currentTeam.name)+' · '+ROLE_LABEL[pick.role]+' SEÇİMİ</h3><div class=\"hint\">'+(isBlind(g)?'Yuvaya dokunup oyuncu adını yaz. Bu bir hedef maçı: seçtiğin oyuncuların değerleri maç sonuna kadar gizli kalır.':'Yuvaya dokunup oyuncu adını yaz. Eşleşen futbolcuyu listeden seç; istatistik seçimin ardından aynı kutuda açılır.')+'</div><div class=\"results\" id=\"results\"></div></section>';
       }else if(pick&&g.phase==='reveal'){
-        html+='<div class=\"wait\">İki ekranda da aynı oyuncu değeri açıklanıyor.</div>';
+        html+='<div class=\"wait\">'+(isBlind(g)?'Seçim kilitlendi · değerler maç sonunda açılacak.':'İki ekranda da aynı oyuncu değeri açıklanıyor.')+'</div>';
       }else if(pick){
         html+='<div class=\"wait\">Rakibin seçimi bekleniyor; sen de takım sekmelerinden kadroları inceleyebilirsin.</div>';
       }
@@ -452,7 +470,7 @@
       startRoll(r);
       if((S.mode==='local'||S.role==='host')&&S.lastAdvanceId!==r.id){
         S.lastAdvanceId=r.id;
-        setTimeout(function(){if(!S.game||!S.game.reveal||S.game.reveal.id!==r.id)return;if(S.rollInterval)clearInterval(S.rollInterval);if(S.rollTimer)clearTimeout(S.rollTimer);S.rollInterval=null;S.rollTimer=null;S.game.turnIndex++;S.game.reveal=null;S.game.phase=S.game.turnIndex>=S.game.turns.length?'final':'draft';if(S.game.phase==='final')finishWinner();if(S.mode==='online'&&S.role==='host')broadcastGame();render()},2100);
+        setTimeout(function(){if(!S.game||!S.game.reveal||S.game.reveal.id!==r.id)return;if(S.rollInterval)clearInterval(S.rollInterval);if(S.rollTimer)clearTimeout(S.rollTimer);S.rollInterval=null;S.rollTimer=null;S.game.turnIndex++;S.game.reveal=null;S.game.phase=S.game.turnIndex>=S.game.turns.length?'final':'draft';if(S.game.phase==='final')finishWinner();if(S.mode==='online'&&S.role==='host')broadcastGame();render()},isBlind(g)?1100:2100);
       }
     }
     function startRoll(r){
@@ -464,26 +482,34 @@
     }
     function finishWinner(){
       const g=S.game,a=teamMetric(g.teams[0]),b=teamMetric(g.teams[1]);
+      if(isTarget(g)){const da=Math.abs(a-g.target),db=Math.abs(b-g.target);g.winner=Math.abs(da-db)<0.0001?null:(da<db?0:1);return}
       if(Math.abs(a-b)<0.0001)g.winner=null;
       else if(g.direction==='high')g.winner=a>b?0:1;
       else g.winner=a<b?0:1;
     }
     function renderFinal(){
       const g=S.game,m=metric(g.metric),a=teamMetric(g.teams[0]),b=teamMetric(g.teams[1]);
+      // Target match: both totals count up slowly in a full-screen finale before the squads' values are shown.
+      if(isTarget(g)&&window.EN11_INTRO&&window.EN11_INTRO.finale){
+        const fkey=[g.metric,g.target,a,b].concat(g.teams.map(function(t){return t.name})).join('|');
+        if(S.finaleKey!==fkey){S.finaleKey=fkey;app.classList.add('valuesPending');
+          window.EN11_INTRO.finale({label:m.label,target:g.target,targetText:formatTotal(g.target,g.metric),totals:[a,b],names:[g.teams[0].name,g.teams[1].name],winner:g.winner,format:function(v){return formatTotal(v,g.metric)},gap:function(v){return gapText(v,g)},onDone:function(){app.classList.remove('valuesPending');app.classList.add('valuesReveal');setTimeout(function(){app.classList.remove('valuesReveal')},2600)}});}
+      }
       const title=g.winner==null?'BERABERE':esc(g.teams[g.winner].name)+' KAZANDI';
       overlayRoot.innerHTML='';
-      app.insertAdjacentHTML('beforeend','<section class=\"panel finalPanel\"><h3 class=\"sectionTitle\">MAÇ SONUCU · '+esc(m.label)+'</h3><div class=\"finalScores\"><div class=\"finalTeam team-a\"><small>'+esc(g.teams[0].name)+'</small><b>'+esc(formatTotal(a,g.metric))+'</b></div><div class=\"versus\">VS</div><div class=\"finalTeam team-b\"><small>'+esc(g.teams[1].name)+'</small><b>'+esc(formatTotal(b,g.metric))+'</b></div></div><div class=\"winner\">'+title+'</div><div class=\"note\">'+(g.winner==null?'Aynı sonuç · rövanş zamanı.':'Yedi oyuncunun değerleri sahadaki kadro kutularında görünüyor.')+'</div><button class=\"btn primary\" id=\"rematch\" style=\"width:100%;margin-top:15px\">YENİ MAÇ</button></section>');
-      const btn=document.getElementById('rematch');btn.onclick=function(){if(S.mode==='online'&&S.role==='guest'){if(S.conn&&S.conn.open)S.conn.send({type:'rematch'});S.screen='lobby';S.game=null;render();return}if(S.mode==='online'&&S.role==='host'){S.game=null;S.screen='lobby';S.lobby.guestReady=false;sendLobby();render();return}pickRandomMetric();S.game=makeGame([S.name,S.otherName],S.metric,S.direction);S.viewTeam=0;S.lastAdvanceId=null;S.lastAutoTurn=null;S.lastAutoRevealId=null;S.rollId=null;S.rollDoneId=null;render()};
+      app.insertAdjacentHTML('beforeend','<section class=\"panel finalPanel\"><h3 class=\"sectionTitle\">MAÇ SONUCU · '+esc(m.label)+(isTarget(g)?' · '+esc(goalLabel(g)):'')+'</h3><div class=\"finalScores\"><div class=\"finalTeam team-a\"><small>'+esc(g.teams[0].name)+'</small><b>'+esc(formatTotal(a,g.metric))+'</b>'+(isTarget(g)?'<em class=\"gapNote\">'+esc(gapText(a,g))+'</em>':'')+'</div><div class=\"versus\">VS</div><div class=\"finalTeam team-b\"><small>'+esc(g.teams[1].name)+'</small><b>'+esc(formatTotal(b,g.metric))+'</b>'+(isTarget(g)?'<em class=\"gapNote\">'+esc(gapText(b,g))+'</em>':'')+'</div></div><div class=\"winner\">'+title+'</div><div class=\"note\">'+(g.winner==null?(isTarget(g)?'İki kadro da hedefe aynı uzaklıkta · rövanş zamanı.':'Aynı sonuç · rövanş zamanı.'):(isTarget(g)?'Hedefe en yakın kadro kazandı. Hedefi aşmak da uzaklaştırır.':'Yedi oyuncunun değerleri sahadaki kadro kutularında görünüyor.'))+'</div><button class=\"btn primary\" id=\"rematch\" style=\"width:100%;margin-top:15px\">YENİ MAÇ</button></section>');
+      const btn=document.getElementById('rematch');btn.onclick=function(){if(S.mode==='online'&&S.role==='guest'){if(S.conn&&S.conn.open)S.conn.send({type:'rematch'});S.screen='lobby';S.game=null;render();return}if(S.mode==='online'&&S.role==='host'){S.game=null;S.screen='lobby';S.lobby.guestReady=false;sendLobby();render();return}pickRandomMetric();S.game=makeGame([S.name,S.otherName],S.metric,S.direction,S.target);S.viewTeam=0;S.lastAdvanceId=null;S.lastAutoTurn=null;S.lastAutoRevealId=null;S.rollId=null;S.rollDoneId=null;render()};
     }
     // Announce the randomly chosen parameter once per match, before the first pick.
     function maybeIntro(){
       const g=S.game;if(!g||g.phase!=='draft'||g.turnIndex!==0||!window.EN11_INTRO)return;
-      const first=g.turns&&g.turns[0]?g.turns[0].team:0,key=[g.metric,g.direction,first].concat(g.teams.map(function(t){return t.name})).join('|');
+      const first=g.turns&&g.turns[0]?g.turns[0].team:0,key=[g.metric,g.direction,g.target,first].concat(g.teams.map(function(t){return t.name})).join('|');
       if(S.introKey===key)return;S.introKey=key;const m=metric(g.metric);
-      window.EN11_INTRO.show({label:m.label,detail:m.detail,direction:g.direction,mode:m.mode,firstName:g.teams[first]?g.teams[first].name:'',players:7});
+      window.EN11_INTRO.show({label:m.label,detail:m.detail,direction:g.direction,target:isTarget(g)?formatTotal(g.target,g.metric):'',mode:m.mode,firstName:g.teams[first]?g.teams[first].name:'',players:7});
     }
     function render(){
-      if(S.screen!=='game'||!S.game)S.introKey='';
+      if(S.screen!=='game'||!S.game){S.introKey='';S.finaleKey=''}
+      if(S.game&&S.game.phase!=='final')S.finaleKey='';
       if(S.screen==='menu'){overlayRoot.innerHTML='';renderMenu();return}
       if(S.screen==='lobby'){overlayRoot.innerHTML='';renderLobby();return}
       if(S.screen==='game'){
@@ -497,18 +523,21 @@
     // Each visit starts on a random parameter that has enough verified data; the player can still change it.
     function pickRandomMetric(){
       const ready=METRICS.filter(metricReady);if(!ready.length)return;
+      // About two matches in five are a target match when the data supports one.
+      const targeted=ready.filter(function(x){return Array.isArray(x.targets)&&x.targets.length});
+      if(targeted.length&&Math.random()<0.4){const t=targeted[Math.floor(Math.random()*targeted.length)];S.metric=t.id;S.direction='target';S.target=t.targets[Math.floor(Math.random()*t.targets.length)];return}
       const m=ready[Math.floor(Math.random()*ready.length)];
-      S.metric=m.id;S.direction=m.default;
+      S.metric=m.id;S.direction=m.default;S.target=null;
     }
     function init(){
       app.innerHTML=shell()+hero('Veri kaynağı hazırlanıyor…')+'<section class=\"panel\"><div class=\"status\">Oyuncu ve mevki bilgisi yükleniyor.</div></section>';
-      fetch('./data/meta.json',{cache:'force-cache'}).then(function(r){if(!r.ok)throw new Error('meta');return r.json()}).then(function(meta){if(!meta||!meta.metric_coverage||!meta.player_count)throw new Error('invalid meta');S.poolMeta=meta;pickRandomMetric();S.screen='menu';render()}).catch(function(){S.error='Oyuncu veri bilgisi yüklenemedi. Sayfayı yeniden açıp tekrar dene.';S.screen='menu';render()});
+      fetch('./data/meta.json',{cache:'no-cache'}).then(function(r){if(!r.ok)throw new Error('meta');return r.json()}).then(function(meta){if(!meta||!meta.metric_coverage||!meta.player_count)throw new Error('invalid meta');S.poolMeta=meta;pickRandomMetric();S.screen='menu';render()}).catch(function(){S.error='Oyuncu veri bilgisi yüklenemedi. Sayfayı yeniden açıp tekrar dene.';S.screen='menu';render()});
     }
     window.addEventListener('beforeunload',cleanup);
     init();
   })();
   </script>
-<script src="./en11-intro-v1.js?v=20261113-intro"></script>
+<script src="./en11-intro-v1.js?v=20261114-target"></script>
 <script type="module" src="../../social/neon-social.js?v=20261113-profile"></script>
 <script type="module" src="../../social/party-ready-notify-v1.js?v=20261113-ready"></script>
 <script src="../neon-arcade-ui-v1.js?v=20261111-home-v2"></script>

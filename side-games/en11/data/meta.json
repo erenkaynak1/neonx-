@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-11-12T14:46:04.075Z",
+  "generated_at": "2026-11-13T23:40:28.706Z",
   "provider": "dcaribou/transfermarkt-datasets",
   "provider_revision": "e44f186d6f06dd8452aaf54c7921ba66c961f637",
   "source_snapshot_at": "2026-11-12T14:38:36.314603+00:00",
@@ -23,7 +23,10 @@
       "clubCount": 5011,
       "heightCm": 6360,
       "age": 7342,
-      "peakValue": 4604
+      "peakValue": 4604,
+      "currentValue": 4604,
+      "yellowCards": 2401,
+      "redCards": 2401
     },
     "Defender": {
       "internationalGoals": 9069,
@@ -34,7 +37,10 @@
       "clubCount": 16313,
       "heightCm": 17890,
       "age": 20457,
-      "peakValue": 13411
+      "peakValue": 13411,
+      "currentValue": 13411,
+      "yellowCards": 9438,
+      "redCards": 9438
     },
     "Midfield": {
       "internationalGoals": 8400,
@@ -45,7 +51,10 @@
       "clubCount": 15453,
       "heightCm": 16330,
       "age": 18980,
-      "peakValue": 12015
+      "peakValue": 12015,
+      "currentValue": 12015,
+      "yellowCards": 8790,
+      "redCards": 8790
     },
     "Attack": {
       "internationalGoals": 8340,
@@ -56,7 +65,10 @@
       "clubCount": 14820,
       "heightCm": 15515,
       "age": 17834,
-      "peakValue": 11369
+      "peakValue": 11369,
+      "currentValue": 11369,
+      "yellowCards": 8812,
+      "redCards": 8812
     }
   },
   "selection_policy": "Every source player with a supported on-field position and a name is included. Missing stats remain unavailable.",

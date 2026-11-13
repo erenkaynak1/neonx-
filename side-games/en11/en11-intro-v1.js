@@ -32,6 +32,8 @@
 .e11i-dir{display:inline-flex;align-items:center;gap:10px;padding:10px 18px;background:var(--t);color:#0b1005;font:900 20px/1 var(--nxu-display,"Barlow Condensed",sans-serif);letter-spacing:.14em;clip-path:polygon(12px 0,100% 0,calc(100% - 12px) 100%,0 100%);animation:e11iStamp .5s cubic-bezier(.2,.8,.2,1) 1.5s both}
 .e11i-dir i{font-style:normal;animation:e11iBob .9s ease-in-out 2s infinite}
 .e11i[data-dir="low"] .e11i-dir i{animation-name:e11iBobDown}
+.e11i[data-dir="target"] .e11i-dir{font-size:24px}.e11i[data-dir="target"] .e11i-dir i{animation-name:e11iPing}
+@keyframes e11iPing{50%{transform:scale(1.35)}}
 @keyframes e11iStamp{0%{opacity:0;transform:scale(2.2) rotate(-6deg)}70%{opacity:1;transform:scale(.94)}100%{opacity:1;transform:none}}
 @keyframes e11iBob{50%{transform:translateY(-4px)}}@keyframes e11iBobDown{50%{transform:translateY(4px)}}
 .e11i-rule{max-width:340px;color:#f3f6f8;font:600 15px/1.4 var(--nxu-body,"Barlow",system-ui,sans-serif);animation:e11iUp .5s cubic-bezier(.2,.8,.2,1) 1.95s both}
@@ -44,6 +46,24 @@
 .e11i-bar i{display:block;height:100%;background:var(--t);transform-origin:left;animation:e11iBar ${HOLD_MS - 3000}ms linear 3s both}
 @keyframes e11iBar{from{transform:scaleX(1)}to{transform:scaleX(0)}}
 @keyframes e11iUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.e11f{cursor:default}
+.e11f .e11i-lead{color:#f3f6f8;font-size:22px;letter-spacing:.06em}
+.e11f-target{animation:e11iStamp .5s cubic-bezier(.2,.8,.2,1) .6s both!important;font-size:24px!important}
+.e11f-teams{display:grid;gap:16px;width:100%;margin-top:6px;animation:e11iUp .5s cubic-bezier(.2,.8,.2,1) 1s both}
+.e11f-team{--c:var(--neon-primary,#baff18);display:grid;grid-template-columns:1fr auto;align-items:end;gap:4px 10px;padding:14px 14px 12px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-align:left;transition:opacity .5s,border-color .4s,box-shadow .4s,transform .4s}
+.e11f-team.t1{--c:var(--neon-cyan,#00eaff)}
+.e11f-name{color:var(--c);font:800 16px/1 var(--nxu-display,"Barlow Condensed",sans-serif);letter-spacing:.1em;text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.e11f-num{color:#fff;font:italic 900 34px/1 var(--nxu-display,"Barlow Condensed",sans-serif);font-variant-numeric:tabular-nums;text-shadow:0 0 14px var(--c)}
+.e11f-track{grid-column:1/-1;position:relative;height:10px;border-radius:5px;background:rgba(255,255,255,.08);overflow:visible}
+.e11f-track i{display:block;width:0;height:100%;border-radius:5px;background:linear-gradient(90deg,color-mix(in srgb,var(--c) 40%,transparent),var(--c));box-shadow:0 0 12px var(--c)}
+.e11f-track span{position:absolute;top:-6px;bottom:-6px;width:2px;margin-left:-1px;background:#fff;box-shadow:0 0 8px #fff}
+.e11f-track span::after{content:"HEDEF";position:absolute;left:50%;top:-13px;transform:translateX(-50%);color:#aab6c0;font:800 8px/1 var(--nxu-display,"Barlow Condensed",sans-serif);letter-spacing:.2em}
+.e11f-gap{grid-column:1/-1;min-height:14px;color:#aab6c0;font:700 13px/1 var(--nxu-display,"Barlow Condensed",sans-serif);letter-spacing:.12em;text-transform:uppercase;opacity:0;transition:opacity .4s}
+.e11f-gap.in{opacity:1}
+.e11f-team.won{border-color:var(--c);box-shadow:0 0 28px color-mix(in srgb,var(--c) 35%,transparent),inset 0 0 22px color-mix(in srgb,var(--c) 12%,transparent);transform:scale(1.03)}
+.e11f-team.won .e11f-gap{color:var(--c)}.e11f-team.lost{opacity:.5}
+.e11f-winner{font:italic 900 clamp(30px,9vw,42px)/1 var(--nxu-display,"Barlow Condensed",sans-serif);text-transform:uppercase;color:#fff;text-shadow:0 0 14px var(--neon-primary,#baff18),0 0 40px rgba(186,255,24,.5);animation:e11iStamp .6s cubic-bezier(.2,.8,.2,1) both}
+.e11f-go{animation:e11iUp .4s ease both!important}
 @media (prefers-reduced-motion:reduce){.e11i,.e11i *,.e11i::after{animation-duration:.01s!important;animation-delay:0s!important}.e11i-line{width:min(70%,260px)}}
 `;
     document.head.appendChild(st);
@@ -57,23 +77,25 @@
     setTimeout(() => el.remove(), 320);
   }
 
-  /* info: {label, detail, direction:'high'|'low', mode:'sum'|'avg', firstName, players} */
+  /* info: {label, detail, direction:'high'|'low'|'target', target (formatted, target matches), mode:'sum'|'avg', firstName, players} */
   function show(info) {
     style(); close();
-    const high = info.direction !== 'low', avg = info.mode === 'avg';
+    const target = info.direction === 'target' && info.target, high = info.direction !== 'low', avg = info.mode === 'avg';
     const el = document.createElement('div');
-    el.className = 'e11i'; el.dataset.dir = high ? 'high' : 'low';
+    el.className = 'e11i'; el.dataset.dir = target ? 'target' : high ? 'high' : 'low';
     el.style.setProperty('--t', high ? 'var(--neon-primary,#baff18)' : 'var(--neon-cyan,#00eaff)');
     el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Maç görevi');
     const words = String(info.label || '').split(/\s+/).filter(Boolean).map((w, i) => `<span style="animation-delay:${(.6 + i * .16).toFixed(2)}s">${esc(w)}</span>`).join(' ');
     const n = info.players || 7;
-    const rule = `${n} oyuncunun <b>${avg ? 'ortalaması' : 'toplamı'}</b> en <b>${high ? 'yüksek' : 'düşük'}</b> olan kadro kazanır.`;
+    const rule = target
+      ? `${n} oyuncunun <b>${avg ? 'ortalaması' : 'toplamı'}</b> hedefe <b>en yakın</b> olan kadro kazanır. Hedefi aşmak da seni uzaklaştırır. <b>Değerler maç sonuna kadar gizli.</b>`
+      : `${n} oyuncunun <b>${avg ? 'ortalaması' : 'toplamı'}</b> en <b>${high ? 'yüksek' : 'düşük'}</b> olan kadro kazanır.`;
     el.innerHTML = `<div class="e11i-box">
       <div class="e11i-eyebrow">MAÇ GÖREVİ</div>
-      <div class="e11i-lead">Kadronu şuna göre kur</div>
+      <div class="e11i-lead">${target ? 'Hedefe en yakın kadroyu kur' : 'Kadronu şuna göre kur'}</div>
       <div class="e11i-param">${words}</div>
       <div class="e11i-line"></div>
-      <div class="e11i-dir"><i>${high ? '▲' : '▼'}</i>${high ? 'EN YÜKSEK' : 'EN DÜŞÜK'}</div>
+      <div class="e11i-dir"><i>${target ? '◎' : high ? '▲' : '▼'}</i>${target ? 'HEDEF ' + esc(info.target) : high ? 'EN YÜKSEK' : 'EN DÜŞÜK'}</div>
       <div class="e11i-rule">${rule}</div>
       ${info.detail ? `<div class="e11i-detail">${esc(info.detail)}</div>` : ''}
       ${info.firstName ? `<div class="e11i-first">İLK SEÇİM <b>${esc(info.firstName)}</b></div>` : ''}
@@ -86,5 +108,52 @@
     timer = setTimeout(close, HOLD_MS);
   }
 
-  window.EN11_INTRO = { show, close, get open() { return !!current; } };
+  /* ---------- Target-match finale ----------
+     info: {label, target, targetText, totals:[a,b], names:[a,b], winner:0|1|null, format(v), gap(v), onDone()} */
+  function finale(info) {
+    style(); close();
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const el = document.createElement('div');
+    el.className = 'e11i e11f'; el.style.setProperty('--t', 'var(--neon-primary,#baff18)');
+    el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Maç sonucu');
+    const scale = Math.max(info.target, info.totals[0], info.totals[1], 1) * 1.12, mark = (info.target / scale * 100).toFixed(2);
+    const row = i => `<div class="e11f-team t${i}"><div class="e11f-name">${esc(info.names[i])}</div><div class="e11f-num" data-i="${i}">${esc(info.format(0))}</div>
+      <div class="e11f-track"><i data-i="${i}"></i><span style="left:${mark}%"></span></div><div class="e11f-gap" data-i="${i}">&nbsp;</div></div>`;
+    el.innerHTML = `<div class="e11i-box">
+      <div class="e11i-eyebrow">KADROLAR TAMAM</div>
+      <div class="e11i-lead">${esc(info.label)}</div>
+      <div class="e11i-dir e11f-target"><i>◎</i>HEDEF ${esc(info.targetText)}</div>
+      <div class="e11f-teams">${row(0)}${row(1)}</div>
+      <div class="e11f-winner" hidden></div>
+      <button type="button" class="e11i-go e11f-go" hidden>KADROLARI GÖR</button>
+    </div>`;
+    document.body.appendChild(el); current = el;
+    const nums = [...el.querySelectorAll('.e11f-num')], bars = [...el.querySelectorAll('.e11f-track i')], gaps = [...el.querySelectorAll('.e11f-gap')];
+    const done = () => { if (current === el) close(); try { info.onDone && info.onDone(); } catch {} };
+    const reveal = () => {
+      if (!el.isConnected) return;
+      info.totals.forEach((v, i) => { nums[i].textContent = info.format(v); bars[i].style.width = (v / scale * 100) + '%'; gaps[i].textContent = info.gap(v); gaps[i].classList.add('in'); });
+      setTimeout(() => {
+        if (!el.isConnected) return;
+        const w = el.querySelector('.e11f-winner'); w.hidden = false;
+        w.textContent = info.winner == null ? 'BERABERE' : info.names[info.winner] + ' KAZANDI';
+        if (info.winner != null) { el.querySelector('.e11f-team.t' + info.winner).classList.add('won'); el.querySelector('.e11f-team.t' + (1 - info.winner)).classList.add('lost'); }
+        try { navigator.vibrate?.([30, 40, 80]); } catch {}
+        setTimeout(() => { const b = el.querySelector('.e11f-go'); if (b) { b.hidden = false; b.onclick = done; } }, 900);
+      }, reduce ? 0 : 900);
+    };
+    if (reduce) { reveal(); return; }
+    // Both totals climb together, slowing down toward the end so the last few steps are the tense ones.
+    const start = performance.now() + 1500, dur = 5200;
+    const ease = t => 1 - Math.pow(1 - t, 3.2);
+    const step = now => {
+      if (!el.isConnected) return;
+      const t = Math.min(1, Math.max(0, (now - start) / dur)), e = ease(t);
+      info.totals.forEach((v, i) => { nums[i].textContent = info.format(v * e); bars[i].style.width = (v * e / scale * 100) + '%'; });
+      if (t < 1) requestAnimationFrame(step); else reveal();
+    };
+    requestAnimationFrame(step);
+  }
+
+  window.EN11_INTRO = { show, finale, close, get open() { return !!current; } };
 })();
