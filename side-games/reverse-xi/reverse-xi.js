@@ -95,32 +95,59 @@ function finishManualRecording(blob,mode,button){
 // A failed start (permission, timeout) must not leave the button on "KAYDI DURDUR".
 function recordingFailed(mode){try{state.speech?.stop()}catch{}state.speech=null;clearTimeout(state.stopWatchdog);state.recordingMode='';state.recorder=null;state.pcmStop=null;const b=$(mode==='name'?'record-name':'record-imitation');if(b){b.classList.remove('recording');b.textContent='🎙 KAYDI BAŞLAT'}releaseStream()}
 function isIOSAudio(){return /iPhone|iPad|iPod/.test(navigator.userAgent||'')||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1)}
+// Pauses every RE:VERSE audio player. Starting the mic while the opponent's clip is still playing (or
+// right after it) made iOS hand the recorder silence: "Kayıtta ses yok".
+function stopPlayback(){for(const id of ['reverse-audio','final-audio']){const a=$(id);try{if(a&&!a.paused)a.pause()}catch{}}}
+// A dead input (muted/handed-over track) delivers exact zeros; a live mic always has some noise.
+const DEAD=1e-6;
+function waitUnmuted(stream,ms=1500){const t=stream.getAudioTracks()[0];if(!t||!t.muted)return Promise.resolve();return new Promise(r=>{const done=()=>{t.removeEventListener('unmute',done);r()};t.addEventListener('unmute',done);setTimeout(done,ms)})}
+async function openMic(){stopPlayback();const stream=await getStream();await waitUnmuted(stream);return stream}
 async function startManualRecording(mode){
- const stream=await getStream();state.recordingMode=mode;state.transcript='';
+ let stream=await openMic();state.recordingMode=mode;state.transcript='';
  const button=$(mode==='name'?'record-name':'record-imitation');button.classList.add('recording');button.textContent='■ KAYDI DURDUR';
- if(isIOSAudio()&&(window.AudioContext||window.webkitAudioContext)){
-  const AC=window.AudioContext||window.webkitAudioContext;
-  // Keep one AudioContext alive for the whole match. iOS Safari can fail
-  // when a closed context is replaced during the next round.
-  if(!state.audioContext||state.audioContext.state==='closed')state.audioContext=new AC();
-  const ctx=state.audioContext;await withTimeout(ctx.resume(),2500,'Ses sistemi başlatılamadı. Tekrar dene.');
-  const source=ctx.createMediaStreamSource(stream),processor=ctx.createScriptProcessor(4096,1,1),chunks=[];
-  processor.onaudioprocess=e=>{chunks.push(new Float32Array(e.inputBuffer.getChannelData(0)));e.outputBuffer.getChannelData(0).fill(0)};
-  source.connect(processor);processor.connect(ctx.destination);
+ const AC=window.AudioContext||window.webkitAudioContext;
+ if(isIOSAudio()&&AC){
+  // A fresh AudioContext per recording: after an <audio> element has played, iOS can leave an older
+  // context's microphone input silent. If the input still delivers only zeros, the mic is reattached
+  // automatically (up to twice) instead of ending with "Kayıtta ses yok".
+  const chunks=[];let ctx=null,source=null,processor=null,alive=false,stopped=false,retries=0,watch=null;
+  const detach=()=>{if(processor)processor.onaudioprocess=null;try{source?.disconnect();processor?.disconnect()}catch{}const old=ctx;ctx=null;if(old&&old.state!=='closed')old.close().catch(()=>{})};
+  const attach=async s=>{
+   ctx=new AC();state.audioContext=ctx;await withTimeout(ctx.resume(),2500,'Ses sistemi başlatılamadı. Tekrar dene.');
+   source=ctx.createMediaStreamSource(s);processor=ctx.createScriptProcessor(4096,1,1);
+   processor.onaudioprocess=e=>{const d=e.inputBuffer.getChannelData(0);if(!alive&&peak(d)>DEAD)alive=true;if(alive)chunks.push(new Float32Array(d));e.outputBuffer.getChannelData(0).fill(0)};
+   source.connect(processor);processor.connect(ctx.destination);
+  };
+  const check=async()=>{
+   if(stopped||alive)return;
+   if(retries>=2){toast('Mikrofon yanıt vermiyor. Durdurup tekrar dene.');return}
+   retries++;detach();try{stream=await openMic();if(stopped){releaseStream();return}await attach(stream)}catch{}
+   watch=setTimeout(check,1200);
+  };
+  await attach(stream);watch=setTimeout(check,1200);
   state.pcmStop=async()=>{
-   processor.onaudioprocess=null;try{source.disconnect();processor.disconnect()}catch{}
+   stopped=true;clearTimeout(watch);const rate=ctx?.sampleRate||48000;detach();
    const total=chunks.reduce((n,x)=>n+x.length,0);
-   if(total===0){state.discardRecording=true;finishManualRecording(new Blob([],{type:'audio/wav'}),mode,button);toast('Mikrofondan ses alınamadı. Kaydı tekrar dene.');return}
    const samples=new Float32Array(total);let offset=0;for(const chunk of chunks){samples.set(chunk,offset);offset+=chunk.length}
-   if(peak(samples)<SILENCE){state.discardRecording=true;finishManualRecording(new Blob([],{type:'audio/wav'}),mode,button);toast('Kayıtta ses yok. Mikrofona yakın konuşup tekrar kaydet.');return}
-   const blob=encodeWav(downsample(samples,ctx.sampleRate,TARGET_RATE),TARGET_RATE);finishManualRecording(blob,mode,button);
+   if(total===0||peak(samples)<SILENCE){state.discardRecording=true;finishManualRecording(new Blob([],{type:'audio/wav'}),mode,button);toast(total===0?'Mikrofondan ses alınamadı. Kaydı tekrar dene.':'Kayıtta ses yok. Mikrofona yakın konuşup tekrar kaydet.');return}
+   finishManualRecording(encodeWav(downsample(samples,rate,TARGET_RATE),TARGET_RATE),mode,button);
   };
  }else{
   if(!window.MediaRecorder)throw new Error('Bu tarayıcı ses kaydını desteklemiyor.');
-  const mime=recordingMimeType(),rec=new MediaRecorder(stream,mime?{mimeType:mime}:undefined);state.recorder=rec;state.chunks=[];
-  rec.ondataavailable=e=>{if(e.data.size)state.chunks.push(e.data)};
-  rec.onerror=()=>{state.discardRecording=true;finishManualRecording(new Blob([]),mode,button);toast('Kayıt sırasında hata oluştu. Tekrar dene.')};
-  rec.onstop=()=>{if(state.recorder!==rec)return;finishManualRecording(new Blob(state.chunks,{type:rec.mimeType||'audio/webm'}),mode,button)};rec.start();
+  const mime=recordingMimeType();let rec=null,monitor=null,watch=null,retries=0;
+  const begin=s=>{
+   rec=new MediaRecorder(s,mime?{mimeType:mime}:undefined);state.recorder=rec;state.chunks=[];const self=rec;
+   rec.ondataavailable=e=>{if(e.data.size&&state.recorder===self)state.chunks.push(e.data)};
+   rec.onerror=()=>{if(state.recorder!==self)return;state.discardRecording=true;finishManualRecording(new Blob([]),mode,button);toast('Kayıt sırasında hata oluştu. Tekrar dene.')};
+   rec.onstop=()=>{if(state.recorder!==self)return;cleanupMonitor();finishManualRecording(new Blob(state.chunks,{type:self.mimeType||'audio/webm'}),mode,button)};rec.start();
+  };
+  // Same dead-input check as on iOS: restart the recorder on a fresh mic if it only hears zeros.
+  const cleanupMonitor=()=>{clearTimeout(watch);const m=monitor;monitor=null;if(m&&m.state!=='closed')m.close().catch(()=>{})};
+  const probe=s=>{if(!AC)return;cleanupMonitor();try{monitor=new AC();const an=monitor.createAnalyser();an.fftSize=2048;monitor.createMediaStreamSource(s).connect(an);const buf=new Float32Array(an.fftSize);let alive=false;const tick=setInterval(()=>{if(!monitor){clearInterval(tick);return}an.getFloatTimeDomainData(buf);if(peak(buf)>DEAD)alive=true},150);
+    watch=setTimeout(async()=>{clearInterval(tick);if(alive||!state.recorder||state.recordingMode!==mode){cleanupMonitor();return}if(retries>=2){cleanupMonitor();toast('Mikrofon yanıt vermiyor. Durdurup tekrar dene.');return}
+     retries++;const old=state.recorder;state.recorder=null;try{old.stop()}catch{}try{const fresh=await openMic();if(state.recordingMode!==mode){releaseStream();return}begin(fresh);probe(fresh)}catch{state.discardRecording=true;finishManualRecording(new Blob([]),mode,button);toast('Mikrofon açılamadı. Tekrar dene.')}},1300);
+   }catch{cleanupMonitor()}};
+  begin(stream);probe(stream);
  }
  if(mode==='name'){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -184,7 +211,7 @@ async function reverseBlob(blob){
  }catch(error){if(error instanceof SilentError)throw new Error('Kayıtta ses yok. Mikrofona yakın konuşup tekrar kaydet.');console.error('Reverse XI audio processing failed',{mimeType:blob.type,size:blob.size,error});throw new Error(isIOSAudio()?'iPhone ses kaydı işlenemedi. Mikrofon iznini kontrol edip yeniden dene.':'Ses işlenemedi. Tekrar kayıt yapmayı dene.')}
  finally{if(ctx.state!=='closed')await ctx.close().catch(()=>{})}
 }
-const TARGET_RATE=16000,SILENCE=0.004;
+const TARGET_RATE=16000,SILENCE=0.002;
 class SilentError extends Error{}
 function peak(samples){let m=0;for(let i=0;i<samples.length;i+=4){const a=Math.abs(samples[i]);if(a>m)m=a}return m}
 function downsample(samples,from,to){if(!from||from<=to)return samples;const ratio=from/to,length=Math.floor(samples.length/ratio),out=new Float32Array(length);for(let i=0;i<length;i++){const start=Math.floor(i*ratio),end=Math.min(samples.length,Math.floor((i+1)*ratio));let sum=0;for(let j=start;j<end;j++)sum+=samples[j];out[i]=sum/Math.max(1,end-start)}return out}
