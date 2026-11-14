@@ -47,26 +47,28 @@
   function poolFor(q) { return S.players.filter(p => { const v = valueOf(q, p); return v != null && (!q.positive || v > 0); }); }
   // Returns a challenger for `stay`. The newcomer is higher or lower than the stayer with equal odds,
   // so "always keep the player on screen" is no strategy. `want` forces a direction ('up'/'down').
+  // Gap between two values on a fair scale: counts and money by ratio (so 3 vs 4 cards is as close as
+  // 30 vs 40 matches), birth dates in days, heights in cm.
+  function gap(q, a, b) {
+    if (q.key === 'b') return Math.abs(a - b) / 365;     // years
+    if (q.key === 'h') return Math.abs(a - b) / 6;       // 6 cm ≈ one "step"
+    return Math.abs(Math.log((Math.abs(a) + 1) / (Math.abs(b) + 1)));
+  }
+  // Returns a challenger for `stay` whose value is close to the stayer's: the nearest few players on one
+  // side, chosen among well-known players. The side is random (higher or lower with equal odds), so
+  // "always keep the player on screen" is no strategy. The longer the streak, the nearer the pick.
   function pickChallenger(q, stay, want) {
     const pool = S.pool, sv = valueOf(q, stay);
     const dir = want || (Math.random() < 0.5 ? 'up' : 'down');
-    // Early on: famous players and clear gaps. The longer the streak, the deeper and closer it gets.
-    const depth = Math.min(pool.length, 500 + S.streak * 120);
-    const close = S.streak >= 6;
-    const ratioCap = Math.max(0.12, 1.1 - S.streak * 0.07);
-    const candidates = [];
-    for (let i = 0; i < depth; i++) {
-      const p = pool[i]; if (p.id === stay.id || S.used.has(p.id)) continue;
-      const v = valueOf(q, p); if (v === sv) continue;
-      if (close && q.key !== 'b' && sv > 0 && v > 0 && Math.abs(Math.log(v / sv)) > ratioCap) continue;
-      if (close && q.key === 'b' && Math.abs(v - sv) > Math.max(400, 4000 - S.streak * 220)) continue;
-      candidates.push(p);
-    }
-    const side = list => list.filter(p => dir === 'up' ? valueOf(q, p) > sv : valueOf(q, p) < sv);
-    let list = side(candidates);
-    if (!list.length) list = side(pool.filter(p => p.id !== stay.id && !S.used.has(p.id)));
+    const depth = Math.min(pool.length, 700 + S.streak * 150);
+    const nearest = Math.max(3, 10 - S.streak);          // 10 closest at the start, 3 from streak 7
+    const onSide = p => { const v = valueOf(q, p); return dir === 'up' ? v > sv : v < sv; };
+    const free = p => p.id !== stay.id && !S.used.has(p.id);
+    let list = pool.slice(0, depth).filter(p => free(p) && onSide(p));
+    if (!list.length) list = pool.filter(p => free(p) && onSide(p));
     if (!list.length) return null; // nobody on that side (e.g. the stayer is the top value): caller draws a new pair
-    return list[Math.floor(Math.random() * Math.min(list.length, 260))];
+    list.sort((x, y) => gap(q, valueOf(q, x), sv) - gap(q, valueOf(q, y), sv));
+    return list[Math.floor(Math.random() * Math.min(list.length, nearest))];
   }
   function chooseQuestion() {
     const active = new Set(S.meta?.active_metrics || []);
