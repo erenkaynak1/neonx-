@@ -38,7 +38,6 @@ button{font:inherit;color:inherit}
 .hl-play:active{transform:scale(.97)}
 .hl-ghost{min-height:46px;padding:0 22px;border-radius:12px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.04);color:var(--hl-ink);font:800 14px/1 var(--hl-d);letter-spacing:.14em;cursor:pointer}
 .hl-mybest{display:grid;justify-items:center}.hl-mybest span{color:var(--hl-faint);font:700 10px/1 var(--hl-d);letter-spacing:.26em}.hl-mybest b{font:italic 900 40px/1 var(--hl-d);color:var(--hl-ink);text-shadow:0 0 16px rgba(186,255,24,.4)}
-.hl-qbest{display:grid;gap:6px;width:100%}.hl-qbest span{display:flex;justify-content:space-between;gap:10px;padding:7px 10px;border-radius:10px;background:rgba(255,255,255,.04);font-size:12px}.hl-qbest em{font-style:normal;color:var(--hl-mute)}.hl-qbest b{color:var(--hl-lime)}
 .hl-board{padding:14px;border-radius:16px;background:rgba(10,14,18,.82);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
 .hl-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
 .hl-tabs button{min-height:38px;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:var(--hl-mute);font:800 12px/1 var(--hl-d);letter-spacing:.16em;cursor:pointer}

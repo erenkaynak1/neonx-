@@ -135,9 +135,9 @@ function ensureLeaderboardView(){if(window.NEON_LB)return Promise.resolve();if(!
 const LB_TABS=[['weekly','HAFTALIK'],['allTime','TÜM ZAMANLAR'],['hl','HIGHER OR LOWER']];
 function leaderboardData(tab){
   if(tab==='hl'){
-    const rows=new Map(),add=(uid,best,username,label)=>{best=Number(best||0);if(best>0&&!(rows.get(uid)?.score>=best))rows.set(uid,{uid,username:username||'Oyuncu',score:best,sub:label||''})};
-    Object.entries(state.hlAll||{}).forEach(([uid,x])=>add(uid,x?.best,x?.username,x?.questionLabel));
-    Object.entries(state.allTime||{}).forEach(([uid,x])=>add(uid,x?.hlBest,x?.username,x?.hlQuestionLabel));
+    const rows=new Map(),add=(uid,best,username)=>{best=Number(best||0);if(best>0&&!(rows.get(uid)?.score>=best))rows.set(uid,{uid,username:username||'Oyuncu',score:best})};
+    Object.entries(state.hlAll||{}).forEach(([uid,x])=>add(uid,x?.best,x?.username));
+    Object.entries(state.allTime||{}).forEach(([uid,x])=>add(uid,x?.hlBest,x?.username));
     return {rows:[...rows.values()],unit:'SERİ',empty:'Henüz Higher or Lower rekoru yok.'};
   }
   const data=tab==='weekly'?state.weekly:state.allTime;
@@ -155,7 +155,7 @@ function renderLeaderboard(){
   const v=shade.querySelector('[data-view="leaderboard"]');if(!state.profile){v.innerHTML='<div class="nx-social-card nx-social-muted">Liderlik listesini görmek için önce oyuncu adını oluştur.</div>';return}
   if(!window.NEON_LB){v.innerHTML='<div class="nx-social-card nx-social-muted">Liderlik tablosu yükleniyor…</div>';ensureLeaderboardView().then(()=>{if(state.tab==='leaderboard')renderLeaderboard()});return}
   const tab=state.lbTab||'weekly',{rows,unit,empty}=leaderboardData(tab),LB=window.NEON_LB;
-  const note=tab==='weekly'?`Pazartesi başlayan haftanın en çok kazananları · Sıfırlanmaya <b>${LB.weekLeft()}</b>`:tab==='allTime'?'Tamamlanan online maçların kalıcı sıralaması.':'Higher or Lower en uzun seriler · tüm zamanlar.';
+  const note=tab==='weekly'?`Pazartesi başlayan haftanın en çok kazananları · Sıfırlanmaya <b>${LB.weekLeft()}</b>`:tab==='allTime'?'Tamamlanan online maçların kalıcı sıralaması.':'Higher or Lower en uzun seriler · tüm sorular tek tabloda.';
   v.innerHTML=`<div class="nx-social-card nx-lb-card"><div class="nx-lb-head"><span class="nx-social-label">LİDERLİK TABLOSU</span><span class="nxlb-live">CANLI</span></div>
     <div class="nx-lb-tabs" role="tablist">${LB_TABS.map(([id,label])=>`<button type="button" role="tab" data-lb-tab="${id}" aria-selected="${id===tab}" class="${id===tab?'on':''}">${label}</button>`).join('')}</div>
     <p class="nx-social-muted nx-lb-note">${note}</p>
