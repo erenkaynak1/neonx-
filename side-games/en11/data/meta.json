@@ -1,17 +1,17 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-11-14T00:11:27.293Z",
+  "generated_at": "2026-11-14T10:02:12.955Z",
   "provider": "dcaribou/transfermarkt-datasets",
   "provider_revision": "e44f186d6f06dd8452aaf54c7921ba66c961f637",
-  "source_snapshot_at": "2026-11-13T23:57:55.594289+00:00",
+  "source_snapshot_at": "2026-11-14T09:54:48.376341+00:00",
   "source_cutoff": "2026-06-28",
   "latest_season": 2025,
   "player_count": 64649,
   "position_counts": {
     "Goalkeeper": 7349,
     "Defender": 20468,
-    "Midfield": 18993,
-    "Attack": 17839
+    "Midfield": 18992,
+    "Attack": 17840
   },
   "metric_coverage": {
     "Goalkeeper": {
@@ -29,11 +29,11 @@
       "redCards": 2259
     },
     "Defender": {
-      "internationalGoals": 9068,
-      "internationalCaps": 9610,
-      "careerGoals": 10953,
+      "internationalGoals": 9067,
+      "internationalCaps": 9609,
+      "careerGoals": 10952,
       "careerAssists": 9098,
-      "careerAppearances": 10969,
+      "careerAppearances": 10968,
       "clubCount": 16313,
       "heightCm": 17889,
       "age": 20457,
@@ -45,26 +45,26 @@
     "Midfield": {
       "internationalGoals": 8404,
       "internationalCaps": 8807,
-      "careerGoals": 10199,
+      "careerGoals": 10200,
       "careerAssists": 8510,
-      "careerAppearances": 10214,
+      "careerAppearances": 10215,
       "clubCount": 15457,
-      "heightCm": 16334,
-      "age": 18984,
+      "heightCm": 16333,
+      "age": 18983,
       "peakValue": 12015,
       "currentValue": 12015,
       "yellowCards": 8510,
       "redCards": 8510
     },
     "Attack": {
-      "internationalGoals": 8337,
-      "internationalCaps": 8608,
+      "internationalGoals": 8338,
+      "internationalCaps": 8609,
       "careerGoals": 9967,
       "careerAssists": 8534,
       "careerAppearances": 9989,
-      "clubCount": 14818,
-      "heightCm": 15514,
-      "age": 17833,
+      "clubCount": 14819,
+      "heightCm": 15515,
+      "age": 17834,
       "peakValue": 11369,
       "currentValue": 11369,
       "yellowCards": 8534,

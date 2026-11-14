@@ -1,14 +1,14 @@
 {
   "schema_version": 3,
-  "generated_at": "2026-11-14T00:11:30.581646+00:00",
-  "player_count": 54554,
+  "generated_at": "2026-11-14T10:02:14.821884+00:00",
+  "player_count": 54553,
   "status_counts": {
     "active": 23402,
     "recent": 14254,
-    "legend": 16834,
+    "legend": 16833,
     "unknown": 64
   },
-  "historical_player_count": 31088,
+  "historical_player_count": 31087,
   "minimum_required": 30000,
   "audience_minimum_required": 40000,
   "audience_market": "Türkiye",
