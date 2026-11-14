@@ -388,29 +388,6 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:rad
   gap: 18px;
 }
 
-.lobbyCodeBox {
-  display: grid;
-  justify-items: center;
-  gap: 8px;
-  padding: 18px;
-  border-radius: 18px;
-  border: 1px solid rgba(99,255,170,.22);
-  background: rgba(8,16,12,.7);
-}
-
-.lobbyCodeBox span {
-  color: #76ffbe;
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: .18em;
-}
-
-.lobbyCodeBox strong {
-  color: #f4fff8;
-  font-size: 34px;
-  letter-spacing: .12em;
-}
-
 .lobbyTeams {
   display: grid;
   grid-template-columns: repeat(2, minmax(0,1fr));
@@ -1649,7 +1626,6 @@ body.nx-event-cinema-open{overflow:inherit!important}
     <div class="bootCards">
       <button class="bootCard" type="button" data-neon-social="party"><span class="bootCardTag">KALICI PARTİ</span><strong>Arkadaşlarla Oyna</strong><small>Arkadaşlarını isimle ekle; partiyi bir kez kur ve oyun modları arasında birlikte geç.</small></button>
       <button class="bootCard" type="button" data-neon-social="play"><span class="bootCardTag">OTOMATİK EŞLEŞME</span><strong>Rakip Ara</strong><small>Aynı oyun modunda arama yapan uygun bir rakiple eşleş ve maç lobisine otomatik gir.</small></button>
-      <button class="bootCard" type="button" onclick="return window.NEON_MENU.openQuickOnline(event)"><span class="bootCardTag">YEDEK YÖNTEM</span><strong>Oda Kodu</strong><small>Oda oluştur veya arkadaşının altı karakterli koduyla mevcut lobiye katıl.</small></button>
       <button class="bootCard tournamentChoice" type="button" onclick="return window.NEON_MENU.openTournament(event)"><span class="bootCardTag">TURNUVA</span><strong>Turnuva</strong><small>4/8 takım, kişisel 11 ekranı, senkron draft ve eleme ağacı.</small></button>
     </div>
     <div class="multiplayerBackRow"><button class="bootGhostBtn" type="button" onclick="return window.NEON_MENU.showHome(event)">ANA MENÜYE DÖN</button></div>
@@ -1662,43 +1638,8 @@ body.nx-event-cinema-open{overflow:inherit!important}
   </div>
 </div>
 
-<div class="bootView" id="bootOnline">
-<div class="bootFormGrid">
-<div class="bootFormBox">
-<label>Takım Adın</label>
-<input id="onlineTeamName" maxlength="20" placeholder="Örn: Eren Takımı" type="text"/>
-</div>
-<div class="bootActionRow">
-<button class="bootPrimaryBtn" id="createRoomBtn" type="button">
-            ODA OLUŞTUR
-          </button>
-<button class="bootGhostBtn" id="backBootBtn" type="button" onclick="return window.NEON_MENU.showMultiplayer(event)">
-            GERİ
-          </button>
-</div>
-<div class="bootDivider">
-<span>veya</span>
-</div>
-<div class="bootFormBox">
-<label>Oda Kodu</label>
-<input id="joinRoomCode" maxlength="8" placeholder="Örn: K7X4P2" type="text"/>
-</div>
-<div class="bootActionRow">
-<button class="bootPrimaryBtn" id="joinRoomBtn" type="button">
-            ODAYA KATIL
-          </button>
-</div>
-<div class="onlineBootStatus" id="onlineBootStatus">
-          Henüz bir oda seçilmedi.
-        </div>
-</div>
-</div>
 <div class="bootView" id="bootLobby">
 <div class="lobbyWrap">
-<div class="lobbyCodeBox">
-<span>ODA KODU</span>
-<strong id="lobbyRoomCode">------</strong>
-</div>
 <div class="lobbyTeams">
 <div class="lobbyTeamCard">
 <span>Takım 1</span>
@@ -1787,18 +1728,7 @@ window.NEON_MENU = {
     this.stop(event);
     return this.animate(event?.currentTarget, () => this.setView("bootMultiplayer"));
   },
-  openQuickOnline(event) {
-    this.stop(event);
-    return this.animate(event?.currentTarget, () => {
-      this.setView("bootOnline");
-      const status = document.getElementById("onlineBootStatus");
-      if (status && typeof window.KADRO_OPEN_ONLINE !== "function") {
-        status.textContent = "Firebase bağlantısı hazırlanıyor...";
-        status.style.color = "rgba(221,255,236,.82)";
-      }
-      if (typeof window.KADRO_OPEN_ONLINE === "function") window.KADRO_OPEN_ONLINE();
-    });
-  },
+
   openTournament(event) {
     this.stop(event);
     return this.animate(event?.currentTarget, () => {
@@ -11289,22 +11219,16 @@ import {
 
   const bootScreen = document.getElementById("bootScreen");
   const bootHome = document.getElementById("bootHome");
-  const bootOnline = document.getElementById("bootOnline");
+  const bootMultiplayer = document.getElementById("bootMultiplayer");
   const bootLobby = document.getElementById("bootLobby");
 
   const singleModeBtn = document.getElementById("singleModeBtn");
   const onlineModeBtn = document.getElementById("onlineModeBtn");
   const backBootBtn = document.getElementById("backBootBtn");
 
-  const createRoomBtn = document.getElementById("createRoomBtn");
-  const joinRoomBtn = document.getElementById("joinRoomBtn");
   const leaveLobbyBtn = document.getElementById("leaveLobbyBtn");
 
-  const onlineTeamName = document.getElementById("onlineTeamName");
-  const joinRoomCode = document.getElementById("joinRoomCode");
-  const onlineBootStatus = document.getElementById("onlineBootStatus");
 
-  const lobbyRoomCode = document.getElementById("lobbyRoomCode");
   const lobbyTeamA = document.getElementById("lobbyTeamA");
   const lobbyTeamB = document.getElementById("lobbyTeamB");
   const lobbyStatusText = document.getElementById("lobbyStatusText");
@@ -11339,14 +11263,9 @@ import {
     view?.classList.add("active");
   }
 
+  // Online matches only start from matchmaking or a party launch, so every status goes to the match lobby.
   function setOnlineStatus(message, isError = false) {
-    if (!onlineBootStatus) return;
-    onlineBootStatus.textContent = message;
-    onlineBootStatus.setAttribute("role", isError ? "alert" : "status");
-    onlineBootStatus.setAttribute("aria-live", isError ? "assertive" : "polite");
-    onlineBootStatus.style.color = isError
-      ? "#ff8b98"
-      : "rgba(221,255,236,.82)";
+    setLobbyStatus(message, isError);
   }
 
   function setLobbyStatus(message, isError = false) {
@@ -11361,7 +11280,7 @@ import {
 
   function setBusy(isBusy) {
     operationInProgress = isBusy;
-    [createRoomBtn, joinRoomBtn, backBootBtn].forEach(button => {
+    [backBootBtn].forEach(button => {
       if (button) button.disabled = isBusy;
     });
   }
@@ -11445,23 +11364,6 @@ import {
     bootScreen?.classList.add("hidden");
     if (typeof window.showStage === "function") window.showStage("draft");
   }
-
-  async function goOnlineForm() {
-    setBootView(bootOnline);
-    setOnlineStatus("Firebase bağlantısı hazırlanıyor...");
-    try {
-      await ensurePlayerUser();
-      window.KADRO_ONLINE.connected = true;
-      setOnlineStatus(
-        "Bağlantı hazır. Takım adını girip oda oluşturabilir veya mevcut bir odaya katılabilirsin."
-      );
-    } catch (error) {
-      window.KADRO_ONLINE.connected = false;
-      reportOnlineError("Firebase bağlantısı kurulamadı", error, "online");
-    }
-  }
-
-  window.KADRO_OPEN_ONLINE = goOnlineForm;
 
   async function reserveRoomCode(teamName, preferredCode = "") {
     const fixedCode = sanitizeRoomCode(preferredCode);
@@ -11599,7 +11501,6 @@ import {
         const bothConnected = Boolean(playerA?.connected && playerB?.connected);
 
         window.KADRO_ONLINE.room = room;
-        lobbyRoomCode.textContent = automaticRoomLaunch ? "OTOMATİK" : roomCode;
         lobbyTeamA.textContent = playerA?.name || "Bekleniyor...";
         lobbyTeamB.textContent = playerB?.name || "Rakip bekleniyor...";
 
@@ -11650,7 +11551,7 @@ import {
 
   async function createRoom(options = {}) {
     if (operationInProgress) return;
-    const teamName = sanitizeTeamName(options?.teamName || onlineTeamName?.value);
+    const teamName = sanitizeTeamName(options?.teamName);
     if (!teamName) {
       setOnlineStatus("Lütfen önce takım adını gir.", true);
       return;
@@ -11671,14 +11572,13 @@ import {
         connected: true
       });
       await registerDisconnect(roomCode, "A");
-      lobbyRoomCode.textContent = automaticRoomLaunch ? "OTOMATİK" : roomCode;
       lobbyTeamA.textContent = teamName;
       lobbyTeamB.textContent = "Rakip bekleniyor...";
       setLobbyStatus(automaticRoomLaunch ? (partyAutoLaunch ? "Parti arkadaşın otomatik bağlanıyor..." : "Eşleşen rakip otomatik bağlanıyor...") : "Rakip oyuncu bu oda kodu ile katılabilir.");
       setBootView(bootLobby);
       watchRoom(roomCode);
     } catch (error) {
-      reportOnlineError("Oda oluşturulamadı", error, "online");
+      reportOnlineError("Oda oluşturulamadı", error, "lobby");
     } finally {
       setBusy(false);
     }
@@ -11686,8 +11586,8 @@ import {
 
   async function joinRoom(options = {}) {
     if (operationInProgress) return;
-    const teamName = sanitizeTeamName(options?.teamName || onlineTeamName?.value);
-    const roomCode = sanitizeRoomCode(options?.roomCode || joinRoomCode?.value);
+    const teamName = sanitizeTeamName(options?.teamName);
+    const roomCode = sanitizeRoomCode(options?.roomCode);
 
     if (!teamName) {
       setOnlineStatus("Lütfen önce takım adını gir.", true);
@@ -11777,14 +11677,13 @@ import {
       });
 
       await registerDisconnect(roomCode, "B");
-      lobbyRoomCode.textContent = automaticRoomLaunch ? "OTOMATİK" : roomCode;
       lobbyTeamA.textContent = "Ev sahibi okunuyor...";
       lobbyTeamB.textContent = teamName;
       setLobbyStatus("Odaya bağlanıldı. Lobi güncelleniyor...");
       setBootView(bootLobby);
       watchRoom(roomCode);
     } catch (error) {
-      reportOnlineError("Odaya katılınamadı", error, "online");
+      reportOnlineError("Odaya katılınamadı", error, "lobby");
     } finally {
       setBusy(false);
     }
@@ -11826,10 +11725,7 @@ import {
       phase: null
     });
 
-    setOnlineStatus(
-      "Lobiden çıkıldı. Yeni bir oda oluşturabilir veya başka bir odaya katılabilirsin."
-    );
-    setBootView(bootOnline);
+    setBootView(bootMultiplayer);
   }
 
   window.KADRO_LEAVE_ONLINE_ROOM = leaveLobby;
@@ -11924,7 +11820,6 @@ import {
 
       await registerDisconnect(roomCode, side);
 
-      lobbyRoomCode.textContent = automaticRoomLaunch ? "OTOMATİK" : roomCode;
       lobbyTeamA.textContent = host?.name || "Bekleniyor...";
       lobbyTeamB.textContent = guest?.name || "Rakip bekleniyor...";
       setLobbyStatus("Oturum geri yükleniyor...");
@@ -11932,7 +11827,7 @@ import {
       watchRoom(roomCode);
       return true;
     } catch (error) {
-      reportOnlineError("Önceki online oda geri yüklenemedi", error, "online");
+      reportOnlineError("Önceki online oda geri yüklenemedi", error, "lobby");
       return false;
     }
   };
@@ -12236,19 +12131,8 @@ import {
     flushMatchSnapshot();
   });
 
-  joinRoomCode?.addEventListener("input", () => {
-    joinRoomCode.value = sanitizeRoomCode(joinRoomCode.value);
-  });
-  onlineTeamName?.addEventListener("keydown", event => {
-    if (event.key === "Enter") createRoom();
-  });
-  joinRoomCode?.addEventListener("keydown", event => {
-    if (event.key === "Enter") joinRoom();
-  });
 
   backBootBtn?.addEventListener("click", () => setBootView(bootHome));
-  createRoomBtn?.addEventListener("click", createRoom);
-  joinRoomBtn?.addEventListener("click", joinRoom);
   leaveLobbyBtn?.addEventListener("click", leaveLobby);
 
   onAuthStateChanged(auth, user => {
@@ -12263,9 +12147,6 @@ import {
     const role = autoMatch.get("nxRole");
     const roomCode = sanitizeRoomCode(autoMatch.get("nxCode"));
     const teamName = sanitizeTeamName(autoMatch.get("nxName")) || "NEON Oyuncu";
-    if (onlineTeamName) onlineTeamName.value = teamName;
-    if (joinRoomCode) joinRoomCode.value = roomCode;
-    if (lobbyRoomCode) lobbyRoomCode.textContent = automaticRoomLaunch ? "OTOMATİK" : roomCode;
     if (lobbyTeamA) lobbyTeamA.textContent = role === "host" ? teamName : "Parti lideri";
     if (lobbyTeamB) lobbyTeamB.textContent = role === "guest" ? teamName : "Parti arkadaşı";
     setBootView(bootLobby);
@@ -14054,7 +13935,7 @@ window.KADRO_HARD_MATCH_SYNC = {
     return ({
       bootHome: "menu",
       bootBot: "bot",
-      bootOnline: "online",
+      bootMultiplayer: "online",
       bootLobby: "lobby"
     })[active] || "menu";
   }
@@ -14180,8 +14061,6 @@ window.KADRO_HARD_MATCH_SYNC = {
       bot: clone(window.KADRO_BOT || null),
       inputs: {
         botTeamName: byId("botTeamName")?.value || "",
-        onlineTeamName: byId("onlineTeamName")?.value || "",
-        joinRoomCode: byId("joinRoomCode")?.value || "",
         searchInput: byId("searchInput")?.value || ""
       },
       match: matchSnapshot()
@@ -14489,7 +14368,7 @@ window.KADRO_HARD_MATCH_SYNC = {
     try {
       if (route === "menu") showBootView("bootHome");
       else if (route === "bot") showBootView("bootBot");
-      else if (route === "online") showBootView("bootOnline");
+      else if (route === "online") showBootView("bootMultiplayer");
       else if (route === "lobby") showBootView("bootLobby");
       else if (route === "draft") showDraftRoute();
       else if (route === "tactics") resolved = showTacticsRoute();
@@ -14569,7 +14448,7 @@ window.KADRO_HARD_MATCH_SYNC = {
 
   const observer = new MutationObserver(watchRoute);
   [
-    "bootScreen", "bootHome", "bootBot", "bootOnline", "bootLobby",
+    "bootScreen", "bootHome", "bootBot", "bootMultiplayer", "bootLobby",
     "draftScreen", "powerCompare", "tacticsScreen", "handover",
     "complete", "matchSimulation", "kadroMatchAnalysis"
   ].forEach(id => {
