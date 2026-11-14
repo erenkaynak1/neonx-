@@ -1,19 +1,19 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-11-14T09:54:48.376341+00:00",
+  "generated_at": "2026-11-14T23:31:43.203399+00:00",
   "provider": "dcaribou/transfermarkt-datasets",
-  "provider_revision": "e44f186d6f06dd8452aaf54c7921ba66c961f637",
+  "provider_revision": null,
   "dataset_url": "https://pub-e682421888d945d684bcae8890b0ec20.r2.dev/data/transfermarkt-datasets.duckdb",
   "dataset_last_appearance": "2026-06-28",
   "latest_season": 2025,
-  "player_count": 65235,
+  "player_count": 64471,
   "status_counts": {
     "active": 28367,
-    "legend": 20380,
-    "unknown": 85,
+    "legend": 19666,
+    "unknown": 35,
     "recent": 16403
   },
-  "historical_player_count": 36783,
+  "historical_player_count": 36069,
   "minimum_required": 50000,
   "maximum_runtime_players": null,
   "selection_policy": "The complete upstream player table is retained without a recognition cap.",
@@ -25,19 +25,19 @@
     "trophies"
   ],
   "source_policy": "Transfermarkt (dcaribou/transfermarkt-datasets) for profiles, market values, current club and caps; Wikidata (CC0), joined by Transfermarkt player ID (P2446), for club history, career league totals, and players missing from the dataset (legends).",
-  "wikidata_generated_at": "2026-11-14T10:02:07.929302+00:00",
+  "wikidata_generated_at": "2026-11-12T14:31:40.409738+00:00",
   "wikidata_merge": {
-    "matched": 42567,
-    "club_count": 30625,
-    "career_stats": 4792,
-    "filled": 4192,
-    "added": 15086
+    "matched": 42563,
+    "club_count": 30616,
+    "career_stats": 4977,
+    "filled": 4064,
+    "added": 14322
   },
   "superlig_scope": "superlig_appearances: Süper Lig league matches. 2012-08-17 onwards from the TR1 appearance log (exact); earlier seasons from Wikidata club spells at Turkish top-flight clubs (spells overlapping 2012/13 count only the part before it). Null when an earlier spell has no match count.",
   "superlig_stats": {
-    "exact_only": 9396,
+    "exact_only": 9395,
     "with_wikidata": 923,
-    "unknown": 969,
-    "zero": 53947
+    "unknown": 967,
+    "zero": 53186
   }
 }
