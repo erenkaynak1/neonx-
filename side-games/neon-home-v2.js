@@ -25,7 +25,7 @@
     {href:"football-wordle/index.html",name:"Football Wordle",label:"FOOTBALL WORDLE",tag:"HARF TAHMİNİ",art:"thumb-wordle.webp"},
     {href:"reverse-xi/index.html",name:"RE:VERSE",label:"RE:VERSE",tag:"SES TAKLİDİ",art:"thumb-reverse.webp"},
     {href:"en11/index.html",name:"EN 11",label:"EN 11",tag:"KADRO DRAFTI",art:"thumb-en11.webp"},
-    {href:"higher-lower/index.html",name:"Higher or Lower",label:"HIGHER OR LOWER",tag:"SERİ TAHMİNİ",art:"thumb-higherlower.webp"}
+    {href:"higher-lower/index.html",name:"Higher or Lower",label:"HIGHER OR LOWER",tag:"SERİ TAHMİNİ",art:"thumb-higherlower-v2.webp"}
   ];
 
   /* The tournament hub is an embedded document: hand it the shared tokens so it matches the app.
