@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-11-14T10:02:12.955Z",
+  "generated_at": "2026-11-14T23:11:52.272Z",
   "provider": "dcaribou/transfermarkt-datasets",
   "provider_revision": "e44f186d6f06dd8452aaf54c7921ba66c961f637",
   "source_snapshot_at": "2026-11-14T09:54:48.376341+00:00",
@@ -26,7 +26,8 @@
       "peakValue": 4604,
       "currentValue": 4604,
       "yellowCards": 2259,
-      "redCards": 2259
+      "redCards": 2259,
+      "superLigApps": 7183
     },
     "Defender": {
       "internationalGoals": 9067,
@@ -40,7 +41,8 @@
       "peakValue": 13411,
       "currentValue": 13411,
       "yellowCards": 9098,
-      "redCards": 9098
+      "redCards": 9098,
+      "superLigApps": 20169
     },
     "Midfield": {
       "internationalGoals": 8404,
@@ -54,7 +56,8 @@
       "peakValue": 12015,
       "currentValue": 12015,
       "yellowCards": 8510,
-      "redCards": 8510
+      "redCards": 8510,
+      "superLigApps": 18741
     },
     "Attack": {
       "internationalGoals": 8338,
@@ -68,7 +71,8 @@
       "peakValue": 11369,
       "currentValue": 11369,
       "yellowCards": 8534,
-      "redCards": 8534
+      "redCards": 8534,
+      "superLigApps": 17631
     }
   },
   "selection_policy": "Every source player with a supported on-field position and a name is included. Missing stats remain unavailable.",

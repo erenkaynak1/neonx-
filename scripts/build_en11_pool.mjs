@@ -34,6 +34,7 @@ const FIELDS = {
   currentValue: 'current_market_value_eur',
   yellowCards: 'career_yellow_cards',
   redCards: 'career_red_cards',
+  superLigApps: 'superlig_appearances',
   sourceSlug: 'slug',
 };
 const METRIC_FIELDS = {
@@ -49,6 +50,7 @@ const METRIC_FIELDS = {
   currentValue: 'currentValue',
   yellowCards: 'yellowCards',
   redCards: 'redCards',
+  superLigApps: 'superLigApps',
 };
 const CORRECTABLE_FIELDS = new Set([
   'birthDate', 'heightCm', 'clubCount', 'careerGoals', 'careerAssists',
