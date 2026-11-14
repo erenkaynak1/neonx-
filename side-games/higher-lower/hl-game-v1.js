@@ -55,19 +55,24 @@
     return Math.abs(Math.log((Math.abs(a) + 1) / (Math.abs(b) + 1)));
   }
   // Returns a challenger for `stay` whose value is close to the stayer's: the nearest few players on one
-  // side, chosen among well-known players. The side is random (higher or lower with equal odds), so
+  // side (at least minGap apart), chosen among well-known players. The side is random (higher or lower with equal odds), so
   // "always keep the player on screen" is no strategy. The longer the streak, the nearer the pick.
   function pickChallenger(q, stay, want) {
     const pool = S.pool, sv = valueOf(q, stay);
     const dir = want || (Math.random() < 0.5 ? 'up' : 'down');
     const depth = Math.min(pool.length, 700 + S.streak * 150);
-    const nearest = Math.max(3, 10 - S.streak);          // 10 closest at the start, 3 from streak 7
+    const nearest = Math.max(5, 14 - S.streak);          // 14 closest at the start, 5 from streak 9
+    // A minimum gap that shrinks as the streak grows: ~22% apart (or 3 cm, 2 years) on the first answers,
+    // half of that at streak 6, the very nearest values from streak 12.
+    const minGap = (q.key === 'b' ? 2 : q.key === 'h' ? 0.5 : 0.22) * Math.max(0, 1 - S.streak / 12);
     const onSide = p => { const v = valueOf(q, p); return dir === 'up' ? v > sv : v < sv; };
     const free = p => p.id !== stay.id && !S.used.has(p.id);
     let list = pool.slice(0, depth).filter(p => free(p) && onSide(p));
     if (!list.length) list = pool.filter(p => free(p) && onSide(p));
     if (!list.length) return null; // nobody on that side (e.g. the stayer is the top value): caller draws a new pair
     list.sort((x, y) => gap(q, valueOf(q, x), sv) - gap(q, valueOf(q, y), sv));
+    const wide = list.filter(p => gap(q, valueOf(q, p), sv) >= minGap);
+    if (wide.length) list = wide;
     return list[Math.floor(Math.random() * Math.min(list.length, nearest))];
   }
   function chooseQuestion() {
