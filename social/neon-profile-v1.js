@@ -99,8 +99,8 @@ function render(){
   let box=view.querySelector(':scope > .nxp-box');
   if(!box){box=document.createElement('div');box.className='nxp-box';view.prepend(box)}
   // Avatar SVGs carry unique ids per copy, so compare a state signature instead of the markup.
-  const sig=JSON.stringify([state.uid,state.avatar,state.pickerOpen,profile.username,profile.accountType,state.stats]);
-  if(box.dataset.sig!==sig){box.dataset.sig=sig;box.innerHTML=`${heroMarkup(profile)}<div class="nxp-section"><span class="nxp-label">İSTATİSTİKLER</span>${statsMarkup()}</div>`}
+  const sig=JSON.stringify([state.uid,state.avatar,state.pickerOpen,profile.username,profile.accountType,profile.higherLowerBest||0,state.isAdmin,state.stats]);
+  if(box.dataset.sig!==sig){box.dataset.sig=sig;box.innerHTML=`${heroMarkup(profile)}<div class="nxp-section"><span class="nxp-label">İSTATİSTİKLER</span>${statsMarkup()}${Number(profile.higherLowerBest)>0?`<a class="nxp-hl" href="${new URL('../side-games/higher-lower/index.html',import.meta.url).href}"><span>HIGHER OR LOWER REKORU</span><b>${Number(profile.higherLowerBest)}</b></a>`:''}</div>`}
   if(!state.stats||state.statsUid!==state.uid)loadStats();
 }
 document.addEventListener('click',e=>{
@@ -149,6 +149,7 @@ function injectStyle(){
 .nxp-bar i{display:block;height:100%;border-radius:4px;background:rgba(0,234,255,.35);animation:nxpGrow .7s cubic-bezier(.2,.8,.2,1) both}
 .nxp-bar em{display:block;height:100%;border-radius:4px;background:var(--neon-primary,#baff18)}
 @keyframes nxpGrow{from{transform:scaleX(0);transform-origin:left}to{transform:none;transform-origin:left}}
+.nxp-hl{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-radius:10px;background:linear-gradient(90deg,rgba(186,255,24,.12),#10151a 70%);border:1px solid rgba(186,255,24,.25);color:#f3f6f8;text-decoration:none}.nxp-hl span{font:800 11px/1 var(--nxu-display,"Barlow Condensed",sans-serif);letter-spacing:.16em;color:#aab6c0}.nxp-hl b{font:italic 900 24px/1 var(--nxu-display,"Barlow Condensed",sans-serif);color:var(--neon-primary,#baff18)}
 .nxp-empty{display:grid;gap:6px;padding:14px;border-radius:10px;background:#10151a;border:1px dashed rgba(255,255,255,.12)}.nxp-empty b{color:#f3f6f8}.nxp-empty span{color:#aab6c0;font-size:13px;line-height:1.4}
 .nxp-loading{display:grid;gap:8px}.nxp-loading span{height:18px;border-radius:6px;background:linear-gradient(90deg,#10151a,#1d252c,#10151a);background-size:200% 100%;animation:nxpShimmer 1.2s linear infinite}
 @keyframes nxpShimmer{to{background-position:-200% 0}}
