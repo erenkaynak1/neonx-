@@ -8,7 +8,7 @@
  const me=document.currentScript;if(!me||window.NX_SG_LOADER)return;window.NX_SG_LOADER=true;
  const title=me.dataset.title||'NEON XI',instant=me.dataset.instant==='1';
  const logo=new URL('../assets/ui/logo-neon-xi.svg',me.src).href;
- const READY=['.menuPanel .menuMode','.sgm .sgm-mode','.nx-imp-menu .nx-imp-mode','#board .tile','.pitch','#game:not([hidden])','.error','.status.error:not(:empty)'];
+ const READY=['.hl-hero .hl-play','.hl-card','.menuPanel .menuMode','.sgm .sgm-mode','.nx-imp-menu .nx-imp-mode','#board .tile','.pitch','#game:not([hidden])','.error','.status.error:not(:empty)'];
  const font=f=>new URL('../assets/ui/fonts/'+f,me.src).href;
  const css=`
  @font-face{font-family:"Barlow Condensed";font-weight:700;font-display:swap;src:url("${font('BarlowCondensed-Bold.woff')}") format("woff")}

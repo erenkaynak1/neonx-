@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-11-14T23:02:24.871349+00:00",
+  "source": "side-games/data/master/transfermarkt-players.json",
+  "player_count": 2600,
+  "coverage": {
+    "caps": 2482,
+    "ig": 2444,
+    "yc": 1944,
+    "rc": 1944,
+    "pv": 1951,
+    "cv": 1755,
+    "g": 2471,
+    "a": 1944,
+    "ap": 2481,
+    "h": 2589,
+    "cl": 2599,
+    "sl": 0,
+    "b": 2600
+  },
+  "active_metrics": [
+    "caps",
+    "ig",
+    "yc",
+    "rc",
+    "pv",
+    "cv",
+    "g",
+    "a",
+    "ap",
+    "h",
+    "cl",
+    "b"
+  ],
+  "notes": {
+    "yc": "Sarı kartlar: 2012/13 sezonundan bu yana resmî kulüp maçları (dcaribou/transfermarkt-datasets).",
+    "rc": "Kırmızı kartlar: 2012/13 sezonundan bu yana resmî kulüp maçları.",
+    "a": "Asistler: 2012/13 sezonundan bu yana resmî kulüp maçları.",
+    "g": "Goller: kulüp kariyeri boyunca lig golleri (Wikidata) ya da 2012 sonrası resmî maçlar.",
+    "sl": "Süper Lig maçları: 2012/13 sonrası maç kayıtları + öncesi için Wikidata kulüp istatistikleri."
+  }
+}

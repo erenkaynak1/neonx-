@@ -10,6 +10,7 @@ on:
       - 'scripts/build_wikidata_supplement.py'
       - 'scripts/merge_wikidata_master.py'
       - 'scripts/build_en11_pool.mjs'
+      - 'scripts/build_higher_lower_pool.py'
       - 'scripts/build_xox_master_pool.py'
       - 'scripts/build_career_twin_pool.py'
       - 'scripts/validate_side_game_pools.py'
@@ -55,6 +56,8 @@ jobs:
         run: python scripts/build_xox_master_pool.py
       - name: Publish Career Twin metric availability
         run: python scripts/build_career_twin_pool.py
+      - name: Rebuild Higher or Lower pool
+        run: python scripts/build_higher_lower_pool.py
       - name: Validate master and derived pools
         run: python scripts/validate_side_game_pools.py
       - name: Commit generated player pools
@@ -67,6 +70,7 @@ jobs:
           git add side-games/data/master/xox-meta.json
           git add side-games/career-twin/data
           git add side-games/en11/data
+          git add side-games/higher-lower/data
           git diff --cached --quiet && exit 0
           git commit -m "Refresh Transfermarkt + Wikidata master player pool"
           git push
