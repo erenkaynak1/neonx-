@@ -32,5 +32,12 @@
     "career_stats": 4792,
     "filled": 4192,
     "added": 15086
+  },
+  "superlig_scope": "superlig_appearances: Süper Lig league matches. 2012-08-17 onwards from the TR1 appearance log (exact); earlier seasons from Wikidata club spells at Turkish top-flight clubs (spells overlapping 2012/13 count only the part before it). Null when an earlier spell has no match count.",
+  "superlig_stats": {
+    "exact_only": 9396,
+    "with_wikidata": 923,
+    "unknown": 969,
+    "zero": 53947
   }
 }

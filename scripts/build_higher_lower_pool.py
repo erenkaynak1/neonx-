@@ -57,8 +57,13 @@ def build(args: argparse.Namespace) -> dict:
         (p for p in master if p.get("id") and p.get("name") and p.get("position") in {"Goalkeeper", "Defender", "Midfield", "Attack"}),
         key=lambda p: -float(p.get("recognition_score") or 0),
     )
+    # Süper Lig questions need Turkish-league names people know, legends included: add the best-known
+    # players with Süper Lig matches who fall outside the recognition cut.
+    chosen = ranked[: args.size]
+    seen = {p["id"] for p in chosen}
+    chosen += [p for p in ranked if p["id"] not in seen and (p.get("superlig_appearances") or 0) >= 60][:900]
     rows = []
-    for p in ranked[: args.size]:
+    for p in chosen:
         row = {
             "id": int(p["id"]),
             "n": str(p["name"]).strip(),
@@ -95,7 +100,7 @@ def build(args: argparse.Namespace) -> dict:
             "rc": "Kırmızı kartlar: 2012/13 sezonundan bu yana resmî kulüp maçları.",
             "a": "Asistler: 2012/13 sezonundan bu yana resmî kulüp maçları.",
             "g": "Goller: kulüp kariyeri boyunca lig golleri (Wikidata) ya da 2012 sonrası resmî maçlar.",
-            "sl": "Süper Lig maçları: 2012/13 sonrası maç kayıtları + öncesi için Wikidata kulüp istatistikleri.",
+            "sl": "Süper Lig maçları: 2012/13 sonrası maç kayıtları, öncesi için Wikidata kulüp istatistikleri. Yalnızca Süper Lig'de oynamış oyuncular sorulur.",
         },
     }
     (args.out_dir / "meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
