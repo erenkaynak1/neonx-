@@ -45,8 +45,11 @@
   /* ---------- pairing ---------- */
   // positive: only players who have the stat at all (Süper Lig questions skip players who never played there).
   function poolFor(q) { return S.players.filter(p => { const v = valueOf(q, p); return v != null && (!q.positive || v > 0); }); }
-  function pickChallenger(q, stay) {
+  // Returns a challenger for `stay`. The newcomer is higher or lower than the stayer with equal odds,
+  // so "always keep the player on screen" is no strategy. `want` forces a direction ('up'/'down').
+  function pickChallenger(q, stay, want) {
     const pool = S.pool, sv = valueOf(q, stay);
+    const dir = want || (Math.random() < 0.5 ? 'up' : 'down');
     // Early on: famous players and clear gaps. The longer the streak, the deeper and closer it gets.
     const depth = Math.min(pool.length, 500 + S.streak * 120);
     const close = S.streak >= 6;
@@ -59,8 +62,10 @@
       if (close && q.key === 'b' && Math.abs(v - sv) > Math.max(400, 4000 - S.streak * 220)) continue;
       candidates.push(p);
     }
-    const list = candidates.length ? candidates : pool.filter(p => p.id !== stay.id && !S.used.has(p.id) && valueOf(q, p) !== sv);
-    if (!list.length) return null;
+    const side = list => list.filter(p => dir === 'up' ? valueOf(q, p) > sv : valueOf(q, p) < sv);
+    let list = side(candidates);
+    if (!list.length) list = side(pool.filter(p => p.id !== stay.id && !S.used.has(p.id)));
+    if (!list.length) return null; // nobody on that side (e.g. the stayer is the top value): caller draws a new pair
     return list[Math.floor(Math.random() * Math.min(list.length, 260))];
   }
   function chooseQuestion() {
@@ -90,9 +95,9 @@
     S.screen = 'menu';
     const best = store.get('best', 0), byQ = store.get('bestByQ', {});
     const qBest = QUESTIONS.filter(q => byQ[q.id]).sort((a, b) => byQ[b.id] - byQ[a.id]).slice(0, 4);
-    app.innerHTML = `<header class="hl-top"><a class="hl-back" href="../index.html" aria-label="Yan oyunlar">‹</a><div class="hl-brand"><small>NEON XI · SIDE GAME</small><h1>HIGHER <i>OR</i> LOWER</h1></div></header>
+    app.innerHTML = `<header class="hl-top"><a class="hl-back" href="../index.html" aria-label="Yan oyunlar">‹</a><div class="hl-brand"><small>NEON XI · SIDE GAME</small><h1 class="sr">Higher or Lower</h1></div></header>
       <section class="hl-hero">
-        <div class="hl-arrows" aria-hidden="true"><span>▲</span><span>▼</span></div>
+        <img class="hl-logo" src="./assets/hl-logo-v1.webp" width="760" height="420" alt="Higher or Lower" decoding="async">
         <p>İki futbolcu, tek soru. Doğru olanı seç, seriyi büyüt. İlk hatada oyun biter; her yeni oyunda soru değişir.</p>
         <button type="button" class="hl-play" id="hlPlay">OYNA</button>
         <div class="hl-mybest"><span>KİŞİSEL REKOR</span><b>${best}</b></div>
@@ -117,9 +122,10 @@
     }).catch(e => { box.innerHTML = `<div class="hl-empty">${esc(e && e.message || 'Liderlik tablosu şu an açılamıyor.')}</div>`; });
   }
   function start() {
-    S.q = chooseQuestion(); S.pool = poolFor(S.q).sort((a, b) => b.r - a.r); S.streak = 0; S.used = new Set(); S.busy = false;
-    const first = S.pool[Math.floor(Math.random() * Math.min(S.pool.length, 180))];
-    S.stay = first; S.used.add(first.id); S.chal = pickChallenger(S.q, first); S.used.add(S.chal.id);
+    S.q = chooseQuestion(); S.pool = poolFor(S.q).sort((a, b) => b.r - a.r); S.streak = 0; S.stayRuns = 0; S.used = new Set(); S.busy = false;
+    const pair = freshPair();
+    if (!pair) { renderMenu(); return; }
+    S.stay = pair.stay; S.chal = pair.chal;
     S.revealStay = false; renderGame(true);
     intro();
   }
@@ -128,11 +134,11 @@
     el.innerHTML = `<small>BU OYUNUN SORUSU</small><b>${esc(S.q.q)}</b>${S.q.sub ? `<em>${esc(S.q.sub)}</em>` : ''}`;
     document.body.appendChild(el); setTimeout(() => el.classList.add('out'), 1900); setTimeout(() => el.remove(), 2300);
   }
-  function renderGame(enter) {
+  function renderGame(enter, both) {
     S.screen = 'game';
     app.innerHTML = `<header class="hl-top"><button type="button" class="hl-back" id="hlQuit" aria-label="Oyundan çık">‹</button><div class="hl-streak"><small>SERİ</small><b id="hlStreak">${S.streak}</b></div><div class="hl-best"><small>REKOR</small><b>${store.get('best', 0)}</b></div></header>
       <section class="hl-question"><b>${esc(S.q.q)}</b>${S.q.sub ? `<small>${esc(S.q.sub)}</small>` : ''}</section>
-      <section class="hl-duel">${card(S.stay, 'stay', S.revealStay)}<div class="hl-vs">VS</div>${card(S.chal, 'chal' + (enter ? ' enter' : ''), false)}</section>
+      <section class="hl-duel">${card(S.stay, 'stay' + (both ? ' enter' : ''), S.revealStay)}<div class="hl-vs">VS</div>${card(S.chal, 'chal' + (enter ? ' enter' : ''), false)}</section>
       <p class="hl-tip">Doğru olduğunu düşündüğün futbolcuya dokun.</p>`;
     document.getElementById('hlQuit').onclick = () => { if (!S.busy) renderMenu(); };
     app.querySelectorAll('[data-pick]').forEach(b => b.onclick = () => pick(Number(b.dataset.pick)));
@@ -173,12 +179,36 @@
     fx.innerHTML = good ? '<b>+1</b>' + Array.from({ length: 12 }, (_, i) => `<i style="--a:${i * 30}deg"></i>`).join('') : '<b>✕</b>';
     document.body.appendChild(fx); setTimeout(() => fx.remove(), 900);
   }
+  const MAX_STAYS = 2;
+  // Fresh pair: a new stayer (value hidden again) and a challenger for it.
+  function freshPair() {
+    const depth = Math.min(S.pool.length, 400 + S.streak * 120);
+    for (let tries = 0; tries < 40; tries++) {
+      const stay = S.pool[Math.floor(Math.random() * depth)];
+      if (!stay || S.used.has(stay.id)) continue;
+      const chal = pickChallenger(S.q, stay);
+      if (chal) { S.used.add(stay.id); S.used.add(chal.id); return { stay, chal }; }
+    }
+    return null;
+  }
   function next(winner, loser) {
-    const chal = pickChallenger(S.q, winner);
-    if (!chal) { gameOver(true); return; }
-    S.stay = winner; S.chal = chal; S.used.add(chal.id); S.revealStay = true; S.busy = false;
-    const out = app.querySelector(`.hl-card[data-pick="${loser.id}"]`); if (out) out.classList.add('leave');
-    setTimeout(() => renderGame(true), 260);
+    S.stayRuns = winner === S.stay ? (S.stayRuns || 0) + 1 : 1;
+    let chal = S.stayRuns < MAX_STAYS ? pickChallenger(S.q, winner) : null;
+    const out = app.querySelector(`.hl-card[data-pick="${loser.id}"]`);
+    if (chal) {
+      S.stay = winner; S.chal = chal; S.used.add(chal.id); S.revealStay = true; S.busy = false;
+      if (out) out.classList.add('leave');
+      setTimeout(() => renderGame(true), 260);
+      return;
+    }
+    // The stayer has had its run (or nobody can beat it, like Messi on market value): both cards change.
+    const pair = freshPair();
+    if (!pair) { gameOver(true); return; }
+    S.stay = pair.stay; S.chal = pair.chal; S.stayRuns = 0; S.revealStay = false; S.busy = false;
+    app.querySelectorAll('.hl-card').forEach(c => c.classList.add('leave'));
+    const tag = document.createElement('div'); tag.className = 'hl-swap'; tag.textContent = 'YENİ İKİLİ';
+    document.body.appendChild(tag); setTimeout(() => tag.remove(), 1100);
+    setTimeout(() => renderGame(true, true), 300);
   }
   function gameOver(cleared) {
     S.screen = 'over'; S.busy = false;

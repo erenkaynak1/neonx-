@@ -1,39 +1,65 @@
 /* NEON XI — Higher or Lower records.
-   Stores each signed-in player's best streak at social/higherLower/allTime/{uid} and per ISO week at
-   social/higherLower/weekly/{week}/{uid}, only when it beats the stored one (transaction), and reads
-   the top 20 of either board. Guests without a profile keep their personal record locally only. */
+   Each signed-in player's best streak goes to social/higherLower/allTime/{uid} and, per ISO week, to
+   social/higherLower/weekly/{week}/{uid}, only when it beats the stored one (transaction). If the database
+   rules do not allow those paths, the best is kept on the player's existing leaderboard entry instead
+   (social/leaderboards/{allTime|weekly/{week}}/{uid}: hlBest, hlQuestionLabel), which every player can read.
+   Boards are read only after the sign-in state is restored. Guests without a profile keep their record locally. */
 import {getApp,getApps} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js';
-import {getAuth} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js';
-import {getDatabase,get,limitToLast,orderByChild,query,ref,runTransaction,serverTimestamp,update} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js';
+import {getAuth,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js';
+import {getDatabase,get,limitToLast,orderByChild,query,ref,runTransaction,update} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js';
 
 const weekKey=(date=new Date())=>{const d=new Date(Date.UTC(date.getUTCFullYear(),date.getUTCMonth(),date.getUTCDate())),day=d.getUTCDay()||7;d.setUTCDate(d.getUTCDate()-day+1);return d.toISOString().slice(0,10)};
-async function ready(){for(let i=0;i<200&&!getApps().length;i++)await new Promise(r=>setTimeout(r,100));if(!getApps().length)throw new Error('Bağlantı kurulamadı.');const app=getApp();return {db:getDatabase(app),auth:getAuth(app)}}
-const me=()=>{const u=window.NEON_IDENTITY||null,p=window.NEON_SOCIAL?.profile;return p?.username?{username:p.username}:u}
-
-async function bump(db,path,entry){
-  return runTransaction(ref(db,path),cur=>{if(cur&&Number(cur.best||0)>=entry.best)return;return {...entry,at:Date.now()}},{applyLocally:false});
+const denied=e=>/permission|denied/i.test(String(e?.code||'')+' '+String(e?.message||''));
+let ctx=null;
+async function ready(){
+  if(ctx)return ctx;
+  for(let i=0;i<200&&!getApps().length;i++)await new Promise(r=>setTimeout(r,100));
+  if(!getApps().length)throw new Error('Bağlantı kurulamadı.');
+  const app=getApp(),auth=getAuth(app);
+  // Wait for the first auth emission so a returning player is not read as signed out.
+  await new Promise(res=>{const off=onAuthStateChanged(auth,()=>{off();res()},()=>res());setTimeout(res,6000)});
+  ctx={db:getDatabase(app),auth};
+  onAuthStateChanged(auth,()=>window.NEON_HL?.refreshBoard());
+  return ctx;
 }
+const me=()=>{const p=window.NEON_SOCIAL?.profile;return p?.username?{username:p.username}:(window.NEON_IDENTITY||null)};
+async function profileName(db,uid){const p=me();if(p?.username)return p.username;try{return String((await get(ref(db,`social/profiles/${uid}/username`))).val()||'')}catch{return ''}}
+
+const bump=(db,path,entry)=>runTransaction(ref(db,path),cur=>{if(cur&&Number(cur.best||0)>=entry.best)return;return {...entry,at:Date.now()}},{applyLocally:false});
+// Fallback: merge hlBest into the player's leaderboard entry without touching the match stats.
+const bumpBoard=(db,path,entry)=>runTransaction(ref(db,path),cur=>{if(cur&&Number(cur.hlBest||0)>=entry.best)return;return {...(cur||{}),username:(cur&&cur.username)||entry.username,hlBest:entry.best,hlQuestionLabel:entry.questionLabel,hlAt:Date.now()}},{applyLocally:false});
 
 window.NEON_HL_RECORDS={
   async submit({streak,question,questionLabel}){
-    const {db,auth}=await ready(),user=auth.currentUser,profile=me();
-    if(!user||!profile?.username||!(streak>0))return false;
-    const entry={username:profile.username,best:Number(streak),question:String(question||''),questionLabel:String(questionLabel||'').slice(0,80)};
-    await Promise.all([bump(db,`social/higherLower/allTime/${user.uid}`,entry),bump(db,`social/higherLower/weekly/${weekKey()}/${user.uid}`,entry)]);
-    // Mirror the all-time best on the profile so the profile screen can show it without reading the board.
-    const snap=await get(ref(db,`social/higherLower/allTime/${user.uid}/best`));
-    await update(ref(db,`social/profiles/${user.uid}`),{higherLowerBest:Number(snap.val()||streak)}).catch(()=>{});
+    const {db,auth}=await ready(),user=auth.currentUser;
+    if(!user||!(streak>0))return false;
+    const username=await profileName(db,user.uid);if(!username)return false;
+    const entry={username,best:Number(streak),question:String(question||''),questionLabel:String(questionLabel||'').slice(0,80)};
+    const wk=weekKey();
+    let best=entry.best;
+    try{
+      await Promise.all([bump(db,`social/higherLower/allTime/${user.uid}`,entry),bump(db,`social/higherLower/weekly/${wk}/${user.uid}`,entry)]);
+      best=Number((await get(ref(db,`social/higherLower/allTime/${user.uid}/best`))).val()||best);
+    }catch(e){
+      if(!denied(e))throw e;
+      await Promise.all([bumpBoard(db,`social/leaderboards/allTime/${user.uid}`,entry),bumpBoard(db,`social/leaderboards/weekly/${wk}/${user.uid}`,entry)]);
+      best=Number((await get(ref(db,`social/leaderboards/allTime/${user.uid}/hlBest`))).val()||best);
+    }
+    // Mirror the all-time best on the profile so the profile screen can show it without reading a board.
+    await update(ref(db,`social/profiles/${user.uid}`),{higherLowerBest:best}).catch(()=>{});
     window.NEON_HL?.refreshBoard();
     return true;
   },
   async top(board){
-    const {db,auth}=await ready(),uid=auth.currentUser?.uid||'';
-    const path=board==='weekly'?`social/higherLower/weekly/${weekKey()}`:'social/higherLower/allTime';
-    let snap;
-    try{snap=await get(query(ref(db,path),orderByChild('best'),limitToLast(20)))}
-    catch(e){if(/permission/i.test(String(e?.code||e?.message||'')))throw new Error('Liderlik tablosu için giriş yapman gerekir.');throw new Error('Liderlik tablosu şu an açılamıyor.')}
-    const rows=[];snap.forEach(c=>{const v=c.val()||{};rows.push({uid:c.key,username:v.username||'oyuncu',best:Number(v.best||0),questionLabel:v.questionLabel||'',me:c.key===uid})});
-    return rows.sort((a,b)=>b.best-a.best);
+    const {db,auth}=await ready(),uid=auth.currentUser?.uid||'',wk=weekKey();
+    const rows=new Map(),add=(key,best,username,label)=>{best=Number(best||0);if(!(best>0))return;const old=rows.get(key);if(!old||old.best<best)rows.set(key,{uid:key,username:username||'oyuncu',best,questionLabel:label||'',me:key===uid})};
+    let ok=false,lastErr=null;
+    const primary=board==='weekly'?`social/higherLower/weekly/${wk}`:'social/higherLower/allTime';
+    try{(await get(query(ref(db,primary),orderByChild('best'),limitToLast(20)))).forEach(c=>{const v=c.val()||{};add(c.key,v.best,v.username,v.questionLabel)});ok=true}catch(e){lastErr=e}
+    const fallback=board==='weekly'?`social/leaderboards/weekly/${wk}`:'social/leaderboards/allTime';
+    try{(await get(ref(db,fallback))).forEach(c=>{const v=c.val()||{};add(c.key,v.hlBest,v.username,v.hlQuestionLabel)});ok=true}catch(e){lastErr=lastErr||e}
+    if(!ok)throw new Error(denied(lastErr)?'Liderlik tablosu için giriş yapman gerekir.':'Liderlik tablosu şu an açılamıyor.');
+    return [...rows.values()].sort((a,b)=>b.best-a.best).slice(0,20);
   }
 };
-window.NEON_HL?.refreshBoard();
+ready().then(()=>window.NEON_HL?.refreshBoard()).catch(()=>window.NEON_HL?.refreshBoard());
