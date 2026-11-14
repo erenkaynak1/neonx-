@@ -129,7 +129,7 @@ function renderParty(){
   v.querySelector('[data-act="launch-party"]')?.addEventListener('click',()=>launchParty(v.querySelector('#nxPartyMode').value));v.querySelector('[data-act="invite-friends"]')?.addEventListener('click',()=>render('friends'));v.querySelector('[data-act="leave-party"]').onclick=leaveParty;
 }
 function leaderboardRows(data){
-  const rows=Object.entries(data||{}).map(([uid,x])=>({uid,...x})).sort((a,b)=>statValue(b,'wins')-statValue(a,'wins')||winRate(b)-winRate(a)||statValue(b,'games')-statValue(a,'games')).slice(0,50);
+  const rows=Object.entries(data||{}).map(([uid,x])=>({uid,...x})).filter(row=>statValue(row,'games')>0).sort((a,b)=>statValue(b,'wins')-statValue(a,'wins')||winRate(b)-winRate(a)||statValue(b,'games')-statValue(a,'games')).slice(0,50);
   if(!rows.length)return '<div class="nx-social-muted nx-leader-empty">Henüz tamamlanmış maç yok.</div>';
   return `<div class="nx-leader-list">${rows.map((row,i)=>`<div class="nx-leader-row ${row.uid===state.user?.uid?'me':''}"><span class="nx-rank">${i+1}</span><div><b>@${esc(row.username||'Oyuncu')}</b><small>${statValue(row,'wins')} G · ${statValue(row,'losses')} M · ${statValue(row,'draws')} B</small></div><strong>%${winRate(row)}</strong></div>`).join('')}</div>`;
 }
@@ -261,7 +261,9 @@ async function recordResult(detail={}){
   const own=await incrementStats(`social/stats/${state.user.uid}`,result),opponentUid=String(detail.opponentUid||new URLSearchParams(location.search).get('nxOpponent')||'');
   if(opponentUid&&opponentUid!==state.user.uid)await incrementStats(`social/headToHead/${state.user.uid}/${opponentUid}`,result);
   const stats=own.snapshot.val()||emptyStats(),entry={username:state.profile.username,wins:statValue(stats,'wins'),losses:statValue(stats,'losses'),draws:statValue(stats,'draws'),games:statValue(stats,'games'),winRate:winRate(stats),updatedAt:serverTimestamp()};
-  await update(ref(db),{[`social/leaderboards/allTime/${state.user.uid}`]:entry,[`social/leaderboards/weekly/${weekKey()}/${state.user.uid}`]:await weeklyEntry(result,entry)});
+  // Field-level paths so values other games keep on the entry (Higher or Lower: hlBest…) survive.
+  const flat=(base,obj)=>Object.fromEntries(Object.entries(obj).map(([k,v])=>[`${base}/${k}`,v]));
+  await update(ref(db),{...flat(`social/leaderboards/allTime/${state.user.uid}`,entry),...flat(`social/leaderboards/weekly/${weekKey()}/${state.user.uid}`,await weeklyEntry(result,entry))});
 }
 async function weeklyEntry(result,identity){
   const path=`social/weeklyStats/${weekKey()}/${state.user.uid}`,tx=await incrementStats(path,result),stats=tx.snapshot.val()||emptyStats();
