@@ -28,7 +28,8 @@
     ['Libero', 4, 'buzz', 'black', 'white', 2, 'beard', 'headset'],
     ['Usta', 1, 'side', 'brown', 'gold', 23, 'headband', 'shades'],
     ['Çaylak', 0, 'curly', 'blond', 'lime', 17, '', 'headset'],
-    ['Gölge', 3, 'hood', 'hood', 'violet', 0, '', 'mask']
+    ['Gölge', 3, 'hood', 'hood', 'violet', 0, '', 'mask'],
+    ['Admin', 0, 'curly', 'brown', 'lime', 1, 'beard', 'eye']
   ];
   const ids = LIST.map((_, i) => 'a' + String(i + 1).padStart(2, '0'));
 
@@ -138,7 +139,7 @@ ${small ? '' : '<path d="M19 3H29M35 61H45M3 19V27M61 37V45" stroke="#fff" strok
   const cache = new Map();
   const html = (id, size) => {
     const key = valid(id) ? id : ids[0], small = size === 'small', ck = key + (small ? 's' : '');
-    if (!cache.has(ck)) cache.set(ck, 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg(key, small)));
+    if (!cache.has(ck)) cache.set(ck, key === 'a17' ? 'https://raw.githubusercontent.com/erenkaynak1/neonx-/main/assets/avatars/admin.jpg' : 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg(key, small)));
     return `<img class="nx-avatar-img" src="${cache.get(ck)}" alt="${LIST[ids.indexOf(key)][0]} avatarı" draggable="false" decoding="async">`;
   };
   window.NEON_AVATARS = Object.freeze({ ids, names: Object.fromEntries(ids.map((id, i) => [id, LIST[i][0]])), html, pick, valid, resolve });
