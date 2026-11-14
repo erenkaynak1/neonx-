@@ -84,12 +84,30 @@ def clean(spell: dict[str, Any], goalkeeper: bool = False) -> dict[str, Any]:
     return spell
 
 
+# Only the senior men's football national team counts as caps: not women's, B/C, futsal, beach soccer,
+# other sports or regional selections that Wikidata also types as national teams.
+SENIOR_NT = re.compile(r"^[\w .'()-]+? (men's )?national (association )?(football|soccer) team$", re.I)
+NOT_SENIOR_NT = re.compile(r"women|ladies|f[eé]minin|femen|frauen|\bB team|\bC team|futsal|beach|hockey|cricket|handball|bandy|rugby|"
+                           r"semi-professional|amateur|under|olympic|representative", re.I)
+WOMEN_TEAM = re.compile(r"women|ladies|f[eé]minin|femen|frauen|\bLFC\b|\bW\.?F\.?C\b", re.I)
+MAX_CAPS = 250  # the men's record is in the low 200s; anything above is a Wikidata typo
+
+
+def senior_national(label: str) -> bool:
+    return bool(label and SENIOR_NT.match(label) and not NOT_SENIOR_NT.search(label))
+
+
+def womens_player(stints: list[dict[str, Any]], teams: dict[str, Any]) -> bool:
+    return any(WOMEN_TEAM.search(teams.get(s["team"], {}).get("label") or "") for s in stints)
+
+
 def summarize(stints: list[dict[str, Any]], teams: dict[str, Any], labels: dict[str, str], birth: str | None = None,
               goalkeeper: bool = False) -> dict[str, Any]:
     by = int(birth[:4]) if birth and re.match(r"\d{4}", birth) else None
     stints = [clean(s, goalkeeper) for s in stints]
     clubs = [s for s in stints if teams.get(s["team"], {}).get("kind") == "club" and senior(s, by)]
-    nats = [s for s in stints if teams.get(s["team"], {}).get("kind") == "national"]
+    nats = [s for s in stints if teams.get(s["team"], {}).get("kind") == "national"
+            and senior_national(teams.get(s["team"], {}).get("label") or "")]
     ordered = sorted(clubs, key=lambda s: (s.get("start") or "9999", s.get("end") or "9999"))  # ISO dates sort lexically
     path: list[str] = []
     for s in ordered:
@@ -99,7 +117,10 @@ def summarize(stints: list[dict[str, Any]], teams: dict[str, Any], labels: dict[
     distinct = len({s["team"] for s in clubs})
     apps_ok = bool(clubs) and all(s.get("apps") is not None for s in clubs)
     goals_ok = apps_ok and all(s.get("goals") is not None or (s.get("apps") or 0) == 0 for s in clubs)
-    caps = [s for s in nats if s.get("apps") is not None]
+    # Successor teams (Yugoslavia / Serbia and Montenegro / Serbia) often repeat the same totals: count once.
+    caps = list({(s["apps"], s.get("goals")): s for s in nats if s.get("apps") is not None}.values())
+    if caps and sum(s["apps"] for s in caps) > MAX_CAPS:
+        caps = []
     open_spell = any(not s.get("end") for s in stints if teams.get(s["team"], {}).get("kind") == "club")
     return {
         "club_count": distinct if 0 < distinct <= MAX_CLUBS else None,
@@ -153,6 +174,8 @@ def main() -> None:
         tm = str(wd.get("tm_id") or "")
         if tm and tm in master_ids:
             continue
+        if womens_player(wd.get("stints", []), teams):
+            continue  # the game covers men's football only
         position, sub = position_of([labels.get(p, "") for p in wd.get("positions", [])])
         s = summarize(wd.get("stints", []), teams, labels, wd.get("birth_date"), position == "Goalkeeper")
         name = wd.get("label_en")
