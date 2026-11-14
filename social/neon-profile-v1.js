@@ -8,7 +8,15 @@ import {getAuth,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.
 import {getDatabase,get,onValue,ref,update} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js';
 
 const MODE_LABEL={draft:'NEON XI Draft',xox:'Futbol XOX',twin:'Kariyer İkizi',imposter:'Futbol Imposter',reverse:'RE:VERSE',wordle:'Football Wordle',en11:'EN 11'};
-const state={uid:'',avatar:'',pickerOpen:false,stats:null,statsAt:0,statsUid:'',loading:false,avatars:new Map(),pending:new Map()};
+const state={uid:'',isAdmin:false,avatar:'',pickerOpen:false,stats:null,statsAt:0,statsUid:'',loading:false,avatars:new Map(),pending:new Map()};
+// Admin account check: SHA-256 of the lower-cased Google e-mail (the address itself is not stored in the repo).
+const ADMIN_EMAIL_SHA256='082517f6e94ca84e595f496e1215ae87733d3a4070a6b8878b3f9b66066c33e1';
+async function sha256(text){const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text));return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('')}
+async function checkAdmin(user){
+  if(!user?.email||!user.emailVerified||!user.providerData?.some(p=>p?.providerId==='google.com'))return false;
+  try{return (await sha256(user.email.trim().toLowerCase()))===ADMIN_EMAIL_SHA256}catch{return false}
+}
+const canUse=id=>!window.NEON_AVATARS?.restricted?.(id)||state.isAdmin;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let db=null,auth=null;
 
@@ -70,14 +78,14 @@ function statsMarkup(){
 
 /* ---------- profile sheet ---------- */
 async function chooseAvatar(id){
-  if(!window.NEON_AVATARS?.valid(id)||!state.uid)return;
+  if(!window.NEON_AVATARS?.valid(id)||!state.uid||!canUse(id))return;
   const previous=state.avatar;state.avatar=id;state.pickerOpen=false;render();paintAll();
   try{await update(ref(db,`social/profiles/${state.uid}`),{avatar:id})}
   catch{state.avatar=previous;render();paintAll()}
 }
 function heroMarkup(profile){
-  const A=window.NEON_AVATARS,current=A.resolve(state.avatar,state.uid);
-  const picker=state.pickerOpen?`<div class="nxp-picker" role="listbox" aria-label="Avatar seç">${A.ids.map(id=>`<button type="button" role="option" class="nxp-option${id===current?' is-active':''}" data-nxp-avatar="${id}" aria-selected="${id===current}" aria-label="${esc(A.names[id])}"><span>${A.html(id)}</span><small>${esc(A.names[id])}</small></button>`).join('')}</div>`:'';
+  const A=window.NEON_AVATARS,current=A.resolve(canUse(state.avatar)?state.avatar:'',state.uid);
+  const picker=state.pickerOpen?`<div class="nxp-picker" role="listbox" aria-label="Avatar seç">${A.ids.filter(canUse).map(id=>`<button type="button" role="option" class="nxp-option${id===current?' is-active':''}" data-nxp-avatar="${id}" aria-selected="${id===current}" aria-label="${esc(A.names[id])}"><span>${A.html(id)}</span><small>${esc(A.names[id])}</small></button>`).join('')}</div>`:'';
   return `<div class="nxp-hero">
     <button type="button" class="nxp-avatar" data-nxp-toggle aria-label="Avatarı değiştir">${A.html(current)}<span class="nxp-edit">✎</span></button>
     <div class="nxp-id"><b>@${esc(profile?.username||'oyuncu')}</b><span>${esc(A.names[current])} · ${profile?.accountType==='google'?'Google hesabı':'Misafir hesabı'}</span>
@@ -156,7 +164,8 @@ async function boot(){
   const app=getApp();db=getDatabase(app);auth=getAuth(app);injectStyle();
   let offAvatar=null;
   onAuthStateChanged(auth,user=>{
-    offAvatar?.();offAvatar=null;state.uid=user?.uid||'';state.avatar='';state.stats=null;state.pickerOpen=false;
+    offAvatar?.();offAvatar=null;state.uid=user?.uid||'';state.isAdmin=false;state.avatar='';
+    if(user)checkAdmin(user).then(ok=>{if(state.uid===user.uid){state.isAdmin=ok;const box=document.querySelector('.nxp-box');if(box)box.dataset.sig='';render();paintAll()}});state.stats=null;state.pickerOpen=false;
     if(user)offAvatar=onValue(ref(db,`social/profiles/${user.uid}/avatar`),s=>{state.avatar=String(s.val()||'');state.avatars.set(user.uid,state.avatar);render();paintAll()});
   });
   let queued=false;
