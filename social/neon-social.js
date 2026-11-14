@@ -128,14 +128,41 @@ function renderParty(){
   v.innerHTML=`<div class="nx-social-card"><span class="nx-social-label">KALICI PARTİ</span><span class="nx-social-pill">${leader?'LİDER':'ÜYE'}</span><div class="nx-social-list">${members.map(([uid,x])=>`<div class="nx-social-item"><b>@${esc(x.username)}</b>${uid===state.party.leaderUid?'<small>Lider</small>':''}</div>`).join('')}</div></div>${leader?`<div class="nx-social-card"><label class="nx-social-label">PARTİYLE MODA GEÇ</label><select class="nx-social-select" id="nxPartyMode">${Object.entries(MODES).map(([k,m])=>`<option value="${k}" ${k===(state.party.selectedMode||state.preferredMode)?'selected':''}>${m.label}</option>`).join('')}</select><button class="nx-social-btn primary" data-act="launch-party">OYUNU OTOMATİK BAŞLAT</button></div>`:'<div class="nx-social-card nx-social-muted">Parti lideri oyun seçtiğinde herkes otomatik olarak aynı maça alınır.</div>'}<button class="nx-social-btn" data-act="invite-friends">ARKADAŞ DAVET ET</button><button class="nx-social-btn nx-social-danger" data-act="leave-party">PARTİDEN AYRIL</button>`;
   v.querySelector('[data-act="launch-party"]')?.addEventListener('click',()=>launchParty(v.querySelector('#nxPartyMode').value));v.querySelector('[data-act="invite-friends"]')?.addEventListener('click',()=>render('friends'));v.querySelector('[data-act="leave-party"]').onclick=leaveParty;
 }
-function leaderboardRows(data){
-  const rows=Object.entries(data||{}).map(([uid,x])=>({uid,...x})).filter(row=>statValue(row,'games')>0).sort((a,b)=>statValue(b,'wins')-statValue(a,'wins')||winRate(b)-winRate(a)||statValue(b,'games')-statValue(a,'games')).slice(0,50);
-  if(!rows.length)return '<div class="nx-social-muted nx-leader-empty">Henüz tamamlanmış maç yok.</div>';
-  return `<div class="nx-leader-list">${rows.map((row,i)=>`<div class="nx-leader-row ${row.uid===state.user?.uid?'me':''}"><span class="nx-rank">${i+1}</span><div><b>@${esc(row.username||'Oyuncu')}</b><small>${statValue(row,'wins')} G · ${statValue(row,'losses')} M · ${statValue(row,'draws')} B</small></div><strong>%${winRate(row)}</strong></div>`).join('')}</div>`;
+// Leaderboards use the shared view (social/neon-leaderboard-v1.js): podium with gold/silver/bronze frames,
+// avatars, live movement markers and a pinned "your rank" row. Loaded on demand.
+let lbLoading=null;
+function ensureLeaderboardView(){if(window.NEON_LB)return Promise.resolve();if(!lbLoading)lbLoading=new Promise(res=>{const s=document.createElement('script');s.src=new URL('./neon-leaderboard-v1.js?v=20261115-lb1',import.meta.url).href;s.onload=res;s.onerror=res;document.head.appendChild(s)});return lbLoading}
+const LB_TABS=[['weekly','HAFTALIK'],['allTime','TÜM ZAMANLAR'],['hl','HIGHER OR LOWER']];
+function leaderboardData(tab){
+  if(tab==='hl'){
+    const rows=new Map(),add=(uid,best,username,label)=>{best=Number(best||0);if(best>0&&!(rows.get(uid)?.score>=best))rows.set(uid,{uid,username:username||'Oyuncu',score:best,sub:label||''})};
+    Object.entries(state.hlAll||{}).forEach(([uid,x])=>add(uid,x?.best,x?.username,x?.questionLabel));
+    Object.entries(state.allTime||{}).forEach(([uid,x])=>add(uid,x?.hlBest,x?.username,x?.hlQuestionLabel));
+    return {rows:[...rows.values()],unit:'SERİ',empty:'Henüz Higher or Lower rekoru yok.'};
+  }
+  const data=tab==='weekly'?state.weekly:state.allTime;
+  const rows=Object.entries(data||{}).map(([uid,x])=>({uid,...x})).filter(row=>statValue(row,'games')>0)
+    .sort((a,b)=>statValue(b,'wins')-statValue(a,'wins')||winRate(b)-winRate(a)||statValue(b,'games')-statValue(a,'games'))
+    .map(row=>({uid:row.uid,username:row.username||'Oyuncu',score:statValue(row,'wins'),sub:`${statValue(row,'wins')}G · ${statValue(row,'losses')}M · ${statValue(row,'draws')}B · %${winRate(row)} · ${statValue(row,'games')} maç`,podSub:`%${winRate(row)} · ${statValue(row,'games')} maç`}));
+  return {rows,unit:'G',empty:'Henüz tamamlanmış maç yok.'};
+}
+function leaderboardSummary(tab,rows){
+  const me=rows.find(r=>r.uid===state.user?.uid);
+  if(tab==='hl')return me?`Senin rekorun <b>${me.score}</b>`:'Rekor tablosuna girmek için Higher or Lower oyna.';
+  return `${rows.length} oyuncu${me?` · Sen <b>${[...rows].sort((a,b)=>b.score-a.score).findIndex(r=>r.uid===me.uid)+1}.</b> sıradasın`:''}`;
 }
 function renderLeaderboard(){
   const v=shade.querySelector('[data-view="leaderboard"]');if(!state.profile){v.innerHTML='<div class="nx-social-card nx-social-muted">Liderlik listesini görmek için önce oyuncu adını oluştur.</div>';return}
-  v.innerHTML=`<div class="nx-social-card"><span class="nx-social-label">HAFTALIK ZİRVE</span><p class="nx-social-muted">Pazartesi başlayan bu haftanın en çok kazananları.</p>${leaderboardRows(state.weekly)}</div><div class="nx-social-card"><span class="nx-social-label">TÜM ZAMANLAR · ALL-TIME WINNERS</span><p class="nx-social-muted">Tamamlanan online maçların kalıcı sıralaması.</p>${leaderboardRows(state.allTime)}</div>`;
+  if(!window.NEON_LB){v.innerHTML='<div class="nx-social-card nx-social-muted">Liderlik tablosu yükleniyor…</div>';ensureLeaderboardView().then(()=>{if(state.tab==='leaderboard')renderLeaderboard()});return}
+  const tab=state.lbTab||'weekly',{rows,unit,empty}=leaderboardData(tab),LB=window.NEON_LB;
+  const note=tab==='weekly'?`Pazartesi başlayan haftanın en çok kazananları · Sıfırlanmaya <b>${LB.weekLeft()}</b>`:tab==='allTime'?'Tamamlanan online maçların kalıcı sıralaması.':'Higher or Lower en uzun seriler · tüm zamanlar.';
+  v.innerHTML=`<div class="nx-social-card nx-lb-card"><div class="nx-lb-head"><span class="nx-social-label">LİDERLİK TABLOSU</span><span class="nxlb-live">CANLI</span></div>
+    <div class="nx-lb-tabs" role="tablist">${LB_TABS.map(([id,label])=>`<button type="button" role="tab" data-lb-tab="${id}" aria-selected="${id===tab}" class="${id===tab?'on':''}">${label}</button>`).join('')}</div>
+    <p class="nx-social-muted nx-lb-note">${note}</p>
+    ${LB.html(rows,{id:'social-'+tab,me:state.user?.uid,unit,empty,limit:50})}
+    <p class="nx-social-muted nx-lb-sum">${leaderboardSummary(tab,rows)}</p></div>`;
+  v.querySelectorAll('[data-lb-tab]').forEach(b=>b.onclick=()=>{state.lbTab=b.dataset.lbTab;renderLeaderboard()});
+  LB.paint(v,uid=>get(ref(db,`social/profiles/${uid}/avatar`)).then(s=>String(s.val()||'')));
 }
 
 // Custom player names are a Google-account privilege. Guests get an automatic "MisafirNNNN" name:
@@ -279,6 +306,8 @@ function bindUser(user){
   watch(`social/partyInvites/${user.uid}`,s=>{state.invites=s.val()||{};button.dataset.count=String(Object.keys(state.requests).length+Object.keys(state.invites).length);render()});
   watch(`social/leaderboards/weekly/${weekKey()}`,s=>{state.weekly=s.val()||{};if(state.tab==='leaderboard')renderLeaderboard()});
   watch('social/leaderboards/allTime',s=>{state.allTime=s.val()||{};if(state.tab==='leaderboard')renderLeaderboard()});
+  // Higher or Lower records; this path may be closed by the rules (then the boards' hlBest is used), so stay quiet on errors.
+  state.userOffs.push(onValue(ref(db,'social/higherLower/allTime'),s=>{state.hlAll=s.val()||{};if(state.tab==='leaderboard')renderLeaderboard()},()=>{state.hlAll={}}));
   watch(`social/userParty/${user.uid}`,s=>{state.partyId=s.val()||'';state.partyOff?.();state.party=null;if(!state.partyId){render();return}state.partyOff=onValue(ref(db,`social/parties/${state.partyId}`),p=>{state.party=p.val();const l=state.party?.launch;if(l?.mode&&l?.nonce)navigateParty(l);render()})});
 }
 function bind(){onAuthStateChanged(auth,user=>{if(user)bindUser(user);else{stopPresence();clearUserBindings();state.user=null;button.textContent='GİRİŞ';button.dataset.count='0';render()}})}
