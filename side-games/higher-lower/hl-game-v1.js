@@ -95,15 +95,13 @@
   }
   function renderMenu() {
     S.screen = 'menu';
-    const best = store.get('best', 0), byQ = store.get('bestByQ', {});
-    const qBest = QUESTIONS.filter(q => byQ[q.id]).sort((a, b) => byQ[b.id] - byQ[a.id]).slice(0, 4);
+    const best = store.get('best', 0);
     app.innerHTML = `<header class="hl-top"><a class="hl-back" href="../index.html" aria-label="Yan oyunlar">‹</a><div class="hl-brand"><small>NEON XI · SIDE GAME</small><h1 class="sr">Higher or Lower</h1></div></header>
       <section class="hl-hero">
         <img class="hl-logo" src="./assets/hl-logo-v1.webp" width="760" height="420" alt="Higher or Lower" decoding="async">
         <p>İki futbolcu, tek soru. Doğru olanı seç, seriyi büyüt. İlk hatada oyun biter; her yeni oyunda soru değişir.</p>
         <button type="button" class="hl-play" id="hlPlay">OYNA</button>
         <div class="hl-mybest"><span>KİŞİSEL REKOR</span><b>${best}</b></div>
-        ${qBest.length ? `<div class="hl-qbest">${qBest.map(q => `<span><em>${esc(q.q.replace(/^Hangisi(nin)? /, '').replace(/\?$/, ''))}</em><b>${byQ[q.id]}</b></span>`).join('')}</div>` : ''}
       </section>
       <section class="hl-board" aria-label="Rekorlar">
         <div class="hl-board-head"><span class="hl-board-title">REKORLAR</span><span class="nxlb-live">CANLI</span></div>
@@ -125,7 +123,7 @@
     S.boardOff = api.watch(board, (rows, err) => {
       const el = document.getElementById('hlRows'); if (!el || S.board !== board || S.screen !== 'menu') return;
       if (!rows) { el.innerHTML = `<div class="hl-empty">${esc(err && err.message || 'Liderlik tablosu şu an açılamıyor.')}</div>`; return; }
-      el.innerHTML = LB.html(rows.map(r => ({ uid: r.uid, username: r.username, score: r.best, sub: r.questionLabel })), {
+      el.innerHTML = LB.html(rows.map(r => ({ uid: r.uid, username: r.username, score: r.best })), {
         id: 'hl-' + board, me: (rows.find(r => r.me) || {}).uid, unit: 'SERİ', limit: 20,
         empty: board === 'weekly' ? 'Bu hafta henüz rekor yok. İlk sen ol!' : 'Henüz rekor yok.'
       });
@@ -224,10 +222,9 @@
   }
   function gameOver(cleared) {
     S.screen = 'over'; S.busy = false;
-    const prev = store.get('best', 0), byQ = store.get('bestByQ', {}), prevQ = byQ[S.q.id] || 0;
-    const record = S.streak > prev, qRecord = S.streak > prevQ;
+    // One record for the whole game, whatever the question was.
+    const prev = store.get('best', 0), record = S.streak > prev;
     if (record) store.set('best', S.streak);
-    if (qRecord) { byQ[S.q.id] = S.streak; store.set('bestByQ', byQ); }
     store.set('games', store.get('games', 0) + 1);
     window.NEON_HL_RECORDS?.submit({ streak: S.streak, question: S.q.id, questionLabel: S.q.q }).catch(() => {});
     const el = document.createElement('div'); el.className = 'hl-over' + (record ? ' record' : '');
@@ -236,7 +233,7 @@
       <div class="hl-over-q">${esc(S.q.q)}</div>
       <div class="hl-over-num" id="hlOverNum">0</div>
       <div class="hl-over-label">DOĞRU CEVAP</div>
-      ${record ? '<div class="hl-over-rec">★ YENİ KİŞİSEL REKOR ★</div>' : qRecord && S.streak ? '<div class="hl-over-rec q">Bu soruda yeni rekor</div>' : `<div class="hl-over-prev">Rekorun: ${Math.max(prev, S.streak)}</div>`}
+      ${record ? '<div class="hl-over-rec">★ YENİ KİŞİSEL REKOR ★</div>' : `<div class="hl-over-prev">Rekorun: ${Math.max(prev, S.streak)}</div>`}
       <div class="hl-over-btns"><button type="button" class="hl-play" id="hlAgain">YENİ OYUN · YENİ SORU</button><button type="button" class="hl-ghost" id="hlMenu">REKORLAR</button></div>
     </div>`;
     document.body.appendChild(el);
