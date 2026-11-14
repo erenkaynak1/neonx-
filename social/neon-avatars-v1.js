@@ -28,7 +28,8 @@
     ['Libero', 4, 'buzz', 'black', 'white', 2, 'beard', 'headset'],
     ['Usta', 1, 'side', 'brown', 'gold', 23, 'headband', 'shades'],
     ['Çaylak', 0, 'curly', 'blond', 'lime', 17, '', 'headset'],
-    ['Gölge', 3, 'hood', 'hood', 'violet', 0, '', 'mask']
+    ['Gölge', 3, 'hood', 'hood', 'violet', 0, '', 'mask'],
+    ['Admin', 0, 'curly', 'brown', 'lime', 1, 'beard', 'eye']
   ];
   const ids = LIST.map((_, i) => 'a' + String(i + 1).padStart(2, '0'));
 
@@ -130,15 +131,47 @@ ${small ? '' : '<path d="M19 3H29M35 61H45M3 19V27M61 37V45" stroke="#fff" strok
   }
 
   function hash(text) { let h = 2166136261; for (const ch of String(text || '')) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
-  const pick = uid => ids[hash(uid) % ids.length];
+  const pick = uid => ids[hash(uid) % (ids.length - 1)];
   const valid = id => ids.includes(id);
   const resolve = (id, uid) => (valid(id) ? id : pick(uid || 'neon'));
   // Served as an <img> data URI: page stylesheets that restyle inline icons (svg path{fill:...}) cannot
   // repaint the avatar, and its gradient ids never collide with other copies on the page.
   const cache = new Map();
+  const adminSvg = () => `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="abg" cx="50%" cy="35%" r="75%"><stop stop-color="#17351a"/><stop offset="1" stop-color="#030609"/></radialGradient>
+      <linearGradient id="akit" x2="1" y2="1"><stop stop-color="#baff18"/><stop offset=".45" stop-color="#17231a"/><stop offset="1" stop-color="#05090b"/></linearGradient>
+      <linearGradient id="ask" x2=".8" y2="1"><stop stop-color="#f5d1ad"/><stop offset="1" stop-color="#a96f4e"/></linearGradient>
+      <filter id="ag"><feGaussianBlur stdDeviation="1.7"/></filter>
+      <clipPath id="ac"><path d="M3 19 19 3h26l16 16v26L45 61H19L3 45z"/></clipPath>
+    </defs>
+    <g clip-path="url(#ac)">
+      <rect width="64" height="64" fill="url(#abg)"/>
+      <path d="M0 47 18 35 5 64h59L46 35 64 47v17H0z" fill="#baff18" opacity=".12"/>
+      <path d="M8 66c2-13 10-19 24-19s22 6 24 19z" fill="url(#akit)" stroke="#baff18" stroke-width="1"/>
+      <path d="m25 48 7 7 7-7" fill="none" stroke="#baff18" stroke-width="1.3"/>
+      <path d="M27 43h10v9H27z" fill="#9b6247"/>
+      <ellipse cx="32" cy="29" rx="11.5" ry="13.2" fill="url(#ask)"/>
+      <path d="M20 28c-1-11 4-17 12-17s13 6 12 17c-3-5-7-8-12-8s-9 3-12 8z" fill="#24180f"/>
+      <g fill="#342014"><circle cx="22" cy="18" r="4"/><circle cx="27" cy="13" r="4.5"/><circle cx="33" cy="12" r="4.5"/><circle cx="39" cy="15" r="4.5"/><circle cx="43" cy="21" r="4"/></g>
+      <path d="M23 31c2-2 5-2 7-.5M34 30.5c2-1.5 5-1.5 7 .5" fill="none" stroke="#26180f" stroke-width="1.5" stroke-linecap="round"/>
+      <ellipse cx="27.5" cy="31.2" rx="1.5" ry="1" fill="#baff18"/><ellipse cx="36.5" cy="31.2" rx="1.5" ry="1" fill="#baff18"/>
+      <circle cx="28" cy="31" r=".5" fill="#07100a"/><circle cx="37" cy="31" r=".5" fill="#07100a"/>
+      <path d="M32 32 30.5 36h3" fill="none" stroke="#80513b" stroke-width=".8"/>
+      <path d="M22 35c2 7 5 10 10 10s8-3 10-10c-3 3-6 4-10 4s-7-1-10-4z" fill="#302016"/>
+      <path d="M26 39c3 2 9 2 12 0" fill="none" stroke="#b77b5d" stroke-width=".8"/>
+      <path d="M21 26c3-2 6-2 9-1M34 25c3-1 6-1 9 1" stroke="#20150f" stroke-width="1.6" fill="none"/>
+      <path d="m23 7 3-5 6 5 6-5 3 5 7-2-4 8H20l-4-8z" fill="#baff18" stroke="#e5ff9a" stroke-width=".8"/>
+      <path d="M32 0v8" stroke="#baff18" stroke-width="1.5" filter="url(#ag)"/>
+      <path d="M8 51 18 61M56 51 46 61" stroke="#00eaff" stroke-width="1.2" opacity=".8"/>
+      <path d="M27 58h10" stroke="#baff18" stroke-width="1.2"/>
+    </g>
+    <path d="M19 3h26l16 16v26L45 61H19L3 45V19z" fill="none" stroke="#baff18" stroke-width="2.2"/>
+    <path d="M19 3h9M36 61h9M3 19v8M61 37v8" stroke="#00eaff" stroke-width="1.1"/>
+  </svg>`;
   const html = (id, size) => {
     const key = valid(id) ? id : ids[0], small = size === 'small', ck = key + (small ? 's' : '');
-    if (!cache.has(ck)) cache.set(ck, 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg(key, small)));
+    if (!cache.has(ck)) cache.set(ck, 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(key === 'a17' ? adminSvg() : svg(key, small)));
     return `<img class="nx-avatar-img" src="${cache.get(ck)}" alt="${LIST[ids.indexOf(key)][0]} avatarı" draggable="false" decoding="async">`;
   };
   window.NEON_AVATARS = Object.freeze({ ids, names: Object.fromEntries(ids.map((id, i) => [id, LIST[i][0]])), html, pick, valid, resolve });
