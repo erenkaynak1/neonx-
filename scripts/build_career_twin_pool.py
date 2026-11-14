@@ -28,6 +28,7 @@ METRICS = (
     "peak_market_value_eur",
     "career_appearances",
 )
+IDENTITY_FIELDS = ("id", "name", "recognition_score", "status")
 MIN_METRIC_PLAYERS = 100
 MIN_ACTIVE_METRICS = 5
 
@@ -37,6 +38,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--master", type=Path, default=MASTER_DIR / "transfermarkt-players.json")
     parser.add_argument("--master-meta", type=Path, default=MASTER_DIR / "transfermarkt-meta.json")
     parser.add_argument("--output", type=Path, default=CAREER_DATA / "meta.json")
+    parser.add_argument("--players-output", type=Path, default=CAREER_DATA / "players.json")
     parser.add_argument("--min-metric-players", type=int, default=MIN_METRIC_PLAYERS)
     parser.add_argument("--min-active-metrics", type=int, default=MIN_ACTIVE_METRICS)
     return parser.parse_args()
@@ -99,6 +101,17 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
         "fallback_policy": "Missing values remain null; Career Twin skips unavailable rounds.",
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
+    # The game used to download the whole master pool (tens of MB) on every visit. It only needs the
+    # identity fields and the metric values, for players that can actually be played in some round.
+    fields = IDENTITY_FIELDS + tuple(active_metrics)
+    slim = [
+        {field: player[field] for field in fields if player.get(field) is not None}
+        for player in players
+        if player.get("id") and player.get("name") and any(has_metric(player, key) for key in active_metrics)
+    ]
+    args.players_output.write_text(json.dumps(slim, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    meta["runtime_pool"] = "side-games/career-twin/data/players.json"
+    meta["runtime_player_count"] = len(slim)
     args.output.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
     return meta
 

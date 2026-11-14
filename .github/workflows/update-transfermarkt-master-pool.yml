@@ -65,7 +65,7 @@ jobs:
           git add side-games/data/master/transfermarkt-meta.json
           git add side-games/data/master/xox-players.json
           git add side-games/data/master/xox-meta.json
-          git add side-games/career-twin/data/meta.json
+          git add side-games/career-twin/data
           git add side-games/en11/data
           git diff --cached --quiet && exit 0
           git commit -m "Refresh Transfermarkt + Wikidata master player pool"

@@ -153,6 +153,7 @@
   <main class="app" id="app"></main>
   <div id="overlayRoot"></div>
   <script src="./corrections-runtime.js"></script>
+  <script src="../career-twin/firebase-peer-shim-v1.js?v=20261114-en11" data-game-type="en11" data-prefix="neonxi-en11-" data-room-prefix="E11-"></script>
 <script>
   (function(){
     'use strict';
@@ -255,35 +256,23 @@
           '<div class="sgm-field"><label for="otherName">RAKİBİN ADI</label><input id="otherName" maxlength="24" placeholder="Oyuncu 2" value="'+esc(S.otherName)+'"></div>'+
           '<button type="button" class="sgm-btn primary" id="localStart">OYUNU BAŞLAT</button>'+
           '<p class="sgm-note">Aynı cihazda sırayla seçim yaparsınız. Parametre maç başlarken rastgele belirlenir.</p>'+err+'</div></section>';
-      }else if(view==='online'){
-        inner='<section class="sgm-panel" aria-label="Arkadaşlarınla oyna"><h2 class="sgm-heading">ARKADAŞLARINLA OYNA'+back+'</h2><div class="sgm-sheet">'+
-          '<div class="sgm-field"><label for="playerName">ADIN</label><input id="playerName" maxlength="24" placeholder="Adın" value="'+esc(S.name)+'"></div>'+
-          '<button type="button" class="sgm-btn primary" id="hostStart">ODA KUR</button>'+
-          '<div class="sgm-divider">VEYA KODLA KATIL</div>'+
-          '<div class="sgm-row"><input id="joinCode" inputmode="numeric" maxlength="4" placeholder="Oda kodu" aria-label="Oda kodu"><button type="button" class="sgm-btn" id="joinStart">KATIL</button></div>'+
-          '<p class="sgm-note">Oda kur, kodu arkadaşına gönder. Parametre maç başlarken rastgele belirlenir.</p>'+err+'</div></section>';
       }else{
         inner='<section class="sgm-panel" aria-label="Oyun modu seç"><h2 class="sgm-heading">OYUN MODUNU SEÇ</h2><div class="sgm-grid">'+
           sgmMode('local','TEK TELEFON','Aynı cihazda sırayla seçin','phone')+
-          sgmMode('online','ARKADAŞLARINLA OYNA','Oda kur ya da kodla katıl','friends')+
-          sgmMode('','RAKİP ARA','Çevrimiçi eşleşme','search',true)+
+          sgmMode('friends','ARKADAŞLARINLA OYNA','Partini kur, arkadaşını davet et','friends')+
+          sgmMode('match','RAKİP ARA','Çevrimiçi bir rakiple eşleş','search')+
           '</div>'+err+'</section>'+
           '<section class="sgm-how" aria-label="Nasıl oynanır"><div class="sgm-how-badge" aria-hidden="true">?</div><div><h3>NASIL OYNANIR?</h3><p>Maç başında bir parametre rastgele belirlenir. 1 kaleci, 2 defans, 2 orta saha ve 2 forvet seçin; her oyuncunun değeri sahada belirir. Parametrede daha iyi kadro kazanır.</p></div></section>';
       }
       app.innerHTML=sgmFrame(inner);
-      app.querySelectorAll('[data-view]').forEach(function(b){b.onclick=function(){S.menuView=b.dataset.view;S.error='';render()}});
+      app.querySelectorAll('[data-view]').forEach(function(b){b.onclick=function(){const v=b.dataset.view;if(v==='friends'||v==='match'){goOnline(v);return}S.menuView=v;S.error='';render()}});
       const mb=document.getElementById('menuBack');if(mb)mb.onclick=function(){S.menuView='modes';S.error='';render()};
       const ls=document.getElementById('localStart');if(ls)ls.onclick=function(){startLocal()};
-      const hs=document.getElementById('hostStart');if(hs)hs.onclick=function(){createRoom()};
-      const js=document.getElementById('joinStart');if(js)js.onclick=function(){joinRoom(document.getElementById('joinCode').value.trim(),document.getElementById('playerName').value.trim())};
-      const jc=document.getElementById('joinCode');if(jc)jc.oninput=function(){this.value=this.value.replace(/\D/g,'').slice(0,4)};
     }
     function renderLobby(){
       const l=S.lobby||{};
-      app.innerHTML=shell()+hero(S.role==='guest'?'Hazır olduğunda oda sahibine haber ver.':'Oda hazır olunca arkadaşını bekle.')+
-      '<section class=\"panel lobbyCenter\"><div class=\"sectionTitle\">ODA KODU</div><div class=\"code\">'+esc(S.code)+'</div><div class=\"hint\">Kodu arkadaşına gönder; katılınca hazır olun. Parametre maç başlarken rastgele belirlenir.</div><div class=\"lobbyNames\"><div class=\"lobbyName\">'+esc(l.hostName||S.name||'Oyuncu 1')+'</div><div class=\"vs\">VS</div><div class=\"lobbyName\">'+esc(l.guestName||'Rakip bekleniyor')+'</div></div><div class=\"status\">PARAMETRE · <b>Maç başlarken rastgele</b></div><div class=\"status '+(l.guestReady?'':'warn')+'\">'+(l.guestReady?'İki oyuncu da hazır.':'Rakibin hazır olması bekleniyor.')+'</div><div class=\"buttonRow\">'+(S.role==='guest'?'<button class=\"btn primary\" id=\"readyBtn\" '+(S.ready?'disabled':'')+'>'+(S.ready?'ONAYLANDI':'PARAMETREYİ ONAYLA')+'</button>':'<button class=\"btn primary\" id=\"beginOnline\" '+(!l.guestReady?'disabled':'')+'>DRAFT’I BAŞLAT</button>')+'<button class=\"btn\" id=\"backMenu\">GERİ DÖN</button></div><div class=\"status error\">'+esc(S.error)+'</div></section><div class=\"foot\">KADRO SEÇİMLERİ İKİ EKRANDA EŞ ZAMANLI GÖRÜNÜR</div>';
-      const ready=document.getElementById('readyBtn');if(ready)ready.onclick=function(){S.ready=true;if(S.conn&&S.conn.open)S.conn.send({type:'ready'});render()};
-      const begin=document.getElementById('beginOnline');if(begin)begin.onclick=function(){startOnlineGame()};
+      app.innerHTML=shell()+hero('Rakibinle bağlantı kuruluyor…')+
+      '<section class=\"panel lobbyCenter\"><div class=\"sectionTitle\">EŞLEŞME</div><div class=\"lobbyNames\"><div class=\"lobbyName\">'+esc(l.hostName||(S.role==='host'?S.name:'')||'Oyuncu 1')+'</div><div class=\"vs\">VS</div><div class=\"lobbyName\">'+esc(l.guestName||(S.role==='guest'?S.name:'')||'Rakip bekleniyor')+'</div></div><div class=\"status\">PARAMETRE · <b>Maç başlarken rastgele</b></div><div class=\"status warn\">'+(S.role==='host'?'Rakibin bağlanınca maç otomatik başlayacak.':'Rakibe bağlanılıyor…')+'</div><div class=\"buttonRow\"><button class=\"btn\" id=\"backMenu\">MENÜYE DÖN</button></div><div class=\"status error\">'+esc(S.error)+'</div></section><div class=\"foot\">KADRO SEÇİMLERİ İKİ EKRANDA EŞ ZAMANLI GÖRÜNÜR</div>';
       document.getElementById('backMenu').onclick=function(){cleanup();S.screen='menu';S.error='';render()};
     }
     function emptySquad(){return{Goalkeeper:[],Defender:[],Midfield:[],Attack:[]}}
@@ -307,22 +296,22 @@
       S.mode='local';S.role='local';S.ready=true;S.game=makeGame([S.name,S.otherName],S.metric,S.direction,S.target);
       S.viewTeam=0;S.lastAdvanceId=null;S.lastAutoTurn=null;S.lastAutoRevealId=null;S.rollId=null;S.rollDoneId=null;S.screen='game';render();
     }
-    async function loadPeer(){
-      if(window.Peer)return;
-      await new Promise(function(resolve,reject){const s=document.createElement('script');s.src='https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js';s.onload=resolve;s.onerror=reject;document.head.appendChild(s)});
-    }
+    // Online matches arrive from "Rakip ara" or a party launch (nxAuto URL); there is no room code to type.
+    // The transport is the shared Firebase peer shim loaded in <head>.
+    const AUTO=(function(){const q=new URLSearchParams(location.search);return q.get('nxAuto')==='1'&&/^\d{4}$/.test(q.get('nxCode')||'')?{role:q.get('nxRole')==='host'?'host':'guest',code:q.get('nxCode'),name:String(q.get('nxName')||'NEON Oyuncu').slice(0,24),match:q.get('nxMatch')||'',opponent:q.get('nxOpponent')||''}:null})();
+    async function loadPeer(){if(!window.Peer)throw new Error('transport')}
+    function goOnline(choice){if(window.NEON_ARCADE_UI&&window.NEON_ARCADE_UI.choose)window.NEON_ARCADE_UI.choose('en11',choice);else{S.error='Sosyal bağlantı yükleniyor, birazdan tekrar dene.';render()}}
     function cleanup(){try{if(S.conn)S.conn.close()}catch(e){}try{if(S.peer)S.peer.destroy()}catch(e){}S.conn=null;S.peer=null}
-    function randomCode(){return String(Math.floor(1000+Math.random()*9000))}
     async function createRoom(){
-      S.name=document.getElementById('playerName').value.trim()||'Oyuncu 1';
+      if(!AUTO)return;S.name=AUTO.name;
       S.mode='online';S.role='host';S.error='';S.ready=false;
       S.lobby={metric:S.metric,direction:S.direction,hostName:S.name,guestName:'',guestReady:false};
       S.screen='lobby';render();
       try{await loadPeer();hostAttempt(0)}catch(e){S.error='Online bağlantı servisine ulaşılamadı.';render()}
     }
     function hostAttempt(n){
-      if(n>=8){S.error='Oda oluşturulamadı. Bir kez daha dene.';render();return}
-      const code=randomCode();S.code=code;const p=new Peer(PREFIX+code,{debug:0});S.peer=p;let opened=false;
+      if(n>=3){S.error='Maç bağlantısı kurulamadı. Menüden tekrar dene.';render();return}
+      const code=AUTO.code;S.code=code;const p=new Peer(PREFIX+code,{debug:0});S.peer=p;let opened=false;
       p.on('open',function(){opened=true;render()});
       p.on('connection',function(c){if(S.conn&&S.conn.open){c.on('open',function(){c.send({type:'reject',message:'Oda dolu.'})});return}S.conn=c;bindHost(c)});
       p.on('error',function(e){if(!opened&&(e.type==='unavailable-id'||e.type==='invalid-id')){try{p.destroy()}catch(x){}hostAttempt(n+1)}else if(!opened){S.error='Oda kurulamadı. Tekrar dene.';render()}});
@@ -333,21 +322,21 @@
       c.on('open',sendLobby);
       c.on('data',function(m){
         if(!m||typeof m!=='object')return;
-        if(m.type==='join'&&!S.lobby.guestName){S.lobby.guestName=String(m.name||'Rakip').slice(0,24);S.lobby.guestReady=false;sendLobby();render();return}
-        if(m.type==='ready'&&S.lobby.guestName){S.lobby.guestReady=true;sendLobby();render();return}
+        if(m.type==='join'&&!S.lobby.guestName){S.lobby.guestName=String(m.name||'Rakip').slice(0,24);S.lobby.guestReady=true;sendLobby();startOnlineGame();return}
+        // The guest repeats its join until it has the match; answer with the current state so a lost message cannot strand it.
+        if(m.type==='join'){sendLobby();broadcastGame();return}
         if(m.type==='pick'&&S.game&&S.game.phase==='draft'){commitPick(Number(m.playerId),1);return}
-        if(m.type==='rematch'){S.game=null;S.screen='lobby';S.lobby.guestReady=false;sendLobby();render()}
+        if(m.type==='rematch'&&S.game&&S.game.phase==='final'){startOnlineGame()}
       });
       c.on('close',function(){if(S.screen!=='menu'){S.error='Rakibin bağlantısı kapandı.';S.screen='lobby';render()}});
     }
     async function joinRoom(code,name){
-      if(!/^\d{4}$/.test(code)){S.error='Dört haneli oda kodunu gir.';render();return}
-      if(!name){S.error='Adını yaz.';render();return}
+      if(!/^\d{4}$/.test(code)){S.error='Eşleşme bağlantısı geçersiz. Menüden tekrar rakip ara.';S.screen='menu';render();return}
       S.code=code;S.name=name;S.mode='online';S.role='guest';S.ready=false;S.error='';S.screen='lobby';render();
-      try{await loadPeer();S.peer=new Peer(undefined,{debug:0});S.peer.on('open',function(){S.conn=S.peer.connect(PREFIX+code,{reliable:true});bindGuest(S.conn,name)});S.peer.on('error',function(){S.error='Odaya bağlanılamadı.';render()});setTimeout(function(){if(S.screen==='lobby'&&!S.lobby){S.error='Oda bulunamadı veya bağlantı kurulamadı.';render()}},9000)}catch(e){S.error='Online bağlantı servisine ulaşılamadı.';render()}
+      try{await loadPeer();S.peer=new Peer(undefined,{debug:0});S.peer.on('open',function(){S.conn=S.peer.connect(PREFIX+code,{reliable:true});bindGuest(S.conn,name)});S.peer.on('error',function(){S.error='Odaya bağlanılamadı.';render()});setTimeout(function(){if(S.screen==='lobby'&&!S.lobby){S.error='Rakibe bağlanılamadı. Menüden tekrar dene.';render()}},16000)}catch(e){S.error='Online bağlantı servisine ulaşılamadı.';render()}
     }
     function bindGuest(c,name){
-      c.on('open',function(){c.send({type:'join',name:name})});
+      c.on('open',function(){c.send({type:'join',name:name});let tries=0;const again=setInterval(function(){if(S.game||S.conn!==c||!c.open||++tries>8){clearInterval(again);return}c.send({type:'join',name:name})},3000)});
       c.on('data',function(m){
         if(!m||typeof m!=='object')return;
         if(m.type==='reject'){S.error=m.message||'Oda dolu.';render();return}
@@ -487,8 +476,16 @@
       else if(g.direction==='high')g.winner=a>b?0:1;
       else g.winner=a<b?0:1;
     }
+    // Online results feed the profile statistics and leaderboards (once per finished match).
+    function reportResult(g){
+      if(!AUTO||!AUTO.match||S.mode!=='online')return;const mine=S.role==='guest'?1:0,key=AUTO.match+':'+g.metric+':'+g.turns.length+':'+g.used.join('-');
+      if(S.reportedKey===key)return;S.reportedKey=key;
+      const result=g.winner==null?'draws':(g.winner===mine?'wins':'losses');
+      document.dispatchEvent(new CustomEvent('neon-match-result',{detail:{mode:'en11',result:result,matchId:AUTO.match+':'+g.used.slice(0,4).join('-'),opponentUid:AUTO.opponent}}));
+    }
     function renderFinal(){
       const g=S.game,m=metric(g.metric),a=teamMetric(g.teams[0]),b=teamMetric(g.teams[1]);
+      reportResult(g);
       // Target match: both totals count up slowly in a full-screen finale before the squads' values are shown.
       if(isTarget(g)&&window.EN11_INTRO&&window.EN11_INTRO.finale){
         const fkey=[g.metric,g.target,a,b].concat(g.teams.map(function(t){return t.name})).join('|');
@@ -498,7 +495,7 @@
       const title=g.winner==null?'BERABERE':esc(g.teams[g.winner].name)+' KAZANDI';
       overlayRoot.innerHTML='';
       app.insertAdjacentHTML('beforeend','<section class=\"panel finalPanel\"><h3 class=\"sectionTitle\">MAÇ SONUCU · '+esc(m.label)+(isTarget(g)?' · '+esc(goalLabel(g)):'')+'</h3><div class=\"finalScores\"><div class=\"finalTeam team-a\"><small>'+esc(g.teams[0].name)+'</small><b>'+esc(formatTotal(a,g.metric))+'</b>'+(isTarget(g)?'<em class=\"gapNote\">'+esc(gapText(a,g))+'</em>':'')+'</div><div class=\"versus\">VS</div><div class=\"finalTeam team-b\"><small>'+esc(g.teams[1].name)+'</small><b>'+esc(formatTotal(b,g.metric))+'</b>'+(isTarget(g)?'<em class=\"gapNote\">'+esc(gapText(b,g))+'</em>':'')+'</div></div><div class=\"winner\">'+title+'</div><div class=\"note\">'+(g.winner==null?(isTarget(g)?'İki kadro da hedefe aynı uzaklıkta · rövanş zamanı.':'Aynı sonuç · rövanş zamanı.'):(isTarget(g)?'Hedefe en yakın kadro kazandı. Hedefi aşmak da uzaklaştırır.':'Yedi oyuncunun değerleri sahadaki kadro kutularında görünüyor.'))+'</div><button class=\"btn primary\" id=\"rematch\" style=\"width:100%;margin-top:15px\">YENİ MAÇ</button></section>');
-      const btn=document.getElementById('rematch');btn.onclick=function(){if(S.mode==='online'&&S.role==='guest'){if(S.conn&&S.conn.open)S.conn.send({type:'rematch'});S.screen='lobby';S.game=null;render();return}if(S.mode==='online'&&S.role==='host'){S.game=null;S.screen='lobby';S.lobby.guestReady=false;sendLobby();render();return}pickRandomMetric();S.game=makeGame([S.name,S.otherName],S.metric,S.direction,S.target);S.viewTeam=0;S.lastAdvanceId=null;S.lastAutoTurn=null;S.lastAutoRevealId=null;S.rollId=null;S.rollDoneId=null;render()};
+      const btn=document.getElementById('rematch');btn.onclick=function(){if(S.mode==='online'&&S.role==='guest'){if(S.conn&&S.conn.open)S.conn.send({type:'rematch'});btn.disabled=true;btn.textContent='RAKİP BEKLENİYOR…';return}if(S.mode==='online'&&S.role==='host'){startOnlineGame();return}pickRandomMetric();S.game=makeGame([S.name,S.otherName],S.metric,S.direction,S.target);S.viewTeam=0;S.lastAdvanceId=null;S.lastAutoTurn=null;S.lastAutoRevealId=null;S.rollId=null;S.rollDoneId=null;render()};
     }
     // Announce the randomly chosen parameter once per match, before the first pick.
     function maybeIntro(){
@@ -531,15 +528,16 @@
     }
     function init(){
       app.innerHTML=shell()+hero('Veri kaynağı hazırlanıyor…')+'<section class=\"panel\"><div class=\"status\">Oyuncu ve mevki bilgisi yükleniyor.</div></section>';
-      fetch('./data/meta.json',{cache:'no-cache'}).then(function(r){if(!r.ok)throw new Error('meta');return r.json()}).then(function(meta){if(!meta||!meta.metric_coverage||!meta.player_count)throw new Error('invalid meta');S.poolMeta=meta;pickRandomMetric();S.screen='menu';render()}).catch(function(){S.error='Oyuncu veri bilgisi yüklenemedi. Sayfayı yeniden açıp tekrar dene.';S.screen='menu';render()});
+      fetch('./data/meta.json',{cache:'no-cache'}).then(function(r){if(!r.ok)throw new Error('meta');return r.json()}).then(function(meta){if(!meta||!meta.metric_coverage||!meta.player_count)throw new Error('invalid meta');S.poolMeta=meta;pickRandomMetric();S.screen='menu';render();if(AUTO){if(AUTO.role==='host')createRoom();else joinRoom(AUTO.code,AUTO.name)}}).catch(function(){S.error='Oyuncu veri bilgisi yüklenemedi. Sayfayı yeniden açıp tekrar dene.';S.screen='menu';render()});
     }
     window.addEventListener('beforeunload',cleanup);
     init();
   })();
   </script>
 <script src="./en11-intro-v1.js?v=20261114-target"></script>
-<script type="module" src="../../social/neon-social.js?v=20261113-profile"></script>
-<script type="module" src="../../social/party-ready-notify-v1.js?v=20261113-ready"></script>
+<script type="module" src="../../social/party-match-broker-v1.js?v=20261114-no-room-codes"></script>
+<script type="module" src="../../social/neon-social.js?v=20261114-no-room-codes"></script>
+<script type="module" src="../../social/party-ready-notify-v1.js?v=20261114-no-room-codes"></script>
 <script src="../neon-arcade-ui-v1.js?v=20261111-home-v2"></script>
 </body>
 </html>

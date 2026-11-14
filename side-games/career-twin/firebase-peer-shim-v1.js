@@ -1,8 +1,11 @@
 (()=>{
 'use strict';
-const GAME_TYPE='career-twin';
-const PREFIX='neonxi-career-twin-';
-const ROOM_PREFIX='CT-';
+// Shared by Career Twin (defaults) and EN 11: the page sets data-game-type / data-prefix / data-room-prefix
+// on the script tag to get its own room namespace on the same Firebase transport.
+const CFG=(document.currentScript&&document.currentScript.dataset)||{};
+const GAME_TYPE=CFG.gameType||'career-twin';
+const PREFIX=CFG.prefix||'neonxi-career-twin-';
+const ROOM_PREFIX=CFG.roomPrefix||'CT-';
 const TTL_MS=3*60*60*1000;
 const CONFIG={apiKey:'AIzaSyBLpXHGGTHXykKrnu8_Hv1i71oc3tpTNvY',authDomain:'neonxi.firebaseapp.com',databaseURL:'https://neonxi-default-rtdb.europe-west1.firebasedatabase.app',projectId:'neonxi',storageBucket:'neonxi.firebasestorage.app',messagingSenderId:'667191549799',appId:'1:667191549799:web:1e40feacbee09ed7f3d9c2'};
 const later=fn=>setTimeout(fn,0);

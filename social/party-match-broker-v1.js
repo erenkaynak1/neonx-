@@ -8,7 +8,8 @@ const MODES={
   xox:{label:'Futbol XOX',path:'side-games/football-xox/index.html',code:'numeric4',min:2,max:2,roomPath:code=>`rooms/XOX-${code}`},
   twin:{label:'Kariyer İkizi',path:'side-games/career-twin/index.html',code:'numeric4',min:2,max:2,roomPath:code=>`rooms/CT-${code}`},
   imposter:{label:'Futbol Imposter',path:'side-games/futbol-imposter.html',code:'alpha5',min:3,max:12,roomPath:code=>`rooms/IMP-${code}`},
-  reverse:{label:'RE:VERSE',path:'side-games/reverse-xi/index.html',code:'alpha6',min:2,max:2,roomPath:code=>`reverseXI/rooms/${code}`}
+  reverse:{label:'RE:VERSE',path:'side-games/reverse-xi/index.html',code:'alpha6',min:2,max:2,roomPath:code=>`reverseXI/rooms/${code}`},
+  en11:{label:'EN 11',path:'side-games/en11/index.html',code:'numeric4',min:2,max:2,roomPath:code=>`rooms/E11-${code}`}
 };
 const app=getApps().length?getApp():initializeApp(CONFIG),auth=getAuth(app),db=getDatabase(app),base=new URL('../',import.meta.url);
 const q=new URLSearchParams(location.search);
@@ -154,6 +155,7 @@ function roomReady(mode,room,user,code){
   if(!room)return false;
   if(mode==='draft')return room.status!=='closed'&&(room.hostUid===user.uid||room.players?.A?.uid===user.uid);
   if(mode==='twin')return room.gameType==='career-twin'&&room.status!=='closed'&&room.hostUid===user.uid;
+  if(mode==='en11')return room.gameType==='en11'&&room.status!=='closed'&&room.hostUid===user.uid;
   if(mode==='imposter')return room.game_type==='futbol-imposter'&&room.status!=='closed'&&String(room.room_code||'')===String(code);
   if(mode==='xox')return room.game_type==='football-xox'&&room.status!=='closed'&&String(room.room_code||'')===String(code);
   if(mode==='reverse')return room.game_type==='reverse-xi'&&room.status!=='closed'&&room.hostUid===user.uid&&String(room.room_code||'')===String(code);
