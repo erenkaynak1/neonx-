@@ -5,6 +5,8 @@
 (() => {
   'use strict';
   if (window.NEON_AVATARS) return;
+  // Resolve the portrait relative to this script, not the current page route.
+  const ADMIN_AVATAR_SRC = new URL('../assets/avatars/admin.jpg?v=20261114-admin2', document.currentScript?.src || location.href).href;
   const SKIN = ['#f1c9a5', '#d9a47a', '#b07a52', '#7a4e32', '#5a3826'];
   const HAIR = { black: '#15171a', brown: '#4a2d1a', blond: '#d8b25a', red: '#a3431f', white: '#e7e9ec', blue: '#00d4ff', hood: '#3a454f' };
   const KIT = {
@@ -139,7 +141,7 @@ ${small ? '' : '<path d="M19 3H29M35 61H45M3 19V27M61 37V45" stroke="#fff" strok
   const cache = new Map();
   const html = (id, size) => {
     const key = valid(id) ? id : ids[0], small = size === 'small', ck = key + (small ? 's' : '');
-    if (!cache.has(ck)) cache.set(ck, key === 'a17' ? './assets/avatars/admin.jpg?v=20261114-admin1' : 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg(key, small)));
+    if (!cache.has(ck)) cache.set(ck, key === 'a17' ? ADMIN_AVATAR_SRC : 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg(key, small)));
     return `<img class="nx-avatar-img" src="${cache.get(ck)}" alt="${LIST[ids.indexOf(key)][0]} avatarı" draggable="false" decoding="async">`;
   };
   window.NEON_AVATARS = Object.freeze({ ids, names: Object.fromEntries(ids.map((id, i) => [id, LIST[i][0]])), html, pick, valid, resolve });
