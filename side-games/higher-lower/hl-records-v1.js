@@ -6,7 +6,7 @@
    Boards are read only after the sign-in state is restored. Guests without a profile keep their record locally. */
 import {getApp,getApps} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js';
 import {getAuth,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js';
-import {getDatabase,get,limitToLast,orderByChild,query,ref,runTransaction,update} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js';
+import {getDatabase,get,limitToLast,onValue,orderByChild,query,ref,runTransaction,update} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js';
 
 const weekKey=(date=new Date())=>{const d=new Date(Date.UTC(date.getUTCFullYear(),date.getUTCMonth(),date.getUTCDate())),day=d.getUTCDay()||7;d.setUTCDate(d.getUTCDate()-day+1);return d.toISOString().slice(0,10)};
 const denied=e=>/permission|denied/i.test(String(e?.code||'')+' '+String(e?.message||''));
@@ -60,6 +60,32 @@ window.NEON_HL_RECORDS={
     try{(await get(ref(db,fallback))).forEach(c=>{const v=c.val()||{};add(c.key,v.hlBest,v.username,v.hlQuestionLabel)});ok=true}catch(e){lastErr=lastErr||e}
     if(!ok)throw new Error(denied(lastErr)?'Liderlik tablosu için giriş yapman gerekir.':'Liderlik tablosu şu an açılamıyor.');
     return [...rows.values()].sort((a,b)=>b.best-a.best).slice(0,20);
-  }
+  },
+  // Live board: calls cb(rows) on every change of either source, cb(null, error) if neither can be read.
+  // Returns an unsubscribe function.
+  watch(board,cb){
+    let offs=[],stopped=false;
+    ready().then(({db,auth})=>{
+      if(stopped)return;
+      const wk=weekKey(),src={primary:null,fallback:null},failed={primary:false,fallback:false};
+      const emit=()=>{
+        if(stopped)return;
+        if(failed.primary&&failed.fallback){cb(null,new Error('Liderlik tablosu şu an açılamıyor.'));return}
+        if(src.primary===null&&src.fallback===null&&!(failed.primary||failed.fallback))return;
+        const uid=auth.currentUser?.uid||'',rows=new Map();
+        const add=(key,best,username,label)=>{best=Number(best||0);if(!(best>0))return;const old=rows.get(key);if(!old||old.best<best)rows.set(key,{uid:key,username:username||'oyuncu',best,questionLabel:label||'',me:key===uid})};
+        Object.entries(src.primary||{}).forEach(([k,v])=>add(k,v?.best,v?.username,v?.questionLabel));
+        Object.entries(src.fallback||{}).forEach(([k,v])=>add(k,v?.hlBest,v?.username,v?.hlQuestionLabel));
+        cb([...rows.values()].sort((a,b)=>b.best-a.best));
+      };
+      const primary=board==='weekly'?`social/higherLower/weekly/${wk}`:'social/higherLower/allTime';
+      const fallback=board==='weekly'?`social/leaderboards/weekly/${wk}`:'social/leaderboards/allTime';
+      offs.push(onValue(query(ref(db,primary),orderByChild('best'),limitToLast(50)),s=>{src.primary=s.val()||{};emit()},()=>{failed.primary=true;src.primary={};emit()}));
+      offs.push(onValue(ref(db,fallback),s=>{src.fallback=s.val()||{};emit()},()=>{failed.fallback=true;src.fallback={};emit()}));
+    }).catch(e=>cb(null,e));
+    return ()=>{stopped=true;offs.forEach(off=>{try{off()}catch{}});offs=[]};
+  },
+  async avatar(uid){const {db}=await ready();return String((await get(ref(db,`social/profiles/${uid}/avatar`))).val()||'')},
+  async me(){const {auth}=await ready();return auth.currentUser?.uid||''}
 };
 ready().then(()=>window.NEON_HL?.refreshBoard()).catch(()=>window.NEON_HL?.refreshBoard());

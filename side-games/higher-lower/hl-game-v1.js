@@ -106,24 +106,34 @@
         ${qBest.length ? `<div class="hl-qbest">${qBest.map(q => `<span><em>${esc(q.q.replace(/^Hangisi(nin)? /, '').replace(/\?$/, ''))}</em><b>${byQ[q.id]}</b></span>`).join('')}</div>` : ''}
       </section>
       <section class="hl-board" aria-label="Rekorlar">
+        <div class="hl-board-head"><span class="hl-board-title">REKORLAR</span><span class="nxlb-live">CANLI</span></div>
         <div class="hl-tabs"><button type="button" data-board="weekly" class="${S.board === 'weekly' ? 'on' : ''}">HAFTALIK</button><button type="button" data-board="all" class="${S.board === 'all' ? 'on' : ''}">TÜM ZAMANLAR</button></div>
+        ${S.board === 'weekly' && window.NEON_LB ? `<p class="hl-board-note">Yeni hafta başlamasına <b>${window.NEON_LB.weekLeft()}</b></p>` : ''}
         <div class="hl-rows" id="hlRows"><div class="hl-empty">Rekorlar yükleniyor…</div></div>
       </section>`;
     document.getElementById('hlPlay').onclick = start;
     app.querySelectorAll('[data-board]').forEach(b => b.onclick = () => { S.board = b.dataset.board; renderMenu(); });
     fillBoard();
   }
+  // Live board: re-renders on every database change while the menu is open.
   function fillBoard() {
+    S.boardOff?.(); S.boardOff = null;
     const box = document.getElementById('hlRows'); if (!box) return;
-    const api = window.NEON_HL_RECORDS;
-    if (!api) { box.innerHTML = '<div class="hl-empty">Liderlik tablosu için giriş yapman gerekir.</div>'; return; }
-    api.top(S.board).then(rows => {
-      if (!document.getElementById('hlRows')) return;
-      box.innerHTML = rows.length ? rows.map((r, i) => `<div class="hl-row${r.me ? ' me' : ''}"><span class="rk">${i + 1}</span><span class="nm">@${esc(r.username)}</span><span class="qq">${esc(r.questionLabel || '')}</span><b>${r.best}</b></div>`).join('')
-        : `<div class="hl-empty">${S.board === 'weekly' ? 'Bu hafta henüz rekor yok. İlk sen ol!' : 'Henüz rekor yok.'}</div>`;
-    }).catch(e => { box.innerHTML = `<div class="hl-empty">${esc(e && e.message || 'Liderlik tablosu şu an açılamıyor.')}</div>`; });
+    const api = window.NEON_HL_RECORDS, LB = window.NEON_LB;
+    if (!api || !LB) { box.innerHTML = '<div class="hl-empty">Rekorlar yükleniyor…</div>'; return; }
+    const board = S.board;
+    S.boardOff = api.watch(board, (rows, err) => {
+      const el = document.getElementById('hlRows'); if (!el || S.board !== board || S.screen !== 'menu') return;
+      if (!rows) { el.innerHTML = `<div class="hl-empty">${esc(err && err.message || 'Liderlik tablosu şu an açılamıyor.')}</div>`; return; }
+      el.innerHTML = LB.html(rows.map(r => ({ uid: r.uid, username: r.username, score: r.best, sub: r.questionLabel })), {
+        id: 'hl-' + board, me: (rows.find(r => r.me) || {}).uid, unit: 'SERİ', limit: 20,
+        empty: board === 'weekly' ? 'Bu hafta henüz rekor yok. İlk sen ol!' : 'Henüz rekor yok.'
+      });
+      LB.paint(el, uid => api.avatar(uid));
+    });
   }
   function start() {
+    S.boardOff?.(); S.boardOff = null;
     S.q = chooseQuestion(); S.pool = poolFor(S.q).sort((a, b) => b.r - a.r); S.streak = 0; S.stayRuns = 0; S.used = new Set(); S.busy = false;
     const pair = freshPair();
     if (!pair) { renderMenu(); return; }

@@ -40,8 +40,8 @@ class SocialSystemTests(unittest.TestCase):
             "chooseMode",
             "Çevrimiçi",
             "Çevrimdışı",
-            "HAFTALIK ZİRVE",
-            "ALL-TIME WINNERS",
+            "LİDERLİK TABLOSU",
+            "neon-leaderboard-v1.js",
         ):
             with self.subTest(token=token):
                 self.assertIn(token, source)
