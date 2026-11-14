@@ -9,7 +9,7 @@ import {getApp,getApps} from 'https://www.gstatic.com/firebasejs/12.16.0/firebas
 import {getAuth,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js';
 import {getDatabase,onValue,ref,runTransaction,update} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js';
 
-const MODE_LABEL={draft:'NEON XI Draft',xox:'Futbol XOX',twin:'Kariyer İkizi',imposter:'Futbol Imposter',reverse:'RE:VERSE',wordle:'Football Wordle'};
+const MODE_LABEL={draft:'NEON XI Draft',xox:'Futbol XOX',twin:'Kariyer İkizi',imposter:'Futbol Imposter',reverse:'RE:VERSE',wordle:'Football Wordle',en11:'EN 11'};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const state={uid:'',partyId:'',party:null,prev:null,dismissedAt:0,lastNudge:0,offParty:null,offPointer:null,allReadyShown:'',bar:null};
 let db=null;

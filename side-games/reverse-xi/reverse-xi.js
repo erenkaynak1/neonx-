@@ -25,9 +25,9 @@ function distance(a,b){const row=Array.from({length:b.length+1},(_,i)=>i);for(le
 function answerMatches(guess,answer){const g=normalize(guess),a=normalize(answer);if(!g||!a)return false;if(g===a)return true;if(g.length>=4&&a.includes(g))return true;const aliases=(answer+'|'+answer.replace(/khvicha/i,'khvicha')+'|'+answer.replace(/kvaratskhelia/i,'kvaratskhelia')).split('|').map(normalize);if(aliases.includes(g))return true;if(Math.min(g.length,a.length)>=5&&Math.abs(g.length-a.length)<=Math.max(2,Math.floor(a.length*.2))&&distance(g,a)<=Math.max(2,Math.floor(a.length*.2)))return true;return false}
 async function ensureAuth(){if(auth.currentUser){state.uid=auth.currentUser.uid;return}await new Promise((resolve,reject)=>{const off=onAuthStateChanged(auth,async user=>{off();try{if(user){state.uid=user.uid;resolve()}else{const result=await signInAnonymously(auth);state.uid=result.user.uid;resolve()}}catch(e){reject(e)}} ,reject)})}
 function makeCode(){return Array.from({length:6},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*32)]).join('')}
-function renderRoom(data){state.roomData=data;const speakerSide=data.currentSpeaker||'A';if(mySide()===speakerSide)state.secretAnswer=state.secretAnswer||localStorage.getItem('nxReverseXI:'+state.room+':'+uid())||'';$('name-a').textContent=data.players?.A?.name||'Bekleniyor…';$('name-b').textContent=data.players?.B?.name||'Bekleniyor…';$('player-a').classList.toggle('active',data.currentSpeaker==='A');$('player-b').classList.toggle('active',data.currentSpeaker==='B');$('step-no').textContent='TUR '+(data.turn||1);$('room-label').textContent=state.room;$('chat-lines').innerHTML=Object.values(data.guesses||{}).map(x=>'<div class="chat-item"><b>'+esc(x.byName)+':</b> '+esc(x.guess)+' · '+(x.correct?'DOĞRU':'YANLIŞ')+'</div>').join('')||'<span class="hint">Henüz tahmin yok.</span>';updateStage()}
+function renderRoom(data){state.roomData=data;const speakerSide=data.currentSpeaker||'A';if(mySide()===speakerSide)state.secretAnswer=state.secretAnswer||localStorage.getItem('nxReverseXI:'+state.room+':'+uid())||'';$('name-a').textContent=data.players?.A?.name||'Bekleniyor…';$('name-b').textContent=data.players?.B?.name||'Bekleniyor…';$('player-a').classList.toggle('active',data.currentSpeaker==='A');$('player-b').classList.toggle('active',data.currentSpeaker==='B');$('step-no').textContent='TUR '+(data.turn||1);$('chat-lines').innerHTML=Object.values(data.guesses||{}).map(x=>'<div class="chat-item"><b>'+esc(x.byName)+':</b> '+esc(x.guess)+' · '+(x.correct?'DOĞRU':'YANLIŞ')+'</div>').join('')||'<span class="hint">Henüz tahmin yok.</span>';updateStage()}
 function mySide(){const d=state.roomData;if(state.local&&d){const speaker=d.currentSpeaker||'A',imitator=speaker==='A'?'B':'A',phase=d.phase||'speak';return phase==='imitate'||phase==='guess'?imitator:speaker}if(d?.players?.A?.uid===uid())return'A';if(d?.players?.B?.uid===uid())return'B';return''}
-function updateStage(){const d=state.roomData;if(!d)return;['speaker-panel','listen-panel','guess-panel','result-panel','waiting-panel'].forEach(id=>$(id).hidden=true);if(!d.players?.B){$('step-title').textContent='Arkadaşını bekliyoruz';$('step-desc').textContent='Oda kodunu arkadaşınla paylaş. Katıldığında ilk tur başlayacak.';$('waiting-panel').hidden=false;return}const side=mySide(),speaker=d.currentSpeaker||'A',imitator=speaker==='A'?'B':'A',phase=d.phase||'speak';let title='',desc='';if(phase==='speak'){title=speaker+' oyuncusu futbolcu ismini söylüyor';desc='İsmi normal şekilde söyle ve sistemin doğru anladığını onayla.';if(side===speaker)$('speaker-panel').hidden=false;else $('waiting-panel').hidden=false}else if(phase==='imitate'){title=imitator+' oyuncusu ters sesi taklit ediyor';desc='Ters sesi dinle ve duyduğun şekilde kaydet.';if(side===imitator){$('listen-panel').hidden=false;setAudio('reverse-audio',d.reverseOriginal)}else $('waiting-panel').hidden=false}else if(phase==='guess'){title=imitator+' oyuncusu tahmin ediyor';desc='Kendi sesinin tekrar ters çevrilmiş hâlini dinleyip futbolcuyu bul.';if(side===imitator){$('guess-panel').hidden=false;setAudio('final-audio',d.reverseImitation)}else $('waiting-panel').hidden=false}else if(phase==='checking'){title='Cevap kontrol ediliyor';desc='A oyuncusu cevabı doğruluyor.';$('waiting-panel').hidden=false}else if(phase==='result'){title='Tur tamamlandı';desc='Sıradaki tur için devam et.';$('result-panel').hidden=false;$('result-title').textContent=d.lastResult?.correct?'DOĞRU TAHMİN!':'TUR TAMAMLANDI';$('result-copy').textContent='Doğru cevap: '+(d.lastResult?.answer||'')+' · Tahmin: '+(d.lastResult?.guess||'');$('next-turn').hidden=side!==d.currentSpeaker}}
+function updateStage(){const d=state.roomData;if(!d)return;['speaker-panel','listen-panel','guess-panel','result-panel','waiting-panel'].forEach(id=>$(id).hidden=true);if(!d.players?.B){$('step-title').textContent='Arkadaşını bekliyoruz';$('step-desc').textContent='Rakibin bağlanıyor. Katıldığında ilk tur başlayacak.';$('waiting-panel').hidden=false;return}const side=mySide(),speaker=d.currentSpeaker||'A',imitator=speaker==='A'?'B':'A',phase=d.phase||'speak';let title='',desc='';if(phase==='speak'){title=speaker+' oyuncusu futbolcu ismini söylüyor';desc='İsmi normal şekilde söyle ve sistemin doğru anladığını onayla.';if(side===speaker)$('speaker-panel').hidden=false;else $('waiting-panel').hidden=false}else if(phase==='imitate'){title=imitator+' oyuncusu ters sesi taklit ediyor';desc='Ters sesi dinle ve duyduğun şekilde kaydet.';if(side===imitator){$('listen-panel').hidden=false;setAudio('reverse-audio',d.reverseOriginal)}else $('waiting-panel').hidden=false}else if(phase==='guess'){title=imitator+' oyuncusu tahmin ediyor';desc='Kendi sesinin tekrar ters çevrilmiş hâlini dinleyip futbolcuyu bul.';if(side===imitator){$('guess-panel').hidden=false;setAudio('final-audio',d.reverseImitation)}else $('waiting-panel').hidden=false}else if(phase==='checking'){title='Cevap kontrol ediliyor';desc='A oyuncusu cevabı doğruluyor.';$('waiting-panel').hidden=false}else if(phase==='result'){title='Tur tamamlandı';desc='Sıradaki tur için devam et.';$('result-panel').hidden=false;$('result-title').textContent=d.lastResult?.correct?'DOĞRU TAHMİN!':'TUR TAMAMLANDI';$('result-copy').textContent='Doğru cevap: '+(d.lastResult?.answer||'')+' · Tahmin: '+(d.lastResult?.guess||'');$('next-turn').hidden=side!==d.currentSpeaker}}
 function setAudio(id,data){const el=$(id);if(!data)return;if(el.dataset.src===data)return;el.dataset.src=data;el.src=data}
 async function createRoom(roomCode='',playerName=''){
  try{
@@ -38,14 +38,11 @@ async function createRoom(roomCode='',playerName=''){
   const name=String(playerName||'Oyuncu '+Math.floor(100+Math.random()*900)).trim().slice(0,24);
   await set(roomRef(),{createdAt:serverTimestamp(),hostUid:uid(),game_type:'reverse-xi',room_code:code,status:'waiting',players:{A:{uid:uid(),name}},currentSpeaker:'A',turn:1,phase:'speak',guesses:{}});
   openRoom();
-  // Party/matchmaking launches keep their URL: the party broker reads nxParty/nxLaunch/nxCode from it
-  // to tell the other players the room is ready. Rewriting it to ?room= left the second player behind.
-  if(!new URLSearchParams(location.search).has('nxAuto'))history.replaceState(null,'',location.pathname+'?room='+code)
  }catch(e){toast('Oda oluşturulamadı: '+e.message)}
 }
 async function joinRoom(code,playerName=''){
  code=String(code||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
- if(code.length!==6){toast('6 haneli oda kodunu gir.');return}
+ if(code.length!==6){toast('Eşleşme bağlantısı geçersiz. Menüden tekrar dene.');return}
  try{
   await ensureAuth();
   const r=ref(db,'reverseXI/rooms/'+code),snap=await get(r);
@@ -57,9 +54,6 @@ async function joinRoom(code,playerName=''){
   state.room=code;
   await update(r,{game_type:'reverse-xi',room_code:code,status:'playing',players:{...d.players,B:{uid:uid(),name}}});
   openRoom();
-  // Party/matchmaking launches keep their URL: the party broker reads nxParty/nxLaunch/nxCode from it
-  // to tell the other players the room is ready. Rewriting it to ?room= left the second player behind.
-  if(!new URLSearchParams(location.search).has('nxAuto'))history.replaceState(null,'',location.pathname+'?room='+code)
  }catch(e){toast('Odaya katılınamadı: '+e.message)}
 }
 async function validateIncomingGuess(data){
@@ -72,7 +66,7 @@ async function validateIncomingGuess(data){
  try{await roomWrite({['guesses/'+data.pendingGuess.id]:result,lastResult:result,phase:'result'})}
  catch(e){state.validatingGuess='';toast('Cevap kontrol edilemedi: '+e.message)}
 }
-function openRoom(){$('intro').hidden=true;$('game').hidden=false;$('room-label').textContent=state.room;if(state.off)state.off();state.off=onValue(roomRef(),s=>{if(!s.exists()){toast('Oda kapatıldı.');return}const data=s.val();renderRoom(data);validateIncomingGuess(data)})}
+function openRoom(){$('intro').hidden=true;$('game').hidden=false;if(state.off)state.off();state.off=onValue(roomRef(),s=>{if(!s.exists()){toast('Oda kapatıldı.');return}const data=s.val();renderRoom(data);validateIncomingGuess(data)})}
 // The microphone is opened for each recording and released right after. Keeping one stream for the
 // whole match let iOS/Android mute the track after a few turns (speech recognition or another app takes
 // the mic): recordings then came out silent. An open mic also keeps iOS in call-audio mode, which makes
@@ -228,7 +222,7 @@ $('retry-name').onclick=()=>{$('heard-result').hidden=true;$('record-name').hidd
 $('record-imitation').onclick=async()=>{if(state.startingRecording)return;try{if(state.recordingMode==='imitation'){if(Date.now()-(state.recordStartedAt||0)<600)return;stopManualRecording();return}if(state.recordingMode){toast('Önce devam eden kaydı durdur.');return}state.startingRecording=true;await startManualRecording('imitation')}catch(e){recordingFailed('imitation');toast(e.message||'Mikrofon kullanılamadı.')}finally{state.startingRecording=false}};
 $('send-guess').onclick=async()=>{if(state.busy.guess)return;const guess=$('guess-input').value.trim();if(!guess){toast('Tahminini yaz.');return}if(state.roomData?.phase!=='guess'){toast('Şu anda tahmin gönderilemez.');return}const guessId='g'+Date.now(),byName=state.local?(state.roomData?.players?.[mySide()]?.name||mySide()):mySide();state.busy.guess=true;lockButton('send-guess','…');try{$('guess-feedback').textContent='Cevap kontrol ediliyor…';await roomWrite({pendingGuess:{id:guessId,guess,byName:byName||'Oyuncu',createdAt:Date.now()},phase:'checking'})}catch(e){state.busy.guess=false;unlockButton('send-guess');$('guess-feedback').textContent='';toast('Tahmin gönderilemedi: '+e.message)}};
 $('next-turn').onclick=async()=>{const d=state.roomData;if(!d||d.phase!=='result'||state.busy.next)return;state.busy.next=true;lockButton('next-turn','…');const next=d.currentSpeaker==='A'?'B':'A';localStorage.removeItem('nxReverseXI:'+state.room+':'+uid());state.secretAnswer='';try{await roomWrite({currentSpeaker:next,turn:(d.turn||1)+1,phase:'speak',reverseOriginal:null,reverseImitation:null,lastResult:null,pendingGuess:null,answerBy:null,imitationBy:null})}catch(e){state.busy.next=false;unlockButton('next-turn');toast('Sonraki tura geçilemedi: '+e.message)}};
-if($('create-room'))$('create-room').onclick=()=>createRoom();if($('join-room'))$('join-room').onclick=()=>joinRoom($('room-code').value);$('room-code')?.addEventListener('keydown',e=>{if(e.key==='Enter')joinRoom($('room-code').value)});$('copy-link').onclick=async()=>{const url=location.origin+location.pathname+'?room='+state.room;try{await navigator.clipboard.writeText(url);toast('Davet bağlantısı kopyalandı.')}catch{toast('Oda kodu: '+state.room)}};
+
 document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{state.mode=b.dataset.mode;document.querySelectorAll('[data-mode]').forEach(x=>x.classList.toggle('active',x===b));if($('duel-start'))$('duel-start').hidden=state.mode!=='duel';if($('solo-start'))$('solo-start').hidden=state.mode!=='solo'});
 $('party-friends')?.addEventListener('click',()=>{if(window.NEON_ARCADE_UI?.choose)window.NEON_ARCADE_UI.choose('reverse','friends');else toast('Sosyal bağlantı yükleniyor, birazdan tekrar dene.')});
 function startLocal(){
@@ -236,8 +230,6 @@ function startLocal(){
  state.local=true;state.room='LOCAL';state.secretAnswer='';state.passAck=0;
  state.localRoom={game_type:'reverse-xi',status:'playing',players:{A:{uid:'local',name:nameA},B:{uid:'local',name:nameB}},currentSpeaker:'A',turn:1,phase:'speak',guesses:{}};
  $('intro').hidden=true;$('game').hidden=false;document.body.classList.add('rx-local');
- $('room-label').textContent='TEK TELEFON';
- const roomLabelPrefix=$('room-label').previousSibling;if(roomLabelPrefix&&roomLabelPrefix.nodeType===3)roomLabelPrefix.textContent='MOD ';
  renderRoom(JSON.parse(JSON.stringify(state.localRoom)));
 }
 // Before the imitator takes over, the phone changes hands: hide every panel until they confirm.
@@ -277,7 +269,6 @@ updateStage=function(){
   if(copy){$('step-title').textContent=copy[0];$('step-desc').textContent=copy[1]}
  }
  if(!state.local)return;
- $('room-label').textContent='TEK TELEFON';
  if(d.phase==='result')$('next-turn').hidden=false;
  const gate=$('pass-panel');if(!gate)return;
  const speaker=d.currentSpeaker||'A',imitator=speaker==='A'?'B':'A';
@@ -296,7 +287,7 @@ $('local-open')?.addEventListener('click',()=>{$('local-sheet').hidden=false;$('
 $('start-solo').onclick=()=>toast('Solo AI modu sonraki geliştirme adımında etkinleştirilecek. Multiplayer çekirdeği hazırlandı.');
 window.addEventListener('beforeunload',()=>state.stream?.getTracks().forEach(t=>t.stop()));
 await ensureAuth().catch(e=>toast('Kimlik bağlantısı kurulamadı: '+e.message));
-const startup=new URLSearchParams(location.search),initial=startup.get('room'),partyCode=startup.get('nxCode')||'',partyName=startup.get('nxName')||'NEON Oyuncu';
+const startup=new URLSearchParams(location.search),partyCode=startup.get('nxCode')||'',partyName=startup.get('nxName')||'NEON Oyuncu';
 if(startup.get('nxAuto')==='1'&&partyCode){
  if(startup.get('nxRole')==='host')await createRoom(partyCode,partyName);
  else{
@@ -305,4 +296,4 @@ if(startup.get('nxAuto')==='1'&&partyCode){
   for(let i=0;i<30;i++){try{if((await get(ref(db,'reverseXI/rooms/'+code))).exists())break}catch{}await new Promise(r=>setTimeout(r,500))}
   await joinRoom(partyCode,partyName);
  }
-}else if(initial)joinRoom(initial);
+}

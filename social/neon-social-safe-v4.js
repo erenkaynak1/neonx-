@@ -8,17 +8,19 @@ const MODES={
   twin:{label:'Kariyer İkizi',path:'side-games/career-twin/index.html',players:2},
   imposter:{label:'Futbol Imposter',path:'side-games/futbol-imposter.html',players:3},
   wordle:{label:'Football Wordle',path:'side-games/football-wordle/online.html',players:2},
-  reverse:{label:'RE:VERSE',path:'side-games/reverse-xi/index.html',players:2}
+  reverse:{label:'RE:VERSE',path:'side-games/reverse-xi/index.html',players:2},
+  en11:{label:'EN 11',path:'side-games/en11/index.html',players:2}
 };
-const LEGACY_MATCH_MODES=new Set(['draft','xox','twin']);
+// Two-player games share social/matchQueues/{mode} with neon-social.js, so a player searching from the home
+// screen and one searching from a game page land in the same queue.
+const LEGACY_MATCH_MODES=new Set(['draft','xox','twin','reverse','en11']);
 // Random game shares one queue with neon-social.js (queuePath('random') = social/universalQueuesV2/random);
 // the pair completer picks the game for both.
-const RANDOM_GAMES=['draft','xox','twin'];
+const RANDOM_GAMES=['draft','xox','twin','en11'];
 const base=new URL('../',import.meta.url);
 const state={
   auth:null,db:null,user:null,
   queue:null,queueOff:null,
-  room:null,roomOff:null,
   requestOff:null,inviteOff:null,
   requestCount:0,inviteCount:0,
   patchedOpen:false,badgeObserver:null
@@ -46,9 +48,9 @@ function addStyle(){
     .nx-safe-toast-stack{position:fixed;z-index:500600;right:14px;top:max(14px,env(safe-area-inset-top));width:min(360px,calc(100vw - 28px));display:grid;gap:8px;pointer-events:none;font-family:system-ui,sans-serif}
     .nx-safe-toast{pointer-events:auto;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;border:1px solid rgba(186,255,24,.46);border-radius:14px;background:linear-gradient(180deg,rgba(8,22,15,.98),rgba(2,9,6,.98));box-shadow:0 18px 48px rgba(0,0,0,.46),0 0 22px rgba(186,255,24,.09);padding:11px 12px;color:#f5fff7}
     .nx-safe-toast b{display:block;color:#cfff54;font-size:10px;letter-spacing:.08em;margin-bottom:3px}.nx-safe-toast span{font-size:12px;line-height:1.35}.nx-safe-toast button{min-height:34px;padding:0 10px;border:1px solid rgba(186,255,24,.42);border-radius:9px;background:rgba(186,255,24,.08);color:#dcff76;font-weight:850;font-size:10px;cursor:pointer}
-    .nx-safe-room-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}.nx-safe-room-code{font-size:20px;font-weight:950;letter-spacing:.15em;color:#cfff4d;margin-top:8px}.nx-safe-room-state{min-height:18px;margin-top:7px;color:#9eaea4;font-size:11px}.nx-safe-room-state.error{color:#ff93aa}.nx-safe-match-hint{margin:-1px 0 10px;color:#8fa297;font-size:11px;text-align:center}
+    .nx-safe-match-hint{margin:-1px 0 10px;color:#8fa297;font-size:11px;text-align:center}
     .nx-safe-home-badge{position:absolute;z-index:30;left:16.7%;top:3.05%;min-width:25px;height:25px;padding:0 6px;border:2px solid #08120c;border-radius:999px;background:#ff496b;color:#fff;display:none;place-items:center;font:900 11px/1 system-ui,sans-serif;box-shadow:0 0 13px rgba(255,73,107,.56);pointer-events:none}.nx-safe-home-badge.show{display:grid}
-    @media(max-width:560px){.nx-safe-toast-stack{left:10px;right:10px;width:auto}.nx-safe-room-actions{grid-template-columns:1fr}}
+    @media(max-width:560px){.nx-safe-toast-stack{left:10px;right:10px;width:auto}}
   `;document.head.appendChild(s);
 }
 function toast(title,text,tab='play',ttl=6500){
@@ -87,7 +89,10 @@ function bindNotifications(user){
     for(const [partyId,x] of Object.entries(data)){if(seen('party',user.uid,partyId))continue;toast('PARTİ DAVETİ',`${x?.fromName||'Bir oyuncu'} seni partisine çağırıyor.`,'invites')}
   });
 }
-function code(){return [...Array(6)].map(()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*32)]).join('')}
+// Internal transport id for the match room; players never see or type it. Each game validates its own
+// format (XOX, Career Twin and EN 11 take four digits), so the id must be made for the game that will open.
+const NUMERIC_ROOM_GAMES=new Set(['xox','twin','en11']);
+function code(game){return NUMERIC_ROOM_GAMES.has(game)?String(Math.floor(1000+Math.random()*9000)):[...Array(6)].map(()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*32)]).join('')}
 function targetUrl(mode,data,me){
   const c=MODES[mode];if(!c)return null;
   const members=Array.isArray(data.members)?data.members:[me.uid,data.opponentUid].filter(Boolean),others=members.filter(x=>x!==me.uid);
@@ -127,8 +132,8 @@ async function startSearch(mode){
     if(legacy){
       const other=Object.values(q).filter(x=>x&&x.uid!==me.uid&&x.status==='waiting'&&now-Number(x.joinedAt||0)<120000).sort((a,b)=>Number(a.joinedAt||0)-Number(b.joinedAt||0))[0];
       if(!other)return q;
-      const host=Number(other.joinedAt||joinedAt)<=joinedAt?other.uid:me.uid,matchId=`m_${Math.min(joinedAt,Number(other.joinedAt||joinedAt))}_${host.slice(0,7)}`,roomCode=code();
-      const gameMode=mode==='random'?RANDOM_GAMES[Math.floor(Math.random()*RANDOM_GAMES.length)]:undefined,extra=gameMode?{gameMode}:{};
+      const host=Number(other.joinedAt||joinedAt)<=joinedAt?other.uid:me.uid,matchId=`m_${Math.min(joinedAt,Number(other.joinedAt||joinedAt))}_${host.slice(0,7)}`;
+      const gameMode=mode==='random'?RANDOM_GAMES[Math.floor(Math.random()*RANDOM_GAMES.length)]:undefined,extra=gameMode?{gameMode}:{},roomCode=code(gameMode||mode);
       q[me.uid]={...q[me.uid],...extra,status:'matched',matchId,roomCode,role:me.uid===host?'host':'guest',opponentUid:other.uid};
       q[other.uid]={...q[other.uid],...extra,status:'matched',matchId,roomCode,role:other.uid===host?'host':'guest',opponentUid:me.uid};
       return q;
@@ -136,7 +141,7 @@ async function startSearch(mode){
     const waiting=Object.values(q).filter(x=>x&&x.status==='waiting'&&now-Number(x.joinedAt||0)<120000).sort((a,b)=>Number(a.joinedAt||0)-Number(b.joinedAt||0));
     if(waiting.length<c.players)return q;
     const group=waiting.slice(0,c.players),members=group.map(x=>x.uid);if(!members.includes(me.uid))return q;
-    const hostUid=members[0],stamp=Math.min(...group.map(x=>Number(x.joinedAt||now))),matchId=`m2_${mode}_${stamp}_${hostUid.slice(0,7)}`,roomCode=code();
+    const hostUid=members[0],stamp=Math.min(...group.map(x=>Number(x.joinedAt||now))),matchId=`m2_${mode}_${stamp}_${hostUid.slice(0,7)}`,roomCode=code(mode);
     for(const p of group)q[p.uid]={...q[p.uid],status:'matched',members,hostUid,matchId,roomCode};
     return q;
   },{applyLocally:false});
@@ -146,50 +151,6 @@ async function startSearch(mode){
     const url=targetUrl(game,data,me);state.queueOff?.();state.queueOff=null;state.queue=null;status(mode==='random'?`Eşleşme bulundu · ${MODES[game].label} açılıyor…`:'Eşleşme bulundu. Oyun açılıyor…');
     if(url)setTimeout(()=>{location.href=url},250);
   });
-}
-function roomState(text,error=false){const el=document.querySelector('[data-nx-safe-room-state]');if(!el)return;if(el.textContent!==text)el.textContent=text;el.classList.toggle('error',Boolean(error))}
-function roomCode(text=''){const el=document.querySelector('[data-nx-safe-room-code]');if(el&&el.textContent!==text)el.textContent=text}
-function listenRoom(mode,roomCodeValue,me){
-  state.roomOff?.();const r=ref(state.db,`social/openRoomsV2/${mode}/${roomCodeValue}`);
-  state.roomOff=onValue(r,s=>{
-    const x=s.val();if(!x){roomState('Oda kapatıldı.',true);state.room=null;return}
-    const members=Object.keys(x.members||{});state.room={...x,mode,code:roomCodeValue};
-    roomCode(`ODA KODU: ${roomCodeValue}`);
-    if(x.status==='matched'&&members.length>=MODES[mode].players){
-      const data={...x,members,roomCode:roomCodeValue};const url=targetUrl(mode,data,me);state.roomOff?.();state.roomOff=null;roomState('Oyuncular tamam. Oyun açılıyor…');if(url)setTimeout(()=>{location.href=url},250);
-    }else roomState(`${members.length}/${MODES[mode].players} oyuncu · rakip bekleniyor.`);
-  });
-}
-async function createRoom(mode){
-  const c=MODES[mode],me=identity();if(!c)return;if(!me){window.NEON_SOCIAL?.open?.('friends');return}
-  await cancelRoom();
-  for(let i=0;i<10;i++){
-    const roomCodeValue=code(),createdAt=Date.now(),r=ref(state.db,`social/openRoomsV2/${mode}/${roomCodeValue}`),matchId=`r2_${mode}_${roomCodeValue}_${createdAt}`;
-    const tx=await runTransaction(r,current=>{if(current&&Date.now()-Number(current.createdAt||0)<600000)return;return {mode,code:roomCodeValue,hostUid:me.uid,createdAt,matchId,status:'waiting',members:{[me.uid]:{username:me.username,joinedAt:createdAt}}}},{applyLocally:false});
-    if(!tx.committed)continue;state.room={mode,code:roomCodeValue,hostUid:me.uid,status:'waiting'};listenRoom(mode,roomCodeValue,me);toast('ONLINE ODA',`${roomCodeValue} kodlu oda oluşturuldu.`,'play',4200);return;
-  }
-  roomState('Boş oda kodu üretilemedi. Tekrar dene.',true);
-}
-async function joinRoom(mode,raw){
-  const c=MODES[mode],me=identity();if(!c)return;if(!me){window.NEON_SOCIAL?.open?.('friends');return}
-  const roomCodeValue=String(raw||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8);if(roomCodeValue.length<4){roomState('Geçerli oda kodunu yaz.',true);return}
-  const r=ref(state.db,`social/openRoomsV2/${mode}/${roomCodeValue}`),now=Date.now();
-  const tx=await runTransaction(r,current=>{
-    if(!current||now-Number(current.createdAt||0)>600000)return;
-    const members=current.members||{};if(!members[me.uid]&&Object.keys(members).length>=c.players)return;
-    members[me.uid]={username:me.username,joinedAt:now};current.members=members;
-    if(Object.keys(members).length>=c.players)current.status='matched';return current;
-  },{applyLocally:false});
-  if(!tx.committed){roomState('Oda bulunamadı, dolu veya süresi dolmuş.',true);return}
-  state.room={mode,code:roomCodeValue};listenRoom(mode,roomCodeValue,me);
-}
-async function cancelRoom(){
-  const me=identity(),r=state.room;state.roomOff?.();state.roomOff=null;state.room=null;if(!r||!state.db){roomCode('');return}
-  try{
-    if(me&&r.hostUid===me.uid)await remove(ref(state.db,`social/openRoomsV2/${r.mode}/${r.code}`));
-    else if(me)await remove(ref(state.db,`social/openRoomsV2/${r.mode}/${r.code}/members/${me.uid}`));
-  }catch{}
-  roomCode('');roomState('Oda kapatıldı.');
 }
 async function leaveParty(){
   const me=identity();if(!me)return;
@@ -210,8 +171,6 @@ function patchPlay(){
   for(const [key,c] of Object.entries(MODES))if(!select.querySelector(`option[value="${key}"]`)){const o=document.createElement('option');o.value=key;o.textContent=c.label;select.appendChild(o)}
   const match=v.querySelector('[data-act="match"]');if(match&&match.textContent!=='RAKİP ARA')match.textContent='RAKİP ARA';
   if(!v.querySelector('.nx-safe-match-hint')){const h=document.createElement('div');h.className='nx-safe-match-hint';h.textContent='Arkadaş gerekmez · seçtiğin oyunda çevrimiçi oyuncularla otomatik eşleşirsin.';v.querySelector('.nx-social-choice')?.after(h)}
-  // Room codes remain internal transport identifiers; no code-entry UI is exposed.
-  v.querySelector('[data-act="room-code"]')?.closest('.nx-social-card')?.remove();
 }
 function bindClicks(){
   document.addEventListener('click',e=>{
@@ -234,5 +193,5 @@ function boot(){
     onAuthStateChanged(state.auth,user=>{state.user=user;state.requestOff?.();state.inviteOff?.();state.requestCount=0;state.inviteCount=0;ensureBadgeTarget();if(user){identity();bindNotifications(user)}});
   },80);
 }
-window.addEventListener('beforeunload',()=>{if(state.queue)clearQueueEntries(state.queue.mode,state.queue.uid);state.roomOff?.();state.badgeObserver?.disconnect()});
+window.addEventListener('beforeunload',()=>{if(state.queue)clearQueueEntries(state.queue.mode,state.queue.uid);state.badgeObserver?.disconnect()});
 boot();

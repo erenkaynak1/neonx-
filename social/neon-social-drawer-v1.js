@@ -9,7 +9,8 @@ const MODES={
   xox:{label:'Futbol XOX',code:'numeric4',minParty:2,maxParty:2},
   twin:{label:'Kariyer İkizi',code:'numeric4',minParty:2,maxParty:2},
   imposter:{label:'Futbol Imposter',code:'alpha5',minParty:3,maxParty:12},
-  reverse:{label:'RE:VERSE',code:'alpha6',minParty:2,maxParty:2}
+  reverse:{label:'RE:VERSE',code:'alpha6',minParty:2,maxParty:2},
+  en11:{label:'EN 11',code:'numeric4',minParty:2,maxParty:2}
 };
 const state={
   auth:null,db:null,user:null,profile:null,

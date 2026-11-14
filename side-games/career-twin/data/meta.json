@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-11-14T00:11:31.881822+00:00",
+  "generated_at": "2026-11-14T09:54:08.273437+00:00",
   "master_pool": "side-games/data/master/transfermarkt-players.json",
   "provider": "dcaribou/transfermarkt-datasets",
   "provider_revision": "e44f186d6f06dd8452aaf54c7921ba66c961f637",
@@ -33,5 +33,7 @@
   },
   "career_scope": "career_goals/career_appearances: whole-career league totals from Wikidata (Wikipedia infobox figures) when complete for every senior club spell; otherwise official appearances in dcaribou/transfermarkt-datasets (2012+). See career_stats_source per player.",
   "physical_data_policy": "weight_kg is intentionally null until a separate physical dataset is supplied; no value is estimated.",
-  "fallback_policy": "Missing values remain null; Career Twin skips unavailable rounds."
+  "fallback_policy": "Missing values remain null; Career Twin skips unavailable rounds.",
+  "runtime_pool": "side-games/career-twin/data/players.json",
+  "runtime_player_count": 65227
 }

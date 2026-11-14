@@ -168,6 +168,7 @@ class SideGamePoolPipelineTest(unittest.TestCase):
                     master=master_path,
                     master_meta=master_meta_path,
                     output=career_meta_path,
+                    players_output=career_meta_path.with_name("players.json"),
                     min_metric_players=100,
                     min_active_metrics=5,
                 )
@@ -190,6 +191,10 @@ class SideGamePoolPipelineTest(unittest.TestCase):
             # Card totals come from the appearance log (one yellow, no red per fixture player).
             self.assertTrue(all(player["career_yellow_cards"] == 1 and player["career_red_cards"] == 0 for player in master))
             self.assertIn("weight_kg", career_meta["disabled_metrics"])
+            # The game loads this slim pool, not the full master: identity plus active metric values only.
+            career_players = json.loads(career_meta_path.with_name("players.json").read_text(encoding="utf-8"))
+            self.assertEqual(len(career_players), career_meta["runtime_player_count"])
+            self.assertTrue(all("clubs" not in player and "weight_kg" not in player for player in career_players))
             self.assertNotIn("weight_kg", career_meta["active_metrics"])
 
 
