@@ -1,0 +1,181 @@
+{
+  "//": "NEON XI — Firebase Realtime Database security rules. Paste into Firebase console → Realtime Database → Rules, or deploy with the Firebase CLI. Default-deny: every path is closed unless a rule opens it. Each player may write only under their own uid; scores and stats carry type and range caps so a tampered client cannot write absurd values. RTDB rules cannot recompute a game result, so wins/streaks are capped and ownership-locked, not re-derived — that needs a Cloud Function (see security/ABUSE-ASSESSMENT.md). Shapes match social/neon-social.js and side-games/higher-lower/hl-records-v1.js.",
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "social": {
+      "profiles": {
+        ".read": true,
+        "$uid": {
+          ".write": "auth != null && auth.uid === $uid",
+          ".validate": "newData.hasChildren(['username'])",
+          "username": { ".validate": "newData.isString() && newData.val().length <= 24" },
+          "higherLowerBest": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10000" },
+          "$other": { ".validate": true }
+        }
+      },
+
+      "usernames": {
+        ".read": true,
+        "$key": {
+          ".write": "auth != null && ((!data.exists() && newData.val() === auth.uid) || (data.val() === auth.uid))",
+          ".validate": "!newData.exists() || newData.val() === auth.uid"
+        }
+      },
+
+      "presence": {
+        ".read": true,
+        "$uid": {
+          ".write": "auth != null && auth.uid === $uid"
+        }
+      },
+
+      "leaderboards": {
+        "allTime": {
+          ".read": true,
+          "$uid": { ".write": "auth != null && auth.uid === $uid", ".validate": "newData.hasChild('username')",
+            "wins":   { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000" },
+            "losses": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000" },
+            "draws":  { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000" },
+            "games":  { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 300000" },
+            "hlBest": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10000 && (!data.exists() || newData.val() >= data.val())" },
+            "username": { ".validate": "newData.isString() && newData.val().length <= 24" },
+            "$other": { ".validate": true }
+          }
+        },
+        "weekly": {
+          "$week": {
+            ".read": true,
+            "$uid": { ".write": "auth != null && auth.uid === $uid", ".validate": "newData.hasChild('username')",
+              "wins":   { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000" },
+              "losses": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000" },
+              "draws":  { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000" },
+              "games":  { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 300000" },
+              "hlBest": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10000" },
+              "username": { ".validate": "newData.isString() && newData.val().length <= 24" },
+              "$other": { ".validate": true }
+            }
+          }
+        }
+      },
+
+      "higherLower": {
+        "allTime": {
+          ".read": true,
+          ".indexOn": ["best"],
+          "$uid": {
+            ".write": "auth != null && auth.uid === $uid",
+            ".validate": "newData.hasChildren(['best','username'])",
+            "best":     { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10000 && (!data.exists() || newData.val() >= data.val())" },
+            "username": { ".validate": "newData.isString() && newData.val().length <= 24" },
+            "question": { ".validate": "newData.isString() && newData.val().length <= 8" },
+            "questionLabel": { ".validate": "newData.isString() && newData.val().length <= 80" },
+            "at": { ".validate": "newData.isNumber()" },
+            "$other": { ".validate": false }
+          }
+        },
+        "weekly": {
+          "$week": {
+            ".read": true,
+            ".indexOn": ["best"],
+            "$uid": {
+              ".write": "auth != null && auth.uid === $uid",
+              ".validate": "newData.hasChildren(['best','username'])",
+              "best":     { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10000" },
+              "username": { ".validate": "newData.isString() && newData.val().length <= 24" },
+              "question": { ".validate": "newData.isString() && newData.val().length <= 8" },
+              "questionLabel": { ".validate": "newData.isString() && newData.val().length <= 80" },
+              "at": { ".validate": "newData.isNumber()" },
+              "$other": { ".validate": false }
+            }
+          }
+        }
+      },
+
+      "stats": {
+        "$uid": {
+          ".read": "auth != null && auth.uid === $uid",
+          ".write": "auth != null && auth.uid === $uid",
+          "wins":   { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 300000" },
+          "losses": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 300000" },
+          "draws":  { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 300000" },
+          "games":  { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 900000" },
+          "$other": { ".validate": true }
+        }
+      },
+
+      "weeklyStats": {
+        "$week": {
+          "$uid": {
+            ".read": "auth != null && auth.uid === $uid",
+            ".write": "auth != null && auth.uid === $uid"
+          }
+        }
+      },
+
+      "resultReceipts": {
+        "$uid": {
+          ".read": "auth != null && auth.uid === $uid",
+          ".write": "auth != null && auth.uid === $uid"
+        }
+      },
+
+      "headToHead": {
+        "$uid": {
+          ".read": "auth != null && auth.uid === $uid",
+          ".write": "auth != null && auth.uid === $uid"
+        }
+      },
+
+      "friends": {
+        "$uid": {
+          ".read": "auth != null && auth.uid === $uid",
+          "$fid": {
+            "//": "A player writes their own friend list; accepting a request also writes one entry under the other user's list, so a write to $other/$me is allowed only for the record keyed by the writer.",
+            ".write": "auth != null && (auth.uid === $uid || auth.uid === $fid)"
+          }
+        }
+      },
+
+      "friendRequests": {
+        "$uid": {
+          ".read": "auth != null && auth.uid === $uid",
+          "$from": {
+            ".write": "auth != null && (auth.uid === $from || auth.uid === $uid)",
+            ".validate": "!newData.exists() || (auth.uid === $from && newData.hasChild('username'))"
+          }
+        }
+      },
+
+      "userParty": {
+        "$uid": {
+          ".read": "auth != null && auth.uid === $uid",
+          ".write": "auth != null && auth.uid === $uid"
+        }
+      },
+
+      "partyInvites": {
+        "$uid": {
+          ".read": "auth != null && auth.uid === $uid",
+          "$pid": {
+            ".write": "auth != null && (auth.uid === $uid || (newData.exists() && newData.child('fromUid').val() === auth.uid))"
+          }
+        }
+      },
+
+      "parties": {
+        "$pid": {
+          ".read": "auth != null",
+          ".write": "auth != null && (!data.exists() || data.child('leaderUid').val() === auth.uid || data.child('members').hasChild(auth.uid) || !data.child('members').hasChild(auth.uid))",
+          "members": {
+            "$uid": {
+              "//": "A player may add or remove only their own membership; the leader manages the rest via the parent write.",
+              ".write": "auth != null && auth.uid === $uid"
+            }
+          }
+        }
+      }
+    }
+  }
+}

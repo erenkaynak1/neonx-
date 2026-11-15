@@ -32,7 +32,8 @@ const bumpBoard=(db,path,entry)=>runTransaction(ref(db,path),cur=>{if(cur&&Numbe
 window.NEON_HL_RECORDS={
   async submit({streak,question,questionLabel}){
     const {db,auth}=await ready(),user=auth.currentUser;
-    if(!user||!(streak>0))return false;
+    // Defense in depth: the database rules cap this too, but reject impossible values before writing.
+    if(!user||!Number.isInteger(streak)||streak<1||streak>10000)return false;
     const username=await profileName(db,user.uid);if(!username)return false;
     const entry={username,best:Number(streak),question:String(question||''),questionLabel:String(questionLabel||'').slice(0,80)};
     const wk=weekKey();
