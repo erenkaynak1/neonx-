@@ -64,6 +64,18 @@ def position_of(labels: list[str]) -> tuple[str, str | None]:
     return "Missing", None
 
 
+# Reserve, youth and academy sides that Wikidata stores as separate clubs: they do not count as clubs.
+RESERVE_TEAM = re.compile(
+    r"(\s(B|C|II|III|IV)$|\bU-?\d{2}s?\b|\bUnder[- ]?\d{2}s?\b|\bSub-?\d{2}\b|\bYouth\b|\bAcadem(y|ia)\b|\bJuvenil|"
+    r"\bPrimavera\b|\bReserves?\b|\bCastilla\b|\bAtl[eè]tic$|^Jong\s|\bJunior Team\b|\bNext Gen\b|\bAmateure\b|\bJugend\b|"
+    r"\bFutures\b|\bDevelopment Squad\b|\bB team\b)", re.I)
+SENIOR_EXCEPTIONS = {"Willem II"}
+
+
+def first_team(label: str) -> bool:
+    return bool(label) and (label in SENIOR_EXCEPTIONS or not RESERVE_TEAM.search(label))
+
+
 def senior(spell: dict[str, Any], birth_year: int | None) -> bool:
     """Drops boyhood clubs that Wikidata lists as ordinary clubs (no stats, ended before age 18)."""
     if spell.get("apps") is not None or not birth_year:
@@ -105,7 +117,8 @@ def summarize(stints: list[dict[str, Any]], teams: dict[str, Any], labels: dict[
               goalkeeper: bool = False) -> dict[str, Any]:
     by = int(birth[:4]) if birth and re.match(r"\d{4}", birth) else None
     stints = [clean(s, goalkeeper) for s in stints]
-    clubs = [s for s in stints if teams.get(s["team"], {}).get("kind") == "club" and senior(s, by)]
+    clubs = [s for s in stints if teams.get(s["team"], {}).get("kind") == "club" and senior(s, by)
+             and first_team(teams.get(s["team"], {}).get("label") or "")]
     nats = [s for s in stints if teams.get(s["team"], {}).get("kind") == "national"
             and senior_national(teams.get(s["team"], {}).get("label") or "")]
     ordered = sorted(clubs, key=lambda s: (s.get("start") or "9999", s.get("end") or "9999"))  # ISO dates sort lexically
@@ -114,7 +127,9 @@ def summarize(stints: list[dict[str, Any]], teams: dict[str, Any], labels: dict[
         name = teams.get(s["team"], {}).get("label")
         if name and (not path or path[-1] != name):
             path.append(name)
-    distinct = len({s["team"] for s in clubs})
+    # A club counts once however many spells the player had there (also when Wikidata has two items for it).
+    norm = lambda q: re.sub(r"[^a-z0-9]", "", (teams.get(q, {}).get("label") or q).lower())
+    distinct = len({norm(s["team"]) for s in clubs})
     apps_ok = bool(clubs) and all(s.get("apps") is not None for s in clubs)
     goals_ok = apps_ok and all(s.get("goals") is not None or (s.get("apps") or 0) == 0 for s in clubs)
     # Successor teams (Yugoslavia / Serbia and Montenegro / Serbia) often repeat the same totals: count once.
