@@ -80,7 +80,12 @@ def senior(spell: dict[str, Any], birth_year: int | None) -> bool:
     """Drops boyhood clubs that Wikidata lists as ordinary clubs (no stats, ended before age 18)."""
     if spell.get("apps") is not None or not birth_year:
         return True
-    m = re.match(r"\d{4}", spell.get("end") or spell.get("start") or "")
+    if not spell.get("end"):
+        # Still running: the current club, also when joined as a teenager (e.g. at 17); a bare youth club
+        # with neither end nor stats that started in childhood stays out.
+        m = re.match(r"\d{4}", spell.get("start") or "")
+        return not m or int(m.group(0)) >= birth_year + 15
+    m = re.match(r"\d{4}", spell.get("end") or "")
     return not m or int(m.group(0)) >= birth_year + 18
 
 
@@ -118,9 +123,19 @@ def summarize(stints: list[dict[str, Any]], teams: dict[str, Any], labels: dict[
     by = int(birth[:4]) if birth and re.match(r"\d{4}", birth) else None
     stints = [clean(s, goalkeeper) for s in stints]
     clubs = [s for s in stints if teams.get(s["team"], {}).get("kind") == "club" and senior(s, by)
-             and first_team(teams.get(s["team"], {}).get("label") or "")]
+             and first_team(teams.get(s["team"], {}).get("label") or "")
+             and not WOMEN_TEAM.search(teams.get(s["team"], {}).get("label") or "")]
+    # Wikidata sometimes copies one spell's figures onto another club (same matches, near-same goals): keep one.
+    kept: list[dict[str, Any]] = []
+    for s in clubs:
+        a, g = s.get("apps"), s.get("goals")
+        if a and a >= 50 and any(k.get("apps") == a and abs((k.get("goals") or 0) - (g or 0)) <= 3 for k in kept):
+            continue
+        kept.append(s)
+    clubs = kept
     nats = [s for s in stints if teams.get(s["team"], {}).get("kind") == "national"
-            and senior_national(teams.get(s["team"], {}).get("label") or "")]
+            and senior_national(teams.get(s["team"], {}).get("label") or "")
+            and not (s.get("apps") is not None and (s.get("goals") or 0) > s["apps"])]  # more goals than caps: a typo
     ordered = sorted(clubs, key=lambda s: (s.get("start") or "9999", s.get("end") or "9999"))  # ISO dates sort lexically
     path: list[str] = []
     for s in ordered:
@@ -172,14 +187,27 @@ def main() -> None:
             row["career_clubs"] = s["career_clubs"]
         if s["club_count"]:
             row["club_count"] = s["club_count"]; stats["club_count"] += 1
-        if s["career_appearances"] is not None and s["career_goals"] is not None:
+        # Wikidata infobox totals are sometimes years out of date: if they fall far below the matches the
+        # player has logged since 2012 alone, they are stale and not used.
+        stale = s["career_appearances"] is not None and s["career_appearances"] < 0.5 * (row.get("career_appearances") or 0)
+        if s["career_appearances"] is not None and s["career_goals"] is not None and not stale:
             row["career_appearances"] = s["career_appearances"]; row["career_goals"] = s["career_goals"]
             row["career_stats_source"] = "wikidata_league"; stats["career_stats"] += 1
         elif row.get("career_goals") is not None:
             row["career_stats_source"] = "transfermarkt_2012"
+        # Fame beyond the Transfermarkt window: the TM score only sees 2012+ matches and values, which buries
+        # legends who were still playing then (Buffon, Casillas, Pirlo...). Use the same whole-career formula
+        # as for players added from Wikidata and keep the higher of the two.
+        whole = round((s["international_caps"] or row.get("international_caps") or 0) * 0.75
+                      + math.sqrt(s["career_appearances"] or 0) * 2.5 + (s["club_count"] or 0) * 5
+                      + (wd.get("sitelinks") or 0) * 2.2, 2)
+        if whole > float(row.get("recognition_score") or 0):
+            row["recognition_score"] = whole; stats["recognition_raised"] = stats.get("recognition_raised", 0) + 1
         for field, value in (("international_caps", s["international_caps"]), ("international_goals", s["international_goals"]),
                              ("height_cm", wd.get("height_cm") if 140 <= (wd.get("height_cm") or 0) <= 220 else None), ("birth_date", wd.get("birth_date"))):
             if row.get(field) in (None, 0) and value:
+                if field == "international_goals" and value > (row.get("international_caps") or 0):
+                    continue  # goals can't outnumber the caps they were scored in
                 row[field] = value; stats["filled"] += 1
 
     added: list[dict[str, Any]] = []
