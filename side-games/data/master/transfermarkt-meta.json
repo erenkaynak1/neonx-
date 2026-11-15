@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-11-14T23:31:43.203399+00:00",
+  "generated_at": "2026-11-15T00:03:49.829208+00:00",
   "provider": "dcaribou/transfermarkt-datasets",
   "provider_revision": null,
   "dataset_url": "https://pub-e682421888d945d684bcae8890b0ec20.r2.dev/data/transfermarkt-datasets.duckdb",
@@ -28,8 +28,8 @@
   "wikidata_generated_at": "2026-11-12T14:31:40.409738+00:00",
   "wikidata_merge": {
     "matched": 42563,
-    "club_count": 30616,
-    "career_stats": 4977,
+    "club_count": 30578,
+    "career_stats": 5007,
     "filled": 4064,
     "added": 14322
   },
