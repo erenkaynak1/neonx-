@@ -31,6 +31,19 @@ MASTER = ROOT / "side-games" / "data" / "master" / "transfermarkt-players.json"
 META = ROOT / "side-games" / "data" / "master" / "transfermarkt-meta.json"
 SUPPLEMENT = ROOT / ".tmp-wikidata" / "wikidata-supplement.json"
 WORLD_CUPS = ROOT / ".tmp-wikidata" / "world-cups.json"  # from build_world_cups.py (optional)
+INFOBOX = ROOT / ".tmp-wikipedia" / "infobox.json"  # from build_wikipedia_infobox.py (optional)
+REEP = ROOT / ".tmp-reep" / "links.json"  # from build_reep_links.py (optional)
+
+
+def same_birth(a: str | None, b: str | None) -> bool | None:
+    """None when either is unknown. Wikidata stores year-only dates as YYYY-01-01, so those match on the year."""
+    if not a or not b or len(a) < 10 or len(b) < 10:
+        return None
+    if a[:4] != b[:4]:
+        return False
+    if a[5:] == "01-01" or b[5:] == "01-01":
+        return True
+    return a[:10] == b[:10]
 MAX_CLUBS = 25
 LEGEND_ID_BASE = 900_000_000  # ids for players without a Transfermarkt ID: base + Wikidata number
 
@@ -165,6 +178,118 @@ def summarize(stints: list[dict[str, Any]], teams: dict[str, Any], labels: dict[
     }
 
 
+def cross_check_infoboxes(master: list[dict[str, Any]], stats: dict[str, Any]) -> None:
+    """Third source: English Wikipedia infoboxes, which editors keep more current than Wikidata.
+
+    * Whole-career league apps/goals: the infobox total replaces the Wikidata one unless it is clearly stale
+      (below the larger of the two by more than 10%, or below half of the 2012+ Transfermarkt log).
+    * Caps / international goals (senior team only): the highest of the sources, since every source only
+      ever lags behind; a source more than 10% below the highest is counted as a disagreement.
+    * Club count: distinct first-team clubs in the infobox (loans included, youth/reserve sides out).
+    * Height: fills gaps; Transfermarkt wins on conflict.
+    Agreement/disagreement counts land in meta wikidata_merge.infobox."""
+    if not INFOBOX.exists():
+        return
+    boxes = json.loads(INFOBOX.read_text(encoding="utf-8")).get("players", {})
+    xs = {"players": 0, "apps_agree": 0, "apps_replaced": 0, "apps_stale_skipped": 0, "caps_agree": 0, "caps_raised": 0,
+          "clubs_agree": 0, "clubs_changed": 0, "height_filled": 0, "height_conflict": 0}
+    norm = lambda name: re.sub(r"[^a-z0-9]", "", re.sub(r"\(.*?\)", "", name.lower()))
+    def senior_clubs(b: dict) -> list[dict]:
+        return [c for c in (b or {}).get("clubs", []) if first_team(c.get("label") or c.get("club") or "")
+                and first_team(c.get("club") or "") and not WOMEN_TEAM.search(c.get("club") or "")]
+
+    def complete(cs: list[dict]) -> bool:
+        return bool(cs) and all(c.get("apps") is not None and c.get("goals") is not None for c in cs)
+
+    for row in master:
+        entry = boxes.get(row.get("wikidata_id") or "")
+        if not entry:
+            continue
+        xs["players"] += 1
+        # English and Turkish infoboxes: both only ever lag, so the one with more league matches is the fresher.
+        options = [b for b in (entry if entry.get("clubs") is not None else None, entry.get("tr")) if b]
+        best = max(options, key=lambda b: (complete(senior_clubs(b)), sum(c.get("apps") or 0 for c in senior_clubs(b))))
+        box = dict(best)
+        box["national"] = max((b.get("national", []) for b in options),
+                              key=lambda ns: sum(t.get("caps") or 0 for t in ns if not t.get("youth")))
+        box["height_cm"] = best.get("height_cm") or next((b.get("height_cm") for b in options if b.get("height_cm")), None)
+        if len(options) == 2:
+            xs["both_languages"] = xs.get("both_languages", 0) + 1
+        clubs = senior_clubs(box)
+        if clubs and all(c.get("apps") is not None and c.get("goals") is not None for c in clubs):
+            ib_apps, ib_goals = sum(c["apps"] for c in clubs), sum(c["goals"] for c in clubs)
+            cur = row.get("career_appearances") if row.get("career_stats_source") == "wikidata_league" else None
+            tm_log = row.get("career_appearances") if row.get("career_stats_source") != "wikidata_league" else 0
+            if ib_apps < 0.5 * (tm_log or 0) or (cur and ib_apps < 0.9 * cur):
+                xs["apps_stale_skipped"] += 1
+            else:
+                if cur and abs(ib_apps - cur) <= max(3, cur * 0.03):
+                    xs["apps_agree"] += 1
+                else:
+                    xs["apps_replaced"] += 1
+                row["career_appearances"], row["career_goals"], row["career_stats_source"] = ib_apps, ib_goals, "wikipedia_infobox"
+        if clubs:
+            n = len({norm(c["club"]) for c in clubs})
+            if 0 < n <= MAX_CLUBS:
+                xs["clubs_agree" if n == row.get("club_count") else "clubs_changed"] += 1
+                row["club_count"] = n
+        senior = [t for t in box.get("national", []) if not t.get("youth") and t.get("caps") is not None]
+        if senior:
+            caps, goals = sum(t["caps"] for t in senior), sum(t.get("goals") or 0 for t in senior)
+            have = row.get("international_caps") or 0
+            if caps <= MAX_CAPS and goals <= caps:
+                if abs(caps - have) <= max(1, have * 0.1):
+                    xs["caps_agree"] += 1
+                if caps > have:
+                    xs["caps_raised"] += 1
+                    row["international_caps"], row["international_goals"] = caps, max(goals, row.get("international_goals") or 0)
+        h = box.get("height_cm")
+        if h:
+            if not row.get("height_cm"):
+                row["height_cm"] = h; xs["height_filled"] += 1
+            elif abs(row["height_cm"] - h) > 3:
+                xs["height_conflict"] += 1
+    stats["infobox"] = xs
+
+
+def cross_check_bio(master: list[dict[str, Any]], players: dict[str, Any], stats: dict[str, Any]) -> None:
+    """Birth date and height by majority of Transfermarkt, Wikidata, Wikipedia (height) and Reep.
+
+    Transfermarkt stays unless at least two other sources agree with each other and not with it; gaps are
+    filled when one other source has a value (two must agree when they are available)."""
+    reep = json.loads(REEP.read_text())["by_tm"] if REEP.exists() else {}
+    boxes = json.loads(INFOBOX.read_text(encoding="utf-8")).get("players", {}) if INFOBOX.exists() else {}
+    xs = {"birth_confirmed": 0, "birth_fixed": 0, "birth_filled": 0, "height_confirmed": 0, "height_fixed": 0, "height_filled": 0}
+    for row in master:
+        q, r = row.get("wikidata_id"), reep.get(str(row.get("id")), {})
+        wd = players.get(q, {}) if q else {}
+        # birth date (full dates only)
+        others = [d[:10] for d in (wd.get("birth_date"), r.get("dob")) if d and len(d) >= 10 and d[5:10] != "01-01"]
+        tm = row.get("birth_date")
+        if others:
+            if tm and len(tm) >= 10:
+                if tm[:10] in others:
+                    xs["birth_confirmed"] += 1
+                elif len(others) == 2 and others[0] == others[1]:
+                    row["birth_date"] = others[0]; xs["birth_fixed"] += 1
+            elif len(set(others)) == 1:
+                row["birth_date"] = others[0]; xs["birth_filled"] += 1
+        # height (cm)
+        hs = [h for h in (r.get("height_cm"), (boxes.get(q) or {}).get("height_cm") if q else None, wd.get("height_cm")) if h and 150 <= h <= 210]
+        th = row.get("height_cm")
+        if hs:
+            if th:
+                if any(abs(th - h) <= 1 for h in hs):
+                    xs["height_confirmed"] += 1
+                else:
+                    agree = [a for a in hs if sum(abs(a - b) <= 1 for b in hs) >= 2]
+                    if agree:
+                        row["height_cm"] = round(sum(agree) / len(agree)); xs["height_fixed"] += 1
+            elif len(hs) == 1 or max(hs) - min(hs) <= 2:
+                row["height_cm"] = round(sum(hs) / len(hs)); xs["height_filled"] += 1
+    stats["bio"] = xs
+
+
 def main() -> None:
     master: list[dict[str, Any]] = json.loads(MASTER.read_text())
     sup = json.loads(SUPPLEMENT.read_text())
@@ -180,8 +305,11 @@ def main() -> None:
         q = by_tm.get(str(row["id"]))
         if not q or q not in players:
             continue
-        stats["matched"] += 1
         wd = players[q]
+        if same_birth(row.get("birth_date"), wd.get("birth_date")) is False:
+            stats["birth_mismatch_skipped"] = stats.get("birth_mismatch_skipped", 0) + 1
+            continue  # a wrong link: never copy another person's career
+        stats["matched"] += 1
         s = summarize(wd.get("stints", []), teams, labels, wd.get("birth_date"), row.get("position") == "Goalkeeper")
         row["wikidata_id"] = q
         if s["career_clubs"]:
@@ -252,6 +380,8 @@ def main() -> None:
         })
         stats["added"] += 1
     master.extend(added)
+    cross_check_infoboxes(master, stats)
+    cross_check_bio(master, players, stats)
     # World Cup squads (1930-2026). The squad lists are complete, so a player with a Wikidata item and no
     # entry was in no World Cup squad (0); without a Wikidata item the count is unknown (null).
     wc_doc = json.loads(WORLD_CUPS.read_text()) if WORLD_CUPS.exists() else None

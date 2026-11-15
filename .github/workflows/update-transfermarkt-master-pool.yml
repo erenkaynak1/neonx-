@@ -30,7 +30,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 150
+    timeout-minutes: 210
     steps:
       - uses: actions/checkout@v4
         with:
@@ -42,8 +42,15 @@ jobs:
         run: pip install --disable-pip-version-check duckdb requests
       - name: Test master and derived pool contracts
         run: python scripts/test_side_game_pool_builders.py
+      # Reads last week's merged pool (player ↔ Wikidata links), so it runs before the pool is rebuilt.
+      - name: Wikipedia infoboxes (third source for cross-checking)
+        continue-on-error: true
+        run: python scripts/build_wikipedia_infobox.py --budget-minutes 70
       - name: Build canonical dcaribou Transfermarkt pool
         run: python scripts/build_transfermarkt_master_pool.py
+      - name: Reep identity links (Transfermarkt ↔ Wikidata ↔ other providers)
+        continue-on-error: true
+        run: python scripts/build_reep_links.py
       - name: Fetch Wikidata supplement (club history, career league totals, legends)
         run: python scripts/build_wikidata_supplement.py
       - name: World Cup squads (Wikidata + Fjelstul World Cup Database)

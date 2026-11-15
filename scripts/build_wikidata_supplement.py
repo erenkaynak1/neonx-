@@ -260,6 +260,15 @@ def main() -> None:
     print(f"master players: {len(tm_ids)}")
     tm_map = map_tm_ids(sorted(tm_ids))
     print(f"matched to Wikidata by Transfermarkt ID: {len(tm_map)}")
+    # Reep (build_reep_links.py) links more Transfermarkt IDs to Wikidata; merge_wikidata_master.py drops any
+    # link whose birth dates disagree, so a wrong crosswalk entry can't bring in someone else's history.
+    reep = ROOT / ".tmp-reep" / "links.json"
+    if reep.exists():
+        added = 0
+        for tm, rec in json.loads(reep.read_text())["by_tm"].items():
+            if tm in tm_ids and tm not in tm_map and rec.get("qid"):
+                tm_map[tm] = {"qid": rec["qid"], "sitelinks": 0}; added += 1
+        print(f"more links from Reep: {added}")
     legends = legend_candidates(ARGS.legend_sitelinks)
     turkish = turkish_club_players(ARGS.turkish_clubs)
     print(f"footballers with a Turkish professional club spell: {len(turkish)}")

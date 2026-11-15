@@ -82,7 +82,7 @@ def build(args: argparse.Namespace) -> dict:
                 value = None
             # "Whole-career league" questions only use whole-career league totals (Wikidata), never the
             # 2012+ Transfermarkt counts, which miss earlier seasons and include cup matches.
-            if key in ("g", "ap") and p.get("career_stats_source") != "wikidata_league":
+            if key in ("g", "ap") and p.get("career_stats_source") not in ("wikidata_league", "wikipedia_infobox"):
                 value = None
             if key == "h" and value is not None and not 140 <= value <= 220:
                 value = None

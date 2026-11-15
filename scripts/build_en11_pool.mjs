@@ -103,11 +103,18 @@ const [master, masterMeta, corrections] = await Promise.all([
   }),
 ]);
 
+const WHOLE_CAREER_SOURCES = new Set(['wikidata_league', 'wikipedia_infobox']);
 const pools = Object.fromEntries(POSITIONS.map((position) => [position, []]));
 for (const sourcePlayer of master) {
   if (sourcePlayer?.id == null) continue;
   if (!POSITIONS.includes(sourcePlayer.position) || !sourcePlayer.name) continue;
   const player = Object.fromEntries(Object.entries(FIELDS).map(([target, source]) => [target, sourcePlayer[source] ?? null]));
+  // "Career goals / matches" mean the whole career: the 2012+ Transfermarkt log misses earlier seasons and
+  // untracked leagues (Mergim Berisha showed 17 goals), so only whole-career totals are offered.
+  if (!WHOLE_CAREER_SOURCES.has(sourcePlayer.career_stats_source)) {
+    player.careerGoals = null;
+    player.careerAppearances = null;
+  }
   pools[player.position].push(player);
 }
 

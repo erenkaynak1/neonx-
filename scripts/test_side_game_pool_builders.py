@@ -16,6 +16,8 @@ import build_career_twin_pool as career_builder
 import build_transfermarkt_master_pool as master_builder
 import build_xox_master_pool as xox_builder
 import validate_side_game_pools as validator
+import build_wikipedia_infobox as infobox_builder
+import merge_wikidata_master as merge_builder
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -197,6 +199,64 @@ class SideGamePoolPipelineTest(unittest.TestCase):
             self.assertTrue(all("clubs" not in player and "weight_kg" not in player for player in career_players))
             self.assertNotIn("weight_kg", career_meta["active_metrics"])
 
+
+
+class InfoboxParsingTest(unittest.TestCase):
+    SAMPLE = """{{short description|x}}
+{{Infobox football biography
+| height = {{cvt|1.91|m}}
+| youth_clubs1 = [[Sakaryaspor]]
+| years1 = 1987–1990
+| clubs1 = [[Sakaryaspor]]
+| caps1 = 41
+| goals1 = 19
+| years2 = 1992–1995
+| clubs2 = [[Galatasaray S.K. (football)|Galatasaray]]
+| caps2 = 90<!-- league only -->
+| goals2 = 54<ref>x</ref>
+| years3 = 1995
+| clubs3 = → [[Torino F.C.|Torino]] (loan)
+| caps3 = 5
+| goals3 = (1)
+| years4 = 1996
+| clubs4 = [[Galatasaray S.K. (football)|Galatasaray]]
+| caps4 = 10
+| goals4 = 2
+| national_team1 = [[Turkey national under-21 football team|Turkey U21]]
+| national_caps1 = 16
+| national_goals1 = 5
+| national_team2 = [[Turkey national football team|Turkey]]
+| national_caps2 = 112
+| national_goals2 = [[List of international goals scored by Hakan Şükür|51]]
+}}
+Body text."""
+
+    def test_parse_reads_spells_national_teams_and_height(self) -> None:
+        box = infobox_builder.parse(self.SAMPLE)
+        self.assertEqual(box["height_cm"], 191)
+        self.assertEqual([(c["club"], c["apps"], c["goals"], c["loan"]) for c in box["clubs"]], [
+            ("Sakaryaspor", 41, 19, False), ("Galatasaray S.K. (football)", 90, 54, False),
+            ("Torino F.C.", 5, 1, True), ("Galatasaray S.K. (football)", 10, 2, False)])
+        self.assertEqual([(t["label"], t["caps"], t["goals"], t["youth"]) for t in box["national"]],
+                         [("Turkey U21", 16, 5, True), ("Turkey", 112, 51, False)])
+
+    def test_cross_check_uses_fresh_totals_and_senior_caps_only(self) -> None:
+        box = infobox_builder.parse(self.SAMPLE)
+        row = {"wikidata_id": "Q1", "career_appearances": 120, "career_goals": 60, "career_stats_source": "wikidata_league",
+               "international_caps": 100, "international_goals": 40, "club_count": 2, "height_cm": None}
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "infobox.json"
+            path.write_text(json.dumps({"players": {"Q1": box}}), encoding="utf-8")
+            old, merge_builder.INFOBOX = merge_builder.INFOBOX, path
+            try:
+                stats: dict = {}
+                merge_builder.cross_check_infoboxes([row], stats)
+            finally:
+                merge_builder.INFOBOX = old
+        self.assertEqual((row["career_appearances"], row["career_goals"], row["career_stats_source"]), (146, 76, "wikipedia_infobox"))
+        self.assertEqual((row["international_caps"], row["international_goals"]), (112, 51))  # U21 caps left out
+        self.assertEqual(row["club_count"], 3)  # Galatasaray twice counts once; the loan club counts
+        self.assertEqual(row["height_cm"], 191)
 
 if __name__ == "__main__":
     unittest.main()
