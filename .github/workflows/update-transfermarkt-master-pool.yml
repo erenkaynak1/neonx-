@@ -61,6 +61,8 @@ jobs:
         run: python scripts/build_career_twin_pool.py
       - name: Rebuild Higher or Lower pool
         run: python scripts/build_higher_lower_pool.py
+      - name: Turkish country names
+        run: python scripts/build_country_names_tr.py
       - name: Validate master and derived pools
         run: python scripts/validate_side_game_pools.py
       - name: Commit generated player pools
@@ -71,6 +73,7 @@ jobs:
           git add side-games/data/master/transfermarkt-meta.json
           git add side-games/data/master/xox-players.json
           git add side-games/data/master/xox-meta.json
+          git add side-games/data/master/country-tr.json
           git add side-games/career-twin/data
           git add side-games/en11/data
           git add side-games/higher-lower/data

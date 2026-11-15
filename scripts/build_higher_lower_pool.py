@@ -79,6 +79,10 @@ def build(args: argparse.Namespace) -> dict:
             # Current market value only means something for players still playing.
             if key == "cv" and p.get("status") != "active":
                 value = None
+            # "Whole-career league" questions only use whole-career league totals (Wikidata), never the
+            # 2012+ Transfermarkt counts, which miss earlier seasons and include cup matches.
+            if key in ("g", "ap") and p.get("career_stats_source") != "wikidata_league":
+                value = None
             if key == "h" and value is not None and not 140 <= value <= 220:
                 value = None
             if value is not None:
