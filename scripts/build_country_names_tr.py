@@ -34,7 +34,7 @@ MANUAL = {
     "England": "İngiltere", "Scotland": "İskoçya", "Wales": "Galler", "Northern Ireland": "Kuzey İrlanda", "United Kingdom": "Birleşik Krallık",
     "Palestine": "Filistin", "Kosovo": "Kosova", "North Macedonia": "Kuzey Makedonya", "Ireland": "İrlanda", "Russia": "Rusya",
     "Iran": "İran", "Syria": "Suriye", "Laos": "Laos", "Vietnam": "Vietnam", "Moldova": "Moldova", "Faroe Islands": "Faroe Adaları",
-    "China": "Çin", "Guadeloupe": "Guadeloupe", "Martinique": "Martinik", "French Guiana": "Fransız Guyanası", "Réunion": "Réunion",
+    "China": "Çin", "Kingdom of Yugoslavia": "Yugoslavya Krallığı", "Yugoslavia": "Yugoslavya", "Guadeloupe": "Guadeloupe", "Martinique": "Martinik", "French Guiana": "Fransız Guyanası", "Réunion": "Réunion",
 }
 
 

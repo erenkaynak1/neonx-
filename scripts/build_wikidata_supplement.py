@@ -69,7 +69,10 @@ def sparql(query: str) -> list[dict[str, str]]:
         except requests.RequestException:
             time.sleep(delay); delay = min(delay * 2, 120); continue
         if r.status_code == 200:
-            rows = [{k: v["value"] for k, v in b.items()} for b in r.json()["results"]["bindings"]]
+            try:
+                rows = [{k: v["value"] for k, v in b.items()} for b in r.json()["results"]["bindings"]]
+            except ValueError:  # the service sometimes cuts a large reply short: ask again
+                time.sleep(delay); delay = min(delay * 2, 120); continue
             CACHE.mkdir(exist_ok=True)
             path.write_text(json.dumps(rows))
             time.sleep(ARGS.pause)
