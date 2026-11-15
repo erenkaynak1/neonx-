@@ -131,7 +131,7 @@ function renderParty(){
 // Leaderboards use the shared view (social/neon-leaderboard-v1.js): podium with gold/silver/bronze frames,
 // avatars, live movement markers and a pinned "your rank" row. Loaded on demand.
 let lbLoading=null;
-function ensureLeaderboardView(){if(window.NEON_LB)return Promise.resolve();if(!lbLoading)lbLoading=new Promise(res=>{const s=document.createElement('script');s.src=new URL('./neon-leaderboard-v1.js?v=20261115-lb1',import.meta.url).href;s.onload=res;s.onerror=res;document.head.appendChild(s)});return lbLoading}
+function ensureLeaderboardView(){if(window.NEON_LB)return Promise.resolve();if(!lbLoading)lbLoading=new Promise(res=>{const s=document.createElement('script');s.src=new URL('./neon-leaderboard-v1.js?v=20261115-ff1',import.meta.url).href;s.onload=res;s.onerror=res;document.head.appendChild(s)});return lbLoading}
 const LB_TABS=[['weekly','HAFTALIK'],['allTime','TÜM ZAMANLAR'],['hl','HIGHER OR LOWER']];
 function leaderboardData(tab){
   if(tab==='hl'){
@@ -313,7 +313,79 @@ function bindUser(user){
 function bind(){onAuthStateChanged(auth,user=>{if(user)bindUser(user);else{stopPresence();clearUserBindings();state.user=null;button.textContent='GİRİŞ';button.dataset.count='0';render()}})}
 
 shell();bind();
-window.NEON_SOCIAL={open,close,chooseMode,signIn:signInGoogle,continueAsGuest,signOut:signOutGoogle,recordResult,modes:MODES,get profile(){return state.profile},get party(){return state.party}};
+// Player card: opens from any leaderboard place ([data-lb-player]) with avatar, stats, head-to-head and
+// a friend button (add / accept / already friends).
+const sentRequests=new Set();
+async function showPlayer(uid,name){
+  if(!uid)return;
+  await ensureLeaderboardView();
+  document.querySelector('.nx-pc-shade')?.remove();
+  playerCardStyle();
+  const el=document.createElement('div');el.className='nx-pc-shade';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');el.setAttribute('aria-label',`@${name} profili`);
+  el.innerHTML=`<div class="nx-pc"><button type="button" class="nx-pc-x" aria-label="Kapat">✕</button><div class="nx-pc-body"><div class="nx-pc-loading">Profil yükleniyor…</div></div></div>`;
+  document.body.appendChild(el);
+  const close=()=>{el.remove();document.removeEventListener('keydown',esc_)},esc_=e=>{if(e.key==='Escape')close()};
+  el.addEventListener('click',e=>{if(e.target===el||e.target.closest('.nx-pc-x'))close()});document.addEventListener('keydown',esc_);
+  const read=path=>get(ref(db,path)).then(x=>x.val()).catch(()=>null),me=state.user?.uid||'';
+  const [profile,board,hl,h2h]=await Promise.all([read(`social/profiles/${uid}`),read(`social/leaderboards/allTime/${uid}`),read(`social/higherLower/allTime/${uid}/best`),me&&me!==uid?read(`social/headToHead/${me}/${uid}`):null]);
+  if(!el.isConnected)return;
+  const username=profile?.username||board?.username||name||'Oyuncu',st=board||{},hlBest=Math.max(Number(hl)||0,Number(st.hlBest)||0,Number(profile?.higherLowerBest)||0);
+  const friend=!!state.friends?.[uid],incoming=!!state.requests?.[uid],sent=sentRequests.has(uid);
+  const action=uid===me?'<div class="nx-pc-note">Bu senin profilin.</div>'
+    :!state.profile?'<div class="nx-pc-note">Arkadaş eklemek için önce oyuncu adını oluştur.</div>'
+    :friend?`<button type="button" class="nx-pc-btn done" disabled>✓ ARKADAŞSINIZ</button><button type="button" class="nx-pc-btn ghost" data-pc="invite">PARTİYE ÇAĞIR</button>`
+    :incoming?`<button type="button" class="nx-pc-btn" data-pc="accept">İSTEĞİ KABUL ET</button>`
+    :sent?'<button type="button" class="nx-pc-btn done" disabled>İSTEK GÖNDERİLDİ</button>'
+    :`<button type="button" class="nx-pc-btn" data-pc="add">＋ ARKADAŞ EKLE</button>`;
+  const stat=(label,value,cls='')=>`<div class="nx-pc-stat ${cls}"><b>${value}</b><small>${label}</small></div>`;
+  el.querySelector('.nx-pc-body').innerHTML=`<span class="nxlb-av nx-pc-av" data-lb-uid="${esc(uid)}"><b>${esc(username.slice(0,1).toUpperCase())}</b></span>
+    <h3 class="nx-pc-name">@${esc(username)}</h3>
+    <div class="nx-pc-tag">${statValue(st,'games')?`${statValue(st,'games')} online maç`:'Henüz online maç yok'}${profile?.accountType==='guest'?' · Misafir':''}</div>
+    <div class="nx-pc-stats">${stat('GALİBİYET',statValue(st,'wins'),'lime')}${stat('MAĞLUBİYET',statValue(st,'losses'))}${stat('BERABERLİK',statValue(st,'draws'))}${stat('KAZANMA','%'+winRate(st),'lime')}</div>
+    <div class="nx-pc-row"><span>HIGHER OR LOWER REKORU</span><b>${hlBest||'—'}</b></div>
+    ${h2h&&statValue(h2h,'games')?`<div class="nx-pc-row"><span>ARANIZDAKİ MAÇLAR</span><b>${statValue(h2h,'wins')}G · ${statValue(h2h,'losses')}M · ${statValue(h2h,'draws')}B</b></div>`:''}
+    <div class="nx-pc-actions">${action}</div><div class="nx-pc-status" role="status"></div>`;
+  window.NEON_LB?.paint(el,u=>read(`social/profiles/${u}/avatar`).then(v=>String(v||'')));
+  const status=(t,bad)=>{const x=el.querySelector('.nx-pc-status');x.textContent=t;x.classList.toggle('bad',!!bad)};
+  el.querySelector('[data-pc="add"]')?.addEventListener('click',async e=>{const b=e.currentTarget;b.disabled=true;try{await sendFriend(uid,username);sentRequests.add(uid);b.classList.add('done');b.textContent='İSTEK GÖNDERİLDİ';status(`@${username} arkadaşlık isteğini görecek.`)}catch(x){b.disabled=false;status(x?.message||'İstek gönderilemedi.',true)}});
+  el.querySelector('[data-pc="accept"]')?.addEventListener('click',async e=>{const b=e.currentTarget;b.disabled=true;try{await acceptFriend(uid);b.classList.add('done');b.textContent='✓ ARKADAŞSINIZ'}catch(x){b.disabled=false;status(x?.message||'İstek kabul edilemedi.',true)}});
+  el.querySelector('[data-pc="invite"]')?.addEventListener('click',async e=>{const b=e.currentTarget;b.disabled=true;try{await invite(uid);b.textContent='DAVET GÖNDERİLDİ'}catch(x){b.disabled=false;status(x?.message||'Davet gönderilemedi.',true)}});
+  el.querySelector('.nx-pc-x').focus();
+}
+document.addEventListener('click',e=>{const p=e.target.closest('[data-lb-player]');if(p){e.preventDefault();showPlayer(p.dataset.lbPlayer,p.dataset.lbName)}});
+document.addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;const p=e.target.closest?.('[data-lb-player]');if(p){e.preventDefault();showPlayer(p.dataset.lbPlayer,p.dataset.lbName)}});
+let pcStyled=false;
+function playerCardStyle(){
+  if(pcStyled)return;pcStyled=true;const st=document.createElement('style');
+  st.textContent=`.nx-pc-shade{position:fixed;inset:0;z-index:2147481000;display:grid;place-items:end center;padding:12px;background:rgba(3,5,7,.7);backdrop-filter:blur(5px);animation:nxpcIn .2s ease both}
+@media(min-width:620px){.nx-pc-shade{place-items:center}}
+.nx-pc{position:relative;width:min(100%,400px);max-height:calc(100dvh - 24px);overflow:auto;border-radius:22px;background:radial-gradient(120% 60% at 50% 0,rgba(186,255,24,.12),transparent 60%),linear-gradient(180deg,#141a20,#0a0e12);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1),0 24px 60px rgba(0,0,0,.6);color:#fff;font-family:var(--nxu-body,"Barlow",system-ui,sans-serif);animation:nxpcUp .3s cubic-bezier(.2,.8,.2,1) both}
+.nx-pc-x{position:absolute;top:10px;right:10px;width:36px;height:36px;border:0;border-radius:50%;background:rgba(255,255,255,.07);color:#fff;font-size:15px;cursor:pointer}
+.nx-pc-body{display:grid;justify-items:center;gap:10px;padding:26px 18px 18px;text-align:center}
+.nx-pc-loading{padding:40px 0;color:rgba(255,255,255,.6)}
+.nx-pc-av{width:96px!important;height:96px!important;font-size:34px!important;box-shadow:0 0 0 3px #090c10,0 0 0 6px #baff18,0 0 30px rgba(186,255,24,.35)}
+.nx-pc-name{margin:4px 0 0;font:italic 900 30px/1 var(--nxu-display,"Barlow Condensed",sans-serif);letter-spacing:.02em;word-break:break-word}
+.nx-pc-tag{color:rgba(255,255,255,.55);font-size:12px}
+.nx-pc-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;width:100%;margin-top:4px}
+.nx-pc-stat{display:grid;gap:4px;padding:10px 4px;border-radius:12px;background:rgba(255,255,255,.045);box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+.nx-pc-stat b{font:italic 900 24px/1 var(--nxu-display,"Barlow Condensed",sans-serif)}.nx-pc-stat.lime b{color:#baff18}
+.nx-pc-stat small{color:rgba(255,255,255,.5);font:700 9px/1 var(--nxu-display,"Barlow Condensed",sans-serif);letter-spacing:.12em}
+.nx-pc-row{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;padding:11px 12px;border-radius:12px;background:rgba(255,255,255,.035)}
+.nx-pc-row span{color:rgba(255,255,255,.55);font:700 11px/1 var(--nxu-display,"Barlow Condensed",sans-serif);letter-spacing:.14em}.nx-pc-row b{color:#00eaff;font:italic 900 20px/1 var(--nxu-display,"Barlow Condensed",sans-serif)}
+.nx-pc-actions{display:grid;gap:8px;width:100%;margin-top:6px}
+.nx-pc-btn{min-height:48px;border:0;border-radius:14px;background:#baff18;color:#0a0f02;font:800 14px/1 var(--nxu-display,"Barlow Condensed",sans-serif);letter-spacing:.12em;cursor:pointer;box-shadow:0 0 22px rgba(186,255,24,.3)}
+.nx-pc-btn.ghost{background:transparent;color:#baff18;box-shadow:inset 0 0 0 1px rgba(186,255,24,.6)}.nx-pc-btn.done{background:rgba(186,255,24,.12);color:#baff18;box-shadow:inset 0 0 0 1px rgba(186,255,24,.4)}
+.nx-pc-note{padding:12px;border-radius:12px;background:rgba(255,255,255,.04);color:rgba(255,255,255,.65);font-size:13px}
+.nx-pc-status{min-height:16px;color:rgba(255,255,255,.65);font-size:12px}.nx-pc-status.bad{color:#ff7a8a}
+@keyframes nxpcIn{from{opacity:0}}@keyframes nxpcUp{from{opacity:0;transform:translateY(24px)}}`;
+  document.head.appendChild(st);
+}
+// Forfeits for online 1v1 matches: leave warning, disconnect countdown, forfeit win/loss (social/match-forfeit-v1.js).
+{
+  const here=location.pathname.replace(/\/$/,'/index.html'),modeHere=Object.keys(MODES).find(k=>new URL(MODES[k].path,base).pathname===here)||'';
+  import('./match-forfeit-v1.js?v=20261115-ff1').then(m=>m.initForfeit({db,auth,mode:modeHere,recordResult,getProfile:()=>state.profile,onAuth:cb=>onAuthStateChanged(auth,cb)})).catch(e=>console.warn('Hükmen modülü yüklenemedi',e));
+}
+window.NEON_SOCIAL={showPlayer,open,close,chooseMode,signIn:signInGoogle,continueAsGuest,signOut:signOutGoogle,recordResult,modes:MODES,get profile(){return state.profile},get party(){return state.party}};
 document.addEventListener('neon-match-result',e=>recordResult(e.detail||{}).catch(error=>{console.error('Maç sonucu kaydedilemedi',error);message('Maç sonucu liderliğe kaydedilemedi.',true)}));
 document.addEventListener('click',e=>{const b=e.target.closest('[data-neon-social]');if(b){e.preventDefault();open(b.dataset.neonSocial||'play')}});
 window.addEventListener('beforeunload',()=>{if(state.presenceConnection)remove(state.presenceConnection).catch(()=>{})});

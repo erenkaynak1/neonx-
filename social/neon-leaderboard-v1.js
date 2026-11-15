@@ -4,6 +4,7 @@
    Rows: {uid, username, score, sub?, podSub? (shorter line under a podium place)}. opts: {me, unit, limit, empty, id}.
    Calling html() again for the same `id` compares with the previous call, so live updates show what moved:
    a new score flashes and rank changes get ▲/▼ markers.
+   Each place carries data-lb-player / data-lb-name so the page can open that player's card.
    NEON_LB.paint(root, loadAvatar) fills the avatar slots; loadAvatar(uid) resolves to the stored avatar id.
    Pure presentation: no Firebase access here. Loads neon-avatars-v1.js on demand. */
 (() => {
@@ -50,12 +51,14 @@
       if (p.rank < r.rank) return { cls, mark: `<i class="nxlb-mv down">▼${r.rank - p.rank}</i>` };
       return { cls, mark: '' };
     };
+    // Every place opens the player's card (NEON_SOCIAL listens for clicks on [data-lb-player]).
+    const who = r => `data-lb-player="${esc(r.uid)}" data-lb-name="${esc(r.username)}" role="button" tabindex="0" aria-label="@${esc(r.username)} profilini aç"`;
     const score = r => `${nf.format(r.score)}${unit ? `<small>${esc(unit)}</small>` : ''}`;
     const podium = list.slice(0, 3), rest = list.slice(3, limit);
     const order = podium.length === 3 ? [podium[1], podium[0], podium[2]] : podium.length === 2 ? [podium[1], podium[0]] : podium;
     const pod = order.map(r => {
       const m = MEDAL[Math.min(r.rank, 3) - 1], d = delta(r);
-      return `<div class="nxlb-pod ${m}${r.uid === me ? ' me' : ''}${d.cls}">
+      return `<div class="nxlb-pod ${m}${r.uid === me ? ' me' : ''}${d.cls}" ${who(r)}>
         ${r.rank === 1 ? '<span class="nxlb-crown" aria-hidden="true">♛</span>' : ''}
         <span class="nxlb-ring">${slot(r.uid, r.username)}<em>${r.rank}</em></span>
         <b class="nxlb-name">@${esc(r.username)}</b>
@@ -66,7 +69,7 @@
     }).join('');
     const row = r => {
       const d = delta(r), m = r.rank <= 3 ? ` ${MEDAL[r.rank - 1]}` : '';
-      return `<div class="nxlb-row${m}${r.uid === me ? ' me' : ''}${d.cls}"><span class="nxlb-rk">${r.rank}</span>${slot(r.uid, r.username)}
+      return `<div class="nxlb-row${m}${r.uid === me ? ' me' : ''}${d.cls}" ${who(r)}><span class="nxlb-rk">${r.rank}</span>${slot(r.uid, r.username)}
         <span class="nxlb-who"><b>@${esc(r.username)}</b>${r.sub ? `<small>${esc(r.sub)}</small>` : ''}</span>${d.mark}<strong>${score(r)}</strong></div>`;
     };
     const mine = me ? list.find(r => r.uid === me) : null;
@@ -128,6 +131,7 @@
 .nxlb-pod.silver .nxlb-step{background:linear-gradient(180deg,rgba(201,211,219,.24),rgba(201,211,219,.03));box-shadow:inset 0 2px 0 var(--s2)}
 .nxlb-pod.bronze .nxlb-step{height:24px;background:linear-gradient(180deg,rgba(217,135,74,.26),rgba(217,135,74,.03));box-shadow:inset 0 2px 0 var(--b2)}
 .nxlb-pod.me .nxlb-name{color:#baff18}
+[data-lb-player]{cursor:pointer;-webkit-tap-highlight-color:transparent}.nxlb-row[data-lb-player]:hover{background:rgba(255,255,255,.07)}.nxlb-pod[data-lb-player]:active,.nxlb-row[data-lb-player]:active{transform:scale(.98)}[data-lb-player]:focus-visible{outline:2px solid #baff18;outline-offset:3px;border-radius:12px}
 .nxlb-av{position:relative;display:grid;place-items:center;flex:none;width:36px;height:36px;overflow:hidden;border-radius:50%;background:#1a2128;color:rgba(255,255,255,.7);font:800 15px/1 var(--nxu-display,"Barlow Condensed",sans-serif)}
 .nxlb-av img,.nxlb-av svg{display:block;width:100%;height:100%}
 .nxlb-list{display:grid;gap:6px}
