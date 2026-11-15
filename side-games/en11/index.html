@@ -149,7 +149,7 @@
   <link rel="stylesheet" href="../sidegame-skin-v2.css?v=20261112-sgm">
 </head>
 <body class="sg-skin sg-en11">
-<script src="../sidegame-loader-v1.js?v=20261114-hl" data-title="EN 11"></script>
+<script src="../sidegame-loader-v1.js?v=20261115-online" data-title="EN 11"></script>
   <main class="app" id="app"></main>
   <div id="overlayRoot"></div>
   <script src="./corrections-runtime.js"></script>
@@ -337,7 +337,7 @@
       try{await loadPeer();S.peer=new Peer(undefined,{debug:0});S.peer.on('open',function(){S.conn=S.peer.connect(PREFIX+code,{reliable:true});bindGuest(S.conn,name)});S.peer.on('error',function(){S.error='Odaya bağlanılamadı.';render()});setTimeout(function(){if(S.screen==='lobby'&&!S.lobby){S.error='Rakibe bağlanılamadı. Menüden tekrar dene.';render()}},16000)}catch(e){S.error='Online bağlantı servisine ulaşılamadı.';render()}
     }
     function bindGuest(c,name){
-      c.on('open',function(){c.send({type:'join',name:name});let tries=0;const again=setInterval(function(){if(S.game||S.conn!==c||!c.open||++tries>8){clearInterval(again);return}c.send({type:'join',name:name})},3000)});
+      c.on('open',function(){c.send({type:'join',name:name});let tries=0;const again=setInterval(function(){if(S.game||S.conn!==c||!c.open||++tries>20){clearInterval(again);return}c.send({type:'join',name:name})},1200)});
       c.on('data',function(m){
         if(!m||typeof m!=='object')return;
         if(m.type==='reject'){S.error=m.message||'Oda dolu.';render();return}
@@ -411,6 +411,14 @@
       app.querySelectorAll('.slotTap').forEach(function(slot){slot.onclick=function(){const teamIndex=Number(slot.dataset.teamIndex);S.viewTeam=teamIndex;render();const turn=currentPick();if(turn&&turn.team===teamIndex&&turn.role===slot.dataset.role&&canPick()){const input=document.getElementById('playerSearch');if(input)input.focus({preventScroll:true})}}});
       const input=document.getElementById('playerSearch');if(input){input.oninput=function(){fillCandidates(input.value)};input.onkeydown=function(e){if(e.key==='Enter'){const first=document.querySelector('#results .result');if(first){e.preventDefault();first.click()}}};fillCandidates('')}
     }
+    // Turkish display names: countries from side-games/data/master/country-tr.json, positions below.
+    const POSITION_TR={'Goalkeeper':'Kaleci','Centre-Back':'Stoper','Left-Back':'Sol bek','Right-Back':'Sağ bek','Full-Back':'Bek','Defender':'Defans','Sweeper':'Libero','Libero':'Libero',
+      'Defensive Midfield':'Ön libero','Defensive Midfielder':'Ön libero','Central Midfield':'Merkez orta saha','Central Midfielder':'Merkez orta saha','Midfielder':'Orta saha','Attacking Midfield':'On numara','Attacking Midfielder':'On numara','Playmaker':'Oyun kurucu',
+      'Left Midfield':'Sol orta saha','Left Midfielder':'Sol orta saha','Right Midfield':'Sağ orta saha','Right Midfielder':'Sağ orta saha','Wide Midfielder':'Kanat orta saha',
+      'Left Winger':'Sol kanat','Right Winger':'Sağ kanat','Winger':'Kanat','Inside Forward':'İç forvet','Centre-Forward':'Santrfor','Second Striker':'Gizli forvet','Forward':'Forvet','Attacker':'Forvet','Power Forward':'Santrfor'};
+    let COUNTRY_TR={};
+    fetch('../data/master/country-tr.json?v=20261115-tr').then(function(r){return r.ok?r.json():{}}).then(function(m){COUNTRY_TR=m||{}}).catch(function(){});
+    function nationTr(name){const k=String(name||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'');return COUNTRY_TR[k]||name||''}
     function fillCandidates(query){
       const box=document.getElementById('results');if(!box||!S.game)return;box.innerHTML='';
       const generation=++S.searchGeneration;
@@ -423,12 +431,14 @@
         if(!liveQ){box.innerHTML='<div class=\"emptyResults\">Oyuncu adını bu boşluğa yaz. Eşleşen adı seçince futbolcu yerleşir.</div>';return}
         const used=new Set(S.game.used);const id=S.game.metric;
         let rows=pool.filter(function(p){return !used.has(p.id)&&valueFor(p,id)!=null&&(p._searchName||norm(p.name)).includes(liveQ)});
-        rows.sort(function(a,b){const ap=a._searchName||norm(a.name),bp=b._searchName||norm(b.name);return (bp.startsWith(liveQ)?1:0)-(ap.startsWith(liveQ)?1:0)+(Number(b.recognition)||0)-(Number(a.recognition)||0)});
+        // Whole word first, then a word that starts with the query, then anywhere in the name; fame breaks ties.
+        const rankOf=function(n){const words=n.split(/[\s-]+/);return words.indexOf(liveQ)>=0?3:words.some(function(w){return w.startsWith(liveQ)})?2:1};
+        rows.sort(function(a,b){return rankOf(b._searchName||norm(b.name))-rankOf(a._searchName||norm(a.name))||(Number(b.recognition)||0)-(Number(a.recognition)||0)});
         box.innerHTML='';
         rows.slice(0,12).forEach(function(p){
           const row=document.createElement('div');row.className='resultRow';
           const b=document.createElement('button');b.type='button';b.className='result';
-          b.innerHTML='<strong>'+esc(p.name)+'</strong><small>'+esc(p.nation||'')+(p.subPosition?' · '+esc(p.subPosition):'')+'</small>';
+          b.innerHTML='<strong>'+esc(p.name)+'</strong><small>'+esc(nationTr(p.nation))+(p.subPosition?' · '+esc(POSITION_TR[p.subPosition]||p.subPosition):'')+'</small>';
           b.onclick=function(){requestPick(p.id)};row.appendChild(b);
           if(p.sourceSlug){const source=document.createElement('a');source.className='resultSource';source.href='https://www.transfermarkt.com/'+encodeURIComponent(p.sourceSlug)+'/profil/spieler/'+encodeURIComponent(p.id);source.target='_blank';source.rel='noopener noreferrer';source.textContent='KAYNAK';source.setAttribute('aria-label',p.name+' Transfermarkt kaynağını aç');row.appendChild(source)}
           box.appendChild(row);
