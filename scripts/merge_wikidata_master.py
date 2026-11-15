@@ -194,13 +194,28 @@ def cross_check_infoboxes(master: list[dict[str, Any]], stats: dict[str, Any]) -
     xs = {"players": 0, "apps_agree": 0, "apps_replaced": 0, "apps_stale_skipped": 0, "caps_agree": 0, "caps_raised": 0,
           "clubs_agree": 0, "clubs_changed": 0, "height_filled": 0, "height_conflict": 0}
     norm = lambda name: re.sub(r"[^a-z0-9]", "", re.sub(r"\(.*?\)", "", name.lower()))
+    def senior_clubs(b: dict) -> list[dict]:
+        return [c for c in (b or {}).get("clubs", []) if first_team(c.get("label") or c.get("club") or "")
+                and first_team(c.get("club") or "") and not WOMEN_TEAM.search(c.get("club") or "")]
+
+    def complete(cs: list[dict]) -> bool:
+        return bool(cs) and all(c.get("apps") is not None and c.get("goals") is not None for c in cs)
+
     for row in master:
-        box = boxes.get(row.get("wikidata_id") or "")
-        if not box:
+        entry = boxes.get(row.get("wikidata_id") or "")
+        if not entry:
             continue
         xs["players"] += 1
-        clubs = [c for c in box.get("clubs", []) if first_team(c.get("label") or c.get("club") or "")
-                 and first_team(c.get("club") or "") and not WOMEN_TEAM.search(c.get("club") or "")]
+        # English and Turkish infoboxes: both only ever lag, so the one with more league matches is the fresher.
+        options = [b for b in (entry if entry.get("clubs") is not None else None, entry.get("tr")) if b]
+        best = max(options, key=lambda b: (complete(senior_clubs(b)), sum(c.get("apps") or 0 for c in senior_clubs(b))))
+        box = dict(best)
+        box["national"] = max((b.get("national", []) for b in options),
+                              key=lambda ns: sum(t.get("caps") or 0 for t in ns if not t.get("youth")))
+        box["height_cm"] = best.get("height_cm") or next((b.get("height_cm") for b in options if b.get("height_cm")), None)
+        if len(options) == 2:
+            xs["both_languages"] = xs.get("both_languages", 0) + 1
+        clubs = senior_clubs(box)
         if clubs and all(c.get("apps") is not None and c.get("goals") is not None for c in clubs):
             ib_apps, ib_goals = sum(c["apps"] for c in clubs), sum(c["goals"] for c in clubs)
             cur = row.get("career_appearances") if row.get("career_stats_source") == "wikidata_league" else None

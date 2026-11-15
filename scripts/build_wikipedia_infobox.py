@@ -36,6 +36,7 @@ CACHE = ROOT / ".tmp-wikipedia"
 OUT = CACHE / "infobox.json"
 UA = "NEONXI-football-pool-builder/1.0 (weekly batch; https://github.com/erenkaynak1/neonx-)"
 WP_API = "https://en.wikipedia.org/w/api.php"
+TR_API = "https://tr.wikipedia.org/w/api.php"
 WD_API = "https://www.wikidata.org/w/api.php"
 YOUTH_NT = re.compile(r"\bU-?\d{2}\b|under[- ]?\d{2}|youth|olympic|\bB\b|amateur|futsal|beach", re.I)
 
@@ -64,12 +65,12 @@ def get(url: str, params: dict[str, Any], tries: int = 8) -> dict | None:
     return None
 
 
-def enwiki_titles(qids: list[str]) -> dict[str, str]:
+def enwiki_titles(qids: list[str], wiki: str = "https://en.wikipedia.org/") -> dict[str, str]:
     """QID → English Wikipedia title, 400 items per SPARQL query (the Wikidata API throttles this much harder)."""
     out: dict[str, str] = {}
     for i in range(0, len(qids), 400):
         values = " ".join("wd:" + q for q in qids[i:i + 400])
-        query = f"SELECT ?item ?article WHERE {{ VALUES ?item {{ {values} }} ?article schema:about ?item ; schema:isPartOf <https://en.wikipedia.org/> }}"
+        query = f"SELECT ?item ?article WHERE {{ VALUES ?item {{ {values} }} ?article schema:about ?item ; schema:isPartOf <{wiki}> }}"
         rows = None
         for attempt in range(6):
             try:
@@ -140,7 +141,7 @@ def infobox_params(text: str) -> dict[str, str]:
     box = text[i:j]
     params: dict[str, str] = {}
     # split on top-level pipes that start a "| key =" line
-    for m in re.finditer(r"\n\s*\|\s*([a-z_\-0-9]+)\s*=(.*?)(?=\n\s*\|\s*[a-z_\-0-9]+\s*=|\n?\}\}$|\Z)", box, re.S):
+    for m in re.finditer(r"\n\s*\|\s*([\w\-]+)\s*=(.*?)(?=\n\s*\|\s*[\w\-]+\s*=|\n?\}\}$|\Z)", box, re.S):  # \w: Turkish field names too
         params[m.group(1).strip()] = m.group(2).strip()
     return params
 
@@ -172,9 +173,42 @@ def parse(text: str) -> dict[str, Any] | None:
             "club_update": upd[:40] or None, "national_update": nupd[:40] or None}
 
 
-def fetch_infoboxes(titles: list[str], deadline: float) -> dict[str, dict]:
+def tr_infobox_params(text: str) -> dict[str, str]:
+    """Same as infobox_params for the Turkish 'Futbolcu bilgi kutusu'."""
+    return infobox_params(text.replace("{{Futbolcu bilgi kutusu", "{{Infobox football biography", 1)) if "{{Futbolcu bilgi kutusu" in text else {}
+
+
+def parse_tr(text: str) -> dict[str, Any] | None:
+    p = tr_infobox_params(text)
+    if not p:
+        return None
+    clubs, nats = [], []
+    for n in range(1, 40):
+        club = p.get(f"kulüp{n}")
+        if club is None:
+            continue
+        clubs.append({"club": link_target(club), "label": strip_markup(club).lstrip("→ ").strip(), "years": strip_markup(p.get(f"kulüpyıl{n}", "")),
+                      "apps": number(p.get(f"maç{n}", "")), "goals": number(p.get(f"gol{n}", "")),
+                      "loan": "→" in club or "kiralık" in club.lower()})
+    for n in range(1, 25):
+        team = p.get(f"millitakım{n}")
+        if team is None:
+            continue
+        raw = team
+        youth = bool(re.search(r"\{\{\s*fbu\b|U-?\d{2}|ümit|genç|olimpi|\bB\b", raw, re.I))
+        nats.append({"team": link_target(raw), "label": strip_markup(re.sub(r"\{\{\s*fbu?\|[^}]*?name=([^}|]+)[^}]*\}\}", r"\1", raw)) or raw,
+                     "caps": number(p.get(f"millimaç{n}", "")), "goals": number(p.get(f"milligol{n}", "")), "youth": youth})
+    h = p.get("boyu", "")
+    m = re.search(r"m\s*=\s*(\d\.\d+)", h) or re.search(r"(\d\.\d{2})", h)
+    cm = round(float(m.group(1)) * 100) if m else None
+    return {"clubs": clubs, "national": nats, "height_cm": cm if cm and 150 <= cm <= 210 else None,
+            "club_update": None, "national_update": None}
+
+
+def fetch_infoboxes(titles: list[str], deadline: float, api: str = WP_API, parser=None, cache_name: str = "lead-cache.json") -> dict[str, dict]:
+    parser = parser or parse
     CACHE.mkdir(exist_ok=True)
-    cache_file = CACHE / "lead-cache.json"
+    cache_file = CACHE / cache_name
     cache: dict[str, Any] = json.loads(cache_file.read_text()) if cache_file.exists() else {}
     out: dict[str, dict] = {}
     todo = [t for t in titles if t not in cache]
@@ -182,7 +216,7 @@ def fetch_infoboxes(titles: list[str], deadline: float) -> dict[str, dict]:
         if time.time() > deadline:
             print("time budget used up; keeping what was collected"); break
         part = todo[i:i + 50]
-        data = get(WP_API, {"action": "query", "prop": "revisions", "rvprop": "content|ids", "rvslots": "main", "rvsection": "0",
+        data = get(api, {"action": "query", "prop": "revisions", "rvprop": "content|ids", "rvslots": "main", "rvsection": "0",
                             "titles": "|".join(part), "redirects": "1", "format": "json", "formatversion": "2", "maxlag": "5"})
         if data is None:
             print("Wikipedia keeps refusing; keeping what was collected"); break
@@ -194,7 +228,7 @@ def fetch_infoboxes(titles: list[str], deadline: float) -> dict[str, dict]:
             title = page.get("title", "")
             asked = redirects.get(title, title)
             asked = norm.get(asked, asked)
-            cache[asked] = {"revid": rev.get("revid"), "box": parse(text) if text else None}
+            cache[asked] = {"revid": rev.get("revid"), "box": parser(text) if text else None}
         if (i // 50) % 10 == 0:
             cache_file.write_text(json.dumps(cache, ensure_ascii=False))
             print(f"  {min(i + 50, len(todo))}/{len(todo)} articles")
@@ -211,6 +245,7 @@ def main() -> None:
     ap.add_argument("--top", type=int, default=20000, help="best-known players to look up")
     ap.add_argument("--budget-minutes", type=float, default=150)
     ap.add_argument("--no-superlig", action="store_true", help="only the --top best-known players (quick test)")
+    ap.add_argument("--no-turkish", action="store_true", help="skip Turkish Wikipedia")
     args = ap.parse_args()
     deadline = time.time() + args.budget_minutes * 60
     master = json.loads(MASTER.read_text(encoding="utf-8"))
@@ -224,6 +259,16 @@ def main() -> None:
     print(f"with an English Wikipedia article: {len(titles)}")
     boxes = fetch_infoboxes(sorted(set(titles.values())), deadline)
     by_qid = {q: dict(boxes[t], title=t) for q, t in titles.items() if t in boxes}
+    # Turkish Wikipedia: for Süper Lig players and Turks, where it is often the more detailed infobox.
+    if not args.no_turkish:
+        tr_qids = sorted({r["wikidata_id"] for r in ranked if (r.get("superlig_appearances") or 0) > 0
+                          or r.get("nationality") in ("Turkey", "Türkiye")} & chosen)
+        tr_titles = enwiki_titles(tr_qids, "https://tr.wikipedia.org/")
+        print(f"with a Turkish Wikipedia article: {len(tr_titles)}")
+        tr_boxes = fetch_infoboxes(sorted(set(tr_titles.values())), deadline + 20 * 60, TR_API, parse_tr, "tr-lead-cache.json")
+        for q, t in tr_titles.items():
+            if t in tr_boxes:
+                by_qid.setdefault(q, {})["tr"] = dict(tr_boxes[t], title=t)
     OUT.write_text(json.dumps({"generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "source": "English Wikipedia infoboxes (CC BY-SA 4.0)",
                                "players": by_qid}, ensure_ascii=False), encoding="utf-8")
     print(f"wrote {OUT.name}: {len(by_qid)} players with an infobox")
