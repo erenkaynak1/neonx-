@@ -32,6 +32,18 @@ META = ROOT / "side-games" / "data" / "master" / "transfermarkt-meta.json"
 SUPPLEMENT = ROOT / ".tmp-wikidata" / "wikidata-supplement.json"
 WORLD_CUPS = ROOT / ".tmp-wikidata" / "world-cups.json"  # from build_world_cups.py (optional)
 INFOBOX = ROOT / ".tmp-wikipedia" / "infobox.json"  # from build_wikipedia_infobox.py (optional)
+REEP = ROOT / ".tmp-reep" / "links.json"  # from build_reep_links.py (optional)
+
+
+def same_birth(a: str | None, b: str | None) -> bool | None:
+    """None when either is unknown. Wikidata stores year-only dates as YYYY-01-01, so those match on the year."""
+    if not a or not b or len(a) < 10 or len(b) < 10:
+        return None
+    if a[:4] != b[:4]:
+        return False
+    if a[5:] == "01-01" or b[5:] == "01-01":
+        return True
+    return a[:10] == b[:10]
 MAX_CLUBS = 25
 LEGEND_ID_BASE = 900_000_000  # ids for players without a Transfermarkt ID: base + Wikidata number
 
@@ -225,6 +237,44 @@ def cross_check_infoboxes(master: list[dict[str, Any]], stats: dict[str, Any]) -
     stats["infobox"] = xs
 
 
+def cross_check_bio(master: list[dict[str, Any]], players: dict[str, Any], stats: dict[str, Any]) -> None:
+    """Birth date and height by majority of Transfermarkt, Wikidata, Wikipedia (height) and Reep.
+
+    Transfermarkt stays unless at least two other sources agree with each other and not with it; gaps are
+    filled when one other source has a value (two must agree when they are available)."""
+    reep = json.loads(REEP.read_text())["by_tm"] if REEP.exists() else {}
+    boxes = json.loads(INFOBOX.read_text(encoding="utf-8")).get("players", {}) if INFOBOX.exists() else {}
+    xs = {"birth_confirmed": 0, "birth_fixed": 0, "birth_filled": 0, "height_confirmed": 0, "height_fixed": 0, "height_filled": 0}
+    for row in master:
+        q, r = row.get("wikidata_id"), reep.get(str(row.get("id")), {})
+        wd = players.get(q, {}) if q else {}
+        # birth date (full dates only)
+        others = [d[:10] for d in (wd.get("birth_date"), r.get("dob")) if d and len(d) >= 10 and d[5:10] != "01-01"]
+        tm = row.get("birth_date")
+        if others:
+            if tm and len(tm) >= 10:
+                if tm[:10] in others:
+                    xs["birth_confirmed"] += 1
+                elif len(others) == 2 and others[0] == others[1]:
+                    row["birth_date"] = others[0]; xs["birth_fixed"] += 1
+            elif len(set(others)) == 1:
+                row["birth_date"] = others[0]; xs["birth_filled"] += 1
+        # height (cm)
+        hs = [h for h in (r.get("height_cm"), (boxes.get(q) or {}).get("height_cm") if q else None, wd.get("height_cm")) if h and 150 <= h <= 210]
+        th = row.get("height_cm")
+        if hs:
+            if th:
+                if any(abs(th - h) <= 1 for h in hs):
+                    xs["height_confirmed"] += 1
+                else:
+                    agree = [a for a in hs if sum(abs(a - b) <= 1 for b in hs) >= 2]
+                    if agree:
+                        row["height_cm"] = round(sum(agree) / len(agree)); xs["height_fixed"] += 1
+            elif len(hs) == 1 or max(hs) - min(hs) <= 2:
+                row["height_cm"] = round(sum(hs) / len(hs)); xs["height_filled"] += 1
+    stats["bio"] = xs
+
+
 def main() -> None:
     master: list[dict[str, Any]] = json.loads(MASTER.read_text())
     sup = json.loads(SUPPLEMENT.read_text())
@@ -240,8 +290,11 @@ def main() -> None:
         q = by_tm.get(str(row["id"]))
         if not q or q not in players:
             continue
-        stats["matched"] += 1
         wd = players[q]
+        if same_birth(row.get("birth_date"), wd.get("birth_date")) is False:
+            stats["birth_mismatch_skipped"] = stats.get("birth_mismatch_skipped", 0) + 1
+            continue  # a wrong link: never copy another person's career
+        stats["matched"] += 1
         s = summarize(wd.get("stints", []), teams, labels, wd.get("birth_date"), row.get("position") == "Goalkeeper")
         row["wikidata_id"] = q
         if s["career_clubs"]:
@@ -313,6 +366,7 @@ def main() -> None:
         stats["added"] += 1
     master.extend(added)
     cross_check_infoboxes(master, stats)
+    cross_check_bio(master, players, stats)
     # World Cup squads (1930-2026). The squad lists are complete, so a player with a Wikidata item and no
     # entry was in no World Cup squad (0); without a Wikidata item the count is unknown (null).
     wc_doc = json.loads(WORLD_CUPS.read_text()) if WORLD_CUPS.exists() else None

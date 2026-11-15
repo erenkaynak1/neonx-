@@ -48,6 +48,9 @@ jobs:
         run: python scripts/build_wikipedia_infobox.py --budget-minutes 70
       - name: Build canonical dcaribou Transfermarkt pool
         run: python scripts/build_transfermarkt_master_pool.py
+      - name: Reep identity links (Transfermarkt ↔ Wikidata ↔ other providers)
+        continue-on-error: true
+        run: python scripts/build_reep_links.py
       - name: Fetch Wikidata supplement (club history, career league totals, legends)
         run: python scripts/build_wikidata_supplement.py
       - name: World Cup squads (Wikidata + Fjelstul World Cup Database)

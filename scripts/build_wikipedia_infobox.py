@@ -65,15 +65,27 @@ def get(url: str, params: dict[str, Any], tries: int = 8) -> dict | None:
 
 
 def enwiki_titles(qids: list[str]) -> dict[str, str]:
+    """QID → English Wikipedia title, 400 items per SPARQL query (the Wikidata API throttles this much harder)."""
     out: dict[str, str] = {}
-    for i in range(0, len(qids), 50):
-        data = get(WD_API, {"action": "wbgetentities", "ids": "|".join(qids[i:i + 50]), "props": "sitelinks",
-                            "sitefilter": "enwiki", "format": "json"})
-        for q, ent in (data or {}).get("entities", {}).items():
-            title = ent.get("sitelinks", {}).get("enwiki", {}).get("title")
-            if title:
-                out[q] = title
-        time.sleep(0.3)
+    for i in range(0, len(qids), 400):
+        values = " ".join("wd:" + q for q in qids[i:i + 400])
+        query = f"SELECT ?item ?article WHERE {{ VALUES ?item {{ {values} }} ?article schema:about ?item ; schema:isPartOf <https://en.wikipedia.org/> }}"
+        rows = None
+        for attempt in range(6):
+            try:
+                r = session.post("https://query.wikidata.org/sparql", data={"query": query},
+                                 headers={"Accept": "application/sparql-results+json"}, timeout=120)
+                if r.status_code == 200:
+                    rows = r.json()["results"]["bindings"]; break
+            except (requests.RequestException, ValueError):
+                pass
+            time.sleep(5 * (attempt + 1))
+        for row in rows or []:
+            title = urllib.parse.unquote(row["article"]["value"].rsplit("/wiki/", 1)[1]).replace("_", " ")
+            out[row["item"]["value"].rsplit("/", 1)[1]] = title
+        if (i // 400) % 10 == 0:
+            print(f"  titles {min(i + 400, len(qids))}/{len(qids)}")
+        time.sleep(0.5)
     return out
 
 
