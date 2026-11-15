@@ -1,10 +1,10 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-11-15T00:54:07.220987+00:00",
+  "generated_at": "2026-11-15T13:58:44.112721+00:00",
   "master_pool": "side-games/data/master/transfermarkt-players.json",
   "provider": "dcaribou/transfermarkt-datasets",
   "provider_revision": null,
-  "player_count": 64488,
+  "player_count": 77729,
   "target_eligible_count": 26984,
   "metric_minimum_players": 100,
   "active_metrics": [
@@ -21,19 +21,19 @@
     "trophies"
   ],
   "metric_coverage": {
-    "height_cm": 55689,
+    "height_cm": 63148,
     "weight_kg": 0,
-    "birth_date": 64453,
-    "club_count": 51090,
+    "birth_date": 77690,
+    "club_count": 64327,
     "trophies": 0,
-    "career_goals": 33998,
+    "career_goals": 36912,
     "career_assists": 28487,
     "peak_market_value_eur": 41528,
-    "career_appearances": 34079
+    "career_appearances": 37070
   },
   "career_scope": "career_goals/career_appearances: whole-career league totals from Wikidata (Wikipedia infobox figures) when complete for every senior club spell; otherwise official appearances in dcaribou/transfermarkt-datasets (2012+). See career_stats_source per player.",
   "physical_data_policy": "weight_kg is intentionally null until a separate physical dataset is supplied; no value is estimated.",
   "fallback_policy": "Missing values remain null; Career Twin skips unavailable rounds.",
   "runtime_pool": "side-games/career-twin/data/players.json",
-  "runtime_player_count": 64480
+  "runtime_player_count": 77721
 }

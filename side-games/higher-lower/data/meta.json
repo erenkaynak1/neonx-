@@ -1,22 +1,23 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-11-15T00:54:08.631960+00:00",
+  "generated_at": "2026-11-15T13:58:46.530393+00:00",
   "source": "side-games/data/master/transfermarkt-players.json",
-  "player_count": 3298,
+  "player_count": 3500,
   "coverage": {
-    "caps": 2834,
-    "ig": 2658,
-    "yc": 2689,
-    "rc": 2689,
-    "pv": 2710,
-    "cv": 1673,
-    "g": 1869,
-    "a": 2689,
-    "ap": 1869,
-    "h": 3276,
-    "cl": 3298,
-    "sl": 3255,
-    "b": 3298
+    "caps": 2967,
+    "ig": 2811,
+    "yc": 2558,
+    "rc": 2558,
+    "pv": 2569,
+    "cv": 1688,
+    "g": 2043,
+    "a": 2558,
+    "ap": 2043,
+    "h": 3240,
+    "cl": 3500,
+    "sl": 3459,
+    "wc": 3500,
+    "b": 3500
   },
   "active_metrics": [
     "caps",
@@ -31,13 +32,15 @@
     "h",
     "cl",
     "sl",
+    "wc",
     "b"
   ],
   "notes": {
     "yc": "Sarı kartlar: 2012/13 sezonundan bu yana resmî kulüp maçları (dcaribou/transfermarkt-datasets).",
     "rc": "Kırmızı kartlar: 2012/13 sezonundan bu yana resmî kulüp maçları.",
     "a": "Asistler: 2012/13 sezonundan bu yana resmî kulüp maçları.",
-    "g": "Goller: kulüp kariyeri boyunca lig golleri (Wikidata) ya da 2012 sonrası resmî maçlar.",
+    "g": "Goller: kulüp kariyeri boyunca lig golleri (Wikidata, yalnızca tüm kariyeri kapsayan veriler).",
+    "wc": "Dünya Kupası kadroları (erkekler, 1930-2026): Wikidata ve Fjelstul World Cup Database (CC-BY-SA 4.0). Yalnızca en az bir Dünya Kupası kadrosunda yer almış oyuncular sorulur.",
     "sl": "Süper Lig maçları: 2012/13 sonrası maç kayıtları, öncesi için Wikidata kulüp istatistikleri. Yalnızca Süper Lig'de oynamış oyuncular sorulur."
   }
 }
