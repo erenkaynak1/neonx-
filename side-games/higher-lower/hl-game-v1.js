@@ -31,7 +31,8 @@
     { id: 'h', q: 'Hangisi daha uzun?', key: 'h', fmt: v => nf.format(v) + ' cm' },
     { id: 'short', q: 'Hangisi daha kısa?', key: 'h', value: p => p.h != null ? -p.h : null, fmt: (v, p) => nf.format(p.h) + ' cm' },
     { id: 'cl', q: 'Hangisi daha çok kulüpte forma giydi?', sub: 'A takım kulüpleri (altyapı ve B takımları hariç)', key: 'cl', fmt: v => nf.format(v) + ' kulüp' },
-    { id: 'sl', q: "Hangisi Süper Lig'de daha çok maça çıktı?", sub: 'Tüm zamanlar · eski oyuncular dahil', key: 'sl', positive: true, fmt: v => nf.format(v) + ' Süper Lig maçı' }
+    { id: 'sl', q: "Hangisi Süper Lig'de daha çok maça çıktı?", sub: 'Tüm zamanlar · eski oyuncular dahil', key: 'sl', positive: true, fmt: v => nf.format(v) + ' Süper Lig maçı' },
+    { id: 'wc', q: "Hangisi daha çok Dünya Kupası kadrosunda yer aldı?", sub: '1930-2026 · erkekler Dünya Kupası', key: 'wc', positive: true, fmt: v => v + ' Dünya Kupası' }
   ];
   const valueOf = (q, p) => q.value ? q.value(p) : (typeof p[q.key] === 'number' ? p[q.key] : null);
   const shown = (q, p) => q.fmt(p[q.key], p);

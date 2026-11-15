@@ -8,3 +8,4 @@ __pycache__/
 side-games/career-twin/data/pipeline-*.log
 side-games/career-twin/data/pipeline-status.json
 .tmp-wikidata/
+.tmp-wikipedia/

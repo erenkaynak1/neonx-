@@ -1,19 +1,19 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-11-15T00:53:44.495202+00:00",
+  "generated_at": "2026-11-15T13:58:23.446257+00:00",
   "provider": "dcaribou/transfermarkt-datasets",
   "provider_revision": null,
   "dataset_url": "https://pub-e682421888d945d684bcae8890b0ec20.r2.dev/data/transfermarkt-datasets.duckdb",
   "dataset_last_appearance": "2026-06-28",
   "latest_season": 2025,
-  "player_count": 64488,
+  "player_count": 77729,
   "status_counts": {
     "active": 28367,
-    "legend": 19683,
+    "legend": 32849,
     "recent": 16403,
-    "unknown": 35
+    "unknown": 110
   },
-  "historical_player_count": 36086,
+  "historical_player_count": 49252,
   "minimum_required": 50000,
   "maximum_runtime_players": null,
   "selection_policy": "The complete upstream player table is retained without a recognition cap.",
@@ -25,20 +25,22 @@
     "trophies"
   ],
   "source_policy": "Transfermarkt (dcaribou/transfermarkt-datasets) for profiles, market values, current club and caps; Wikidata (CC0), joined by Transfermarkt player ID (P2446), for club history, career league totals, and players missing from the dataset (legends).",
-  "wikidata_generated_at": "2026-11-12T14:31:40.409738+00:00",
+  "world_cups_source": "world_cups: men's FIFA World Cup squads 1930-2026, from Wikidata (P1344) and the Fjelstul World Cup Database © 2023 Joshua C. Fjelstul, Ph.D. (https://www.github.com/jfjelstul/worldcup), CC-BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/legalcode); squad counts derived from it.",
+  "wikidata_generated_at": "2026-11-15T13:58:10.721740+00:00",
   "wikidata_merge": {
     "matched": 42563,
-    "club_count": 30967,
-    "career_stats": 4717,
+    "club_count": 30970,
+    "career_stats": 4541,
     "filled": 4055,
-    "added": 14339,
-    "recognition_raised": 13327
+    "added": 27580,
+    "recognition_raised": 13355,
+    "world_cup_players": 9027
   },
   "superlig_scope": "superlig_appearances: Süper Lig league matches. 2012-08-17 onwards from the TR1 appearance log (exact); earlier seasons from Wikidata club spells at Turkish top-flight clubs (spells overlapping 2012/13 count only the part before it). Null when an earlier spell has no match count.",
   "superlig_stats": {
-    "exact_only": 9395,
-    "with_wikidata": 923,
-    "unknown": 967,
-    "zero": 53203
+    "exact_only": 9397,
+    "with_wikidata": 2181,
+    "unknown": 2061,
+    "zero": 64090
   }
 }
