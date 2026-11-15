@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-11-15T13:58:23.446257+00:00",
+  "generated_at": "2026-11-15T20:35:03.659170+00:00",
   "provider": "dcaribou/transfermarkt-datasets",
   "provider_revision": null,
   "dataset_url": "https://pub-e682421888d945d684bcae8890b0ec20.r2.dev/data/transfermarkt-datasets.duckdb",
@@ -28,13 +28,34 @@
   "world_cups_source": "world_cups: men's FIFA World Cup squads 1930-2026, from Wikidata (P1344) and the Fjelstul World Cup Database © 2023 Joshua C. Fjelstul, Ph.D. (https://www.github.com/jfjelstul/worldcup), CC-BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/legalcode); squad counts derived from it.",
   "wikidata_generated_at": "2026-11-15T13:58:10.721740+00:00",
   "wikidata_merge": {
-    "matched": 42563,
-    "club_count": 30970,
-    "career_stats": 4541,
-    "filled": 4055,
+    "matched": 41470,
+    "club_count": 30177,
+    "career_stats": 4467,
+    "filled": 3972,
     "added": 27580,
-    "recognition_raised": 13355,
-    "world_cup_players": 9027
+    "recognition_raised": 12946,
+    "birth_mismatch_skipped": 1093,
+    "infobox": {
+      "players": 21366,
+      "apps_agree": 3127,
+      "apps_replaced": 11709,
+      "apps_stale_skipped": 264,
+      "caps_agree": 9182,
+      "caps_raised": 3494,
+      "clubs_agree": 6527,
+      "clubs_changed": 10627,
+      "height_filled": 443,
+      "height_conflict": 1084
+    },
+    "bio": {
+      "birth_confirmed": 69614,
+      "birth_fixed": 4,
+      "birth_filled": 4,
+      "height_confirmed": 43662,
+      "height_fixed": 4537,
+      "height_filled": 15
+    },
+    "world_cup_players": 8998
   },
   "superlig_scope": "superlig_appearances: Süper Lig league matches. 2012-08-17 onwards from the TR1 appearance log (exact); earlier seasons from Wikidata club spells at Turkish top-flight clubs (spells overlapping 2012/13 count only the part before it). Null when an earlier spell has no match count.",
   "superlig_stats": {
