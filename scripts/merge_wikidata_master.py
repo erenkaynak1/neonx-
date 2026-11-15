@@ -30,6 +30,7 @@ ROOT = Path(__file__).resolve().parents[1]
 MASTER = ROOT / "side-games" / "data" / "master" / "transfermarkt-players.json"
 META = ROOT / "side-games" / "data" / "master" / "transfermarkt-meta.json"
 SUPPLEMENT = ROOT / ".tmp-wikidata" / "wikidata-supplement.json"
+WORLD_CUPS = ROOT / ".tmp-wikidata" / "world-cups.json"  # from build_world_cups.py (optional)
 MAX_CLUBS = 25
 LEGEND_ID_BASE = 900_000_000  # ids for players without a Transfermarkt ID: base + Wikidata number
 
@@ -251,10 +252,24 @@ def main() -> None:
         })
         stats["added"] += 1
     master.extend(added)
+    # World Cup squads (1930-2026). The squad lists are complete, so a player with a Wikidata item and no
+    # entry was in no World Cup squad (0); without a Wikidata item the count is unknown (null).
+    wc_doc = json.loads(WORLD_CUPS.read_text()) if WORLD_CUPS.exists() else None
+    if wc_doc:
+        wc_years = wc_doc["years"]
+        for row in master:
+            q = row.get("wikidata_id")
+            row["world_cups"] = len(wc_years.get(q, [])) if q else None
+        stats["world_cup_players"] = sum(1 for r in master if r.get("world_cups"))
     master.sort(key=lambda r: (-float(r.get("recognition_score") or 0), r["name"], str(r["id"])))
     MASTER.write_text(json.dumps(master, ensure_ascii=False, separators=(",", ":")))
 
     meta = json.loads(META.read_text())
+    if wc_doc:
+        meta["world_cups_source"] = (
+            f"world_cups: men's FIFA World Cup squads 1930-{wc_doc['complete_through']}, from Wikidata (P1344) and the "
+            "Fjelstul World Cup Database © 2023 Joshua C. Fjelstul, Ph.D. (https://www.github.com/jfjelstul/worldcup), "
+            "CC-BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/legalcode); squad counts derived from it.")
     meta.update({
         "player_count": len(master),
         "wikidata_generated_at": sup.get("generated_at"),

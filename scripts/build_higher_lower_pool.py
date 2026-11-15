@@ -35,6 +35,7 @@ FIELDS = {
     "h": "height_cm",
     "cl": "club_count",
     "sl": "superlig_appearances",
+    "wc": "world_cups",
 }
 MIN_PER_METRIC = 150
 
@@ -103,7 +104,8 @@ def build(args: argparse.Namespace) -> dict:
             "yc": "Sarı kartlar: 2012/13 sezonundan bu yana resmî kulüp maçları (dcaribou/transfermarkt-datasets).",
             "rc": "Kırmızı kartlar: 2012/13 sezonundan bu yana resmî kulüp maçları.",
             "a": "Asistler: 2012/13 sezonundan bu yana resmî kulüp maçları.",
-            "g": "Goller: kulüp kariyeri boyunca lig golleri (Wikidata) ya da 2012 sonrası resmî maçlar.",
+            "g": "Goller: kulüp kariyeri boyunca lig golleri (Wikidata, yalnızca tüm kariyeri kapsayan veriler).",
+            "wc": "Dünya Kupası kadroları (erkekler, 1930-2026): Wikidata ve Fjelstul World Cup Database (CC-BY-SA 4.0). Yalnızca en az bir Dünya Kupası kadrosunda yer almış oyuncular sorulur.",
             "sl": "Süper Lig maçları: 2012/13 sonrası maç kayıtları, öncesi için Wikidata kulüp istatistikleri. Yalnızca Süper Lig'de oynamış oyuncular sorulur.",
         },
     }

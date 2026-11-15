@@ -35,6 +35,7 @@ const FIELDS = {
   yellowCards: 'career_yellow_cards',
   redCards: 'career_red_cards',
   superLigApps: 'superlig_appearances',
+  worldCups: 'world_cups',
   sourceSlug: 'slug',
 };
 const METRIC_FIELDS = {
@@ -51,6 +52,7 @@ const METRIC_FIELDS = {
   yellowCards: 'yellowCards',
   redCards: 'redCards',
   superLigApps: 'superLigApps',
+  worldCups: 'worldCups',
 };
 const CORRECTABLE_FIELDS = new Set([
   'birthDate', 'heightCm', 'clubCount', 'careerGoals', 'careerAssists',

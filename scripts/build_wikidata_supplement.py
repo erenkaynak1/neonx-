@@ -43,7 +43,9 @@ FOOTBALLER = "Q937857"
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser()
-    p.add_argument("--legend-sitelinks", type=int, default=15, help="minimum sitelinks for players added without a master match")
+    p.add_argument("--legend-sitelinks", type=int, default=10, help="minimum sitelinks for players added without a master match")
+    p.add_argument("--turkish-clubs", type=Path, default=CACHE / "turkish-clubs.json",
+                   help="Turkish club QIDs (from build_superlig_apps); everyone who played for one is added, whatever their sitelinks")
     p.add_argument("--batch", type=int, default=200)
     p.add_argument("--pause", type=float, default=0.6)
     p.add_argument("--workers", type=int, default=4, help="parallel SPARQL requests (WDQS allows 5 per client)")
@@ -110,7 +112,9 @@ year = lambda v: v[:10] if v and re.match(r"^-?\d{4}-\d{2}-\d{2}", v) else None 
 
 
 def master_tm_ids() -> set[str]:
-    return {str(r["id"]) for r in json.loads(MASTER.read_text()) if r.get("id") is not None}
+    # Only rows that come from Transfermarkt (they carry a slug): players this pipeline added from Wikidata
+    # on an earlier run must not count as "already in the master", or they would be dropped on the next merge.
+    return {str(r["id"]) for r in json.loads(MASTER.read_text()) if r.get("id") is not None and r.get("slug")}
 
 
 def map_tm_ids(tm_ids: list[str]) -> dict[str, dict[str, Any]]:
@@ -136,6 +140,21 @@ def legend_candidates(min_sl: int) -> dict[str, dict[str, Any]]:
           FILTER(?sl >= {lo} && ?sl < {hi}) OPTIONAL {{ ?p wdt:P2446 ?tm }} }} GROUP BY ?p ?sl""")
         for row in rows:
             out[qid(row["p"])] = {"sitelinks": int(row["sl"]), "tm": row.get("tmid")}
+    return out
+
+
+def turkish_club_players(path: Path) -> dict[str, dict[str, Any]]:
+    """Footballers with a spell at a Turkish club that has a Transfermarkt ID (the professional clubs), so
+    Süper Lig names people know are in the pool even when few Wikipedias cover them."""
+    if not path.exists():
+        return {}
+    clubs = [q for q, tms in json.loads(path.read_text(encoding="utf-8")).items() if tms]
+    out: dict[str, dict[str, Any]] = {}
+    for part in chunks(clubs, 8):
+        rows = sparql(f"""SELECT ?p ?sl (SAMPLE(?tm) AS ?tmid) WHERE {{ VALUES ?club {{ {' '.join('wd:' + c for c in part)} }}
+          ?p wdt:P54 ?club ; wdt:P106 wd:{FOOTBALLER} . OPTIONAL {{ ?p wikibase:sitelinks ?sl }} OPTIONAL {{ ?p wdt:P2446 ?tm }} }} GROUP BY ?p ?sl""")
+        for row in rows:
+            out[qid(row["p"])] = {"sitelinks": int(row.get("sl") or 0), "tm": row.get("tmid")}
     return out
 
 
@@ -239,6 +258,10 @@ def main() -> None:
     tm_map = map_tm_ids(sorted(tm_ids))
     print(f"matched to Wikidata by Transfermarkt ID: {len(tm_map)}")
     legends = legend_candidates(ARGS.legend_sitelinks)
+    turkish = turkish_club_players(ARGS.turkish_clubs)
+    print(f"footballers with a Turkish professional club spell: {len(turkish)}")
+    for q, v in turkish.items():
+        legends.setdefault(q, v)
     matched_qids = {v["qid"] for v in tm_map.values()}
     extra = {q: v for q, v in legends.items() if q not in matched_qids and not (v.get("tm") and v["tm"] in tm_ids)}
     print(f"well-known footballers (sitelinks >= {ARGS.legend_sitelinks}): {len(legends)}, not in master: {len(extra)}")
