@@ -61,11 +61,11 @@
   function pickChallenger(q, stay, want) {
     const pool = S.pool, sv = valueOf(q, stay);
     const dir = want || (Math.random() < 0.5 ? 'up' : 'down');
-    const depth = Math.min(pool.length, 700 + S.streak * 150);
-    const nearest = Math.max(5, 14 - S.streak);          // 14 closest at the start, 5 from streak 9
-    // A minimum gap that shrinks as the streak grows: ~22% apart (or 3 cm, 2 years) on the first answers,
-    // half of that at streak 6, the very nearest values from streak 12.
-    const minGap = (q.key === 'b' ? 2 : q.key === 'h' ? 0.5 : 0.22) * Math.max(0, 1 - S.streak / 12);
+    const depth = Math.min(pool.length, 550 + S.streak * 130);  // better-known players first
+    const nearest = Math.max(6, 16 - S.streak);          // 16 closest at the start, 6 from streak 10
+    // A minimum gap that shrinks as the streak grows: ~35% apart (or 4 cm, 3 years) on the first answers,
+    // half of that at streak 7-8, and never below a quarter of it, so long streaks stay fair.
+    const minGap = (q.key === 'b' ? 3 : q.key === 'h' ? 0.7 : 0.30) * Math.max(0.25, 1 - S.streak / 15);
     const onSide = p => { const v = valueOf(q, p); return dir === 'up' ? v > sv : v < sv; };
     const free = p => p.id !== stay.id && !S.used.has(p.id);
     let list = pool.slice(0, depth).filter(p => free(p) && onSide(p));
@@ -198,7 +198,7 @@
   const MAX_STAYS = 2;
   // Fresh pair: a new stayer (value hidden again) and a challenger for it.
   function freshPair() {
-    const depth = Math.min(S.pool.length, 400 + S.streak * 120);
+    const depth = Math.min(S.pool.length, 320 + S.streak * 110);
     for (let tries = 0; tries < 40; tries++) {
       const stay = S.pool[Math.floor(Math.random() * depth)];
       if (!stay || S.used.has(stay.id)) continue;
