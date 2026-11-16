@@ -43,6 +43,8 @@ jobs:
         run: node scripts/test_arcade_navigation.cjs
       - name: Home screen v2 contracts
         run: node scripts/test_home_v2.cjs
+      - name: Saha Fethi online contracts
+        run: node scripts/test_fethet_online.cjs
       - name: First-login Firebase session and exact artwork contracts
         run: node scripts/test_neon_entry.cjs
       - name: Welcome controller JavaScript syntax

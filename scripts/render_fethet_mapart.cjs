@@ -1,20 +1,22 @@
 // Renders the neon base art of the conquest map → side-games/fethet/assets/map-art.png (convert to webp after).
-// Reads side-games/fethet/data/map-tr.json (regions/outline from build_fethet_map.py). Run: node scripts/render_fethet_mapart.cjs
+// Reads side-games/fethet/data/map-tr.json (regions/outline from build_fethet_map.py). Run: node scripts/render_fethet_mapart.cjs [map-tr-2]
+// (map-tr → assets/map-art.png, map-tr-2 → assets/map-art-2.png; the 2-player map has fewer villages)
 const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
-const map = JSON.parse(fs.readFileSync(path.join(ROOT, 'side-games/fethet/data/map-tr.json'), 'utf8'));
+const NAME = process.argv[2] || 'map-tr', SUFFIX = NAME === 'map-tr' ? '' : NAME.replace('map-tr', '');
+const map = JSON.parse(fs.readFileSync(path.join(ROOT, `side-games/fethet/data/${NAME}.json`), 'utf8'));
 const [, , W, H] = map.viewBox;
 const PAD = 40;
 const vb = `${-PAD} ${-PAD} ${W + PAD * 2} ${H + PAD * 2}`;
 const regions = map.regions.map(r => `<path d="${r.path}"/>`).join('');
 const cities = map.regions.map(r => `<circle cx="${r.city[0]}" cy="${r.city[1]}" r="3.2"/>`).join('');
 const html = `<!doctype html><html><head><style>html,body{margin:0;background:#04070a}svg{display:block}</style></head><body>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" width="${(W + PAD * 2) * 2}" height="${(H + PAD * 2) * 2}">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" width="${W + PAD * 2}" height="${H + PAD * 2}">
 <defs>
   <radialGradient id="sea" cx="50%" cy="40%" r="75%"><stop offset="0" stop-color="#0b1a22"/><stop offset=".6" stop-color="#061017"/><stop offset="1" stop-color="#03070a"/></radialGradient>
-  <linearGradient id="land" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#18241f"/><stop offset=".55" stop-color="#101a17"/><stop offset="1" stop-color="#0b1311"/></linearGradient>
+  <linearGradient id="land" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#34403b"/><stop offset="1" stop-color="#2c3733"/></linearGradient>
   <pattern id="grid" width="22" height="22" patternUnits="userSpaceOnUse"><path d="M22 0H0V22" fill="none" stroke="#baff18" stroke-opacity=".05" stroke-width=".8"/></pattern>
   <pattern id="dots" width="9" height="9" patternUnits="userSpaceOnUse"><circle cx="1.5" cy="1.5" r=".8" fill="#baff18" fill-opacity=".09"/></pattern>
   <pattern id="scan" width="4" height="4" patternUnits="userSpaceOnUse"><rect width="4" height="1" fill="#000" fill-opacity=".18"/></pattern>
@@ -30,24 +32,24 @@ const html = `<!doctype html><html><head><style>html,body{margin:0;background:#0
 <path d="${map.outline}" fill="none" stroke="#baff18" stroke-opacity=".35" stroke-width="10" filter="url(#glow)"/>
 <path d="${map.outline}" fill="url(#land)"/>
 <g clip-path="url(#landclip)">
-  <rect x="0" y="0" width="${W}" height="${H}" fill="url(#dots)"/>
+  
   <!-- stadium-light blooms over the big football cities -->
-  ${['İST', 'TRA', 'ANK', 'İZM'].map(id => { const r = map.regions.find(x => x.id === id); return r ? `<circle cx="${r.city[0]}" cy="${r.city[1]}" r="85" fill="url(#bloom)"/>` : ''; }).join('')}
-  <g fill="none" stroke="#baff18" stroke-opacity=".22" stroke-width="1.2" stroke-dasharray="3 3">${regions}</g>
+  ${['İST', 'TRA', 'ANK', 'İZM'].map(id => { const r = map.regions.find(x => x.id === id); return r ? `<circle cx="${r.city[0]}" cy="${r.city[1]}" r="85" fill="url(#bloom)" opacity=".45"/>` : ''; }).join('')}
+  <g fill="none" stroke="#0d1412" stroke-opacity=".75" stroke-width="1.3">${regions}</g>
 </g>
 <path d="${map.outline}" fill="none" stroke="#d6ff6a" stroke-width="1.6"/>
 <g fill="#eaff9c" filter="url(#cityglow)">${cities}</g>
-<rect x="${-PAD}" y="${-PAD}" width="${W + PAD * 2}" height="${H + PAD * 2}" fill="url(#scan)"/>
+
 </svg></body></html>`;
 (async () => {
   const b = await chromium.launch();
-  const p = await b.newPage({ viewport: { width: (W + PAD * 2) * 2, height: (H + PAD * 2) * 2 } });
+  const p = await b.newPage({ viewport: { width: W + PAD * 2, height: H + PAD * 2 }, deviceScaleFactor: 3 });  // 3x: sharp on phones, where the map is twice the screen width
   await p.setContent(html);
   await p.waitForTimeout(300);
-  const out = path.join(ROOT, 'side-games/fethet/assets/map-art.png');
+  const out = path.join(ROOT, `side-games/fethet/assets/map-art${SUFFIX}.png`);
   fs.mkdirSync(path.dirname(out), { recursive: true });
   await p.screenshot({ path: out });
   await b.close();
-  fs.writeFileSync(path.join(ROOT, 'side-games/fethet/assets/map-art.json'), JSON.stringify({ viewBox: vb.split(' ').map(Number) }));
+  fs.writeFileSync(path.join(ROOT, `side-games/fethet/assets/map-art${SUFFIX}.json`), JSON.stringify({ viewBox: vb.split(' ').map(Number) }));
   console.log('wrote', out);
 })();

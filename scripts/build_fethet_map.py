@@ -21,7 +21,7 @@ from shapely.ops import unary_union, voronoi_diagram
 
 ROOT = Path(__file__).resolve().parents[1]
 NE = ROOT / ".tmp-geo" / "ne50.geojson"
-OUT = ROOT / "side-games" / "fethet" / "data" / "map-tr.json"
+OUT_DIR = ROOT / "side-games" / "fethet" / "data"
 
 # city, lon, lat, clubs (the names used in the question bank), short label
 CITIES = [
@@ -48,13 +48,51 @@ CITIES = [
     ("Gaziantep", 37.38, 37.07, ["Gaziantep", "Gaziantepspor"], "GAZ"),
     ("Diyarbakır", 40.23, 37.91, ["Amedspor"], "DİY"),
     ("Van", 43.38, 38.50, ["Vanspor"], "VAN"),
+    # More villages: smaller regions make the map last longer and the land grab shorter.
+    ("Edirne", 26.56, 41.68, ["Edirnespor"], "EDİ"),
+    ("Tekirdağ", 27.51, 40.98, ["Tekirdağspor"], "TEK"),
+    ("Çanakkale", 26.41, 40.15, ["Dardanelspor"], "ÇAN"),
+    ("Sakarya", 30.40, 40.78, ["Sakaryaspor"], "SAK"),
+    ("Zonguldak", 31.79, 41.45, ["Zonguldak Kömürspor"], "ZON"),
+    ("Bolu", 31.61, 40.74, ["Boluspor"], "BOL"),
+    ("Kastamonu", 33.78, 41.38, ["Kastamonuspor"], "KAS"),
+    ("Manisa", 27.43, 38.61, ["Manisaspor"], "MAN"),
+    ("Aydın", 27.84, 37.85, ["Aydınspor"], "AYD"),
+    ("Muğla", 28.36, 37.22, ["Bodrumspor"], "MUĞ"),
+    ("Afyon", 30.54, 38.76, ["Afyonspor"], "AFY"),
+    ("Isparta", 30.55, 37.76, ["Ispartaspor"], "ISP"),
+    ("Aksaray", 34.03, 38.37, ["Aksarayspor"], "AKS"),
+    ("Çorum", 34.95, 40.55, ["Çorum FK"], "ÇOR"),
+    ("Ordu", 37.88, 40.98, ["Orduspor"], "ORD"),
+    ("Giresun", 38.39, 40.91, ["Giresunspor"], "GİR"),
+    ("Tokat", 36.55, 40.31, ["Tokatspor"], "TOK"),
+    ("Elazığ", 39.22, 38.67, ["Elazığspor"], "ELA"),
+    ("Maraş", 36.94, 37.58, ["Kahramanmaraşspor"], "KMR"),
+    ("Urfa", 38.79, 37.16, ["Şanlıurfaspor"], "URF"),
+    ("Mardin", 40.74, 37.31, ["Mardinspor"], "MAR"),
+    ("Kars", 43.10, 40.60, ["Kars 36"], "KAR"),
+    ("Ağrı", 43.05, 39.72, ["Ağrı 1970"], "AĞR"),
+    ("Erzincan", 39.49, 39.75, ["Erzincanspor"], "ERC"),
+    ("Muş", 41.49, 38.74, ["Muşspor"], "MUŞ"),
+    ("Batman", 41.13, 37.88, ["Batman Petrolspor"], "BAT"),
+    ("Artvin", 41.82, 41.18, ["Artvin Hopaspor"], "ART"),
 ]
+# Two maps: 2 players play on a smaller one (fewer villages), 3-4 players on all of them.
+SMALL = ["İstanbul", "Kocaeli", "Bursa", "Eskişehir", "İzmir", "Balıkesir", "Denizli", "Antalya", "Mersin", "Adana", "Hatay", "Ankara",
+         "Konya", "Kayseri", "Sivas", "Samsun", "Trabzon", "Rize", "Erzurum", "Malatya", "Gaziantep", "Diyarbakır", "Van",
+         "Çanakkale", "Sakarya", "Manisa", "Aydın", "Afyon", "Çorum", "Ordu", "Elazığ", "Urfa"]
+MAPS = {"map-tr.json": None, "map-tr-2.json": SMALL}
 # Bases sit on strong football cities; the corners are chosen among these.
 BASE_CANDIDATES = ["İstanbul", "İzmir", "Antalya", "Ankara", "Trabzon", "Gaziantep", "Erzurum", "Van", "Samsun", "Adana"]
 W = 1000  # viewBox width
 
 
 def main() -> None:
+    for name, keep in MAPS.items():
+        build(OUT_DIR / name, [c for c in CITIES if keep is None or c[0] in keep])
+
+
+def build(OUT: Path, CITIES: list) -> None:
     feat = next(f for f in json.loads(NE.read_text())["features"] if f["properties"].get("ADM0_A3") == "TUR")
     land = shape(feat["geometry"])
     land = unary_union([g for g in getattr(land, "geoms", [land]) if g.area > 0.05])  # drop specks of islands
@@ -94,7 +132,7 @@ def main() -> None:
                     seen[y] = seen[x] + 1; q.append(y)
         return seen.get(b, 99)
     by_name = {r["name"]: r["id"] for r in regions}
-    cands = [by_name[n] for n in BASE_CANDIDATES]
+    cands = [by_name[n] for n in BASE_CANDIDATES if n in by_name]
     starts = {}
     for k in (2, 3, 4):
         # Furthest apart first; among equals, the bigger football cities (earlier in BASE_CANDIDATES).

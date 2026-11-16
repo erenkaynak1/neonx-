@@ -41,7 +41,7 @@ body.fx::before{content:"";position:fixed;inset:0;z-index:-2;background:radial-g
 .fx-reg.own.hl{fill:var(--c);fill-opacity:.4}
 @keyframes fxDash{to{stroke-dashoffset:-24}}
 @keyframes fxGlowPulse{50%{fill-opacity:.22}}
-.fx-lbl text{fill:#fff;font:800 15px var(--fx-d);text-anchor:middle;paint-order:stroke;stroke:#05070a;stroke-width:3px;pointer-events:none}
+.fx-lbl text{fill:#fff;font:800 12.5px var(--fx-d);text-anchor:middle;paint-order:stroke;stroke:#05070a;stroke-width:3px;pointer-events:none}
 .fx-lbl .fx-tw{fill:var(--fx-lime);font-size:14px}
 .fx-lbl svg{pointer-events:none}
 .fx-msg{min-height:22px;margin-top:10px;text-align:center;color:var(--fx-mute);font-size:14px}
@@ -54,7 +54,7 @@ body.fx::before{content:"";position:fixed;inset:0;z-index:-2;background:radial-g
 .fx-path i{color:var(--fx-faint);font-style:normal}
 .fx-opts{display:grid;gap:8px}
 .fx-opts button{min-height:48px;padding:0 12px;border:1px solid rgba(255,255,255,.14);border-radius:12px;background:rgba(255,255,255,.04);color:#fff;font:800 16px var(--fx-d);letter-spacing:.04em;cursor:pointer}
-.fx-opts button.picked{border-color:var(--fx-lime);background:rgba(186,255,24,.12);color:var(--fx-lime)}
+.fx-opts button.picked{border-color:var(--pc,var(--fx-lime));background:color-mix(in srgb,var(--pc,#baff18) 22%,transparent);color:#fff;box-shadow:0 0 18px color-mix(in srgb,var(--pc,#baff18) 35%,transparent)}
 .fx-qbox>*{min-width:0}
 .fx-est{display:flex;align-items:center;gap:8px;min-width:0}
 .fx-est input{flex:1;min-width:0;min-height:52px;padding:0 14px;border:1px solid rgba(255,255,255,.18);border-radius:12px;background:rgba(255,255,255,.05);color:#fff;font:900 24px var(--fx-d);text-align:center}
@@ -113,3 +113,56 @@ body.fx::before{content:"";position:fixed;inset:0;z-index:-2;background:radial-g
 .fc-word{font-family:var(--fx-d);font-style:italic;font-weight:900;line-height:1;letter-spacing:.04em;paint-order:stroke;stroke:#05070a;stroke-width:10px}
 .fc-skip{padding:10px 0 max(14px,env(safe-area-inset-bottom));text-align:center;color:var(--fx-faint);font:700 12px var(--fx-d);letter-spacing:.2em}
 @media (prefers-reduced-motion:reduce){.fc-shade,.fc-shade.out{animation:none}}
+/* online: menu entry, lobby, spectating, toasts */
+.fx-online{display:grid;grid-template-columns:72px 1fr 1fr;align-items:center;gap:8px}.fx-online span{color:var(--fx-faint);font:800 10px/1 var(--fx-d);letter-spacing:.24em}
+.fx-online .fx-ghost{min-height:44px;font-size:14px}
+.fx-lobby-title{color:var(--fx-lime);font:900 13px/1 var(--fx-d);letter-spacing:.3em;text-align:center}
+.fx-lobby-list{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.fx-lobby-list li{display:flex;align-items:center;gap:10px;min-height:50px;padding:0 14px;border-radius:12px;background:rgba(255,255,255,.03);box-shadow:inset 3px 0 0 color-mix(in srgb,var(--c) 35%,transparent),inset 0 0 0 1px rgba(255,255,255,.07);color:var(--fx-faint)}
+.fx-lobby-list li i{width:12px;height:12px;border-radius:50%;border:2px solid var(--c);opacity:.5;animation:fxPulse 1.2s ease-in-out infinite}
+.fx-lobby-list li.in{color:#fff;box-shadow:inset 3px 0 0 var(--c),inset 0 0 0 1px rgba(255,255,255,.1)}
+.fx-lobby-list li.in i{background:var(--c);opacity:1;animation:none;box-shadow:0 0 12px var(--c)}
+.fx-lobby-list b{flex:1;font:800 16px var(--fx-d);letter-spacing:.04em}.fx-lobby-list small{color:var(--fx-lime);font:800 10px var(--fx-d);letter-spacing:.2em}
+.fx-lead.bad{color:var(--fx-red)}
+.fx-watch{color:var(--fx-cyan);font:800 11px/1.3 var(--fx-d);letter-spacing:.16em;text-align:center}
+.fx-qbox.watching .fx-opts button,.fx-qbox.watching .fx-est{opacity:.55}
+.fx-wait{color:var(--fx-mute);font:700 12px var(--fx-d);letter-spacing:.12em;text-align:center}
+.fx-sec{margin-left:6px;padding:2px 6px;border-radius:6px;background:rgba(186,255,24,.12);color:var(--fx-lime);font:800 11px var(--fx-d)}
+.fx-pl.me b::after{content:"";display:inline-block;width:6px;height:6px;margin-left:6px;border-radius:50%;background:var(--c);vertical-align:middle;box-shadow:0 0 8px var(--c)}
+.fx-toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));z-index:70;transform:translateX(-50%);max-width:min(92vw,420px);padding:12px 16px;border-radius:12px;background:rgba(8,12,15,.95);color:#fff;font:700 13px var(--fx-b);box-shadow:0 0 0 1px rgba(255,138,61,.5),0 10px 30px rgba(0,0,0,.5);animation:fxIn .25s ease both}
+@keyframes fxPulse{50%{opacity:.15}}
+/* multiple choice: picks split into the players' colours */
+.fx-opts button{position:relative;overflow:hidden;transition:background .3s,border-color .3s}
+.fx-opts button.split{color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.8);opacity:1}
+.fx-opts button.right{border:2px solid var(--fx-lime);box-shadow:0 0 22px rgba(186,255,24,.45)}
+.fx-opts button.right::after{content:"✓";position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--fx-lime);font-size:18px;text-shadow:0 0 10px rgba(186,255,24,.8)}
+.fx-opts button.wrong{border-color:var(--fx-red)}
+.fx-qbox.watching .fx-opts button.split,.fx-qbox.watching .fx-opts button.right{opacity:1}
+.fx-who{position:absolute;left:8px;top:50%;display:flex;gap:4px;transform:translateY(-50%)}
+.fx-who em{padding:2px 6px;border-radius:6px;background:#05070a;color:var(--c);font:800 10px var(--fx-d);font-style:normal;letter-spacing:.06em;box-shadow:0 0 0 1px var(--c)}
+.fx-phase span{color:var(--fx-mute);letter-spacing:.18em}
+/* intro */
+.fx-intro{position:fixed;inset:0;z-index:80;display:grid;place-content:center;gap:22px;padding:16px;background:radial-gradient(70% 60% at 50% 45%,rgba(16,26,18,.96),rgba(3,5,7,.98));animation:fxIn .25s ease both;overflow:hidden}
+.fx-intro.out{animation:fxOut .35s ease both}
+.fx-intro-flash{position:absolute;inset:-20%;background:conic-gradient(from 200deg at 50% 0%,transparent,rgba(186,255,24,.16) 8%,transparent 16%,transparent 34%,rgba(0,234,255,.12) 42%,transparent 50%);animation:fxSweep 2.6s ease-in-out both;pointer-events:none}
+.fx-intro-title{position:relative;text-align:center;font:italic 900 clamp(44px,12vw,92px)/1 var(--fx-d);letter-spacing:.02em;animation:fxSlam .6s cubic-bezier(.2,1.4,.3,1) both}
+.fx-intro-title i{color:var(--fx-lime);text-shadow:0 0 30px rgba(186,255,24,.7)}
+.fx-intro-cards{position:relative;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:12px}
+.fx-intro-card{display:grid;justify-items:center;gap:4px;min-width:120px;padding:14px 16px;border-radius:16px;background:rgba(8,12,15,.9);box-shadow:inset 0 0 0 2px var(--c),0 0 32px color-mix(in srgb,var(--c) 40%,transparent);animation:fxCard .7s cubic-bezier(.2,1.2,.3,1) both;animation-delay:calc(.35s + var(--i)*.18s)}
+.fx-intro-card b{color:var(--c);font:900 20px/1 var(--fx-d);letter-spacing:.04em}.fx-intro-card small{color:var(--fx-mute);font:700 11px var(--fx-d);letter-spacing:.2em}
+.fx-intro-vs{color:#fff;font:italic 900 30px var(--fx-d);text-shadow:0 0 18px rgba(255,255,255,.6);animation:fxSlam .5s cubic-bezier(.2,1.4,.3,1) both;animation-delay:.9s}
+@keyframes fxSlam{from{opacity:0;transform:scale(2.2)}}
+@keyframes fxCard{from{opacity:0;transform:translateX(calc(var(--from)*120px)) rotate(calc(var(--from)*-8deg))}}
+@keyframes fxSweep{from{transform:rotate(-30deg);opacity:0}50%{opacity:1}to{transform:rotate(30deg);opacity:0}}
+@keyframes fxOut{to{opacity:0;transform:scale(1.04)}}
+/* whose turn */
+.fx-turn{position:fixed;inset:0;z-index:58;display:grid;place-items:center;pointer-events:none}
+.fx-turn>div{display:grid;justify-items:center;padding:12px 40px;background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--c) 28%,#05070a) 25%,color-mix(in srgb,var(--c) 28%,#05070a) 75%,transparent);animation:fxTurnIn 1.15s cubic-bezier(.2,.8,.2,1) both}
+.fx-turn small{color:#fff;font:800 11px var(--fx-d);letter-spacing:.4em;opacity:.8}.fx-turn b{color:var(--c);font:italic 900 clamp(30px,8vw,48px)/1 var(--fx-d);text-shadow:0 0 22px var(--c)}
+@keyframes fxTurnIn{0%{opacity:0;transform:translateX(-60%) skewX(-12deg)}25%,75%{opacity:1;transform:none}100%{opacity:0;transform:translateX(60%) skewX(-12deg)}}
+.fx-arc-glow{filter:blur(3px)}
+@media (prefers-reduced-motion:reduce){.fx-intro,.fx-intro *,.fx-turn>div{animation:none!important}}
+.fx-trophy{position:relative;display:grid;place-items:center;width:96px;height:96px;margin:4px auto 0;animation:fxSlam .6s cubic-bezier(.2,1.4,.3,1) both}
+.fx-trophy i{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,transparent,color-mix(in srgb,var(--c) 70%,transparent),transparent 30%,transparent 50%,color-mix(in srgb,var(--c) 70%,transparent),transparent 80%);animation:fxSpin 3s linear infinite;filter:blur(2px)}
+.fx-trophy svg{position:relative;filter:drop-shadow(0 0 14px var(--c))}
+@keyframes fxSpin{to{transform:rotate(360deg)}}

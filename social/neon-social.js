@@ -4,7 +4,7 @@ import {GoogleAuthProvider,getAuth,getRedirectResult,linkWithPopup,onAuthStateCh
 import {getDatabase,get,onDisconnect,onValue,ref,remove,runTransaction,serverTimestamp,set,update} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js';
 
 const CONFIG={apiKey:'AIzaSyBLpXHGGTHXykKrnu8_Hv1i71oc3tpTNvY',authDomain:'neonxi.firebaseapp.com',databaseURL:'https://neonxi-default-rtdb.europe-west1.firebasedatabase.app',projectId:'neonxi',storageBucket:'neonxi.firebasestorage.app',messagingSenderId:'667191549799',appId:'1:667191549799:web:1e40feacbee09ed7f3d9c2'};
-const MODES={draft:{label:'NEON XI Draft',path:'index.html',code:'alpha6',matchable:true},xox:{label:'Futbol XOX',path:'side-games/football-xox/index.html',code:'numeric4',matchable:true},twin:{label:'Career Twin',path:'side-games/career-twin/index.html',code:'numeric4',matchable:true},imposter:{label:'Futbol Imposter',path:'side-games/futbol-imposter.html',code:'alpha5',matchable:true,minParty:3,maxParty:12},reverse:{label:'RE:VERSE',path:'side-games/reverse-xi/index.html',code:'alpha6',matchable:true,minParty:2,maxParty:2},en11:{label:'EN 11',path:'side-games/en11/index.html',code:'numeric4',matchable:true,minParty:2,maxParty:2}};
+const MODES={draft:{label:'NEON XI Draft',path:'index.html',code:'alpha6',matchable:true},xox:{label:'Futbol XOX',path:'side-games/football-xox/index.html',code:'numeric4',matchable:true},twin:{label:'Career Twin',path:'side-games/career-twin/index.html',code:'numeric4',matchable:true},imposter:{label:'Futbol Imposter',path:'side-games/futbol-imposter.html',code:'alpha5',matchable:true,minParty:3,maxParty:12},reverse:{label:'RE:VERSE',path:'side-games/reverse-xi/index.html',code:'alpha6',matchable:true,minParty:2,maxParty:2},en11:{label:'EN 11',path:'side-games/en11/index.html',code:'numeric4',matchable:true,minParty:2,maxParty:2},fethet:{label:'Saha Fethi',path:'side-games/fethet/index.html',code:'numeric4',matchable:true,minParty:2,maxParty:4}};
 const base=new URL('../',import.meta.url),app=getApps().length?getApp():initializeApp(CONFIG),auth=getAuth(app),db=getDatabase(app);
 const state={user:null,profile:null,friends:{},requests:{},invites:{},party:null,partyId:'',queueOff:null,partyOff:null,userOffs:[],friendOffs:[],presenceOff:null,presenceConnection:null,friendPresence:{},headToHead:{},weekly:{},allTime:{},launchNonce:'',tab:'play',preferredMode:'draft'};
 let statusEl,shade,button;
@@ -220,7 +220,7 @@ async function startMatch(mode){
 function renderSearching(mode){const v=shade.querySelector('[data-view="play"]'),label=mode==='random'?'Rastgele oyun':MODES[mode].label,queue=mode==='random'?RANDOM_QUEUE:`social/matchQueues/${mode}`;v.innerHTML=`<div class="nx-social-searching"><b>${esc(label)}</b><div class="nx-search-pitch" aria-hidden="true"><span class="nx-search-goal left"></span><span class="nx-search-ball"></span><span class="nx-search-goal right"></span></div><div>Rakip aranıyor…</div>${mode==='random'?'<small class="nx-search-note">Rakip bulununca oyun rastgele seçilir.</small>':''}<button class="nx-social-btn nx-social-danger" data-act="cancel">ARAMAYI İPTAL ET</button></div>`;v.querySelector('[data-act="cancel"]').onclick=async()=>{state.queueOff?.();state.queueOff=null;await remove(ref(db,`${queue}/${state.user.uid}`));message('Arama iptal edildi.');render('play')}}
 // Random game: players who choose it meet in one shared queue; whoever completes the pair picks
 // the game for both, so they always land in the same game. Two-player matchable modes only.
-const RANDOM_QUEUE='social/universalQueuesV2/random',RANDOM_GAMES=['draft','xox','twin','en11'];
+const RANDOM_QUEUE='social/universalQueuesV2/random',RANDOM_GAMES=['draft','xox','twin','en11','fethet'];
 async function startRandomMatch(){
   state.preferredMode='random';
   const uid=state.user.uid,joinedAt=Date.now();
@@ -383,7 +383,7 @@ function playerCardStyle(){
 // Forfeits for online 1v1 matches: leave warning, disconnect countdown, forfeit win/loss (social/match-forfeit-v1.js).
 {
   const here=location.pathname.replace(/\/$/,'/index.html'),modeHere=Object.keys(MODES).find(k=>new URL(MODES[k].path,base).pathname===here)||'';
-  import('./match-forfeit-v1.js?v=20261115-ff1').then(m=>m.initForfeit({db,auth,mode:modeHere,recordResult,getProfile:()=>state.profile,onAuth:cb=>onAuthStateChanged(auth,cb)})).catch(e=>console.warn('Hükmen modülü yüklenemedi',e));
+  import('./match-forfeit-v1.js?v=20261116-fx-online').then(m=>m.initForfeit({db,auth,mode:modeHere,recordResult,getProfile:()=>state.profile,onAuth:cb=>onAuthStateChanged(auth,cb)})).catch(e=>console.warn('Hükmen modülü yüklenemedi',e));
 }
 window.NEON_SOCIAL={showPlayer,open,close,chooseMode,signIn:signInGoogle,continueAsGuest,signOut:signOutGoogle,recordResult,modes:MODES,get profile(){return state.profile},get party(){return state.party}};
 document.addEventListener('neon-match-result',e=>recordResult(e.detail||{}).catch(error=>{console.error('Maç sonucu kaydedilemedi',error);message('Maç sonucu liderliğe kaydedilemedi.',true)}));
