@@ -23,7 +23,7 @@
     if (window.NEON_AVATARS) return Promise.resolve(true);
     if (!libPromise) libPromise = new Promise(res => {
       const s = document.createElement('script');
-      s.src = new URL('./neon-avatars-v1.js?v=20261115-admin3', SRC).href;
+      s.src = new URL('./neon-avatars-v1.js?v=20261116-karaboga', SRC).href;
       s.onload = () => res(true); s.onerror = () => res(false);
       document.head.appendChild(s);
     });

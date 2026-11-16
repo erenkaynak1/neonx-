@@ -6,7 +6,12 @@
   'use strict';
   if (window.NEON_AVATARS) return;
   // Resolve the portrait relative to this script, not the current page route.
-  const ADMIN_AVATAR_SRC = new URL('../assets/avatars/admin.jpg?v=20261115-admin3', document.currentScript?.src || location.href).href;
+  const BASE = document.currentScript?.src || location.href;
+  // Photo avatars (personal portraits), served as files; the rest are drawn as SVG below.
+  const IMAGE_AVATARS = {
+    a17: new URL('../assets/avatars/admin.jpg?v=20261115-admin3', BASE).href,
+    a18: new URL('../assets/avatars/karaboga.jpg?v=20261116-karaboga2', BASE).href
+  };
   const SKIN = ['#f1c9a5', '#d9a47a', '#b07a52', '#7a4e32', '#5a3826'];
   const HAIR = { black: '#15171a', brown: '#4a2d1a', blond: '#d8b25a', red: '#a3431f', white: '#e7e9ec', blue: '#00d4ff', hood: '#3a454f' };
   const KIT = {
@@ -31,12 +36,13 @@
     ['Usta', 1, 'side', 'brown', 'gold', 23, 'headband', 'shades'],
     ['Çaylak', 0, 'curly', 'blond', 'lime', 17, '', 'headset'],
     ['Gölge', 3, 'hood', 'hood', 'violet', 0, '', 'mask'],
-    ['Admin', 0, 'curly', 'brown', 'lime', 1, 'beard', 'eye']
+    ['Admin', 0, 'curly', 'brown', 'lime', 1, 'beard', 'eye'],
+    ['Karaboğa', 0, 'side', 'black', 'lime', 1, 'beard', 'eye']
   ];
   const ids = LIST.map((_, i) => 'a' + String(i + 1).padStart(2, '0'));
   // Restricted avatars are never handed out as defaults and only appear in the picker for allowed accounts
   // (see neon-profile-v1.js). The authoritative check must live in the Firebase Database rules.
-  const RESTRICTED = new Set(['a17']);
+  const RESTRICTED = new Set(['a17', 'a18']);
   const publicIds = ids.filter(id => !RESTRICTED.has(id));
 
   function hairPaths(style, c) {
@@ -145,7 +151,7 @@ ${small ? '' : '<path d="M19 3H29M35 61H45M3 19V27M61 37V45" stroke="#fff" strok
   const cache = new Map();
   const html = (id, size) => {
     const key = valid(id) ? id : ids[0], small = size === 'small', ck = key + (small ? 's' : '');
-    if (!cache.has(ck)) cache.set(ck, key === 'a17' ? ADMIN_AVATAR_SRC : 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg(key, small)));
+    if (!cache.has(ck)) cache.set(ck, IMAGE_AVATARS[key] || 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg(key, small)));
     return `<img class="nx-avatar-img" src="${cache.get(ck)}" alt="${LIST[ids.indexOf(key)][0]} avatarı" draggable="false" decoding="async">`;
   };
   window.NEON_AVATARS = Object.freeze({ ids, publicIds, restricted: id => RESTRICTED.has(id), names: Object.fromEntries(ids.map((id, i) => [id, LIST[i][0]])), html, pick, valid, resolve });

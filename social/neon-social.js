@@ -131,7 +131,7 @@ function renderParty(){
 // Leaderboards use the shared view (social/neon-leaderboard-v1.js): podium with gold/silver/bronze frames,
 // avatars, live movement markers and a pinned "your rank" row. Loaded on demand.
 let lbLoading=null;
-function ensureLeaderboardView(){if(window.NEON_LB)return Promise.resolve();if(!lbLoading)lbLoading=new Promise(res=>{const s=document.createElement('script');s.src=new URL('./neon-leaderboard-v1.js?v=20261115-ff1',import.meta.url).href;s.onload=res;s.onerror=res;document.head.appendChild(s)});return lbLoading}
+function ensureLeaderboardView(){if(window.NEON_LB)return Promise.resolve();if(!lbLoading)lbLoading=new Promise(res=>{const s=document.createElement('script');s.src=new URL('./neon-leaderboard-v1.js?v=20261116-karaboga',import.meta.url).href;s.onload=res;s.onerror=res;document.head.appendChild(s)});return lbLoading}
 const LB_TABS=[['weekly','HAFTALIK'],['allTime','TÜM ZAMANLAR'],['hl','HIGHER OR LOWER']];
 function leaderboardData(tab){
   if(tab==='hl'){
