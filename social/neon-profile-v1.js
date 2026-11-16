@@ -8,15 +8,18 @@ import {getAuth,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.
 import {getDatabase,get,onValue,ref,update} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js';
 
 const MODE_LABEL={draft:'NEON XI Draft',xox:'Futbol XOX',twin:'Kariyer İkizi',imposter:'Futbol Imposter',reverse:'RE:VERSE',wordle:'Football Wordle',en11:'EN 11'};
-const state={uid:'',isAdmin:false,avatar:'',pickerOpen:false,stats:null,statsAt:0,statsUid:'',loading:false,avatars:new Map(),pending:new Map()};
-// Admin account check: SHA-256 of the lower-cased Google e-mail (the address itself is not stored in the repo).
+const state={uid:'',isAdmin:false,allowed:new Set(),avatar:'',pickerOpen:false,stats:null,statsAt:0,statsUid:'',loading:false,avatars:new Map(),pending:new Map()};
+// Personal avatars: each restricted avatar belongs to one account, identified by the SHA-256 of its lower-cased,
+// verified Google e-mail (the addresses themselves are not stored in the repo).
 const ADMIN_EMAIL_SHA256='082517f6e94ca84e595f496e1215ae87733d3a4070a6b8878b3f9b66066c33e1';
+const AVATAR_OWNERS={a17:ADMIN_EMAIL_SHA256,a18:'c1c0a1a9ced95acf2063fdfa50dd16db04de6ca789b013e79374f00b47560609'};
 async function sha256(text){const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text));return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('')}
-async function checkAdmin(user){
-  if(!user?.email||!user.emailVerified||!user.providerData?.some(p=>p?.providerId==='google.com'))return false;
-  try{return (await sha256(user.email.trim().toLowerCase()))===ADMIN_EMAIL_SHA256}catch{return false}
+// Restricted avatars this account may use (empty for guests and unverified e-mails).
+async function allowedAvatars(user){
+  if(!user?.email||!user.emailVerified||!user.providerData?.some(p=>p?.providerId==='google.com'))return new Set();
+  try{const h=await sha256(user.email.trim().toLowerCase());return new Set(Object.keys(AVATAR_OWNERS).filter(id=>AVATAR_OWNERS[id]===h))}catch{return new Set()}
 }
-const canUse=id=>!window.NEON_AVATARS?.restricted?.(id)||state.isAdmin;
+const canUse=id=>!window.NEON_AVATARS?.restricted?.(id)||state.allowed.has(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let db=null,auth=null;
 
@@ -99,7 +102,7 @@ function render(){
   let box=view.querySelector(':scope > .nxp-box');
   if(!box){box=document.createElement('div');box.className='nxp-box';view.prepend(box)}
   // Avatar SVGs carry unique ids per copy, so compare a state signature instead of the markup.
-  const sig=JSON.stringify([state.uid,state.avatar,state.pickerOpen,profile.username,profile.accountType,profile.higherLowerBest||0,state.isAdmin,state.stats]);
+  const sig=JSON.stringify([state.uid,state.avatar,state.pickerOpen,profile.username,profile.accountType,profile.higherLowerBest||0,state.isAdmin,[...state.allowed].join(','),state.stats]);
   if(box.dataset.sig!==sig){box.dataset.sig=sig;box.innerHTML=`${heroMarkup(profile)}<div class="nxp-section"><span class="nxp-label">İSTATİSTİKLER</span>${statsMarkup()}${Number(profile.higherLowerBest)>0?`<a class="nxp-hl" href="${new URL('../side-games/higher-lower/index.html',import.meta.url).href}"><span>HIGHER OR LOWER REKORU</span><b>${Number(profile.higherLowerBest)}</b></a>`:''}</div>`}
   if(!state.stats||state.statsUid!==state.uid)loadStats();
 }
@@ -165,8 +168,8 @@ async function boot(){
   const app=getApp();db=getDatabase(app);auth=getAuth(app);injectStyle();
   let offAvatar=null;
   onAuthStateChanged(auth,user=>{
-    offAvatar?.();offAvatar=null;state.uid=user?.uid||'';state.isAdmin=false;state.avatar='';
-    if(user)checkAdmin(user).then(ok=>{if(state.uid===user.uid){state.isAdmin=ok;const box=document.querySelector('.nxp-box');if(box)box.dataset.sig='';render();paintAll()}});state.stats=null;state.pickerOpen=false;
+    offAvatar?.();offAvatar=null;state.uid=user?.uid||'';state.isAdmin=false;state.allowed=new Set();state.avatar='';
+    if(user)allowedAvatars(user).then(set=>{if(state.uid===user.uid){state.allowed=set;state.isAdmin=set.has('a17');const box=document.querySelector('.nxp-box');if(box)box.dataset.sig='';render();paintAll()}});state.stats=null;state.pickerOpen=false;
     if(user)offAvatar=onValue(ref(db,`social/profiles/${user.uid}/avatar`),s=>{state.avatar=String(s.val()||'');state.avatars.set(user.uid,state.avatar);render();paintAll()});
   });
   let queued=false;
