@@ -166,3 +166,10 @@ body.fx::before{content:"";position:fixed;inset:0;z-index:-2;background:radial-g
 .fx-trophy i{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,transparent,color-mix(in srgb,var(--c) 70%,transparent),transparent 30%,transparent 50%,color-mix(in srgb,var(--c) 70%,transparent),transparent 80%);animation:fxSpin 3s linear infinite;filter:blur(2px)}
 .fx-trophy svg{position:relative;filter:drop-shadow(0 0 14px var(--c))}
 @keyframes fxSpin{to{transform:rotate(360deg)}}
+/* menu + lobby use the shared side-game layout (sidegame-skin-v2.css .sgm, body.sg-skin while shown) */
+body.fx-menu .fx-app{width:100%;max-width:none;padding:0}
+body.fx-menu .sgm-sheet .fx-seg button{min-height:46px;border-radius:12px;background:#0a0d10;border-color:rgba(255,255,255,.16);color:#aab6c0}
+body.fx-menu .sgm-sheet .fx-seg button.on{border-color:#baff18;background:rgba(186,255,24,.12);color:#baff18;box-shadow:0 0 14px rgba(186,255,24,.15)}
+body.fx-menu .sgm-sheet .sgm-field{margin-bottom:14px}
+body.fx-menu .sgm-note.bad{color:#ff7a8a}
+body.fx-menu .fx-lobby-list{margin-bottom:12px}
