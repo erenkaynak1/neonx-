@@ -425,5 +425,576 @@
    "capacity": 85018
   }
  ],
- "//stadiums": "capacity: our figure; capacity_wikidata: Wikidata P1083 (max). The capacity follow-up is only asked when the two agree within 5%."
+ "//stadiums": "capacity: our figure; capacity_wikidata: Wikidata P1083 (max). The capacity follow-up is only asked when the two agree within 5%.",
+ "//clubs": "Hand facts per club: city, colours (Turkish clubs), symbol/mascot animal on the crest or of the club, and nicknames. Only widely documented facts; founding years and stadiums come from Wikidata (facts-clubs.json, build_fethet_club_facts.py). Karşıyaka is founded in 1912 (not in the Wikidata list).",
+ "clubs": {
+  "Adana Demirspor": {
+   "city": "Adana",
+   "colors": "mavi-lacivert",
+   "nicknames": [
+    "Mavi Şimşekler"
+   ]
+  },
+  "Adanaspor": {
+   "city": "Adana"
+  },
+  "Ajax": {
+   "city": "Amsterdam"
+  },
+  "Al Hilal": {
+   "city": "Riyad"
+  },
+  "Al Nassr": {
+   "city": "Riyad"
+  },
+  "Alanyaspor": {
+   "city": "Antalya",
+   "colors": "turuncu-yeşil"
+  },
+  "Altay": {
+   "city": "İzmir",
+   "colors": "siyah-beyaz"
+  },
+  "Amedspor": {
+   "city": "Diyarbakır",
+   "colors": "yeşil-kırmızı"
+  },
+  "Anderlecht": {
+   "city": "Brüksel"
+  },
+  "Ankaragücü": {
+   "city": "Ankara",
+   "colors": "sarı-lacivert"
+  },
+  "Antalyaspor": {
+   "city": "Antalya",
+   "colors": "kırmızı-beyaz",
+   "symbol": "akrep",
+   "nicknames": [
+    "Akrepler"
+   ]
+  },
+  "Arsenal": {
+   "city": "Londra",
+   "symbol": "top (kanon)",
+   "nicknames": [
+    "Topçular"
+   ]
+  },
+  "Aston Villa": {
+   "city": "Birmingham"
+  },
+  "Atalanta": {
+   "city": "Bergamo"
+  },
+  "Athletic Bilbao": {
+   "city": "Bilbao"
+  },
+  "Atlético Madrid": {
+   "city": "Madrid",
+   "nicknames": [
+    "Los Colchoneros"
+   ]
+  },
+  "Barcelona": {
+   "city": "Barselona",
+   "nicknames": [
+    "Blaugrana"
+   ]
+  },
+  "Bayer Leverkusen": {
+   "city": "Leverkusen",
+   "nicknames": [
+    "Die Werkself"
+   ]
+  },
+  "Bayern Münih": {
+   "city": "Münih"
+  },
+  "Başakşehir": {
+   "city": "İstanbul",
+   "colors": "turuncu-lacivert"
+  },
+  "Benfica": {
+   "city": "Lizbon",
+   "symbol": "kartal"
+  },
+  "Beşiktaş": {
+   "city": "İstanbul",
+   "colors": "siyah-beyaz",
+   "symbol": "kartal",
+   "nicknames": [
+    "Kara Kartallar"
+   ]
+  },
+  "Boluspor": {
+   "city": "Bolu",
+   "colors": "kırmızı-beyaz"
+  },
+  "Bursaspor": {
+   "city": "Bursa",
+   "colors": "yeşil-beyaz",
+   "symbol": "timsah",
+   "nicknames": [
+    "Yeşil Timsahlar"
+   ]
+  },
+  "Celtic": {
+   "city": "Glasgow",
+   "nicknames": [
+    "The Bhoys"
+   ]
+  },
+  "Chelsea": {
+   "city": "Londra",
+   "symbol": "aslan"
+  },
+  "Club Brugge": {
+   "city": "Brugge"
+  },
+  "Crystal Palace": {
+   "city": "Londra",
+   "symbol": "kartal"
+  },
+  "Denizlispor": {
+   "city": "Denizli",
+   "colors": "yeşil-siyah",
+   "symbol": "horoz",
+   "nicknames": [
+    "Horozlar"
+   ]
+  },
+  "Dinamo Kiev": {
+   "city": "Kiev"
+  },
+  "Dortmund": {
+   "city": "Dortmund"
+  },
+  "Elazığspor": {
+   "city": "Elazığ"
+  },
+  "Eskişehirspor": {
+   "city": "Eskişehir",
+   "colors": "kırmızı-siyah"
+  },
+  "Everton": {
+   "city": "Liverpool",
+   "nicknames": [
+    "The Toffees"
+   ]
+  },
+  "Eyüpspor": {
+   "city": "İstanbul",
+   "colors": "mor-sarı"
+  },
+  "Fatih Karagümrük": {
+   "city": "İstanbul",
+   "colors": "kırmızı-siyah"
+  },
+  "Fenerbahçe": {
+   "city": "İstanbul",
+   "colors": "sarı-lacivert",
+   "symbol": "kanarya",
+   "nicknames": [
+    "Sarı Kanaryalar"
+   ]
+  },
+  "Feyenoord": {
+   "city": "Rotterdam"
+  },
+  "Fiorentina": {
+   "city": "Floransa",
+   "nicknames": [
+    "La Viola"
+   ]
+  },
+  "Flamengo": {
+   "city": "Rio de Janeiro"
+  },
+  "Galatasaray": {
+   "city": "İstanbul",
+   "colors": "sarı-kırmızı",
+   "symbol": "aslan",
+   "nicknames": [
+    "Cimbom"
+   ]
+  },
+  "Gaziantep": {
+   "city": "Gaziantep"
+  },
+  "Gençlerbirliği": {
+   "city": "Ankara",
+   "colors": "kırmızı-siyah"
+  },
+  "Giresunspor": {
+   "city": "Giresun",
+   "colors": "yeşil-beyaz"
+  },
+  "Göztepe": {
+   "city": "İzmir",
+   "colors": "sarı-kırmızı"
+  },
+  "Hamburg": {
+   "city": "Hamburg"
+  },
+  "Hatayspor": {
+   "city": "Hatay",
+   "colors": "bordo-beyaz"
+  },
+  "Inter": {
+   "city": "Milano",
+   "symbol": "yılan",
+   "nicknames": [
+    "Nerazzurri"
+   ]
+  },
+  "Juventus": {
+   "city": "Torino",
+   "symbol": "zebra",
+   "nicknames": [
+    "Yaşlı Kadın",
+    "Bianconeri"
+   ]
+  },
+  "Karşıyaka": {
+   "city": "İzmir",
+   "colors": "yeşil-kırmızı"
+  },
+  "Kasımpaşa": {
+   "city": "İstanbul",
+   "colors": "lacivert-beyaz"
+  },
+  "Kayserispor": {
+   "city": "Kayseri",
+   "colors": "sarı-kırmızı"
+  },
+  "Kocaelispor": {
+   "city": "Kocaeli",
+   "colors": "yeşil-siyah"
+  },
+  "Konyaspor": {
+   "city": "Konya",
+   "colors": "yeşil-beyaz",
+   "symbol": "kartal",
+   "nicknames": [
+    "Anadolu Kartalları"
+   ]
+  },
+  "Kızılyıldız": {
+   "city": "Belgrad"
+  },
+  "Lazio": {
+   "city": "Roma",
+   "symbol": "kartal",
+   "nicknames": [
+    "Biancocelesti"
+   ]
+  },
+  "Leicester City": {
+   "city": "Leicester",
+   "symbol": "tilki",
+   "nicknames": [
+    "Tilkiler"
+   ]
+  },
+  "Liverpool": {
+   "city": "Liverpool"
+  },
+  "Lyon": {
+   "city": "Lyon"
+  },
+  "Manchester City": {
+   "city": "Manchester"
+  },
+  "Manchester United": {
+   "city": "Manchester",
+   "symbol": "şeytan",
+   "nicknames": [
+    "Kırmızı Şeytanlar"
+   ]
+  },
+  "Manisaspor": {
+   "city": "Manisa"
+  },
+  "Marseille": {
+   "city": "Marsilya"
+  },
+  "Mersin İdmanyurdu": {
+   "city": "Mersin"
+  },
+  "Milan": {
+   "city": "Milano",
+   "symbol": "şeytan",
+   "nicknames": [
+    "Rossoneri"
+   ]
+  },
+  "Monaco": {
+   "city": "Monako"
+  },
+  "Napoli": {
+   "city": "Napoli",
+   "symbol": "eşek"
+  },
+  "Newcastle United": {
+   "city": "Newcastle",
+   "symbol": "saksağan",
+   "nicknames": [
+    "Saksağanlar"
+   ]
+  },
+  "Norwich City": {
+   "city": "Norwich",
+   "symbol": "kanarya"
+  },
+  "Orduspor": {
+   "city": "Ordu"
+  },
+  "PSG": {
+   "city": "Paris"
+  },
+  "PSV": {
+   "city": "Eindhoven"
+  },
+  "Panathinaikos": {
+   "city": "Atina"
+  },
+  "Porto": {
+   "city": "Porto",
+   "symbol": "ejderha",
+   "nicknames": [
+    "Ejderhalar"
+   ]
+  },
+  "Rangers": {
+   "city": "Glasgow",
+   "nicknames": [
+    "The Gers"
+   ]
+  },
+  "Real Betis": {
+   "city": "Sevilla"
+  },
+  "Real Madrid": {
+   "city": "Madrid",
+   "nicknames": [
+    "Los Blancos",
+    "Eflatun Beyazlılar"
+   ]
+  },
+  "Real Sociedad": {
+   "city": "San Sebastián"
+  },
+  "River Plate": {
+   "city": "Buenos Aires",
+   "nicknames": [
+    "Los Millonarios"
+   ]
+  },
+  "Rizespor": {
+   "city": "Rize",
+   "colors": "yeşil-mavi"
+  },
+  "Roma": {
+   "city": "Roma",
+   "symbol": "dişi kurt",
+   "nicknames": [
+    "Giallorossi"
+   ]
+  },
+  "Sakaryaspor": {
+   "city": "Sakarya",
+   "colors": "yeşil-siyah"
+  },
+  "Samsunspor": {
+   "city": "Samsun",
+   "colors": "kırmızı-beyaz"
+  },
+  "Santos": {
+   "city": "Santos"
+  },
+  "Schalke 04": {
+   "city": "Gelsenkirchen",
+   "nicknames": [
+    "Die Knappen"
+   ]
+  },
+  "Shakhtar Donetsk": {
+   "city": "Donetsk"
+  },
+  "Sivasspor": {
+   "city": "Sivas",
+   "colors": "kırmızı-beyaz",
+   "nicknames": [
+    "Yiğidolar"
+   ]
+  },
+  "Spartak Moskova": {
+   "city": "Moskova"
+  },
+  "Sporting": {
+   "city": "Lizbon",
+   "symbol": "aslan"
+  },
+  "Tottenham": {
+   "city": "Londra",
+   "symbol": "horoz",
+   "nicknames": [
+    "Spurs"
+   ]
+  },
+  "Trabzonspor": {
+   "city": "Trabzon",
+   "colors": "bordo-mavi",
+   "nicknames": [
+    "Karadeniz Fırtınası"
+   ]
+  },
+  "Valencia": {
+   "city": "Valensiya"
+  },
+  "Villarreal": {
+   "city": "Villarreal",
+   "nicknames": [
+    "Sarı Denizaltı"
+   ]
+  },
+  "Werder Bremen": {
+   "city": "Bremen"
+  },
+  "West Ham": {
+   "city": "Londra"
+  },
+  "Wolverhampton": {
+   "city": "Wolverhampton",
+   "symbol": "kurt",
+   "nicknames": [
+    "Kurtlar"
+   ]
+  },
+  "Zenit": {
+   "city": "St. Petersburg"
+  }
+ },
+ "founded_extra": {
+  "Karşıyaka": 1912
+ },
+ "//world_cups": "Men's World Cup winners and hosts, Wikidata P1346/P17; 2026 (Spain) also checked against the English Wikipedia article on the final. West Germany's titles (1954, 1974, 1990) are listed as Almanya, as FIFA counts them.",
+ "world_cups": [
+  {
+   "year": 1930,
+   "winner": "Uruguay",
+   "host": "Uruguay"
+  },
+  {
+   "year": 1934,
+   "winner": "İtalya",
+   "host": "İtalya"
+  },
+  {
+   "year": 1938,
+   "winner": "İtalya",
+   "host": "Fransa"
+  },
+  {
+   "year": 1950,
+   "winner": "Uruguay",
+   "host": "Brezilya"
+  },
+  {
+   "year": 1954,
+   "winner": "Almanya",
+   "host": "İsviçre"
+  },
+  {
+   "year": 1958,
+   "winner": "Brezilya",
+   "host": "İsveç"
+  },
+  {
+   "year": 1962,
+   "winner": "Brezilya",
+   "host": "Şili"
+  },
+  {
+   "year": 1966,
+   "winner": "İngiltere",
+   "host": "İngiltere"
+  },
+  {
+   "year": 1970,
+   "winner": "Brezilya",
+   "host": "Meksika"
+  },
+  {
+   "year": 1974,
+   "winner": "Almanya",
+   "host": "Almanya"
+  },
+  {
+   "year": 1978,
+   "winner": "Arjantin",
+   "host": "Arjantin"
+  },
+  {
+   "year": 1982,
+   "winner": "İtalya",
+   "host": "İspanya"
+  },
+  {
+   "year": 1986,
+   "winner": "Arjantin",
+   "host": "Meksika"
+  },
+  {
+   "year": 1990,
+   "winner": "Almanya",
+   "host": "İtalya"
+  },
+  {
+   "year": 1994,
+   "winner": "Brezilya",
+   "host": "ABD"
+  },
+  {
+   "year": 1998,
+   "winner": "Fransa",
+   "host": "Fransa"
+  },
+  {
+   "year": 2002,
+   "winner": "Brezilya",
+   "host": "Japonya ve Güney Kore"
+  },
+  {
+   "year": 2006,
+   "winner": "İtalya",
+   "host": "Almanya"
+  },
+  {
+   "year": 2010,
+   "winner": "İspanya",
+   "host": "Güney Afrika"
+  },
+  {
+   "year": 2014,
+   "winner": "Almanya",
+   "host": "Brezilya"
+  },
+  {
+   "year": 2018,
+   "winner": "Fransa",
+   "host": "Rusya"
+  },
+  {
+   "year": 2022,
+   "winner": "Arjantin",
+   "host": "Katar"
+  },
+  {
+   "year": 2026,
+   "winner": "İspanya",
+   "host": "ABD, Kanada ve Meksika"
+  }
+ ]
 }

@@ -24,7 +24,7 @@ for(const f of ['social/party-ready-notify-v1.js','social/neon-profile-v1.js'])a
 
 // The page loads the room transport with its own namespace, the broker and the social layer.
 assert(/firebase-peer-shim-v1\.js[^"]*" data-game-type="fethet" data-prefix="neonxi-fethet-" data-room-prefix="FX-"/.test(page),'room transport attributes');
-for(const s of ['party-match-broker-v1.js','neon-social.js','party-ready-notify-v1.js','fethet-game-v2.js','fethet-cinema-v1.js'])assert(page.includes(s),'page script missing: '+s);
+for(const s of ['party-match-broker-v1.js','neon-social.js','party-ready-notify-v1.js','fethet-game-v2.js','fethet-cinema-v2.js'])assert(page.includes(s),'page script missing: '+s);
 assert(game.includes("const PREFIX = 'neonxi-fethet-'"),'game uses the same peer prefix as the page');
 
 // Host authority: questions go out without the answer; guest answers are matched to their own connection.

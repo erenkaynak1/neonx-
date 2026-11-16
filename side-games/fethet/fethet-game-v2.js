@@ -14,7 +14,7 @@
   const T_MC = 20, T_EST = 25, TOWERS = 3;
   const START_VILLAGES = 3, GRAB_ROUNDS = 4, TIEBREAKS = 3;
   // Battle rounds by player count: the match ends when one empire is left, or after these rounds.
-  const roundsFor = () => ({ 2: 15, 3: 12, 4: 10 })[S.players.length] || 12;
+  const roundsFor = () => 25;
   // Club colours for our own representative crests (no real logos: those are trademarks).
   const CLUB_COLORS = {
     Galatasaray: ['#a90432', '#fdb912'], Fenerbahçe: ['#163962', '#ffed00'], Beşiktaş: ['#111111', '#ffffff'], Başakşehir: ['#f37021', '#0a2240'],
@@ -73,18 +73,37 @@
   const free = () => S.map.regions.filter(r => S.owner[r.id] == null).map(r => r.id);
   const alive = () => S.players.filter(p => p.alive);
 
+  // Multiple choice: pick a question type first (career path is the favourite, but every type shows up), then
+  // a question of that type, themed on the city's clubs when one exists. Estimates rotate through categories so
+  // tie-breaks are not all "how many league games".
+  const MC_WEIGHTS = { career: 26, notplayed: 11, intersection: 7, stadium: 7, titles: 6, league: 2, older: 7, city: 5,
+    colors: 5, symbol: 5, nickname: 5, worldcup: 6, caps: 4, nation: 4 };
+  const EST_FIELDS = ['caps', 'intlGoals', 'careerGoals', 'careerApps', 'superLig', 'worldCups', 'birthYear', 'height', 'founded', 'capacity', 'leagueTitles'];
+  function weighted(obj) {
+    const keys = Object.keys(obj), total = keys.reduce((a, k) => a + obj[k], 0);
+    let r = Math.random() * total;
+    for (const k of keys) { r -= obj[k]; if (r <= 0) return k; }
+    return keys[0];
+  }
   function question(kind, region) {
-    let pool = S.bank.filter(q => !S.used.has(q.id) && (kind === 'estimate' ? q.type === 'estimate' : q.type !== 'estimate'));
-    if (kind === 'estimate') pool = pool.filter(q => q.difficulty !== 'hard' || Math.random() < 0.25);
-    if (region && Math.random() < 0.55) {
+    const fresh = S.bank.filter(q => !S.used.has(q.id) && (kind === 'estimate' ? q.type === 'estimate' : q.type !== 'estimate'));
+    let pool = fresh;
+    if (kind === 'estimate') {
+      const fields = EST_FIELDS.filter(f => fresh.some(q => q.field === f));
+      const f = fields[Math.floor(Math.random() * fields.length)];
+      pool = fresh.filter(q => q.field === f && (q.difficulty !== 'hard' || Math.random() < 0.35));
+    } else {
+      const have = {}; for (const t in MC_WEIGHTS) if (fresh.some(q => q.type === t)) have[t] = MC_WEIGHTS[t];
+      const t = weighted(have);
+      pool = fresh.filter(q => q.type === t);
+      if (t === 'career') { const easier = pool.filter(q => q.difficulty !== 'hard'); if (easier.length && Math.random() < 0.6) pool = easier; }
+    }
+    if (region && Math.random() < 0.5) {
       const themed = pool.filter(q => (q.clubs || []).some(c => region.clubs.includes(c)));
       if (themed.length) pool = themed;
     }
-    if (kind === 'mc') {  // career path is the favourite: weight it
-      const career = pool.filter(q => q.type === 'career' && q.difficulty !== 'hard');
-      if (career.length && Math.random() < 0.45) pool = career;
-    }
-    const q = pickOne(pool.length ? pool : S.bank.filter(q => kind === 'estimate' ? q.type === 'estimate' : q.type !== 'estimate'));
+    if (!pool.length) pool = fresh.length ? fresh : S.bank.filter(q => kind === 'estimate' ? q.type === 'estimate' : q.type !== 'estimate');
+    const q = pickOne(pool);
     S.used.add(q.id);
     return q;
   }
