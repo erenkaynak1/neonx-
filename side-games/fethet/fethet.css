@@ -42,7 +42,7 @@ body.fx::before{content:"";position:fixed;inset:0;z-index:-2;background:radial-g
 @keyframes fxDash{to{stroke-dashoffset:-24}}
 @keyframes fxGlowPulse{50%{fill-opacity:.22}}
 .fx-lbl text{fill:#fff;font:800 12.5px var(--fx-d);text-anchor:middle;paint-order:stroke;stroke:#05070a;stroke-width:3px;pointer-events:none}
-.fx-lbl .fx-tw{fill:var(--fx-lime);font-size:14px}
+.fx-lbl .fx-tw .fx-gk path{stroke:var(--fx-lime)}.fx-lbl .fx-tw .fx-gk .net{stroke:var(--fx-lime);opacity:.55}.fx-lbl .fx-tw .fx-gk.off path{stroke:#ff7a8a;opacity:.35;stroke-dasharray:2 2}
 .fx-lbl svg{pointer-events:none}
 .fx-msg{min-height:22px;margin-top:10px;text-align:center;color:var(--fx-mute);font-size:14px}
 .fx-q{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:14px;background:rgba(3,5,7,.72);backdrop-filter:blur(5px);animation:fxIn .2s ease both}
@@ -173,3 +173,7 @@ body.fx-menu .sgm-sheet .fx-seg button.on{border-color:#baff18;background:rgba(1
 body.fx-menu .sgm-sheet .sgm-field{margin-bottom:14px}
 body.fx-menu .sgm-note.bad{color:#ff7a8a}
 body.fx-menu .fx-lobby-list{margin-bottom:12px}
+/* HUD: the base's goals ("kale") */
+.fx-goals{display:inline-flex;gap:3px;vertical-align:-2px;color:var(--fx-lime);font-style:normal}
+.fx-gki.off{color:#ff7a8a;opacity:.4}
+.fx-lbl .fx-tw{filter:drop-shadow(0 0 3px rgba(186,255,24,.55))}
