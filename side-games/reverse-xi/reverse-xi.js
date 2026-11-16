@@ -25,16 +25,14 @@ function distance(a,b){const row=Array.from({length:b.length+1},(_,i)=>i);for(le
 function answerMatches(guess,answer){const g=normalize(guess),a=normalize(answer);if(!g||!a)return false;if(g===a)return true;if(g.length>=4&&a.includes(g))return true;const aliases=(answer+'|'+answer.replace(/khvicha/i,'khvicha')+'|'+answer.replace(/kvaratskhelia/i,'kvaratskhelia')).split('|').map(normalize);if(aliases.includes(g))return true;if(Math.min(g.length,a.length)>=5&&Math.abs(g.length-a.length)<=Math.max(2,Math.floor(a.length*.2))&&distance(g,a)<=Math.max(2,Math.floor(a.length*.2)))return true;return false}
 async function ensureAuth(){if(auth.currentUser){state.uid=auth.currentUser.uid;return}await new Promise((resolve,reject)=>{const off=onAuthStateChanged(auth,async user=>{off();try{if(user){state.uid=user.uid;resolve()}else{const result=await signInAnonymously(auth);state.uid=result.user.uid;resolve()}}catch(e){reject(e)}} ,reject)})}
 function makeCode(){return Array.from({length:6},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*32)]).join('')}
-// Result moment, in the Saha Fethi style: a slammed neon word ("DOĞRU!" lime with rings and confetti,
-// "YANLIŞ!" red with a shake) over a band with the answer. Plays once per guess on every screen; a page
+// Result moment, in the Saha Fethi style: a slammed neon word ("DOĞRU!" lime, "YANLIŞ!" red with a
+// shake) over a band with the answer and the guess. Plays once per guess on every screen; a page
 // opened while a result is already showing does not replay it. Tap to dismiss.
 function resultFx(r){
  document.querySelectorAll('.rx-fx').forEach(n=>n.remove());
  const ok=!!r.correct,el=document.createElement('div');el.className='rx-fx '+(ok?'ok':'bad');el.setAttribute('role','status');
  const esc=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- let conf='';if(ok&&!matchMedia('(prefers-reduced-motion: reduce)').matches){const cs=['#baff18','#00eaff','#31ff76','#ffffff'];for(let i=0;i<70;i++)conf+=`<i style="left:${(Math.random()*100).toFixed(1)}%;--c:${cs[i%4]};--d:${(Math.random()*.6).toFixed(2)}s;--x:${((Math.random()-.5)*180).toFixed(0)}px;--r:${(Math.random()*720).toFixed(0)}deg;--t:${(1.8+Math.random()*1.4).toFixed(2)}s"></i>`}
- el.innerHTML=`<span class="rx-fx-ring"></span><span class="rx-fx-ring r2"></span><div class="rx-fx-conf">${conf}</div>
-  <div class="rx-fx-word">${ok?'DOĞRU!':'YANLIŞ!'}</div>
+ el.innerHTML=`<div class="rx-fx-word">${ok?'DOĞRU!':'YANLIŞ!'}</div>
   <div class="rx-fx-band"><b>${esc(r.answer||'')}</b><small>${esc(r.byName||'Oyuncu')} · ${ok?'bildi':'“'+esc(r.guess||'')+'” dedi'}</small></div>`;
  document.body.appendChild(el);
  const close=()=>{el.classList.add('out');setTimeout(()=>el.remove(),260)};
@@ -107,9 +105,24 @@ function finishManualRecording(blob,mode,button){
  if(state.discardRecording){state.discardRecording=false;return}
  if(mode==='name'){
   state.originalBlob=blob;const transcript=state.transcript.trim();$('heard-name').textContent=transcript||'Ses yazıya dökülemedi';const ask=$('heard-result').querySelector('p');if(ask)ask.textContent=transcript?'Doğru anladım mı? Yanlışsa aşağıdan düzelt.':'Söylediğin futbolcunun adını aşağıya yaz.';$('heard-result').hidden=false;$('record-name').hidden=true;$('manual-name').value=transcript;$('speech-fallback').hidden=false;$('manual-name').hidden=false;if(!transcript)$('manual-name').focus();
+  showNameMatches(transcript,state.altHeard||[]);
  }else if(mode==='imitation'){
   (async()=>{const turnKey=state.turnKey;lockButton('record-imitation','İŞLENİYOR…');try{toast('Ses ters çevriliyor…');const reverse=await withTimeout(reverseBlob(blob),15000,'Ses işlenemedi. Tekrar kaydet.');if(turnKey!==state.turnKey)return;await roomWrite({reverseImitation:reverse,phase:'guess',imitationBy:uid()})}catch(e){unlockButton('record-imitation');toast(e.message||'Ses işlenemedi.')}})();
  }
+}
+// The recogniser writes foreign names by ear ("ırling holand"); match what it heard against the player list
+// by sound (name-match-v1.js). A clear winner replaces the transcript; the best three are offered as chips.
+async function showNameMatches(transcript,alts){
+ const box=$('name-suggest');if(!box)return;box.hidden=true;box.innerHTML='';
+ const M=window.NX_NAME_MATCH;if(!M||!transcript)return;
+ try{await Promise.race([M.ready,new Promise(r=>setTimeout(r,2500))])}catch{}
+ const list=M.suggest([transcript,...alts],3).filter(x=>x.score>=0.8);if(!list.length)return;
+ const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const sure=list[0].score>=0.9&&(!list[1]||list[0].score-list[1].score>=0.03);
+ const choose=name=>{$('heard-name').textContent=name;$('manual-name').value=name;box.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.name===name))};
+ box.innerHTML=`<small>${sure?'Duyduğum: “'+esc(transcript)+'” · başka biriyse seç:':'Bunu mu demek istedin?'}</small>`+list.map(x=>`<button type="button" data-name="${esc(x.name)}">${esc(x.name)}</button>`).join('');
+ box.querySelectorAll('button').forEach(b=>b.onclick=()=>choose(b.dataset.name));
+ box.hidden=false;if(sure)choose(list[0].name);
 }
 // A failed start (permission, timeout) must not leave the button on "KAYDI DURDUR".
 function recordingFailed(mode){try{state.speech?.stop()}catch{}state.speech=null;clearTimeout(state.stopWatchdog);state.recordingMode='';state.recorder=null;state.pcmStop=null;const b=$(mode==='name'?'record-name':'record-imitation');if(b){b.classList.remove('recording','live');b.textContent='🎙 KAYDI BAŞLAT'}state.micLive=false;state.stopping=false;releaseStream()}
@@ -119,15 +132,19 @@ function isIOSAudio(){return /iPhone|iPad|iPod/.test(navigator.userAgent||'')||(
 function stopPlayback(){for(const id of ['reverse-audio','final-audio']){const a=$(id);try{if(a&&!a.paused)a.pause()}catch{}}}
 // A dead input (muted/handed-over track) delivers exact zeros; a live mic always has some noise.
 const DEAD=1e-6;
+// How long a silent (all-zero) input may stay silent before the mic is reopened. A phone often needs a second
+// or three after playback; reopening sooner restarted that warm-up and made the wait three times longer.
+// It is reopened once; after that the player gets the "Mikrofon yanıt vermiyor" hint.
+const REOPEN_MS=4000;
 function waitUnmuted(stream,ms=1500){const t=stream.getAudioTracks()[0];if(!t||!t.muted)return Promise.resolve();return new Promise(r=>{const done=()=>{t.removeEventListener('unmute',done);r()};t.addEventListener('unmute',done);setTimeout(done,ms)})}
 async function openMic(){stopPlayback();const stream=await getStream();await waitUnmuted(stream);return stream}
 // After the opponent's clip has played, a phone can take a second before the mic delivers real sound. The
 // button says so ("MİKROFON AÇILIYOR…") and switches to "KONUŞ" only when the input is live, so the first
 // words are not lost and a short answer is not thrown away as silence.
-function markLive(button){if(state.micLive)return;state.micLive=true;state.liveAt=Date.now();button.classList.add('live');button.textContent='■ KONUŞ · BİTİNCE DURDUR'}
+function markLive(button){if(state.micLive)return;state.micLive=true;state.liveAt=Date.now();button.classList.add('live');button.textContent='■ KONUŞ · BİTİNCE DURDUR';const t=$('toast');if(t&&/Mikrofon açılıyor/.test(t.textContent))t.classList.remove('show')}
 async function startManualRecording(mode){
  state.micLive=false;state.liveAt=0;
- let stream=await openMic();state.recordingMode=mode;state.transcript='';
+ let stream=await openMic();state.recordingMode=mode;state.transcript='';state.altHeard=[];
  const button=$(mode==='name'?'record-name':'record-imitation');button.classList.add('recording');button.classList.remove('live');button.textContent='◌ MİKROFON AÇILIYOR…';
  const AC=window.AudioContext||window.webkitAudioContext;
  if(isIOSAudio()&&AC){
@@ -144,11 +161,11 @@ async function startManualRecording(mode){
   };
   const check=async()=>{
    if(stopped||alive)return;
-   if(retries>=2){toast('Mikrofon yanıt vermiyor. Durdurup tekrar dene.');return}
+   if(retries>=1){toast('Mikrofon yanıt vermiyor. Durdurup tekrar dene.');return}
    retries++;detach();try{stream=await openMic();if(stopped){releaseStream();return}await attach(stream)}catch{}
-   watch=setTimeout(check,1200);
+   watch=setTimeout(check,REOPEN_MS);
   };
-  await attach(stream);watch=setTimeout(check,1200);
+  await attach(stream);watch=setTimeout(check,REOPEN_MS);
   state.pcmStop=async()=>{
    stopped=true;clearTimeout(watch);const rate=ctx?.sampleRate||48000;detach();
    const total=chunks.reduce((n,x)=>n+x.length,0);
@@ -168,25 +185,25 @@ async function startManualRecording(mode){
   // Same dead-input check as on iOS: restart the recorder on a fresh mic if it only hears zeros.
   const cleanupMonitor=()=>{clearTimeout(watch);const m=monitor;monitor=null;if(m&&m.state!=='closed')m.close().catch(()=>{})};
   const probe=s=>{if(!AC){markLive(button);return}cleanupMonitor();try{monitor=new AC();const an=monitor.createAnalyser();an.fftSize=2048;monitor.createMediaStreamSource(s).connect(an);const buf=new Float32Array(an.fftSize);let alive=false;const tick=setInterval(()=>{if(!monitor){clearInterval(tick);return}an.getFloatTimeDomainData(buf);if(peak(buf)>DEAD){alive=true;markLive(button)}},150);
-    watch=setTimeout(async()=>{clearInterval(tick);if(alive||!state.recorder||state.recordingMode!==mode){cleanupMonitor();return}if(retries>=2){cleanupMonitor();toast('Mikrofon yanıt vermiyor. Durdurup tekrar dene.');return}
-     retries++;const old=state.recorder;state.recorder=null;try{old.stop()}catch{}try{const fresh=await openMic();if(state.recordingMode!==mode){releaseStream();return}begin(fresh);probe(fresh)}catch{state.discardRecording=true;finishManualRecording(new Blob([]),mode,button);toast('Mikrofon açılamadı. Tekrar dene.')}},1300);
+    watch=setTimeout(async()=>{clearInterval(tick);if(alive||!state.recorder||state.recordingMode!==mode){cleanupMonitor();return}if(retries>=1){cleanupMonitor();toast('Mikrofon yanıt vermiyor. Durdurup tekrar dene.');return}
+     retries++;const old=state.recorder;state.recorder=null;try{old.stop()}catch{}try{const fresh=await openMic();if(state.recordingMode!==mode){releaseStream();return}begin(fresh);probe(fresh)}catch{state.discardRecording=true;finishManualRecording(new Blob([]),mode,button);toast('Mikrofon açılamadı. Tekrar dene.')}},REOPEN_MS);
    }catch{cleanupMonitor()}};
   begin(stream);probe(stream);
  }
  if(mode==='name'){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(SR){const speech=new SR();speech.lang='tr-TR';speech.interimResults=true;speech.continuous=true;speech.maxAlternatives=3;speech.onresult=e=>{state.transcript=Array.from(e.results).map(r=>r[0]?.transcript||'').join(' ').trim()};speech.onerror=()=>{$('speech-fallback').hidden=false;$('manual-name').hidden=false};state.speech=speech;try{speech.start()}catch{$('speech-fallback').hidden=false;$('manual-name').hidden=false}}
+  if(SR){const speech=new SR();speech.lang='tr-TR';speech.interimResults=true;speech.continuous=true;speech.maxAlternatives=5;speech.onresult=e=>{const rs=Array.from(e.results);state.transcript=rs.map(r=>r[0]?.transcript||'').join(' ').trim();state.altHeard=rs.flatMap(r=>Array.from(r).map(a=>a.transcript||''))};speech.onerror=()=>{$('speech-fallback').hidden=false;$('manual-name').hidden=false};state.speech=speech;try{speech.start()}catch{$('speech-fallback').hidden=false;$('manual-name').hidden=false}}
   else{$('speech-fallback').hidden=false;$('manual-name').hidden=false}
  }
- state.recordStartedAt=Date.now(); // a quick double tap must not stop the recording it just started
+ state.recordStartedAt=Date.now(); // a double tap (under 250 ms) must not stop the recording it just started
  toast('Mikrofon açılıyor. Tuşta “KONUŞ” yazınca konuş, bitince aynı tuşa bas.');
 }
 // A tap on stop: not before the mic is live (unless it never comes), and 300 ms later so the last syllable
 // is kept (the word often ends right as the finger lands).
 function requestStop(){
  if(state.stopping)return;
- if(!state.micLive&&Date.now()-(state.recordStartedAt||0)<4500){toast('Mikrofon daha açılıyor. Tuşta “KONUŞ” yazınca konuş.');return}
- if(state.micLive&&Date.now()-state.liveAt<400)return;  // a double tap right after it went live
+ if(!state.micLive&&Date.now()-(state.recordStartedAt||0)<9000){toast('Mikrofon daha açılıyor. Tuşta “KONUŞ” yazınca konuş.');return}
+ if(state.micLive&&Date.now()-state.liveAt<150)return;  // a double tap right as it went live
  state.stopping=true;const b=$(state.recordingMode==='name'?'record-name':'record-imitation');if(b)b.textContent='KAYDEDİLİYOR…';
  setTimeout(()=>{state.stopping=false;stopManualRecording()},300);
 }
@@ -251,10 +268,10 @@ function downsample(samples,from,to){if(!from||from<=to)return samples;const rat
 function encodeWav(samples,rate){const b=new ArrayBuffer(44+samples.length*2),v=new DataView(b);const write=(o,s)=>[...s].forEach((c,i)=>v.setUint8(o+i,c.charCodeAt(0)));write(0,'RIFF');v.setUint32(4,36+samples.length*2,true);write(8,'WAVE');write(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,rate,true);v.setUint32(28,rate*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);write(36,'data');v.setUint32(40,samples.length*2,true);for(let i=0;i<samples.length;i++)v.setInt16(44+i*2,Math.max(-1,Math.min(1,samples[i]))*32767,true);return new Blob([b],{type:'audio/wav'})}
 function blobData(blob){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(blob)})}
 async function captureName(){const stream=await getStream();return new Promise((resolve,reject)=>{const mime=recordingMimeType();const rec=new MediaRecorder(stream,mime?{mimeType:mime}:undefined);const parts=[];let transcript='',done=false;const finish=()=>{if(done)return;done=true;if(rec.state!=='inactive')rec.stop()};rec.ondataavailable=e=>{if(e.data.size)parts.push(e.data)};rec.onerror=()=>reject(new Error('Kayıt yapılamadı.'));rec.onstop=()=>resolve({blob:new Blob(parts,{type:rec.mimeType||'audio/webm'}),text:transcript});rec.start();const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(SR){const speech=new SR();speech.lang='tr-TR';speech.interimResults=false;speech.maxAlternatives=4;speech.onresult=e=>{transcript=[...e.results[0]].sort((a,b)=>b.confidence-a.confidence)[0].transcript;finish()};speech.onerror=()=>finish();try{speech.start()}catch{finish()}}else{$('speech-fallback').hidden=false;$('manual-name').hidden=false;toast('İsmi söyledikten sonra ekrandaki alana yaz.')}setTimeout(finish,8000)})}
-$('record-name').onclick=async()=>{if(state.startingRecording)return;try{if(state.recordingMode==='name'){if(Date.now()-(state.recordStartedAt||0)<600)return;requestStop();return}if(state.recordingMode){toast('Önce devam eden kaydı durdur.');return}state.startingRecording=true;await startManualRecording('name')}catch(e){recordingFailed('name');toast(e.message||'Mikrofon açılamadı.')}finally{state.startingRecording=false}};
+$('record-name').onclick=async()=>{if(state.startingRecording)return;try{if(state.recordingMode==='name'){if(Date.now()-(state.recordStartedAt||0)<250)return;requestStop();return}if(state.recordingMode){toast('Önce devam eden kaydı durdur.');return}state.startingRecording=true;await startManualRecording('name')}catch(e){recordingFailed('name');toast(e.message||'Mikrofon açılamadı.')}finally{state.startingRecording=false}};
 $('confirm-name').onclick=async()=>{if(state.busy.confirm)return;const name=$('manual-name').value.trim();if(!name){toast('Futbolcu ismini yazıp onayla.');return}if(!state.originalBlob){toast('Ses kaydı bulunamadı. Tekrar kaydet.');return}const turnKey=state.turnKey;state.busy.confirm=true;lockButton('confirm-name','İŞLENİYOR…');try{const reverse=await withTimeout(reverseBlob(state.originalBlob),15000,'Ses işlenemedi. Tekrar söyle.');if(turnKey!==state.turnKey)return;state.secretAnswer=name;localStorage.setItem('nxReverseXI:'+state.room+':'+uid(),name);await roomWrite({reverseOriginal:reverse,phase:'imitate',answerBy:uid()});}catch(e){state.busy.confirm=false;unlockButton('confirm-name');toast(e.message||'Ses işlenemedi.')}};
-$('retry-name').onclick=()=>{$('heard-result').hidden=true;$('record-name').hidden=false;$('manual-name').hidden=true;$('speech-fallback').hidden=true;$('manual-name').value='';state.transcript='';state.originalBlob=null};
-$('record-imitation').onclick=async()=>{if(state.startingRecording)return;try{if(state.recordingMode==='imitation'){if(Date.now()-(state.recordStartedAt||0)<600)return;requestStop();return}if(state.recordingMode){toast('Önce devam eden kaydı durdur.');return}state.startingRecording=true;await startManualRecording('imitation')}catch(e){recordingFailed('imitation');toast(e.message||'Mikrofon kullanılamadı.')}finally{state.startingRecording=false}};
+$('retry-name').onclick=()=>{$('heard-result').hidden=true;const ns=$('name-suggest');if(ns){ns.hidden=true;ns.innerHTML=''}$('record-name').hidden=false;$('manual-name').hidden=true;$('speech-fallback').hidden=true;$('manual-name').value='';state.transcript='';state.originalBlob=null};
+$('record-imitation').onclick=async()=>{if(state.startingRecording)return;try{if(state.recordingMode==='imitation'){if(Date.now()-(state.recordStartedAt||0)<250)return;requestStop();return}if(state.recordingMode){toast('Önce devam eden kaydı durdur.');return}state.startingRecording=true;await startManualRecording('imitation')}catch(e){recordingFailed('imitation');toast(e.message||'Mikrofon kullanılamadı.')}finally{state.startingRecording=false}};
 $('send-guess').onclick=async()=>{if(state.busy.guess)return;const guess=$('guess-input').value.trim();if(!guess){toast('Tahminini yaz.');return}if(state.roomData?.phase!=='guess'){toast('Şu anda tahmin gönderilemez.');return}const guessId='g'+Date.now(),byName=state.local?(state.roomData?.players?.[mySide()]?.name||mySide()):mySide();state.busy.guess=true;lockButton('send-guess','…');try{$('guess-feedback').textContent='Cevap kontrol ediliyor…';await roomWrite({pendingGuess:{id:guessId,guess,byName:byName||'Oyuncu',createdAt:Date.now()},phase:'checking'})}catch(e){state.busy.guess=false;unlockButton('send-guess');$('guess-feedback').textContent='';toast('Tahmin gönderilemedi: '+e.message)}};
 $('next-turn').onclick=async()=>{const d=state.roomData;if(!d||d.phase!=='result'||state.busy.next)return;state.busy.next=true;lockButton('next-turn','…');const next=d.currentSpeaker==='A'?'B':'A';localStorage.removeItem('nxReverseXI:'+state.room+':'+uid());state.secretAnswer='';try{await roomWrite({currentSpeaker:next,turn:(d.turn||1)+1,phase:'speak',reverseOriginal:null,reverseImitation:null,lastResult:null,pendingGuess:null,answerBy:null,imitationBy:null})}catch(e){state.busy.next=false;unlockButton('next-turn');toast('Sonraki tura geçilemedi: '+e.message)}};
 
