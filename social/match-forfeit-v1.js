@@ -1,4 +1,4 @@
-/* NEON XI — forfeits for online 1v1 matches (Draft, XOX, Career Twin, EN 11).
+/* NEON XI — forfeits for online 1v1 matches (Draft, XOX, Career Twin, EN 11, Saha Fethi).
 
    While a matched game is running, each player marks the match on their own presence node:
      social/presence/{uid}/match = {id, at}            (removed automatically when the connection drops)
@@ -17,7 +17,7 @@ import {onDisconnect,onValue,ref,remove,serverTimestamp,set,update} from 'https:
 
 const GRACE_MS = 45000;
 const STORE = 'nxActiveMatch';
-const FORFEIT_MODES = new Set(['draft', 'xox', 'twin', 'en11']);
+const FORFEIT_MODES = new Set(['draft', 'xox', 'twin', 'en11', 'fethet']);
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const readStore = uid => { try { return JSON.parse(localStorage.getItem(`${STORE}:${uid}`) || 'null'); } catch { return null; } };

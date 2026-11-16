@@ -11,7 +11,7 @@ const vb = `${-PAD} ${-PAD} ${W + PAD * 2} ${H + PAD * 2}`;
 const regions = map.regions.map(r => `<path d="${r.path}"/>`).join('');
 const cities = map.regions.map(r => `<circle cx="${r.city[0]}" cy="${r.city[1]}" r="3.2"/>`).join('');
 const html = `<!doctype html><html><head><style>html,body{margin:0;background:#04070a}svg{display:block}</style></head><body>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" width="${(W + PAD * 2) * 2}" height="${(H + PAD * 2) * 2}">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" width="${W + PAD * 2}" height="${H + PAD * 2}">
 <defs>
   <radialGradient id="sea" cx="50%" cy="40%" r="75%"><stop offset="0" stop-color="#0b1a22"/><stop offset=".6" stop-color="#061017"/><stop offset="1" stop-color="#03070a"/></radialGradient>
   <linearGradient id="land" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#18241f"/><stop offset=".55" stop-color="#101a17"/><stop offset="1" stop-color="#0b1311"/></linearGradient>
@@ -41,7 +41,7 @@ const html = `<!doctype html><html><head><style>html,body{margin:0;background:#0
 </svg></body></html>`;
 (async () => {
   const b = await chromium.launch();
-  const p = await b.newPage({ viewport: { width: (W + PAD * 2) * 2, height: (H + PAD * 2) * 2 } });
+  const p = await b.newPage({ viewport: { width: W + PAD * 2, height: H + PAD * 2 }, deviceScaleFactor: 3 });  // 3x: sharp on phones, where the map is twice the screen width
   await p.setContent(html);
   await p.waitForTimeout(300);
   const out = path.join(ROOT, 'side-games/fethet/assets/map-art.png');

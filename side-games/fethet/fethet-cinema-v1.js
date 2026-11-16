@@ -105,7 +105,7 @@
             <filter id="fcGlow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
           </defs>
           <g class="fc-zoom"><g class="fc-cam">
-            <image href="./assets/battle-stage.webp?v=20261116-stage1" x="0" y="0" width="1600" height="900"/>
+            <image href="./assets/battle-stage.webp?v=20261116-stage2" x="0" y="0" width="1600" height="900"/>
             ${goalSVG()}
             <g class="fc-keeperPos" transform="translate(1040,556)">${keeperSVG(def.color)}</g>
             <g class="fc-shadowBall"><ellipse rx="22" ry="7" fill="#000" opacity=".4" filter="url(#fcBlur4)"/></g>

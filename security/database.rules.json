@@ -175,6 +175,33 @@
             }
           }
         }
+      },
+
+      "partyPending": {
+        "//": "Party launch broker (social/party-match-broker-v1.js): the leader writes the pending launch, members acknowledge.",
+        "$pid": { ".read": "auth != null", ".write": "auth != null" }
+      },
+      "partyRoomLeases": {
+        "$mode": { "$code": { ".read": "auth != null", ".write": "auth != null" } }
+      },
+
+      "matchQueues": {
+        "//": "1v1 matchmaking. The pairing transaction runs on the whole queue of a mode, so the write is at mode level.",
+        "$mode": { ".read": "auth != null", ".write": "auth != null" }
+      },
+      "universalQueuesV2": {
+        "//": "Random game and 3+ player queues (same pairing transaction).",
+        "$mode": { ".read": "auth != null", ".write": "auth != null" }
+      }
+    },
+
+    "rooms": {
+      "//": "Game rooms by code (Draft, XOX-, CT-, E11-, IMP-, FX-). Any signed-in player (anonymous auth included) may create, join and message a room. Rooms hold no scores: results are written by each player under social/ with the caps above.",
+      "$room": { ".read": "auth != null", ".write": "auth != null" }
+    },
+    "reverseXI": {
+      "rooms": {
+        "$room": { ".read": "auth != null", ".write": "auth != null" }
       }
     }
   }
