@@ -189,7 +189,7 @@
     document.body.classList.remove('fx-menu', 'sg-skin');
     const m = S.map;
     const counts = S.players.map(p => regionsOf(p.id).length);
-    app.innerHTML = `<header class="fx-hud">${S.players.map((p, i) => `<div class="fx-pl${p.alive ? '' : ' out'}${S.turnIdx === i ? ' turn' : ''}${i === S.me ? ' me' : ''}" style="--c:${p.color}"><b>${esc(p.name)}${i === S.me && online() ? ' · sen' : ''}</b><span>${counts[i]} köy · ${'●'.repeat(p.towers)}${'○'.repeat(TOWERS - p.towers)}</span></div>`).join('')}</header>
+    app.innerHTML = `<header class="fx-hud">${S.players.map((p, i) => `<div class="fx-pl${p.alive ? '' : ' out'}${S.turnIdx === i ? ' turn' : ''}${i === S.me ? ' me' : ''}" style="--c:${p.color}"><b>${esc(p.name)}${i === S.me && online() ? ' · sen' : ''}</b><span>${counts[i]} köy · <i class="fx-goals" aria-label="${p.towers} kale">${Array.from({ length: TOWERS }, (_, k) => goalIcon(k < p.towers)).join('')}</i></span></div>`).join('')}</header>
       <div class="fx-phase" id="fxPhase">${S.phase === 'grab' ? `YERLEŞME${S.grab ? ` · ${Math.min(S.grab, GRAB_ROUNDS)}/${GRAB_ROUNDS}` : ''}` : S.phase === 'battle' ? `SAVAŞ · TUR ${Math.min(S.round, roundsFor())}/${roundsFor()}` : 'MAÇ SONU'} · <span>${free().length} boş köy</span></div>
       <div class="fx-mapwrap"><div class="fx-stage"><img class="fx-art" src="./assets/map-art${S.mapKey === 'S' ? '-2' : ''}.webp?v=20261116-art4" alt="" draggable="false">
       <svg class="fx-map" viewBox="${S.artVB.join(' ')}" role="img" aria-label="Türkiye haritası">
@@ -200,7 +200,7 @@
         ${m.regions.map(r => {
           const isBase = S.players.find(p => p.base === r.id && p.alive);
           const [x, y] = r.label;
-          return `<g class="fx-lbl" transform="translate(${x},${y})">${isBase ? `<g transform="translate(-13,-44)">${crest(r.clubs[0], 26)}</g><text class="fx-tw" y="-48">${'♜'.repeat(isBase.towers)}</text>` : ''}<text y="4">${esc(r.name)}</text></g>`;
+          return `<g class="fx-lbl" transform="translate(${x},${y})">${isBase ? `<g transform="translate(-13,-44)">${crest(r.clubs[0], 26)}</g><g class="fx-tw" transform="translate(-25,-62)">${Array.from({ length: TOWERS }, (_, k) => goalGlyph(k * 18, k < isBase.towers)).join('')}</g>` : ''}<text y="4">${esc(r.name)}</text></g>`;
         }).join('')}
         <g id="fxFx"></g>
       </svg></div></div>
@@ -268,14 +268,33 @@
     if (!quick) popText(x, y - 46, '+1', color, 22).animate([{ opacity: 1 }, { opacity: 0, transform: 'translateY(-20px)' }], { duration: 700, delay: 200, fill: 'forwards' }).finished.then(g => g.effect?.target?.remove?.()).catch(() => {});
     [wave, ring, flag, clip].forEach(e => e.remove());
   }
+  // A base's three "kale" are football goals (kale = castle and goal).
+  function goalGlyph(x, on) {
+    return `<g class="fx-gk${on ? '' : ' off'}" transform="translate(${x},0)"><path d="M0.8 10V0.8h12.4V10" fill="none" stroke-width="1.8" stroke-linejoin="round"/><path class="net" d="M3.5 1v9M7 1v9M10.5 1v9M1 4h12M1 7h12" stroke-width=".6"/></g>`;
+  }
+  const goalIcon = on => `<svg class="fx-gki${on ? '' : ' off'}" viewBox="0 0 14 11" width="15" height="12" aria-hidden="true"><path d="M1 10.5V1h12v9.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M4 1v9.5M7 1v9.5M10 1v9.5M1 4h12M1 7h12" stroke="currentColor" stroke-width=".55" opacity=".6"/></svg>`;
+  // A goal of the base falls: the crossbar snaps, the posts topple, the net drops.
   async function animTower(id) {
     const [x, y] = S.byId[id].label;
     const L = fxLayer(); if (!L) return;
-    const t = svgEl('text', { x, y: y - 48, class: 'fx-twfall', 'font-size': 18, fill: '#ff7a8a', 'text-anchor': 'middle' }, L); t.textContent = '♜';
-    await t.animate([{ transform: 'translate(0,0) rotate(0)' }, { transform: 'translate(-3px,0) rotate(-8deg)' }, { transform: 'translate(3px,0) rotate(8deg)' }, { transform: 'translate(6px,22px) rotate(40deg)', opacity: 0 }],
-      { duration: 700, easing: 'ease-in', fill: 'forwards' }).finished.catch(() => {});
-    burst(x, y - 30, ['#ff7a8a', '#fff'], 10).forEach(c => setTimeout(() => c.remove(), 750));
-    t.remove();
+    const g = svgEl('g', { transform: `translate(${x - 21},${y - 92}) scale(3)`, class: 'fx-gkfall' }, L);
+    const bar = svgEl('path', { d: 'M0.8 0.8h12.4', stroke: '#ffffff', 'stroke-width': 1.8, 'stroke-linecap': 'round' }, g);
+    const pl = svgEl('path', { d: 'M0.8 0.8V10', stroke: '#ffffff', 'stroke-width': 1.8, 'stroke-linecap': 'round' }, g);
+    const pr = svgEl('path', { d: 'M13.2 0.8V10', stroke: '#ffffff', 'stroke-width': 1.8, 'stroke-linecap': 'round' }, g);
+    const net = svgEl('path', { d: 'M3.5 1v9M7 1v9M10.5 1v9M1 4h12M1 7h12', stroke: '#ffffff', 'stroke-width': .6, opacity: .7 }, g);
+    [bar, pl, pr, net].forEach(e => { e.style.transformBox = 'fill-box'; });
+    g.animate([{ opacity: 0, transform: `translate(${x - 21}px,${y - 110}px) scale(3)` }, { opacity: 1, transform: `translate(${x - 21}px,${y - 92}px) scale(3)` }], { duration: 260, fill: 'forwards', easing: 'ease-out' });
+    await sleep(reduced() ? 0 : 320);
+    const opts = { duration: 650, easing: 'cubic-bezier(.5,0,.8,.6)', fill: 'forwards' };
+    bar.style.transformOrigin = 'left center'; pl.style.transformOrigin = 'bottom center'; pr.style.transformOrigin = 'bottom center'; net.style.transformOrigin = 'center top';
+    bar.animate([{ transform: 'rotate(0)' }, { transform: 'rotate(38deg) translateY(2px)', opacity: .8 }], opts);
+    pl.animate([{ transform: 'rotate(0)' }, { transform: 'rotate(-62deg)' }], opts);
+    pr.animate([{ transform: 'rotate(0)' }, { transform: 'rotate(70deg)' }], opts);
+    net.animate([{ transform: 'scaleY(1)', opacity: .7 }, { transform: 'translateY(4px) scaleY(.2)', opacity: 0 }], opts);
+    burst(x, y - 76, ['#ff7a8a', '#ffffff'], 14).forEach(c => setTimeout(() => c.remove(), 750));
+    popText(x, y - 104, 'KALE DÜŞTÜ', '#ff7a8a', 16);
+    await sleep(reduced() ? 200 : 900);
+    g.remove();
   }
   async function animEmpire(ids, color) {
     const L = fxLayer(); if (!L) return;
@@ -691,12 +710,11 @@
     await emit({ c: 'say', html: ok ? `<b style="color:${p.color}">${esc(p.name)}</b> ${esc(region.name)}'u aldı.` : `${esc(p.name)} ${esc(region.name)}'u alamadı.` });
     await emit({ c: 'wait', ms: 700 });
   }
-  // Battle: only the attacker right → attacker wins; attacker wrong (alone or both) → the defender holds.
+  // One duel: only the attacker right → attacker wins; attacker wrong (alone or both) → the defender holds.
   // Both right → tie-break estimate questions (the follow-up first), closest wins, up to TIEBREAKS.
-  async function battle(att, def, target) {
-    const region = S.byId[target];
+  // The scene: a goal; a save when the defender knew it; the post when nobody did.
+  async function duel(att, def, region, title) {
     const q = question('mc', region);
-    const title = `${att.name} ⚔ ${def.name} · ${region.name}`;
     const ans = await askMany(q, { title }, [att.id, def.id]);
     const aOk = ans[att.id].v === q.answer, dOk = ans[def.id].v === q.answer;
     const picks = { [att.id]: ans[att.id].v, [def.id]: ans[def.id].v };
@@ -718,34 +736,54 @@
       }
       if (!winner) winner = def;
     }
-    const won = winner === att;
-    let outcome;
-    if (won) {
-      if (def.base === target) outcome = def.towers - 1 <= 0 ? `${def.name}'in ana stadyumu düştü! Tüm şehirleri ${att.name}'e geçti.` : `${def.name}'in ana stadyumunda bir kale yıkıldı (${def.towers - 1} kaldı).`;
-      else outcome = `${att.name}, ${region.name}'u fethetti!`;
-    } else outcome = !aOk && !dOk ? `İkisi de bilemedi; saldırı püskürtüldü, ${region.name} ${def.name}'de kaldı.` : `${def.name} ${region.name}'u savundu.`;
+    const won = winner === att, scene = won ? 'goal' : !aOk && !dOk ? 'post' : 'save';
     if (detail) await emit({ c: 'reveal', ms: 2800, html: detail });
     else await emit({ c: 'reveal', ms: 2100, picks, answer: q.answer, html: `<div class="fx-ans ${won ? 'ok' : ''}">Doğru: <b>${esc(q.answer)}</b></div>` });
-    await emit({ c: 'board', st: snap(), hl: [target] });
-    await emit({ c: 'say', html: `<b style="color:${att.color}">${esc(att.name)}</b> → ${esc(region.name)}` });
-    await emit({ c: 'cinema', att: att.id, def: def.id, from: originFor(att.id, target), target, won });
-    if (won) {
-      if (def.base === target) {
-        await emit({ c: 'tower', id: target });
-        def.towers--;
-        if (def.towers <= 0) {
-          const lost = regionsOf(def.id);
-          def.alive = false;
-          await emit({ c: 'board', st: snap() });
-          await emit({ c: 'empire', ids: [target, ...lost.filter(id => id !== target)], color: att.color });
-          lost.forEach(id => { S.owner[id] = att.id; });
-          await emit({ c: 'banner', title: 'İMPARATORLUK DÜŞTÜ', sub: `${def.name} oyundan çıktı` });
-        }
-      } else { await emit({ c: 'cap', id: target, color: att.color }); S.owner[target] = att.id; }
+    return { won, scene, aOk, dOk };
+  }
+  // Battle for a region. A base is a siege: its three goals ("kale") fall one per won duel and the siege goes on
+  // while the attacker keeps winning; the first duel the attacker loses ends it.
+  async function battle(att, def, target) {
+    const region = S.byId[target], siege = def.base === target;
+    const from = originFor(att.id, target);
+    for (let n = 1; ; n++) {
+      const title = siege ? `${att.name} ⚔ ${def.name} · ${region.name} · KALE ${TOWERS - def.towers + 1}/${TOWERS}` : `${att.name} ⚔ ${def.name} · ${region.name}`;
+      const r = await duel(att, def, region, title);
+      await emit({ c: 'board', st: snap(), hl: [target] });
+      await emit({ c: 'say', html: `<b style="color:${att.color}">${esc(att.name)}</b> → ${esc(region.name)}${siege ? ` · ${n}. şut` : ''}` });
+      await emit({ c: 'cinema', att: att.id, def: def.id, from, target, won: r.won, scene: r.scene });
+      let outcome;
+      if (!r.won) {
+        outcome = r.scene === 'post' ? `İkisi de bilemedi; top direkten döndü, ${region.name} ${def.name}'de kaldı.` : siege && n > 1 ? `${def.name} kuşatmayı durdurdu (${def.towers} kale kaldı).` : `${def.name} ${region.name}'u savundu.`;
+        await emit({ c: 'board', st: snap() });
+        await emit({ c: 'say', html: esc(outcome) });
+        await emit({ c: 'wait', ms: 900 });
+        return;
+      }
+      if (!siege) {
+        await emit({ c: 'cap', id: target, color: att.color }); S.owner[target] = att.id;
+        await emit({ c: 'board', st: snap() });
+        await emit({ c: 'say', html: esc(`${att.name}, ${region.name}'u fethetti!`) });
+        await emit({ c: 'wait', ms: 900 });
+        return;
+      }
+      await emit({ c: 'tower', id: target });
+      def.towers--;
+      if (def.towers <= 0) {
+        const lost = regionsOf(def.id);
+        def.alive = false;
+        await emit({ c: 'board', st: snap() });
+        await emit({ c: 'empire', ids: [target, ...lost.filter(id => id !== target)], color: att.color });
+        lost.forEach(id => { S.owner[id] = att.id; });
+        await emit({ c: 'banner', title: 'İMPARATORLUK DÜŞTÜ', sub: `${def.name} oyundan çıktı` });
+        await emit({ c: 'board', st: snap() });
+        await emit({ c: 'say', html: esc(`${def.name}'in ana stadyumu düştü! Tüm şehirleri ${att.name}'e geçti.`) });
+        await emit({ c: 'wait', ms: 900 });
+        return;
+      }
+      await emit({ c: 'board', st: snap(), hl: [target] });
+      await emit({ c: 'banner', title: 'KUŞATMA SÜRÜYOR', sub: `${def.name} · ${def.towers} kale kaldı · sıradaki soru` });
     }
-    await emit({ c: 'board', st: snap() });
-    await emit({ c: 'say', html: esc(outcome) });
-    await emit({ c: 'wait', ms: 900 });
   }
   // Full-screen battle scene: the siege cannon fires a football at the defender's goal. Offline it plays when
   // you are in the fight; online everyone watches it (the match waits for the slowest screen anyway).
@@ -753,7 +791,7 @@
     const att = S.players[m.att], def = S.players[m.def], from = S.byId[m.from], to = S.byId[m.target];
     if (!att || !def || !from || !to) return;
     if (window.FX_CINEMA && !document.hidden && !behind() && (online() || att.id === S.me || def.id === S.me)) {
-      await window.FX_CINEMA.play({ att, def, attLabel: from.name, defLabel: to.name, won: !!m.won,
+      await window.FX_CINEMA.play({ att, def, attLabel: from.name, defLabel: to.name, won: !!m.won, scene: ['goal', 'save', 'post'].includes(m.scene) ? m.scene : (m.won ? 'goal' : 'save'),
         attCrest: crest(S.byId[att.base]?.clubs[0] || from.clubs[0], 40), defCrest: crest(to.clubs[0], 40) });
     } else await sleep(500);
   }
