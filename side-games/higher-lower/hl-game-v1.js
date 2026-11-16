@@ -41,7 +41,7 @@
     get(k, d) { try { const v = localStorage.getItem('nxHL:' + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
     set(k, v) { try { localStorage.setItem('nxHL:' + k, JSON.stringify(v)); } catch {} }
   };
-  const S = { players: [], meta: null, screen: 'boot', q: null, stay: null, chal: null, streak: 0, used: new Set(), busy: false, lastPick: null, board: 'weekly' };
+  const S = { players: [], meta: null, screen: 'boot', q: null, stay: null, chal: null, streak: 0, used: new Set(), busy: false, lastPick: null, board: 'all' };
 
   /* ---------- pairing ---------- */
   // positive: only players who have the stat at all (Süper Lig questions skip players who never played there).
@@ -111,7 +111,7 @@
       </section>
       <section class="hl-board" aria-label="Rekorlar">
         <div class="hl-board-head"><span class="hl-board-title">REKORLAR</span><span class="nxlb-live">CANLI</span></div>
-        <div class="hl-tabs"><button type="button" data-board="weekly" class="${S.board === 'weekly' ? 'on' : ''}">HAFTALIK</button><button type="button" data-board="all" class="${S.board === 'all' ? 'on' : ''}">TÜM ZAMANLAR</button></div>
+        <div class="hl-tabs"><button type="button" data-board="all" class="${S.board === 'all' ? 'on' : ''}">TÜM ZAMANLAR</button><button type="button" data-board="weekly" class="${S.board === 'weekly' ? 'on' : ''}">HAFTALIK</button></div>
         ${S.board === 'weekly' && window.NEON_LB ? `<p class="hl-board-note">Yeni hafta başlamasına <b>${window.NEON_LB.weekLeft()}</b></p>` : ''}
         <div class="hl-rows" id="hlRows"><div class="hl-empty">Rekorlar yükleniyor…</div></div>
       </section>`;
