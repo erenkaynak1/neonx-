@@ -131,10 +131,9 @@
    "name": "Süper Lig",
    "country": "Türkiye",
    "scope": "Süper Lig (1959'dan beri)",
-   "complete_through": "2024-25",
-   "pending": "2025-26 champion not confirmed (match data ends Nov 2025)",
+   "complete_through": "2025-26",
    "titles": {
-    "Galatasaray": 25,
+    "Galatasaray": 26,
     "Fenerbahçe": 19,
     "Beşiktaş": 16,
     "Trabzonspor": 7,
@@ -143,7 +142,8 @@
    },
    "checks": [
     "openfootball 2024-25 champion: Galatasaray",
-    "official TFF count; Fenerbahçe's own count (28) includes pre-1959 titles"
+    "official TFF count; Fenerbahçe's own count (28) includes pre-1959 titles",
+    "2025-26 champion Galatasaray (26th title): English Wikipedia season infobox and Turkish Wikipedia season infobox agree"
    ]
   },
   {
@@ -151,17 +151,17 @@
    "name": "İskoçya Ligi",
    "country": "İskoçya",
    "scope": "İskoçya birinci ligi",
-   "complete_through": "2024-25",
-   "pending": "2025-26 champion not confirmed (match data ends Nov 2025); Celtic and Rangers are level on 55",
+   "complete_through": "2025-26",
    "titles": {
-    "Celtic": 55,
+    "Celtic": 56,
     "Rangers": 55,
     "Aberdeen": 4,
     "Hearts": 4,
     "Hibernian": 4
    },
    "checks": [
-    "openfootball 2024-25 champion: Celtic"
+    "openfootball 2024-25 champion: Celtic",
+    "2025-26 champion Celtic (56th Scottish title): English Wikipedia season infobox; consistent with 55 after 2024-25 (openfootball)"
    ]
   }
  ],
