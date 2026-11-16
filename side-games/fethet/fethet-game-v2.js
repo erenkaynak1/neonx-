@@ -128,24 +128,48 @@
   }
 
   /* ---------- screens ---------- */
-  function renderMenu() {
+  // Menu: the shared side-game layout (sidegame-skin-v2.css .sgm), like EN 11, Career Twin and XOX.
+  const SGM_ICONS = {
+    bot: '<rect x="5" y="8" width="14" height="11" rx="3"/><path d="M12 4v4M9 13h.01M15 13h.01M9.5 16.5h5M3 12v3M21 12v3"/>',
+    friends: '<circle cx="9" cy="8.5" r="3.1"/><path d="M3.5 20v-2c0-3.5 2.3-5.4 5.5-5.4s5.5 1.9 5.5 5.4v2M17 6a3 3 0 0 1 0 5.8m1.2 2c2 .6 3 2.2 3 4.6V20"/>',
+    search: '<circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5M8 10.5h5m-2.5-2.5v5"/>',
+    arrow: '<path d="m9 6 6 6-6 6"/>'
+  };
+  const sgmIcon = n => `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${SGM_ICONS[n]}</svg>`;
+  const sgmMode = (view, label, detail, icon) => `<button type="button" class="sgm-mode" data-view="${view}" aria-label="${esc(label + '. ' + detail)}"><span class="sgm-mode-icon">${sgmIcon(icon)}</span><span class="sgm-mode-copy"><strong>${esc(label)}</strong><small>${esc(detail)}</small></span><span class="sgm-mode-arrow">${sgmIcon('arrow')}</span></button>`;
+  const sgmFrame = inner => `<div class="sgm"><a class="sgm-logo" href="../index.html" aria-label="Yan oyunlar"><img src="../../assets/ui/logo-neon-xi.svg" alt="NEON XI"><span>SIDE GAME</span></a>
+    <div class="sgm-hero"><h1>SAHA <span>FETHİ</span></h1><p>Türkiye haritasında futbol bilginle şehir fethet.</p></div>
+    <img class="sgm-emblem" src="../assets/fethet-emblem-v1.svg?v=1" alt="" aria-hidden="true" decoding="async" draggable="false">${inner}</div>`;
+  function renderMenu(view = 'modes') {
     S.phase = 'menu';
-    app.innerHTML = `<header class="fx-top"><a class="fx-back" href="../index.html" aria-label="Yan oyunlar">‹</a><div class="fx-brand"><small>NEON XI · SIDE GAME</small><h1>SAHA <i>FETHİ</i></h1></div></header>
-      <section class="fx-hero">
-        <p class="fx-lead">Türkiye haritasında futbol bilginle şehir fethet. Tahmin sorusuyla toprak kap, savaşta rakibin şehrine saldır, kariyer yollarını çöz ve ana stadyumunu koru.</p>
-        <label class="fx-field"><span>ADIN</span><input id="fxName" maxlength="16" value="${esc(S.name)}"></label>
-        <div class="fx-seg" role="group" aria-label="Oyuncu sayısı"><span>OYUNCU</span>${[2, 3, 4].map(n => `<button type="button" data-count="${n}" class="${S.count === n ? 'on' : ''}">${n}</button>`).join('')}</div>
-        <div class="fx-seg" role="group" aria-label="Bot seviyesi"><span>BOTLAR</span>${[['easy', 'KOLAY'], ['normal', 'NORMAL'], ['hard', 'ZOR']].map(([k, l]) => `<button type="button" data-level="${k}" class="${S.level === k ? 'on' : ''}">${l}</button>`).join('')}</div>
-        <button type="button" class="fx-play" id="fxPlay">BOTLARA KARŞI OYNA</button>
-        <div class="fx-online"><span>ONLINE</span><button type="button" class="fx-ghost" id="fxMatch">RAKİP BUL</button><button type="button" class="fx-ghost" id="fxFriends">ARKADAŞLARLA</button></div>
-        <ul class="fx-rules"><li><b>Başlangıç:</b> herkes 3 köyle eşit başlar.</li><li><b>Yerleşme:</b> 4 tahmin sorusu; en yakın 2, ikinci 1 köy seçer.</li><li><b>Savaş:</b> boş köy al ya da komşu rakibe saldır. İkiniz de bilirseniz ek sorular gelir; ikiniz de bilemezseniz saldırı püskürür.</li><li><b>Ana stadyum:</b> 3 kalesi var; son kale düşerse imparatorluk düşer. Tek imparatorluk kalınca ya da turlar bitince maç biter.</li></ul>
-      </section>`;
-    app.querySelectorAll('[data-count]').forEach(b => b.onclick = () => { S.count = +b.dataset.count; renderMenu(); });
-    app.querySelectorAll('[data-level]').forEach(b => b.onclick = () => { S.level = b.dataset.level; renderMenu(); });
+    document.body.classList.add('fx-menu', 'sg-skin');
+    let inner;
+    if (view === 'bots') {
+      inner = `<section class="sgm-panel" aria-label="Botlara karşı"><h2 class="sgm-heading">BOTLARA KARŞI<button type="button" class="sgm-back" id="menuBack">← GERİ</button></h2><div class="sgm-sheet">
+        <div class="sgm-field"><label for="fxName">SENİN ADIN</label><input id="fxName" maxlength="16" placeholder="Sen" value="${esc(S.name)}"></div>
+        <div class="sgm-field"><label>OYUNCU SAYISI</label><div class="fx-seg" role="group" aria-label="Oyuncu sayısı">${[2, 3, 4].map(n => `<button type="button" data-count="${n}" class="${S.count === n ? 'on' : ''}">${n}</button>`).join('')}</div></div>
+        <div class="sgm-field"><label>BOT SEVİYESİ</label><div class="fx-seg" role="group" aria-label="Bot seviyesi">${[['easy', 'KOLAY'], ['normal', 'NORMAL'], ['hard', 'ZOR']].map(([k, l]) => `<button type="button" data-level="${k}" class="${S.level === k ? 'on' : ''}">${l}</button>`).join('')}</div></div>
+        <button type="button" class="sgm-btn primary fx-play" id="fxPlay">MAÇA BAŞLA</button>
+        <p class="sgm-note">${S.count === 2 ? '32' : '50'} köylük harita · 25 tur · tek imparatorluk kalınca maç biter.</p></div></section>`;
+    } else {
+      inner = `<section class="sgm-panel" aria-label="Oyun modu seç"><h2 class="sgm-heading">OYUN MODUNU SEÇ</h2><div class="sgm-grid">
+        ${sgmMode('bots', 'BOTLARA KARŞI', '2-4 kişilik maç, bot seviyesini seç', 'bot')}
+        ${sgmMode('friends', 'ARKADAŞLARINLA OYNA', 'Partini kur, 2-4 kişi aynı haritada', 'friends')}
+        ${sgmMode('match', 'RAKİP ARA', 'Çevrimiçi bir rakiple eşleş', 'search')}
+        </div></section>
+        <section class="sgm-how" aria-label="Nasıl oynanır"><div class="sgm-how-badge" aria-hidden="true">?</div><div><h3>NASIL OYNANIR?</h3><p>Herkes 3 köyle başlar; 4 tahmin sorusunda en yakın olan köy kapar. Savaşta boş köy al ya da komşu rakibe saldır: ikiniz de bilirseniz ek sorular gelir, ikiniz de bilemezseniz saldırı püskürür. Ana stadyumun 3 kalesi var; son kale düşerse imparatorluk düşer.</p></div></section>`;
+    }
+    app.innerHTML = sgmFrame(inner);
     const social = choice => { if (window.NEON_SOCIAL?.chooseMode) window.NEON_SOCIAL.chooseMode('fethet', choice).catch(e => console.warn(e)); else window.NEON_SOCIAL?.open?.('play'); };
-    document.getElementById('fxMatch').onclick = () => social('match');
-    document.getElementById('fxFriends').onclick = () => social('friends');
-    document.getElementById('fxPlay').onclick = () => { S.name = (document.getElementById('fxName').value || 'Sen').trim().slice(0, 16); start(); };
+    app.querySelectorAll('.sgm-mode[data-view]').forEach(b => b.onclick = () => {
+      const v = b.dataset.view;
+      if (v === 'bots') renderMenu('bots'); else social(v === 'match' ? 'match' : 'friends');
+    });
+    app.querySelector('#menuBack')?.addEventListener('click', () => renderMenu());
+    const keepName = () => { const i = document.getElementById('fxName'); if (i) S.name = (i.value || 'Sen').trim().slice(0, 16); };
+    app.querySelectorAll('[data-count]').forEach(b => b.onclick = () => { keepName(); S.count = +b.dataset.count; renderMenu('bots'); });
+    app.querySelectorAll('[data-level]').forEach(b => b.onclick = () => { keepName(); S.level = b.dataset.level; renderMenu('bots'); });
+    app.querySelector('#fxPlay')?.addEventListener('click', () => { keepName(); start(); });
   }
 
   function start() {
@@ -162,6 +186,7 @@
 
   /* ---------- board ---------- */
   function renderBoard(highlight = [], onPick = null) {
+    document.body.classList.remove('fx-menu', 'sg-skin');
     const m = S.map;
     const counts = S.players.map(p => regionsOf(p.id).length);
     app.innerHTML = `<header class="fx-hud">${S.players.map((p, i) => `<div class="fx-pl${p.alive ? '' : ' out'}${S.turnIdx === i ? ' turn' : ''}${i === S.me ? ' me' : ''}" style="--c:${p.color}"><b>${esc(p.name)}${i === S.me && online() ? ' · sen' : ''}</b><span>${counts[i]} köy · ${'●'.repeat(p.towers)}${'○'.repeat(TOWERS - p.towers)}</span></div>`).join('')}</header>
@@ -775,17 +800,16 @@
   /* ---------- online lobby ---------- */
   function renderLobby(msg, error = false) {
     const list = NET.lobby.length ? NET.lobby : [{ name: AUTO.name }];
-    app.innerHTML = `<header class="fx-top"><a class="fx-back" href="../index.html" aria-label="Yan oyunlar">‹</a><div class="fx-brand"><small>NEON XI · ONLINE</small><h1>SAHA <i>FETHİ</i></h1></div></header>
-      <section class="fx-hero fx-lobby">
-        <div class="fx-lobby-title">${error ? 'BAĞLANTI SORUNU' : 'MAÇ ODASI'}</div>
+    document.body.classList.add('fx-menu', 'sg-skin');
+    app.innerHTML = sgmFrame(`<section class="sgm-panel fx-lobby" aria-label="Maç odası"><h2 class="sgm-heading">${error ? 'BAĞLANTI SORUNU' : 'MAÇ ODASI'}</h2><div class="sgm-sheet">
         <ul class="fx-lobby-list">${Array.from({ length: AUTO.size }, (_, i) => {
           const p = list[i];
           return `<li style="--c:${COLORS[i]}" class="${p ? 'in' : ''}"><i></i><b>${p ? esc(p.name) : 'bekleniyor…'}</b>${i === 0 ? '<small>KURUCU</small>' : ''}</li>`;
         }).join('')}</ul>
-        <p class="fx-lead${error ? ' bad' : ''}" id="fxLobbyMsg">${esc(msg)}</p>
-        ${error ? '<button type="button" class="fx-play" id="fxOffline">BOTLARA KARŞI OYNA</button>' : ''}
-      </section>`;
-    app.querySelector('#fxOffline')?.addEventListener('click', () => { leaveOnline(); renderMenu(); });
+        <p class="sgm-note${error ? ' bad' : ''}" id="fxLobbyMsg">${esc(msg)}</p>
+        ${error ? '<button type="button" class="sgm-btn primary fx-play" id="fxOffline">BOTLARA KARŞI OYNA</button>' : ''}
+      </div></section>`);
+    app.querySelector('#fxOffline')?.addEventListener('click', () => { leaveOnline(); renderMenu('bots'); });
   }
   function lobbyNames() { return NET.lobby.map(x => ({ name: x.name })); }
   function leaveOnline() {
