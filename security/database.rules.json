@@ -1,5 +1,10 @@
 {
-  "//": "NEON XI — Firebase Realtime Database security rules. Paste into Firebase console → Realtime Database → Rules, or deploy with the Firebase CLI. Default-deny: every path is closed unless a rule opens it. Each player may write only under their own uid; scores and stats carry type and range caps so a tampered client cannot write absurd values. RTDB rules cannot recompute a game result, so wins/streaks are capped and ownership-locked, not re-derived — that needs a Cloud Function (see security/ABUSE-ASSESSMENT.md). Shapes match social/neon-social.js and side-games/higher-lower/hl-records-v1.js.",
+  // NEON XI — Firebase Realtime Database security rules. Paste into Firebase console → Realtime Database → Rules,
+  // or deploy with the Firebase CLI. Default-deny: every path is closed unless a rule opens it. Each player may
+  // write only under their own uid; scores and stats carry type and range caps so a tampered client cannot write
+  // absurd values. RTDB rules cannot recompute a game result, so wins/streaks are capped and ownership-locked, not
+  // re-derived — that needs a Cloud Function (see security/ABUSE-ASSESSMENT.md). Shapes match
+  // social/neon-social.js and side-games/higher-lower/hl-records-v1.js.
   "rules": {
     ".read": false,
     ".write": false,
@@ -132,7 +137,8 @@
         "$uid": {
           ".read": "auth != null && auth.uid === $uid",
           "$fid": {
-            "//": "A player writes their own friend list; accepting a request also writes one entry under the other user's list, so a write to $other/$me is allowed only for the record keyed by the writer.",
+            // A player writes their own friend list; accepting a request also writes one entry under the other user's list,
+            // so a write to $other/$me is allowed only for the record keyed by the writer.
             ".write": "auth != null && (auth.uid === $uid || auth.uid === $fid)"
           }
         }
@@ -170,7 +176,7 @@
           ".write": "auth != null && (!data.exists() || data.child('leaderUid').val() === auth.uid || data.child('members').hasChild(auth.uid) || !data.child('members').hasChild(auth.uid))",
           "members": {
             "$uid": {
-              "//": "A player may add or remove only their own membership; the leader manages the rest via the parent write.",
+              // A player may add or remove only their own membership; the leader manages the rest via the parent write.
               ".write": "auth != null && auth.uid === $uid"
             }
           }
@@ -178,7 +184,8 @@
       },
 
       "partyPending": {
-        "//": "Party launch broker (social/party-match-broker-v1.js): the leader writes the pending launch, members acknowledge.",
+        // Party launch broker (social/party-match-broker-v1.js): the leader writes the pending launch, members
+        // acknowledge.
         "$pid": { ".read": "auth != null", ".write": "auth != null" }
       },
       "partyRoomLeases": {
@@ -186,17 +193,19 @@
       },
 
       "matchQueues": {
-        "//": "1v1 matchmaking. The pairing transaction runs on the whole queue of a mode, so the write is at mode level.",
+        // 1v1 matchmaking. The pairing transaction runs on the whole queue of a mode, so the write is at mode level.
         "$mode": { ".read": "auth != null", ".write": "auth != null" }
       },
       "universalQueuesV2": {
-        "//": "Random game and 3+ player queues (same pairing transaction).",
+        // Random game and 3+ player queues (same pairing transaction).
         "$mode": { ".read": "auth != null", ".write": "auth != null" }
       }
     },
 
     "rooms": {
-      "//": "Game rooms by code (Draft, XOX-, CT-, E11-, IMP-, FX-). Any signed-in player (anonymous auth included) may create, join and message a room. Rooms hold no scores: results are written by each player under social/ with the caps above.",
+      // Game rooms by code (Draft, XOX-, CT-, E11-, IMP-, FX-). Any signed-in player (anonymous auth included) may
+      // create, join and message a room. Rooms hold no scores: results are written by each player under social/ with
+      // the caps above.
       "$room": { ".read": "auth != null", ".write": "auth != null" }
     },
     "reverseXI": {

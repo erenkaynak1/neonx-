@@ -35,7 +35,11 @@ assert(game.includes('say(clean(m.html))')&&game.includes('revealCur(clean(m.htm
 assert(game.includes("new CustomEvent('neon-match-result'")&&game.includes("mode: 'fethet'"),'online result reporting');
 
 // Database rules open the paths online play needs.
-const rules=JSON.parse(read('security/database.rules.json')).rules;
+// Firebase rules allow // comment lines; strip them before parsing.
+const rules=JSON.parse(read('security/database.rules.json').split('\n').map(l=>/^\s*\/\//.test(l)?'':l).join('\n')).rules;
 for(const p of ['matchQueues','universalQueuesV2','partyPending','partyRoomLeases'])assert(rules.social[p],'rules missing social/'+p);
 assert(rules.rooms&&rules.rooms.$room&&rules.reverseXI?.rooms?.$room,'rules missing game rooms');
+// Firebase refuses keys with / . # [ ] (rule keys start with a dot): the file must paste cleanly into the console.
+const walk=(o,path)=>{for(const k of Object.keys(o)){if(!k.startsWith('.'))assert(!/[\/.#\[\]]/.test(k),'invalid rules key: '+path+'/'+k);if(o[k]&&typeof o[k]==='object')walk(o[k],path+'/'+k)}};
+walk(rules,'rules');
 console.log('fethet online contract ok');
