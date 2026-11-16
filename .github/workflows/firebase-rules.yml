@@ -1,0 +1,46 @@
+# Deploys security/database.rules.json to the neonxi Realtime Database. Manual only (Actions → Firebase rules →
+# Run workflow). Needs the repository secret FIREBASE_SERVICE_ACCOUNT: the JSON key of a service account from
+# Firebase console → Project settings → Service accounts → Generate new private key.
+#   check  — reads the live rules (saved as an artifact) and parses the repo file; changes nothing.
+#   deploy — the same, then publishes the repo file. The artifact keeps the rules that were live before.
+name: Firebase rules
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: check or deploy
+        required: true
+        default: check
+        type: choice
+        options: [check, deploy]
+permissions:
+  contents: read
+jobs:
+  rules:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Service account
+        env:
+          SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$SA" ]; then echo "::error::FIREBASE_SERVICE_ACCOUNT secret is missing"; exit 1; fi
+          printf '%s' "$SA" > "$RUNNER_TEMP/sa.json"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/sa.json" >> "$GITHUB_ENV"
+      - name: Save the live rules
+        run: |
+          npm i --no-save --silent google-auth-library@9
+          node scripts/firebase_rules_live.cjs live-rules-before.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: live-rules-before-${{ github.run_id }}
+          path: live-rules-before.json
+      - name: Parse the repo rules
+        run: node -e "const s=require('fs').readFileSync('security/database.rules.json','utf8').split('\n').map(l=>/^\s*\/\//.test(l)?'':l).join('\n');JSON.parse(s);console.log('security/database.rules.json parses')"
+      - name: Deploy
+        if: ${{ inputs.action == 'deploy' }}
+        run: npx -y firebase-tools@13 deploy --only database --project neonxi --non-interactive

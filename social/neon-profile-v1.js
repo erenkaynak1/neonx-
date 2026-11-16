@@ -19,6 +19,18 @@ async function allowedAvatars(user){
   if(!user?.email||!user.emailVerified||!user.providerData?.some(p=>p?.providerId==='google.com'))return new Set();
   try{const h=await sha256(user.email.trim().toLowerCase());return new Set(Object.keys(AVATAR_OWNERS).filter(id=>AVATAR_OWNERS[id]===h))}catch{return new Set()}
 }
+// A personal avatar is put on its owner's profile once, the first time they sign in after it was added
+// (Karaboğa for its account). The marker personalAvatarSet/{id} keeps a later choice in the picker.
+const AUTO_EQUIP=['a18'];
+async function autoEquip(user){
+  const id=AUTO_EQUIP.find(x=>state.allowed.has(x));if(!id||!db||state.uid!==user.uid)return;
+  try{
+    const prof=(await get(ref(db,`social/profiles/${user.uid}`))).val();
+    if(!prof?.username||prof.personalAvatarSet?.[id])return;  // no profile yet, or already done once
+    await update(ref(db,`social/profiles/${user.uid}`),{avatar:id,[`personalAvatarSet/${id}`]:true});
+    if(state.uid===user.uid){state.avatar=id;state.avatars.set(user.uid,id);render();paintAll()}
+  }catch(e){console.warn('Kişisel avatar atanamadı',e)}
+}
 const canUse=id=>!window.NEON_AVATARS?.restricted?.(id)||state.allowed.has(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let db=null,auth=null;
@@ -169,7 +181,7 @@ async function boot(){
   let offAvatar=null;
   onAuthStateChanged(auth,user=>{
     offAvatar?.();offAvatar=null;state.uid=user?.uid||'';state.isAdmin=false;state.allowed=new Set();state.avatar='';
-    if(user)allowedAvatars(user).then(set=>{if(state.uid===user.uid){state.allowed=set;state.isAdmin=set.has('a17');const box=document.querySelector('.nxp-box');if(box)box.dataset.sig='';render();paintAll()}});state.stats=null;state.pickerOpen=false;
+    if(user)allowedAvatars(user).then(set=>{if(state.uid===user.uid){state.allowed=set;state.isAdmin=set.has('a17');const box=document.querySelector('.nxp-box');if(box)box.dataset.sig='';render();paintAll();autoEquip(user)}});state.stats=null;state.pickerOpen=false;
     if(user)offAvatar=onValue(ref(db,`social/profiles/${user.uid}/avatar`),s=>{state.avatar=String(s.val()||'');state.avatars.set(user.uid,state.avatar);render();paintAll()});
   });
   let queued=false;
