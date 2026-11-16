@@ -1,0 +1,429 @@
+{
+ "//": "Hand-maintained football facts for the conquest game. Every number is checked against at least one independent source before it is used (see 'checks'). League title counts are official counts at the end of the 'complete_through' season; the 2025-26 champions of en/es/it/de/fr/nl/pt were computed from full openfootball (public domain) match results and agree with Wikidata's season records. Leagues whose latest champion is not confirmed carry 'pending' and are not used for 'most titles' questions until updated.",
+ "leagues": [
+  {
+   "id": "esp",
+   "name": "La Liga",
+   "country": "İspanya",
+   "scope": "İspanya Ligi (La Liga)",
+   "complete_through": "2025-26",
+   "titles": {
+    "Real Madrid": 36,
+    "Barcelona": 29,
+    "Atlético Madrid": 11,
+    "Athletic Bilbao": 8,
+    "Valencia": 6
+   },
+   "checks": [
+    "openfootball 2025-26 champion: Barcelona",
+    "Wikidata: Barcelona 29, Real Madrid 36"
+   ]
+  },
+  {
+   "id": "ita",
+   "name": "Serie A",
+   "country": "İtalya",
+   "scope": "İtalya Ligi (Serie A)",
+   "complete_through": "2025-26",
+   "titles": {
+    "Juventus": 36,
+    "Inter": 21,
+    "Milan": 19,
+    "Genoa": 9,
+    "Torino": 7,
+    "Napoli": 4
+   },
+   "checks": [
+    "openfootball 2025-26 champion: Inter",
+    "Wikidata: Inter 21, Milan 19; Juventus shows 37 there because it still counts the revoked 2004-05 title — official count 36"
+   ]
+  },
+  {
+   "id": "ger",
+   "name": "Bundesliga",
+   "country": "Almanya",
+   "scope": "Bundesliga (1963'ten beri)",
+   "complete_through": "2025-26",
+   "titles": {
+    "Bayern Münih": 34,
+    "Borussia Dortmund": 5,
+    "Borussia Mönchengladbach": 5,
+    "Werder Bremen": 4
+   },
+   "checks": [
+    "openfootball 2025-26 champion: Bayern",
+    "Wikidata Bundesliga seasons: Bayern 30 + 4 under a duplicate item = 34"
+   ]
+  },
+  {
+   "id": "fra",
+   "name": "Ligue 1",
+   "country": "Fransa",
+   "scope": "Fransa Ligi",
+   "complete_through": "2025-26",
+   "titles": {
+    "PSG": 14,
+    "Saint-Étienne": 10,
+    "Marseille": 9,
+    "Nantes": 8,
+    "Monaco": 8,
+    "Lyon": 7
+   },
+   "checks": [
+    "openfootball 2025-26 champion: PSG (305/306 matches, 6-point margin)"
+   ]
+  },
+  {
+   "id": "ned",
+   "name": "Eredivisie",
+   "country": "Hollanda",
+   "scope": "Hollanda Ligi",
+   "complete_through": "2025-26",
+   "titles": {
+    "Ajax": 36,
+    "PSV": 27,
+    "Feyenoord": 16,
+    "AZ": 2
+   },
+   "checks": [
+    "openfootball 2025-26 champion: PSV (305/306 matches, 19-point margin)"
+   ]
+  },
+  {
+   "id": "por",
+   "name": "Primeira Liga",
+   "country": "Portekiz",
+   "scope": "Portekiz Ligi",
+   "complete_through": "2025-26",
+   "titles": {
+    "Benfica": 38,
+    "Porto": 31,
+    "Sporting": 21,
+    "Boavista": 1,
+    "Belenenses": 1
+   },
+   "checks": [
+    "openfootball 2025-26 champion: Porto",
+    "openfootball 2024-25 champion: Sporting"
+   ]
+  },
+  {
+   "id": "eng",
+   "name": "İngiltere 1. Lig",
+   "country": "İngiltere",
+   "scope": "İngiltere birinci ligi (Premier League ve öncesi First Division)",
+   "complete_through": "2025-26",
+   "titles": {
+    "Manchester United": 20,
+    "Liverpool": 20,
+    "Arsenal": 14,
+    "Everton": 9,
+    "Manchester City": 10
+   },
+   "no_most_question": "Manchester United and Liverpool are level on 20",
+   "checks": [
+    "openfootball 2025-26 champion: Arsenal",
+    "openfootball 2024-25 champion: Liverpool"
+   ]
+  },
+  {
+   "id": "tur",
+   "name": "Süper Lig",
+   "country": "Türkiye",
+   "scope": "Süper Lig (1959'dan beri)",
+   "complete_through": "2024-25",
+   "pending": "2025-26 champion not confirmed (match data ends Nov 2025)",
+   "titles": {
+    "Galatasaray": 25,
+    "Fenerbahçe": 19,
+    "Beşiktaş": 16,
+    "Trabzonspor": 7,
+    "Bursaspor": 1,
+    "Başakşehir": 1
+   },
+   "checks": [
+    "openfootball 2024-25 champion: Galatasaray",
+    "official TFF count; Fenerbahçe's own count (28) includes pre-1959 titles"
+   ]
+  },
+  {
+   "id": "sco",
+   "name": "İskoçya Ligi",
+   "country": "İskoçya",
+   "scope": "İskoçya birinci ligi",
+   "complete_through": "2024-25",
+   "pending": "2025-26 champion not confirmed (match data ends Nov 2025); Celtic and Rangers are level on 55",
+   "titles": {
+    "Celtic": 55,
+    "Rangers": 55,
+    "Aberdeen": 4,
+    "Hearts": 4,
+    "Hibernian": 4
+   },
+   "checks": [
+    "openfootball 2024-25 champion: Celtic"
+   ]
+  }
+ ],
+ "stadiums": [
+  {
+   "name": "RAMS Park",
+   "club": "Galatasaray",
+   "city": "İstanbul",
+   "country": "Türkiye",
+   "capacity": 52280,
+   "capacity_wikidata": 52652
+  },
+  {
+   "name": "Şükrü Saracoğlu Stadyumu",
+   "club": "Fenerbahçe",
+   "city": "İstanbul",
+   "country": "Türkiye",
+   "capacity": 47430,
+   "capacity_wikidata": 50530
+  },
+  {
+   "name": "Tüpraş Stadyumu",
+   "club": "Beşiktaş",
+   "city": "İstanbul",
+   "country": "Türkiye",
+   "capacity": 42445
+  },
+  {
+   "name": "Papara Park (Şenol Güneş)",
+   "club": "Trabzonspor",
+   "city": "Trabzon",
+   "country": "Türkiye",
+   "capacity": 40782
+  },
+  {
+   "name": "Konya Büyükşehir Stadyumu",
+   "club": "Konyaspor",
+   "city": "Konya",
+   "country": "Türkiye",
+   "capacity": 42000
+  },
+  {
+   "name": "Samsun 19 Mayıs Stadyumu",
+   "club": "Samsunspor",
+   "city": "Samsun",
+   "country": "Türkiye",
+   "capacity": 33919,
+   "capacity_wikidata": 33919
+  },
+  {
+   "name": "Gürsel Aksel Stadyumu",
+   "club": "Göztepe",
+   "city": "İzmir",
+   "country": "Türkiye",
+   "capacity": 19713,
+   "capacity_wikidata": 20040
+  },
+  {
+   "name": "Old Trafford",
+   "club": "Manchester United",
+   "city": "Manchester",
+   "country": "İngiltere",
+   "capacity": 74310,
+   "capacity_wikidata": 75731
+  },
+  {
+   "name": "Anfield",
+   "club": "Liverpool",
+   "city": "Liverpool",
+   "country": "İngiltere",
+   "capacity": 61276,
+   "capacity_wikidata": 61276
+  },
+  {
+   "name": "Emirates Stadium",
+   "club": "Arsenal",
+   "city": "Londra",
+   "country": "İngiltere",
+   "capacity": 60704,
+   "capacity_wikidata": 60338
+  },
+  {
+   "name": "Stamford Bridge",
+   "club": "Chelsea",
+   "city": "Londra",
+   "country": "İngiltere",
+   "capacity": 40343,
+   "capacity_wikidata": 41875
+  },
+  {
+   "name": "Etihad Stadium",
+   "club": "Manchester City",
+   "city": "Manchester",
+   "country": "İngiltere",
+   "capacity": 53400,
+   "capacity_wikidata": 52900
+  },
+  {
+   "name": "Tottenham Hotspur Stadium",
+   "club": "Tottenham",
+   "city": "Londra",
+   "country": "İngiltere",
+   "capacity": 62850,
+   "capacity_wikidata": 62850
+  },
+  {
+   "name": "St James' Park",
+   "club": "Newcastle United",
+   "city": "Newcastle",
+   "country": "İngiltere",
+   "capacity": 52305
+  },
+  {
+   "name": "Santiago Bernabéu",
+   "club": "Real Madrid",
+   "city": "Madrid",
+   "country": "İspanya",
+   "capacity": 83186
+  },
+  {
+   "name": "Metropolitano",
+   "club": "Atlético Madrid",
+   "city": "Madrid",
+   "country": "İspanya",
+   "capacity": 70460,
+   "capacity_wikidata": 70813
+  },
+  {
+   "name": "Mestalla",
+   "club": "Valencia",
+   "city": "Valencia",
+   "country": "İspanya",
+   "capacity": 49430,
+   "capacity_wikidata": 49430
+  },
+  {
+   "name": "San Mamés",
+   "club": "Athletic Bilbao",
+   "city": "Bilbao",
+   "country": "İspanya",
+   "capacity": 53289,
+   "capacity_wikidata": 53289
+  },
+  {
+   "name": "Allianz Arena",
+   "club": "Bayern Münih",
+   "city": "Münih",
+   "country": "Almanya",
+   "capacity": 75024,
+   "capacity_wikidata": 75024
+  },
+  {
+   "name": "Signal Iduna Park",
+   "club": "Borussia Dortmund",
+   "city": "Dortmund",
+   "country": "Almanya",
+   "capacity": 81365,
+   "capacity_wikidata": 81359
+  },
+  {
+   "name": "Allianz Stadium",
+   "club": "Juventus",
+   "city": "Torino",
+   "country": "İtalya",
+   "capacity": 41507,
+   "capacity_wikidata": 41700
+  },
+  {
+   "name": "Diego Armando Maradona Stadyumu",
+   "club": "Napoli",
+   "city": "Napoli",
+   "country": "İtalya",
+   "capacity": 54726,
+   "capacity_wikidata": 54726
+  },
+  {
+   "name": "Parc des Princes",
+   "club": "PSG",
+   "city": "Paris",
+   "country": "Fransa",
+   "capacity": 47929,
+   "capacity_wikidata": 47930
+  },
+  {
+   "name": "Stade Vélodrome",
+   "club": "Marseille",
+   "city": "Marsilya",
+   "country": "Fransa",
+   "capacity": 67394,
+   "capacity_wikidata": 67394
+  },
+  {
+   "name": "Johan Cruijff ArenA",
+   "club": "Ajax",
+   "city": "Amsterdam",
+   "country": "Hollanda",
+   "capacity": 55865,
+   "capacity_wikidata": 54990
+  },
+  {
+   "name": "De Kuip",
+   "club": "Feyenoord",
+   "city": "Rotterdam",
+   "country": "Hollanda",
+   "capacity": 47500,
+   "capacity_wikidata": 51577
+  },
+  {
+   "name": "Estádio da Luz",
+   "club": "Benfica",
+   "city": "Lizbon",
+   "country": "Portekiz",
+   "capacity": 64642,
+   "capacity_wikidata": 68100
+  },
+  {
+   "name": "Estádio do Dragão",
+   "club": "Porto",
+   "city": "Porto",
+   "country": "Portekiz",
+   "capacity": 50033,
+   "capacity_wikidata": 50033
+  },
+  {
+   "name": "Estádio José Alvalade",
+   "club": "Sporting",
+   "city": "Lizbon",
+   "country": "Portekiz",
+   "capacity": 50095,
+   "capacity_wikidata": 52095
+  },
+  {
+   "name": "Celtic Park",
+   "club": "Celtic",
+   "city": "Glasgow",
+   "country": "İskoçya",
+   "capacity": 60411,
+   "capacity_wikidata": 60355
+  },
+  {
+   "name": "Ibrox",
+   "club": "Rangers",
+   "city": "Glasgow",
+   "country": "İskoçya",
+   "capacity": 50817,
+   "capacity_wikidata": 51700
+  },
+  {
+   "name": "La Bombonera",
+   "club": "Boca Juniors",
+   "city": "Buenos Aires",
+   "country": "Arjantin",
+   "capacity": 54000,
+   "capacity_wikidata": 58840
+  },
+  {
+   "name": "Estadio Monumental",
+   "club": "River Plate",
+   "city": "Buenos Aires",
+   "country": "Arjantin",
+   "capacity": 85018
+  }
+ ],
+ "//stadiums": "capacity: our figure; capacity_wikidata: Wikidata P1083 (max). The capacity follow-up is only asked when the two agree within 5%."
+}
