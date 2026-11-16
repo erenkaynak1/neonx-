@@ -21,7 +21,7 @@ from shapely.ops import unary_union, voronoi_diagram
 
 ROOT = Path(__file__).resolve().parents[1]
 NE = ROOT / ".tmp-geo" / "ne50.geojson"
-OUT = ROOT / "side-games" / "fethet" / "data" / "map-tr.json"
+OUT_DIR = ROOT / "side-games" / "fethet" / "data"
 
 # city, lon, lat, clubs (the names used in the question bank), short label
 CITIES = [
@@ -77,12 +77,22 @@ CITIES = [
     ("Batman", 41.13, 37.88, ["Batman Petrolspor"], "BAT"),
     ("Artvin", 41.82, 41.18, ["Artvin Hopaspor"], "ART"),
 ]
+# Two maps: 2 players play on a smaller one (fewer villages), 3-4 players on all of them.
+SMALL = ["İstanbul", "Kocaeli", "Bursa", "Eskişehir", "İzmir", "Balıkesir", "Denizli", "Antalya", "Mersin", "Adana", "Hatay", "Ankara",
+         "Konya", "Kayseri", "Sivas", "Samsun", "Trabzon", "Rize", "Erzurum", "Malatya", "Gaziantep", "Diyarbakır", "Van",
+         "Çanakkale", "Sakarya", "Manisa", "Aydın", "Afyon", "Çorum", "Ordu", "Elazığ", "Urfa"]
+MAPS = {"map-tr.json": None, "map-tr-2.json": SMALL}
 # Bases sit on strong football cities; the corners are chosen among these.
 BASE_CANDIDATES = ["İstanbul", "İzmir", "Antalya", "Ankara", "Trabzon", "Gaziantep", "Erzurum", "Van", "Samsun", "Adana"]
 W = 1000  # viewBox width
 
 
 def main() -> None:
+    for name, keep in MAPS.items():
+        build(OUT_DIR / name, [c for c in CITIES if keep is None or c[0] in keep])
+
+
+def build(OUT: Path, CITIES: list) -> None:
     feat = next(f for f in json.loads(NE.read_text())["features"] if f["properties"].get("ADM0_A3") == "TUR")
     land = shape(feat["geometry"])
     land = unary_union([g for g in getattr(land, "geoms", [land]) if g.area > 0.05])  # drop specks of islands
@@ -122,7 +132,7 @@ def main() -> None:
                     seen[y] = seen[x] + 1; q.append(y)
         return seen.get(b, 99)
     by_name = {r["name"]: r["id"] for r in regions}
-    cands = [by_name[n] for n in BASE_CANDIDATES]
+    cands = [by_name[n] for n in BASE_CANDIDATES if n in by_name]
     starts = {}
     for k in (2, 3, 4):
         # Furthest apart first; among equals, the bigger football cities (earlier in BASE_CANDIDATES).

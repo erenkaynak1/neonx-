@@ -14,7 +14,7 @@
   const T_MC = 20, T_EST = 25, TOWERS = 3;
   const START_VILLAGES = 3, GRAB_ROUNDS = 4, TIEBREAKS = 3;
   // Battle rounds by player count: the match ends when one empire is left, or after these rounds.
-  const roundsFor = () => ({ 2: 8, 3: 6, 4: 5 })[S.players.length] || 6;
+  const roundsFor = () => ({ 2: 15, 3: 12, 4: 10 })[S.players.length] || 12;
   // Club colours for our own representative crests (no real logos: those are trademarks).
   const CLUB_COLORS = {
     Galatasaray: ['#a90432', '#fdb912'], Fenerbahçe: ['#163962', '#ffed00'], Beşiktaş: ['#111111', '#ffffff'], Başakşehir: ['#f37021', '#0a2240'],
@@ -58,10 +58,16 @@
 
   /* ---------- data ---------- */
   async function load() {
-    const [map, bank, art] = await Promise.all([fetch('./data/map-tr.json').then(r => r.json()), fetch('./data/questions.json').then(r => r.json()),
-      fetch('./assets/map-art.json').then(r => r.json()).catch(() => null)]);
-    S.map = map; S.bank = bank.questions; S.artVB = art?.viewBox || map.viewBox;
-    map.regions.forEach(r => { S.byId[r.id] = r; });
+    const [big, small, bank, art] = await Promise.all([fetch('./data/map-tr.json').then(r => r.json()), fetch('./data/map-tr-2.json').then(r => r.json()),
+      fetch('./data/questions.json').then(r => r.json()), fetch('./assets/map-art.json').then(r => r.json()).catch(() => null)]);
+    S.maps = { L: big, S: small }; S.bank = bank.questions; S.artVB = art?.viewBox || big.viewBox;  // both arts share one projection
+    useMap('L');
+  }
+  // 2 players play on the smaller map (32 villages), 3-4 players on the full one (50).
+  const mapFor = n => (n === 2 ? 'S' : 'L');
+  function useMap(key) {
+    S.mapKey = key === 'S' ? 'S' : 'L'; S.map = S.maps[S.mapKey]; S.byId = {};
+    S.map.regions.forEach(r => { S.byId[r.id] = r; });
   }
   const regionsOf = i => S.map.regions.filter(r => S.owner[r.id] === i).map(r => r.id);
   const free = () => S.map.regions.filter(r => S.owner[r.id] == null).map(r => r.id);
@@ -125,6 +131,7 @@
 
   function start() {
     S.owner = {}; S.used = new Set(); S.log = []; S.me = 0; S.over = false; S.aborted = false; S.round = 0; S.grab = 0; S.turnIdx = null;
+    useMap(mapFor(S.count));
     const bases = S.map.starts[String(S.count)];
     S.players = bases.map((base, i) => ({ id: i, name: i === 0 ? S.name : BOT_NAMES[i - 1], kind: i === 0 ? 'local' : 'bot', color: COLORS[i], base, towers: TOWERS, alive: true }));
     S.map.regions.forEach(r => { S.owner[r.id] = null; });
@@ -140,7 +147,7 @@
     const counts = S.players.map(p => regionsOf(p.id).length);
     app.innerHTML = `<header class="fx-hud">${S.players.map((p, i) => `<div class="fx-pl${p.alive ? '' : ' out'}${S.turnIdx === i ? ' turn' : ''}${i === S.me ? ' me' : ''}" style="--c:${p.color}"><b>${esc(p.name)}${i === S.me && online() ? ' · sen' : ''}</b><span>${counts[i]} köy · ${'●'.repeat(p.towers)}${'○'.repeat(TOWERS - p.towers)}</span></div>`).join('')}</header>
       <div class="fx-phase" id="fxPhase">${S.phase === 'grab' ? `YERLEŞME${S.grab ? ` · ${Math.min(S.grab, GRAB_ROUNDS)}/${GRAB_ROUNDS}` : ''}` : S.phase === 'battle' ? `SAVAŞ · TUR ${Math.min(S.round, roundsFor())}/${roundsFor()}` : 'MAÇ SONU'} · <span>${free().length} boş köy</span></div>
-      <div class="fx-mapwrap"><div class="fx-stage"><img class="fx-art" src="./assets/map-art.webp?v=20261116-art3" alt="" draggable="false">
+      <div class="fx-mapwrap"><div class="fx-stage"><img class="fx-art" src="./assets/map-art${S.mapKey === 'S' ? '-2' : ''}.webp?v=20261116-art4" alt="" draggable="false">
       <svg class="fx-map" viewBox="${S.artVB.join(' ')}" role="img" aria-label="Türkiye haritası">
         ${m.regions.map(r => {
           const o = S.owner[r.id], p = o == null ? null : S.players[o], hl = highlight.includes(r.id);
@@ -824,14 +831,16 @@
   function startOnline() {
     if (NET.started) return;
     NET.started = true;
-    const lobby = NET.lobby.slice(0, 4), bases = S.map.starts[String(lobby.length)];
+    const lobby = NET.lobby.slice(0, 4);
+    useMap(mapFor(lobby.length));
+    const bases = S.map.starts[String(lobby.length)];
     S.owner = {}; S.used = new Set(); S.over = false; S.reported = false; S.round = 0; S.grab = 0; S.turnIdx = null;
     S.players = lobby.map((x, i) => ({ id: i, name: x.name, color: COLORS[i], base: bases[i], towers: TOWERS, alive: true, kind: i === 0 ? 'local' : 'remote' }));
     NET.conns = lobby.map(x => x.conn); NET.uids = lobby.map(x => x.uid);
     S.map.regions.forEach(r => { S.owner[r.id] = null; });
     S.players.forEach(p => { S.owner[p.base] = p.id; });
     S.phase = 'grab';
-    NET.conns.forEach((c, pid) => { if (c) { try { c.send({ c: 'start', pid, uids: NET.uids }); } catch {} } });
+    NET.conns.forEach((c, pid) => { if (c) { try { c.send({ c: 'start', pid, uids: NET.uids, map: S.mapKey }); } catch {} } });
     renderBoard();
     run(grabLoop);
   }
@@ -869,7 +878,8 @@
     if (m.c === 'lobby' && !NET.started) { NET.lobby = (m.list || []).slice(0, 4).map(x => ({ name: cleanName(x.name) })); renderLobby(`Oyuncular bekleniyor (${NET.lobby.length}/${AUTO.size})…`); return; }
     if (m.c === 'full') { renderLobby('Bu maç dolu ya da başladı.', true); return; }
     if (m.c === 'start') {
-      NET.started = true; S.me = Number.isInteger(m.pid) ? m.pid : 1; NET.uids = Array.isArray(m.uids) ? m.uids.map(String) : [];
+      NET.started = true; S.me = Number.isInteger(m.pid) ? m.pid : 1;
+      NET.queue = NET.queue.then(() => useMap(m.map));  // after the data has loaded NET.uids = Array.isArray(m.uids) ? m.uids.map(String) : [];
       S.over = false; S.reported = false; S.lost = false; S.endTimer = 0; S.used = new Set();
       return;
     }
