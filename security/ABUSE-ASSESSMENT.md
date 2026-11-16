@@ -69,3 +69,9 @@ reject unknown fields on the Higher or Lower records.
 The rules file could not be tested against live Firebase from this environment (the database host is
 unreachable here). It was written to match the exact paths and value shapes the app uses, and the JSON is
 valid. Verify it in the Firebase console Rules Playground, or with the Firebase emulator, before relying on it.
+
+### Personal avatars (a17 Admin, a18 Karaboğa) — LOW
+The picker offers these only to the verified Google account whose e-mail hash matches (social/neon-profile-v1.js).
+The database rules do not check `social/profiles/{uid}/avatar`, so a player who edits the client can still save one
+of them on their own profile. Enforcing it in the rules needs the owners' Firebase uids (e.g. a grants path
+writable only from the console); it is left out until those uids are known.
