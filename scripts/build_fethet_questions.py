@@ -51,6 +51,8 @@ CLUB_CLEAN = [
     (r"\s+(?:Calcio)$", ""),
     (r"^Atlético de Madrid$", "Atlético Madrid"), (r"^Olympique Lyonnais$", "Lyon"), (r"^Olympique de Marseille$", "Marseille"),
     (r"^Sporting Clube de Portugal$|^Sporting CP$", "Sporting"), (r"^Futebol Clube do Porto$|^Porto$", "Porto"),
+    (r"^PFC CSKA Moscow$", "CSKA Moskova"), (r"^K\.R\.C\. Genk$|^KRC Genk$", "Genk"), (r"^Lille OSC$|^LOSC Lille$", "Lille"),
+    (r"^São Paulo FC$", "São Paulo"), (r"^Zenit Saint Petersburg$", "Zenit"), (r"^Spartak Moscow$", "Spartak Moskova"),
 ]
 
 
@@ -114,14 +116,26 @@ def known_clubs(players: list[dict], min_players: int = 25) -> set[str]:
     return {c for c, n in freq.items() if n >= min_players}
 
 
-def follow_up_for_player(p: dict) -> dict | None:
-    """Open-ended tie-break when both sides got the multiple-choice question right."""
-    name = p["name"]
-    if p.get("career_stats_source") in WHOLE_CAREER and (p.get("career_appearances") or 0) >= 100:
-        return {"q": f"{name} kulüp kariyerinde kaç lig maçına çıktı?", "answer": p["career_appearances"], "unit": "maç"}
+def follow_up_for_player(p: dict, rnd: random.Random | None = None) -> dict | None:
+    """Open-ended tie-break when both sides got the multiple-choice question right: one of several facts about
+    the player (not always league games), so tie-breaks do not repeat."""
+    name, opts = p["name"], []
+    whole = p.get("career_stats_source") in WHOLE_CAREER
+    if whole and (p.get("career_appearances") or 0) >= 100:
+        opts.append({"q": f"{name} kulüp kariyerinde kaç lig maçına çıktı?", "answer": p["career_appearances"], "unit": "maç"})
+    if whole and (p.get("career_goals") or 0) >= 30 and p.get("position") in ("Attack", "Midfield"):
+        opts.append({"q": f"{name} kulüp kariyerinde kaç lig golü attı?", "answer": p["career_goals"], "unit": "gol"})
     if (p.get("international_caps") or 0) >= 15:
-        return {"q": f"{name} kaç A milli maça çıktı?", "answer": p["international_caps"], "unit": "maç"}
-    return None
+        opts.append({"q": f"{name} kaç A milli maça çıktı?", "answer": p["international_caps"], "unit": "maç"})
+    b = p.get("birth_date") or ""
+    if re.match(r"^\d{4}-\d{2}-\d{2}$", b) and b[5:] != "01-01":
+        opts.append({"q": f"{name} hangi yıl doğdu?", "answer": int(b[:4]), "unit": ""})
+    h = p.get("height_cm")
+    if h and 160 <= h <= 205:
+        opts.append({"q": f"{name} kaç santim boyunda?", "answer": h, "unit": "cm"})
+    if not opts:
+        return None
+    return (rnd or random.Random(p["id"])).choice(opts)
 
 
 def general_questions(rnd: random.Random) -> list[dict]:
@@ -201,7 +215,7 @@ def career_questions(players: list[dict], rnd: random.Random) -> list[dict]:
         rnd.shuffle(opts)
         q = {"type": "career", "q": "Bu kulüplerde sırasıyla oynayan kim?", "path": seq, "options": opts,
              "answer": p["name"], "playerId": p["id"], "difficulty": difficulty(rec), "clubs": sorted(set(seq))}
-        q["followUp"] = follow_up_for_player(p)
+        q["followUp"] = follow_up_for_player(p, rnd)
         if not q["followUp"]:
             del q["followUp"]
         out.append(q)
@@ -257,6 +271,255 @@ def intersection_questions(rnd: random.Random, limit: int = 2500) -> list[dict]:
     return out
 
 
+CLUB_FACTS = ROOT / "side-games" / "fethet" / "data" / "facts-clubs.json"
+TR_CLUBS = {"Galatasaray", "Fenerbahçe", "Beşiktaş", "Trabzonspor", "Başakşehir", "Bursaspor", "Göztepe", "Altay", "Karşıyaka", "Kocaelispor",
+            "Eskişehirspor", "Antalyaspor", "Alanyaspor", "Mersin İdmanyurdu", "Adana Demirspor", "Adanaspor", "Hatayspor", "Ankaragücü",
+            "Gençlerbirliği", "Konyaspor", "Kayserispor", "Sivasspor", "Samsunspor", "Rizespor", "Malatyaspor", "Gaziantepspor", "Gaziantep",
+            "Kasımpaşa", "Sakaryaspor", "Denizlispor", "Boluspor", "Giresunspor", "Orduspor", "Elazığspor", "Manisaspor", "Amedspor",
+            "Eyüpspor", "Fatih Karagümrük"}
+BIG4 = {"Galatasaray", "Fenerbahçe", "Beşiktaş", "Trabzonspor"}
+STADIUM_OK = {"Başakşehir", "Altay", "Eskişehirspor", "Rizespor", "Gaziantep", "Kasımpaşa", "Sivasspor", "Denizlispor",
+              "Barcelona", "Villarreal", "Real Betis", "Aston Villa", "Wolverhampton", "Norwich City", "Crystal Palace",
+              "Fiorentina", "Dortmund", "Bayer Leverkusen", "Schalke 04", "Hamburg", "Werder Bremen", "PSV", "Monaco",
+              "Panathinaikos", "Club Brugge", "Anderlecht", "Kızılyıldız"}
+NO_CAPACITY = {"Barcelona"}
+
+
+def four(answer: str, wrong: list[str], rnd: random.Random) -> list[str] | None:
+    wrong = [w for w in dict.fromkeys(wrong) if w != answer][:3]
+    if len(wrong) < 3:
+        return None
+    opts = wrong + [answer]
+    rnd.shuffle(opts)
+    return opts
+
+
+def club_questions(rnd: random.Random) -> list[dict]:
+    """General football knowledge about clubs: founding, city, colours, symbol, nickname, stadium, titles."""
+    curated = json.loads(FACTS.read_text(encoding="utf-8"))
+    hand = curated.get("clubs", {})
+    wd = json.loads(CLUB_FACTS.read_text(encoding="utf-8"))["clubs"] if CLUB_FACTS.exists() else {}
+    founded = {n: v["founded"] for n, v in wd.items() if v.get("founded")}
+    founded.update(curated.get("founded_extra", {}))
+    out: list[dict] = []
+    diff = lambda names: "easy" if set(names) & BIG4 else "medium" if set(names) & TR_CLUBS else "hard"
+
+    # Which club is older? Four clubs whose founding years are at least 6 years apart.
+    names = sorted(founded)
+    for _ in range(420):
+        pool = [n for n in names if n in TR_CLUBS] if rnd.random() < 0.5 else names
+        if len(pool) < 4:
+            break
+        pick = rnd.sample(pool, 4)
+        ys = sorted(founded[n] for n in pick)
+        if any(b - a < 6 for a, b in zip(ys, ys[1:])):
+            continue
+        oldest = min(pick, key=lambda n: founded[n])
+        opts = pick[:]
+        rnd.shuffle(opts)
+        out.append({"type": "older", "q": "Bu kulüplerden hangisi daha önce kuruldu?", "options": opts, "answer": oldest,
+                    "difficulty": diff(pick), "clubs": sorted(pick),
+                    "followUp": {"q": f"{oldest} hangi yıl kuruldu?", "answer": founded[oldest], "unit": ""}})
+    for n, y in founded.items():
+        out.append({"type": "estimate", "q": f"{n} hangi yıl kuruldu?", "answer": y, "unit": "", "field": "founded",
+                    "difficulty": diff([n]), "clubs": [n]})
+
+    # City of a club (skipped when the name gives the city away).
+    cities_tr = sorted({v["city"] for n, v in hand.items() if v.get("city") and n in TR_CLUBS})
+    cities_xx = sorted({v["city"] for n, v in hand.items() if v.get("city") and n not in TR_CLUBS})
+    for n, v in hand.items():
+        c = v.get("city")
+        if not c or c.lower().split()[0][:5] in n.lower():
+            continue
+        pool = [x for x in (cities_tr if n in TR_CLUBS else cities_xx) if x != c]
+        opts = four(c, rnd.sample(pool, min(len(pool), 6)), rnd)
+        if opts:
+            out.append({"type": "city", "q": f"{n} hangi şehrin kulübü?", "options": opts, "answer": c, "difficulty": diff([n]), "clubs": [n]})
+
+    # Colours (Turkish clubs): the three wrong clubs have other colour pairs.
+    col = {n: v["colors"] for n, v in hand.items() if v.get("colors")}
+    for n, c in col.items():
+        others = [m for m, k in col.items() if k != c]
+        rnd.shuffle(others)
+        opts = four(n, others, rnd)
+        if opts:
+            out.append({"type": "colors", "q": f"Renkleri {c} olan kulüp hangisi?", "options": opts, "answer": n,
+                        "difficulty": "easy" if n in BIG4 else "medium", "clubs": [n]})
+
+    # Symbol / mascot animal: wrong options are clubs with a known, different symbol.
+    sym = {n: v["symbol"] for n, v in hand.items() if v.get("symbol")}
+    for n, s in sym.items():
+        others = [m for m, k in sym.items() if k != s]
+        rnd.shuffle(others)
+        opts = four(n, others, rnd)
+        if opts:
+            out.append({"type": "symbol", "q": f"Sembolü {s} olan kulüp hangisi?", "options": opts, "answer": n, "difficulty": diff([n]), "clubs": [n]})
+
+    # Nicknames.
+    nick = {n: v["nicknames"] for n, v in hand.items() if v.get("nicknames")}
+    for n, ks in nick.items():
+        for k in ks:
+            others = [m for m in nick if m != n]
+            rnd.shuffle(others)
+            opts = four(n, others, rnd)
+            if opts:
+                out.append({"type": "nickname", "q": f"“{k}” lakabı hangi kulübe ait?", "options": opts, "answer": n, "difficulty": diff([n]), "clubs": [n]})
+
+    # Stadiums from Wikidata (current, unshared home ground), capacity as the follow-up. Wikidata's home-ground
+    # records lag behind moves and renames (Ankaragücü still at the demolished 19 Mayıs), so only grounds checked
+    # by hand are used; Camp Nou's capacity is left out while it is being rebuilt.
+    have = {s["club"] for s in curated.get("stadiums", [])}
+    stad = {n: v for n, v in wd.items() if v.get("stadium") and n not in have and n in STADIUM_OK}
+    for n, v in stad.items():
+        same = [m for m in stad if m != n and (m in TR_CLUBS) == (n in TR_CLUBS)]
+        rnd.shuffle(same)
+        opts = four(n, same, rnd)
+        if not opts:
+            continue
+        q = {"type": "stadium", "q": f"{v['stadium']} hangi takımın stadyumu?", "options": opts, "answer": n, "difficulty": diff([n]), "clubs": [n]}
+        if v.get("capacity") and n not in NO_CAPACITY:
+            q["followUp"] = {"q": f"{v['stadium']} kaç kişilik?", "answer": v["capacity"], "unit": "kişi"}
+            out.append({"type": "estimate", "q": f"{v['stadium']} ({n}) kaç kişilik?", "answer": v["capacity"], "unit": "kişi",
+                        "field": "capacity", "difficulty": "hard", "clubs": [n]})
+        out.append(q)
+
+    # Which of these has more league titles? Four clubs of one league with different counts.
+    for lg in curated["leagues"]:
+        if lg.get("pending"):
+            continue
+        t = lg["titles"]
+        clubs = list(t)
+        for _ in range(12):
+            if len(clubs) < 4:
+                break
+            pick = rnd.sample(clubs, 4)
+            if len({t[c] for c in pick}) < 4:
+                continue
+            best = max(pick, key=lambda c: t[c])
+            opts = pick[:]
+            rnd.shuffle(opts)
+            out.append({"type": "titles", "q": f"Hangisi {lg['scope']} şampiyonluğunu daha çok kazandı?", "options": opts, "answer": best,
+                        "difficulty": diff(pick), "clubs": sorted(pick), "asOf": lg["complete_through"],
+                        "followUp": {"q": f"{best} kaç kez {lg['scope']} şampiyonu oldu?", "answer": t[best], "unit": "şampiyonluk"}})
+    return dedupe(out)
+
+
+def world_cup_questions(rnd: random.Random) -> list[dict]:
+    wcs = json.loads(FACTS.read_text(encoding="utf-8")).get("world_cups", [])
+    wins: dict[str, int] = defaultdict(int)
+    for w in wcs:
+        wins[w["winner"]] += 1
+    nations = sorted(set(wins) | {"Hollanda", "Portekiz", "Hırvatistan", "Belçika", "Macaristan", "Çekoslovakya", "İsveç"})
+    hosts = sorted({w["host"] for w in wcs})
+    out = []
+    for w in wcs:
+        opts = four(w["winner"], rnd.sample([n for n in nations if n != w["winner"]], 5), rnd)
+        out.append({"type": "worldcup", "q": f"{w['year']} Dünya Kupası'nı hangi ülke kazandı?", "options": opts, "answer": w["winner"],
+                    "difficulty": "medium" if w["year"] >= 1990 else "hard", "clubs": [],
+                    "followUp": {"q": f"{w['winner']} toplam kaç kez Dünya Kupası kazandı?", "answer": wins[w["winner"]], "unit": "kez"}})
+        opts = four(w["host"], rnd.sample([h for h in hosts if h != w["host"]], 5), rnd)
+        out.append({"type": "worldcup", "q": f"{w['year']} Dünya Kupası hangi ülkede düzenlendi?", "options": opts, "answer": w["host"],
+                    "difficulty": "medium" if w["year"] >= 1990 else "hard", "clubs": []})
+    return out
+
+
+def player_trivia(players: list[dict], rnd: random.Random) -> list[dict]:
+    """Which club did he never play for? / Who has more caps? / Which national team?"""
+    famous = known_clubs(players, 40)
+    career = {}
+    for p in players:
+        if p.get("career_stats_source") not in WHOLE_CAREER:
+            continue  # the "never played for" answer must come from a whole-career list
+        cs = {clean_club(c) for c in (p.get("career_clubs") or [])} | {clean_club(c) for c in (p.get("clubs") or [])}
+        cs.discard("")
+        if len(cs & famous) >= 3:
+            career[p["id"]] = cs
+    co: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
+    for cs in career.values():
+        for a in cs & famous:
+            for b in cs & famous:
+                if a != b:
+                    co[a][b] += 1
+    out = []
+    for p in players:
+        cs = career.get(p["id"])
+        if not cs or float(p.get("recognition_score") or 0) < 250:
+            continue
+        played = sorted(cs & famous, key=lambda c: rnd.random())[:3]
+        # A club that often shows up next to his clubs (so it looks right) but is not in his career.
+        cand: dict[str, int] = defaultdict(int)
+        for c in played:
+            for o, k in co[c].items():
+                if o not in cs and not any(o.lower() in x.lower() or x.lower() in o.lower() for x in cs):
+                    cand[o] += k
+        if not cand:
+            continue
+        # Best decoy: linked to every club he played for (Caner Erkin: Trabzonspor rather than Chelsea).
+        top = sorted(cand, key=lambda o: (-min(co[c].get(o, 0) for c in played), -cand[o]))[:2]
+        never = rnd.choice(top)
+        opts = played + [never]
+        rnd.shuffle(opts)
+        q = {"type": "notplayed", "q": f"{p['name']} hangi takımda oynamadı?", "options": opts, "answer": never, "playerId": p["id"],
+             "difficulty": difficulty(float(p.get("recognition_score") or 0)), "clubs": sorted(set(played) | {never})}
+        fu = follow_up_for_player(p, rnd)
+        if fu:
+            q["followUp"] = fu
+        out.append(q)
+
+    tr_names = json.loads((ROOT / "side-games" / "data" / "master" / "country-tr.json").read_text(encoding="utf-8"))
+    def nat_tr(n: str | None) -> str | None:
+        if not n:
+            return None
+        if n == "Türkiye":
+            return n
+        import unicodedata
+        key = "".join(ch for ch in unicodedata.normalize("NFKD", n.lower()) if ch.isalpha() and ch.isascii())
+        return tr_names.get(key)  # unknown spelling: leave the player out rather than show an English name
+    by_nat: dict[str, list[dict]] = defaultdict(list)
+    for p in players:
+        p = {**p, "nationality": nat_tr(p.get("nationality"))}
+        if (p.get("international_caps") or 0) >= 10 and float(p.get("recognition_score") or 0) >= 250 and p.get("nationality"):
+            by_nat[p["nationality"]].append(p)
+    for nat, ps in by_nat.items():
+        if len(ps) < 4:
+            continue
+        for _ in range(min(25, len(ps))):
+            pick = rnd.sample(ps, 4)
+            caps = sorted((x["international_caps"] for x in pick), reverse=True)
+            if caps[0] - caps[1] < max(6, caps[0] * 0.1):
+                continue
+            best = max(pick, key=lambda x: x["international_caps"])
+            opts = [x["name"] for x in pick]
+            if len(set(opts)) < 4:
+                continue
+            rnd.shuffle(opts)
+            out.append({"type": "caps", "q": "Bu oyunculardan hangisi daha çok A milli maça çıktı?", "options": opts, "answer": best["name"],
+                        "difficulty": "medium", "clubs": [], "playerId": best["id"],
+                        "followUp": {"q": f"{best['name']} kaç A milli maça çıktı?", "answer": best["international_caps"], "unit": "maç"}})
+    nats = [n for n, ps in by_nat.items() if len(ps) >= 3]
+    for p in players:
+        p = {**p, "nationality": nat_tr(p.get("nationality"))}
+        if (p.get("international_caps") or 0) >= 20 and float(p.get("recognition_score") or 0) >= 300 and p.get("nationality") in nats:
+            others = [n for n in nats if n != p["nationality"]]
+            opts = four(p["nationality"], rnd.sample(others, min(5, len(others))), rnd)
+            if not opts:
+                continue
+            out.append({"type": "nation", "q": f"{p['name']} hangi ülkenin milli takımında oynadı?", "options": opts, "answer": p["nationality"],
+                        "difficulty": difficulty(float(p.get("recognition_score") or 0)), "clubs": [], "playerId": p["id"],
+                        "followUp": {"q": f"{p['name']} kaç A milli maça çıktı?", "answer": p["international_caps"], "unit": "maç"}})
+    return dedupe(out)
+
+
+def dedupe(qs: list[dict]) -> list[dict]:
+    seen, out = set(), []
+    for q in qs:
+        k = (q["q"], q.get("answer"), tuple(sorted(q.get("options") or [])))
+        if k not in seen:
+            seen.add(k)
+            out.append(q)
+    return out
+
+
 def main() -> None:
     rnd = random.Random(SEED)
     master = json.loads(MASTER.read_text(encoding="utf-8"))
@@ -269,11 +532,12 @@ def main() -> None:
     car = career_questions(known, rnd)
     inter = intersection_questions(rnd)
     gen = general_questions(rnd)
-    bank = est + car + inter + gen
+    extra = club_questions(rnd) + world_cup_questions(rnd) + player_trivia(known, rnd)
+    bank = est + car + inter + gen + extra
     for i, q in enumerate(bank):
         q["id"] = f"q{i:05d}"
         if q["type"] not in ("estimate",):
-            assert q["answer"] in q["options"] and len(set(q["options"])) == 4, q
+            assert q.get("options") and q["answer"] in q["options"] and len(set(q["options"])) == 4, q
     OUT.parent.mkdir(parents=True, exist_ok=True)
     counts = defaultdict(int)
     for q in bank:

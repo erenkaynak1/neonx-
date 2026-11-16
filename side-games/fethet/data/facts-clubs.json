@@ -1,0 +1,563 @@
+{
+ "source": "Wikidata (CC0): P571 inception, P115 home venue, P1083 capacity",
+ "clubs": {
+  "Galatasaray": {
+   "qid": "Q495299",
+   "founded": 1905,
+   "stadium": "Rams Park",
+   "capacity": 52652
+  },
+  "Fenerbahçe": {
+   "qid": "Q6601875",
+   "founded": 1907,
+   "stadium": "Şükrü Saracoğlu Stadyumu",
+   "capacity": 50530
+  },
+  "Beşiktaş": {
+   "qid": "Q172567",
+   "founded": 1903,
+   "stadium": "Beşiktaş Stadyumu",
+   "capacity": 41903
+  },
+  "Trabzonspor": {
+   "qid": "Q192641",
+   "founded": 1967,
+   "stadium": "Papara Park",
+   "capacity": 41500
+  },
+  "Başakşehir": {
+   "qid": "Q857938",
+   "founded": 1990,
+   "stadium": "Başakşehir Fatih Terim Stadyumu"
+  },
+  "Bursaspor": {
+   "qid": "Q203573",
+   "founded": 1963,
+   "stadium": "Bursa Atatürk Stadyumu",
+   "capacity": 25213
+  },
+  "Göztepe": {
+   "qid": "Q1423118",
+   "founded": 1925,
+   "stadium": "İzmir Atatürk Stadyumu",
+   "capacity": 70000
+  },
+  "Altay": {
+   "qid": "Q434929",
+   "founded": 1914,
+   "stadium": "Alsancak Mustafa Denizli Stadyumu",
+   "capacity": 15358
+  },
+  "Kocaelispor": {
+   "qid": "Q513237",
+   "founded": 1966,
+   "stadium": "Kocaeli Stadyumu"
+  },
+  "Eskişehirspor": {
+   "qid": "Q748445",
+   "founded": 1965,
+   "stadium": "Yeni Eskişehir Stadyumu",
+   "capacity": 34930
+  },
+  "Antalyaspor": {
+   "qid": "Q43710",
+   "founded": 1966,
+   "stadium": "Akdeniz Üniversitesi Stadyumu",
+   "capacity": 7100
+  },
+  "Alanyaspor": {
+   "qid": "Q1636019",
+   "founded": 1948,
+   "stadium": "Alanya Oba Stadyumu"
+  },
+  "Mersin İdmanyurdu": {
+   "qid": "Q929360",
+   "founded": 1925,
+   "stadium": "Tevfik Sırrı Gür Stadyumu",
+   "capacity": 10128
+  },
+  "Adana Demirspor": {
+   "qid": "Q352251",
+   "founded": 1940
+  },
+  "Adanaspor": {
+   "qid": "Q352270",
+   "founded": 1954
+  },
+  "Hatayspor": {
+   "qid": "Q1110567",
+   "founded": 1967
+  },
+  "Ankaragücü": {
+   "qid": "Q492826",
+   "founded": 1910,
+   "stadium": "Ankara 19 Mayıs Stadyumu",
+   "capacity": 19219
+  },
+  "Gençlerbirliği": {
+   "qid": "Q641373",
+   "founded": 1923,
+   "stadium": "Eryaman Stadyumu"
+  },
+  "Konyaspor": {
+   "qid": "Q513840",
+   "founded": 1922,
+   "stadium": "Konya Büyükşehir Belediye Stadyumu",
+   "capacity": 42276
+  },
+  "Kayserispor": {
+   "qid": "Q608122",
+   "founded": 1966,
+   "stadium": "Kayseri Kadir Has Şehir Stadyumu",
+   "capacity": 32864
+  },
+  "Sivasspor": {
+   "qid": "Q372599",
+   "founded": 1967,
+   "stadium": "4 Eylül Stadyumu",
+   "capacity": 14998
+  },
+  "Samsunspor": {
+   "qid": "Q430107",
+   "founded": 1965,
+   "stadium": "Samsun 19 Mayıs Stadyumu",
+   "capacity": 33919
+  },
+  "Rizespor": {
+   "qid": "Q272712",
+   "founded": 1953,
+   "stadium": "Yeni Rize Şehir Stadyumu",
+   "capacity": 15558
+  },
+  "Malatyaspor": {
+   "qid": "Q1368064",
+   "founded": 1966,
+   "stadium": "Malatya İnönü Stadyumu",
+   "capacity": 13000
+  },
+  "Gaziantepspor": {
+   "qid": "Q285722",
+   "founded": 1969,
+   "stadium": "Kamil Ocak Stadyumu",
+   "capacity": 16981
+  },
+  "Gaziantep": {
+   "qid": "Q824850",
+   "founded": 1988,
+   "stadium": "Gaziantep Stadyumu",
+   "capacity": 33502
+  },
+  "Kasımpaşa": {
+   "qid": "Q138230",
+   "founded": 1921,
+   "stadium": "Recep Tayyip Erdoğan Stadyumu",
+   "capacity": 14234
+  },
+  "Sakaryaspor": {
+   "qid": "Q1369461",
+   "founded": 1965
+  },
+  "Denizlispor": {
+   "qid": "Q643107",
+   "founded": 1966,
+   "stadium": "Denizli Atatürk Stadyumu",
+   "capacity": 15427
+  },
+  "Boluspor": {
+   "qid": "Q891679",
+   "founded": 1965
+  },
+  "Giresunspor": {
+   "qid": "Q1543501",
+   "founded": 1967,
+   "stadium": "Giresun Atatürk Stadyumu",
+   "capacity": 12191
+  },
+  "Orduspor": {
+   "qid": "Q178180",
+   "founded": 1967,
+   "stadium": "19 Eylül Stadyumu",
+   "capacity": 11024
+  },
+  "Elazığspor": {
+   "qid": "Q1127498",
+   "founded": 1967,
+   "stadium": "Elazığ Atatürk Stadyumu",
+   "capacity": 14467
+  },
+  "Manisaspor": {
+   "qid": "Q128148",
+   "founded": 1965,
+   "stadium": "Manisa 19 Mayıs Stadyumu",
+   "capacity": 16597
+  },
+  "Amedspor": {
+   "qid": "Q1231804",
+   "founded": 1990
+  },
+  "Eyüpspor": {
+   "qid": "Q118919",
+   "founded": 1919
+  },
+  "Fatih Karagümrük": {
+   "qid": "Q1398111",
+   "founded": 1926,
+   "stadium": "Vefa Stadyumu",
+   "capacity": 12500
+  },
+  "Real Madrid": {
+   "qid": "Q8682",
+   "founded": 1902,
+   "stadium": "Santiago Bernabéu Stadyumu",
+   "capacity": 83186
+  },
+  "Barcelona": {
+   "qid": "Q7156",
+   "founded": 1899,
+   "stadium": "Camp Nou",
+   "capacity": 105000
+  },
+  "Atlético Madrid": {
+   "qid": "Q8701",
+   "founded": 1903,
+   "stadium": "Estadio Metropolitano",
+   "capacity": 70813
+  },
+  "Valencia": {
+   "qid": "Q10333",
+   "founded": 1919,
+   "stadium": "Estadio Mestalla",
+   "capacity": 49430
+  },
+  "Athletic Bilbao": {
+   "qid": "Q8687",
+   "founded": 1898
+  },
+  "Villarreal": {
+   "qid": "Q12297",
+   "founded": 1923,
+   "stadium": "Seramik Stadyumu",
+   "capacity": 24891
+  },
+  "Real Betis": {
+   "qid": "Q8723",
+   "founded": 1907,
+   "stadium": "Estadio Benito Villamarín",
+   "capacity": 60721
+  },
+  "Real Sociedad": {
+   "qid": "Q10315",
+   "founded": 1909,
+   "stadium": "Estadio Anoeta",
+   "capacity": 40000
+  },
+  "Manchester United": {
+   "qid": "Q18656",
+   "founded": 1878,
+   "stadium": "Old Trafford",
+   "capacity": 75731
+  },
+  "Manchester City": {
+   "qid": "Q50602",
+   "founded": 1894,
+   "stadium": "Manchester Şehir Stadyumu",
+   "capacity": 52900
+  },
+  "Liverpool": {
+   "qid": "Q1130849",
+   "founded": 1892,
+   "stadium": "Anfield",
+   "capacity": 61276
+  },
+  "Arsenal": {
+   "qid": "Q9617",
+   "founded": 1886,
+   "stadium": "Emirates Stadyumu",
+   "capacity": 60338
+  },
+  "Chelsea": {
+   "qid": "Q9616",
+   "founded": 1905,
+   "stadium": "Stamford Bridge",
+   "capacity": 41875
+  },
+  "Tottenham": {
+   "qid": "Q18741",
+   "founded": 1882,
+   "stadium": "Tottenham Hotspur Stadyumu",
+   "capacity": 62850
+  },
+  "Everton": {
+   "qid": "Q5794",
+   "founded": 1878,
+   "stadium": "Everton Stadium",
+   "capacity": 52769
+  },
+  "Newcastle United": {
+   "qid": "Q18716",
+   "founded": 1892,
+   "stadium": "St James' Park",
+   "capacity": 52305
+  },
+  "Aston Villa": {
+   "qid": "Q18711",
+   "founded": 1874,
+   "stadium": "Villa Park",
+   "capacity": 42640
+  },
+  "West Ham": {
+   "qid": "Q18747",
+   "founded": 1895,
+   "stadium": "Londra Stadyumu",
+   "capacity": 62500
+  },
+  "Leicester City": {
+   "qid": "Q19481",
+   "founded": 1884,
+   "stadium": "Leicester City Stadium",
+   "capacity": 32261
+  },
+  "Wolverhampton": {
+   "qid": "Q19500",
+   "founded": 1877,
+   "stadium": "Molineux Stadium",
+   "capacity": 30852
+  },
+  "Norwich City": {
+   "qid": "Q18721",
+   "founded": 1902,
+   "stadium": "Carrow Road",
+   "capacity": 27244
+  },
+  "Crystal Palace": {
+   "qid": "Q19467",
+   "founded": 1905,
+   "stadium": "Selhurst Park",
+   "capacity": 26255
+  },
+  "Juventus": {
+   "qid": "Q1422",
+   "founded": 1897,
+   "stadium": "Juventus Stadium",
+   "capacity": 41700
+  },
+  "Milan": {
+   "qid": "Q1543",
+   "founded": 1899
+  },
+  "Inter": {
+   "qid": "Q631",
+   "founded": 1908
+  },
+  "Roma": {
+   "qid": "Q2739",
+   "founded": 1927
+  },
+  "Lazio": {
+   "qid": "Q2609",
+   "founded": 1900
+  },
+  "Napoli": {
+   "qid": "Q2641",
+   "founded": 1926,
+   "stadium": "Diego Armando Maradona Stadyumu",
+   "capacity": 54726
+  },
+  "Fiorentina": {
+   "qid": "Q2052",
+   "founded": 1926,
+   "stadium": "Stadio Artemio Franchi",
+   "capacity": 43325
+  },
+  "Atalanta": {
+   "qid": "Q1886",
+   "founded": 1907,
+   "stadium": "Stadio Atleti Azzurri d'Italia",
+   "capacity": 24950
+  },
+  "Bayern Münih": {
+   "qid": "Q15789",
+   "founded": 1900,
+   "stadium": "Allianz Arena",
+   "capacity": 75024
+  },
+  "Dortmund": {
+   "qid": "Q41420",
+   "founded": 1909,
+   "stadium": "Signal Iduna Park",
+   "capacity": 81359
+  },
+  "Bayer Leverkusen": {
+   "qid": "Q104761",
+   "founded": 1904,
+   "stadium": "BayArena",
+   "capacity": 30210
+  },
+  "Schalke 04": {
+   "qid": "Q32494",
+   "founded": 1904,
+   "stadium": "Veltins-Arena",
+   "capacity": 62271
+  },
+  "Hamburg": {
+   "qid": "Q51974",
+   "founded": 1887,
+   "stadium": "Volksparkstadion",
+   "capacity": 57000
+  },
+  "Werder Bremen": {
+   "qid": "Q51976",
+   "founded": 1899,
+   "stadium": "Weserstadion",
+   "capacity": 42500
+  },
+  "Ajax": {
+   "qid": "Q81888",
+   "founded": 1900,
+   "stadium": "Amsterdam ArenA",
+   "capacity": 54990
+  },
+  "PSV": {
+   "qid": "Q11938",
+   "founded": 1913,
+   "stadium": "Philips Stadion",
+   "capacity": 36500
+  },
+  "Feyenoord": {
+   "qid": "Q134241",
+   "founded": 1908,
+   "stadium": "Stadion Feĳenoord",
+   "capacity": 51577
+  },
+  "Benfica": {
+   "qid": "Q131499",
+   "founded": 1904,
+   "stadium": "Estádio da Luz",
+   "capacity": 68100
+  },
+  "Porto": {
+   "qid": "Q128446",
+   "founded": 1893,
+   "stadium": "Estádio do Dragão",
+   "capacity": 50033
+  },
+  "Sporting": {
+   "qid": "Q75729",
+   "founded": 1906,
+   "stadium": "José Alvalade Stadyumu",
+   "capacity": 52095
+  },
+  "PSG": {
+   "qid": "Q483020",
+   "founded": 1970,
+   "stadium": "Parc des Princes",
+   "capacity": 47930
+  },
+  "Marseille": {
+   "qid": "Q132885",
+   "founded": 1899,
+   "stadium": "Stade Vélodrome",
+   "capacity": 67394
+  },
+  "Lyon": {
+   "qid": "Q704",
+   "founded": 1950,
+   "stadium": "OL Arena",
+   "capacity": 59286
+  },
+  "Monaco": {
+   "qid": "Q180305",
+   "founded": 1924,
+   "stadium": "II. Louis Stadı",
+   "capacity": 18523
+  },
+  "Celtic": {
+   "qid": "Q19593",
+   "founded": 1887,
+   "stadium": "Celtic Park",
+   "capacity": 60355
+  },
+  "Rangers": {
+   "qid": "Q19597",
+   "founded": 1872,
+   "stadium": "Ibrox Stadyumu",
+   "capacity": 51700
+  },
+  "Panathinaikos": {
+   "qid": "Q4122219",
+   "founded": 1908,
+   "stadium": "Apostolos Nikolaidis Stadyumu",
+   "capacity": 16003
+  },
+  "Club Brugge": {
+   "qid": "Q190916",
+   "founded": 1891,
+   "stadium": "Jan Breydel Stadyumu",
+   "capacity": 29062
+  },
+  "Anderlecht": {
+   "qid": "Q187528",
+   "founded": 1908,
+   "stadium": "Lotto Park",
+   "capacity": 21500
+  },
+  "Shakhtar Donetsk": {
+   "qid": "Q172969",
+   "founded": 1936,
+   "stadium": "Donbas Arena",
+   "capacity": 52518
+  },
+  "Dinamo Kiev": {
+   "qid": "Q179075",
+   "founded": 1927,
+   "stadium": "Millî Olimpiyat Spor Kompleksi",
+   "capacity": 70050
+  },
+  "Zenit": {
+   "qid": "Q29108",
+   "founded": 1925
+  },
+  "Spartak Moskova": {
+   "qid": "Q29112",
+   "founded": 1922,
+   "stadium": "Otkrytie Arena",
+   "capacity": 45360
+  },
+  "Kızılyıldız": {
+   "qid": "Q173009",
+   "founded": 1945,
+   "stadium": "Kızılyıldız Stadı",
+   "capacity": 55538
+  },
+  "River Plate": {
+   "qid": "Q15799",
+   "founded": 1901,
+   "stadium": "Estadio Antonio Vespucio Liberti",
+   "capacity": 84567
+  },
+  "Flamengo": {
+   "qid": "Q17479",
+   "founded": 1895,
+   "stadium": "Maracanã Stadyumu",
+   "capacity": 78838
+  },
+  "Santos": {
+   "qid": "Q80955",
+   "founded": 1912,
+   "stadium": "Estádio Urbano Caldeira",
+   "capacity": 16068
+  },
+  "Al Hilal": {
+   "qid": "Q73965",
+   "founded": 1957,
+   "stadium": "Kral Fahd Stadyumu",
+   "capacity": 70200
+  },
+  "Al Nassr": {
+   "qid": "Q482764",
+   "founded": 1955,
+   "stadium": "Kral Suud Üniversitesi Stadyumu",
+   "capacity": 25000
+  }
+ }
+}
