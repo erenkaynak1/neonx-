@@ -2,6 +2,7 @@
 
 > Durum: **taslak, birlikte okunacak.** Kod yazılmadı. Bu belge onaylanınca önce matematik (katsayılar), sonra kod.
 > Kaynak: kullanıcıyla yapılan soru–cevap oturumu (2026-11-17). Her karar burada yazılı olandır; değişiklik önce bu belgede yapılır.
+> Revizyon 2 (2026-11-17): dış değerlendirmedeki kabul edilen maddeler eklendi. Oyuncu hareketi ve konumlandırma (bölüm 4.5), üç katmanlı savunma (4.6), aksiyona özel rastgelelik (4.3), maç saati (4.7), geometrik ofsayt (5.6), şut isabeti ile kalitesinin ayrımı (5.5), taktik etkileşimleri (6.4), kimyanın 99 üstüne çıkabilmesi (7) ve genişletilmiş laboratuvar (10) eklendi.
 
 ## 0. Oyunun özü
 
@@ -14,6 +15,8 @@ Güçlü kadro kur, taktikle harmanla, futbol bilginle (kimya) güçlendir. **Hi
 3. **Her seçimin sonucu var.** Ölçülebilir etkisi olmayan ayar oyunda kalmaz.
 4. **Meta yok.** Bir taktik her şeye karşı kazanıyorsa sayılar kırpılmaz; gerçek futbolda ona karşı işe yarayan şey bulunur ve mantığa eklenir.
 5. **Her şey izlenebilir.** "Neden kazandım / kaybettim" sorusunun cevabı sayılarla gösterilebilir (maç sonu taktik karşılaştırması).
+6. **Gizli değişken yok.** Motordaki her değişken bir yetenekten, bir taktik ayarından ya da sahadaki ölçülebilir bir durumdan (mesafe, açı, baskı, oyuncu sayısı) gelir. Hiçbir yeteneğe veya taktiğe bağlı olmayan bir sayı eklenmez.
+7. **Ölçülemeyen ayrıntı eklenmez.** Her yeni sistem için iki soru sorulur: hangi yeteneği veya taktiği anlamlı kılıyor? Laboratuvarda etkisi ölçülebiliyor mu?
 
 ## 1. Kararlar özeti
 
@@ -37,7 +40,7 @@ Güçlü kadro kur, taktikle harmanla, futbol bilginle (kimya) güçlendir. **Hi
 | Yetenekler | Saha oyuncusu 14, kaleci 4; ölçek 1–99; hepsi görünür; genel güç (OVR) yok |
 | Roller | Yok |
 | Mevki | Oyuncu sadece kendi mevkilerinde oynar (şimdiki kural) |
-| Kimya | Şimdiki sistem; tüm yeteneklere katkı |
+| Kimya | Şimdiki sistem; tüm yeteneklere katkı; yetenek kimyayla 99'u aşabilir |
 | Dizilişler | 17 (4'lü, 3'lü, 5'li savunmalar) |
 | Taktik ayarları | 5 hücum + 4 savunma; bireysel talimat yok; şablon yok |
 | Taktik ekranı | Sadece sayısal veri, yorum yok |
@@ -148,16 +151,26 @@ Taşıyıcının seçenekleri bulunduğu bölgeye göre değişir: kısa pas, uz
 2. **Yetenek tercihi (~%30):** oyuncu güçlü olduğu aksiyona yönelir. Dribling yeteneği yüksekse çalım ağırlığı artar, uzun pası zayıfsa uzun pas ağırlığı azalır.
 3. **Vizyon (karar kalitesi):** her seçeneğin tahmini başarı şansı hesaplanır. Vizyonu yüksek oyuncu bu şansı yüksek seçeneklere daha çok ağırlık verir (boştaki arkadaşını görür). Vizyonu düşük oyuncu tahmini şansa daha az bakar; daha rastgele ve zorlama kararlar verir.
 
+**Önemli ayrım:** %70 / %30 oranı sadece **hangi aksiyonun seçileceğini** belirler. Seçilen aksiyonun **başarı olasılığı** bu orandan bağımsızdır ve tamamen mücadele matematiğinden (4.3) gelir.
+
+Pas seçenekleri, taşıyıcının çevresindeki destek oyuncularından oluşur (4.5.4). Çevresinde boşa çıkmış arkadaşı olmayan oyuncunun kısa pas seçeneği azdır. 95 vizyonlu bir oyuncu bile etrafında hareket eden arkadaşı yoksa mucize yaratamaz.
+
 ### 4.3 Temel çözüm formülü (taslak)
 
 Her mücadele:
 
 `P(başarı) = 1 / (1 + e^-(k·(S − D) + b))`
 
-- **S:** saldıranın ilgili yetenek(ler)inin ağırlıklı değeri. Kimya katkısı dahildir.
+- **S:** saldıranın ilgili yetenek(ler)inin ağırlıklı değeri. Kimya katkısı dahildir; 99'u aşabilir. Örnek: hava topu mücadelesinde `S = 0,7 × Hava topu + 0,3 × Güç`. Bu yalnızca bir örnek; gerçek ağırlıklar her mücadele tipi için matematik bölümünde gerekçeleriyle belirlenir.
 - **D:** savunanın ilgili yetenek(ler)i. Baskısız aksiyonda D yerine aksiyonun **sabit zorluğu** kullanılır (mesafe, açı vb.).
 - **b:** durumun temel zorluğu (bölge, mesafe, açı, baskı altındaki oyuncu sayısı, taktik etkileri).
 - **k:** farkın ne kadar belirleyici olduğu.
+
+**Aksiyona özel rastgelelik:** gerçekçi rastgelelik, bütün aksiyonlara eşit şans vermek değildir. Kısa pasla karşı karşıya pozisyonun belirsizliği aynı değildir. Bu yüzden **her aksiyon tipinin kendi k ve b değeri vardır.**
+- Kolay ve tekrarlı aksiyonlarda (kısa pas, kontrol) k yüksektir: yetenek farkı belirleyicidir, sonuç öngörülebilirdir.
+- Doğası gereği belirsiz anlarda (karşı karşıya, uzaktan şut, ikinci top) k düşüktür: zar daha çok söz sahibidir.
+
+**Yetenek katlanmasının önlenmesi:** bir aksiyon zincirinde aynı yetenek gereğinden fazla halkada kullanılıp etkisi katlanmamalıdır. Her halkanın yetenek ağırlıkları zincir bütününde kontrol edilir. Örneğin orta zincirinde "orta" yeteneği sadece isabet halkasında kullanılır, topun düştüğü noktayı belirlerken ikinci kez kullanılmaz.
 
 Sonra 0–1 arası bir zar çekilir. Zar P'den küçükse saldıran kazanır.
 
@@ -166,8 +179,84 @@ Sonra 0–1 arası bir zar çekilir. Zar P'den küçükse saldıran kazanır.
 
 ### 4.4 Topsuz yer alma
 
-- Temel yer dizilişten gelir; taktik (hücum yönü, tempo, hat yüksekliği) kaydırır.
+- Temel yer dizilişten gelir; taktik (hücum yönü, tempo, hat yüksekliği) kaydırır. Ayrıntısı 4.5'te.
 - Her aksiyonda, aksiyonun hedef bölgesindeki ve yakınındaki hücumcular için **pozisyon alma** ile en yakın savunmacının **markajı** karşılaşır. Kazanan hücumcu "boşta" sayılır: pas seçeneklerinde öne çıkar ve pası alırken baskı görmez.
+
+### 4.5 Oyuncu hareketi ve konumlandırma
+
+> Motorun temeli. Kim kiminle karşılaşacak, pas seçenekleri ve kontra boşlukları buradan doğar. **Bu bölüm bir sonraki soru–cevap oturumunda ayrıntılandırılacak.** Aşağıdakiler çerçeve ve cevaplanması gereken sorulardır.
+
+Oyuncular dizilişte duran diskler değil, futbol oynayan birimlerdir. Her oyuncunun üç konum davranışı vardır:
+
+1. **Top bizdeyken temel pozisyon:** dizilişin hücum yerleşimi, taktikle kaydırılmış hali (hücum yönü, tempo).
+2. **Top rakipteyken temel pozisyon:** dizilişin savunma yerleşimi, taktikle kaydırılmış hali (hat yüksekliği, kapatılan alan).
+3. **Topun bulunduğu bölgeye göre dinamik hareket:** temel pozisyondan, topun konumuna ve oyunun anına göre kayma.
+
+Cevaplanacak sorular (örnekler):
+- Top merkezdeyken sağ kanattaki oyuncu ne yapar: genişlikte mi kalır, içeri mi kat eder?
+- Orta saha topu aldığında forvet savunma arkasına koşar mı, topa mı gelir?
+- Sol bek hücuma katıldığında arkasındaki boşluğu kim kapatır?
+- Top rakibe geçtiğinde hücum oyuncuları hangi bölgeleri savunur?
+- Rakibinden kurtulan oyuncu boş alanı nasıl değerlendirir?
+
+Alt sistemler:
+
+#### 4.5.1 Kayma kuralları
+Takım, topun bulunduğu tarafa doğru blok halinde kayar. Kayma miktarı diziliş, kapatılan alan ve pres ayarıyla belirlenir. Kayan takımın karşı tarafı incelir; bu, oyun değiştiren uzun pasların değerini doğal olarak üretir.
+
+#### 4.5.2 Alan savunması ve takip
+Savunmacının iki görevi vardır: bölgesindeki oyuncuyu takip etmek ya da pas kanalını kapatmak. Hangisinin seçileceği topun yerine ve markaj yeteneğine bağlıdır. Takip edilen oyuncu bölgeden çıkınca savunmacı ne zaman bırakıp yerinde kalır, bu kuralla tanımlanır.
+
+#### 4.5.3 Geçiş savunması (top kaybı)
+Top kaybedildiği anda takım savunma düzenine hemen dönmez. Her oyuncunun dönüş süresi, uzaklığına ve hızına bağlıdır. Bu süre boyunca açık kalan bölgeler rakibin kontra fırsatını (5.4) belirler. İleri çıkmış bek ve orta sahalar en geç dönenlerdir.
+
+#### 4.5.4 Destek ve pas üçgenleri
+Taşıyıcının çevresindeki takım arkadaşları pas seçeneği oluşturur. Bir seçeneğin değeri, o arkadaşın boşta olup olmamasına (4.4), uzaklığına ve pas hattındaki savunmacı sayısına bağlıdır. Kısa pas oyunu, bu üçgenler kurulabildiği ölçüde anlam kazanır. Dizilişin ve pas tarzının üçgen kurma kapasitesi farklıdır.
+
+#### 4.5.5 Kaleci ile oyun kurma
+Kale vuruşunda ve kaleciye geri pasta kalecinin seçenekleri:
+- kısa pasla stopere ya da beke çıkış;
+- orta mesafe pasla orta sahaya;
+- uzun degajla forvete.
+
+Seçim, pas tarzına ve rakibin presine göre yapılır. Kısa çıkışta rakip presini aşmak ayrı bir mücadeledir: pas hattındaki presçiler ve alıcının ilk dokunuşu. Uzun degajda hedef oyuncu hava topu ve güç mücadelesine girer. Kalecinin ayakla oyun yeteneği olmadığı için kısa pas isabeti sabit bir zorlukla çözülür. Kalecinin oyun kurmadaki etkisini takımın pas tarzı belirler.
+
+#### 4.5.6 Ceza sahası içi yerleşim
+Orta ya da korner geldiğinde herkes topa koşmaz. Hücumcular ve savunmacılar dört noktaya dağılır: **yakın direk, penaltı noktası, arka direk** ve **seken top bölgesi** (ceza sahası önü). Kimin hangi noktaya gideceği hava topu ve pozisyon alma yeteneklerine ve dizilişe göre belirlenir. Topun düştüğü nokta (5.3) hangi eşleşmenin mücadeleye gireceğini belirler.
+
+### 4.6 Savunmanın üç katmanı
+
+Futbolda bir mücadele her zaman iki oyuncu arasında geçmez. Savunma üç katmanda değerlendirilir:
+
+1. **Birincil savunmacı:** doğrudan mücadeleye giren oyuncu (çalıma müdahale eden, pası alan oyuncuya baskı yapan).
+2. **İkincil savunmacı:** yakındaki destek; alanı daraltır, çalımdan sonraki kaçış yolunu kapatır.
+3. **Takım savunması:** pas koridorlarının kapatılması; taşıyıcının pas seçeneklerini azaltır.
+
+**Kural: üç katmanın değerleri toplanıp tek bir D olarak hücumcunun karşısına konmaz.** Toplamak savunmayı aşırı güçlü yapar. Her katmanın katkısı ayrı hesaplanır:
+- birincil savunmacı mücadelenin D'sidir;
+- ikincil savunmacı b'ye sınırlı bir zorluk ekler ve başarılı çalımdan sonra yeni bir mücadele fırsatı yaratabilir;
+- takım savunması aksiyon seçiminde (4.2) pas seçeneklerinin sayısını ve kalitesini düşürür.
+
+Böylece 95 top kapma yeteneğine sahip bir orta saha yanlış konumlanmışsa rakibin pas oyununu engelleyemez: birincil savunmacı olamaz, en fazla ikincil katkı yapar.
+
+### 4.7 Maç saati
+
+- Her aksiyon maç saatinden bir süre tüketir. Maç saati aksiyonların toplam süresiyle doğal olarak ilerler. Aksiyon sayısı ile maç süresi arasında yapay bir ilişki kurulmaz: 15 aksiyonluk bir atak doğal olarak uzun sürer.
+- Önerilen başlangıç aralıkları (kalibre edilecek, kesin değil):
+
+| Aksiyon | Süre |
+|---|---|
+| Kısa pas | 2–4 sn |
+| Uzun pas | 3–5 sn |
+| Çalım | 2–4 sn |
+| Top taşıma | 3–6 sn |
+| Orta | 3–5 sn |
+| Şut | 2–4 sn |
+| Duran top hazırlığı (korner, frikik) | 20–40 sn |
+| Gol sonrası santra | 40–60 sn |
+
+- Tempo ayarı süreleri kısaltır ya da uzatır (sabırlı tempoda pas arası bekleme daha uzun).
+- Kalibrasyon ölçütü: takım başına topa sahip olma sayısı ve ölü top süreleri gerçek futbol aralıklarında olmalı.
 
 ## 5. Aksiyon zincirleri
 
@@ -210,19 +299,33 @@ Ceza sahasındaki hücumcu ve savunmacı sayısı diziliş + taktikten gelir. Ö
 
 ### 5.5 Şut (3 aşama)
 
+Şutta iki ayrı şey ölçülür: **isabet** (top çerçeveyi buluyor mu?) ve **kalite** (kaleci için ne kadar zor?). Oyuncu kaleyi bulup zayıf vurabilir, köşeye sert vurabilir ya da kaleyi bulamayıp direğe takılabilir.
+
 1. **Blok:** şut hattındaki savunmacı (markaj) bloklamayı dener. Blok olursa top ikinci top olur veya kornere çıkar.
 2. **İsabet:** ilgili yetenek, zorluğa karşı çözülür.
    - Yetenek: ceza sahası içinde bitiricilik, dışında uzaktan şut, kafada hava topu.
    - Zorluk: mesafe, açı, baskı.
-   - Sonuç: çerçeve, direk veya aut.
-3. **Kaleci:** şutun kalitesi (isabet payının üstündeki fark), şut tipine göre kalecinin yeteneğiyle karşılaşır.
+   - Sonuç: çerçeve, direk veya aut. Direk, isabet sınırına çok yakın kalan şutlardan doğar.
+3. **Kalite:** çerçeveyi bulan şutun kalitesi ayrı bir değerdir. Aynı yetenekten gelir, ama baskı ve pozisyon (açı, vuruş anında boşta olup olmama) etkisi ayrıca hesaplanır. Yüksek kalite köşeye yakın ve sert şut, düşük kalite kalecinin üstüne giden şut demektir.
+   - Şutun sertliği ayrı bir yetenek değildir (bkz. ilke 6). Mesafeden ve vuruş koşullarından (baskı, kafa/ayak) türetilir: uzaktan şut daha sert ama daha az isabetli olabilir, kafa vuruşu daha yumuşaktır.
+4. **Kaleci:** şut kalitesi, şut tipine göre kalecinin yeteneğiyle karşılaşır.
    - Yakın ve sert şut → refleks; uzaktan veya açılı → pozisyon; kafa → hava topları + pozisyon; karşı karşıya → bire bir.
-   - Sonuç: gol, tutuş, çelme (ikinci top) veya korner.
+5. **Kurtarışın türü ve sekme:** kaleci kazanırsa kurtarışın türü belirlenir: tutuş, çelme ya da kornere çelme. Bunu kalecinin üstünlük farkı ve şutun sertliği belirler: zayıf şut genelde tutulur, sert şut çelinir. Çelinen topun düştüğü yer şutun yönüne ve kurtarışın türüne göre hesaplanır ve ikinci top (5.7) doğar.
 
-### 5.6 Ofsayt
+### 5.6 Ofsayt (geometrik)
 
-- Ara pası ve uzun topta kontrol edilir. Koşucunun pozisyon alma + hız değerleri, savunma hattının yüksekliği ve en geri stoperin markaj + hız değerleriyle karşılaşır.
-- Yüksek hat ofsayt ihtimalini artırır. Ama tuzak bozulursa koşucu arkada boş alanla karşı karşıya kalır (yüksek riskli büyük fırsat).
+Ofsayt bir hız yarışı değil, **pasın atıldığı andaki konuma bağlı bir kuraldır.** Motor şu sırayı izler:
+
+1. Pasın atıldığı anı belirle.
+2. Hücumcunun konumunu belirle.
+3. Topun konumunu belirle.
+4. Rakip kale çizgisine göre sondan ikinci rakibin (genelde en geri stoperin) konumunu belirle.
+5. Ofsayt konumunu kontrol et: hücumcu o anda topun ve sondan ikinci rakibin önündeyse ofsayttır.
+6. Ofsayt değilse koşu ve hız avantajını hesapla.
+
+- Bölge ızgarası bu kontrol için yeterince ince değildir. Bu yüzden **savunma çizgisinin boydaki tam konumu** ve koşucunun konumu bölge içinde sürekli bir değer olarak tutulur. Savunma çizgisini hat yüksekliği ve topun yeri belirler.
+- **Pozisyon alma yeteneği koşunun zamanlamasını belirler:** iyi pozisyon alan forvet koşuya doğru anda başlar ve ofsayta düşmeden çizgiye en yakın yerden çıkar. Kötü zamanlama ya ofsayt ya da geç ve verimsiz koşu demektir.
+- Yüksek hat ofsayt ihtimalini artırır. Ama tuzak bozulursa, yani koşucu doğru zamanladıysa, koşucu arkada boş alanla karşı karşıya kalır ve hız yarışı başlar (yüksek riskli büyük fırsat).
 
 ### 5.7 İkinci toplar
 
@@ -338,6 +441,30 @@ Her ayarın **sahada net bir karşılığı** ve **kendine özgü bir riski** va
 >
 > Bu senaryo laboratuvarda otomatik test olarak kalır.
 
+### 6.4 Taktiklerin birlikte çalışması
+
+Ayarlar tek tek değil, birlikte çalışır. Bazı kombinasyonlar tek tek etkilerinin toplamından farklı sonuç üretir, bu yüzden etkileşimleri matematik bölümünde ayrıca tanımlanır. İlk incelenecek kombinasyonlar:
+
+| Kombinasyon | Birlikte ne olur |
+|---|---|
+| Yüksek hat + yoğun pres | Rakibi kendi yarı alanında boğar, top kazanılırsa kaleye çok yakındır. Ama pres kırılırsa arkada çok büyük alan kalır; hızlı forvet ve uzun pasa karşı en riskli savunma |
+| Alçak blok + merkezi kapat | Ceza sahası ve merkez neredeyse kapalıdır. Kanatlar ve uzaktan şut alanı tamamen rakibe kalır |
+| Uzun pas + kontra | Top kazanılınca en kısa yoldan arkaya oynanır. Hızlı forvet ve iyi uzun pasçı ister; topa sahip olma çok düşüktür |
+| Hızlı tempo + ara pası | Az aksiyonla çok fırsat yaratır ama karar kalitesi düşer, ofsayt ve top kaybı artar |
+| Kanat hücumu + rakip "kanatları kapat" | Doğrudan çatışma: ortayı açma halkası zorlaşır; hücum yönü dengeli değilse atak tıkanır |
+| Kısa pas + rakip yoğun pres | Pas üçgenleri (4.5.4) kurulabiliyorsa pres kırılır ve arkada alan doğar; kurulamıyorsa tehlikeli bölgede top kaybı |
+
+Kural: bir kombinasyonun etkisi yine yetenekler ve sahadaki durumlar üzerinden doğmalıdır. Örneğin "yüksek hat + yoğun pres" için ayrı bir bonus sayısı yazılmaz. Bunun yerine iki ayarın oyuncu konumlarına (4.5) ve mücadele sayısına etkisi birleşir, sonuç da oradan çıkar. Matematik bölümü bu birleşimin aşırı güçlü bir kombinasyon üretmediğini laboratuvarla gösterir.
+
+### 6.5 Yoğun presin bedeli (yorgunluk olmadan)
+
+Yorgunluk yok. Ama 90 dakika yoğun pres yapan takım bedel öder:
+- geçilen presçinin arkasında boşluk kalır;
+- daha çok mücadele daha çok faul, frikik ve kart demektir;
+- pres kırılınca savunma düzensiz yakalanır (4.5.3).
+
+Bu riskler, yoğun presin her rakibe karşı en iyi seçim olmamasını sağlayacak güçte modellenir. İleride gerekirse yorgunluk ayrıca eklenebilir.
+
 ## 7. Kimya (şimdiki sistem)
 
 - Her oyuncu dizilişte kendisine **en yakın 4** takım arkadaşına bakar; bunlardan **en güçlü 3** bağlantı sayılır.
@@ -348,6 +475,8 @@ Her ayarın **sahada net bir karşılığı** ve **kendine özgü bir riski** va
   - ortak eski kulüp (ya da birinin eski kulübü diğerinin şimdiki kulübü) **+2**.
 - Oyuncunun kimyası = 3 bağlantının toplamı, **en fazla 10**.
 - **Etki:** tüm yeteneklere `kimya/10 × %8` çarpan katkısı. 10 kimya = +%8.
+- **99 sınırı yok:** kimya katkısıyla yetenek 99'u aşabilir (99 × 1,08 ≈ 107). Sebep: kimya futbol bilgisini ödüllendiren güçlü bir katkı olarak kalmalı; 99'da sınırlansaydı en iyi oyuncularda hiç etkisi olmazdı. Formül iki değer arasındaki farka baktığı için matematik bundan etkilenmez; lojistik katsayılar bu genişlemiş aralıkta (yaklaşık 1–107) kalibre edilir.
+- **Gösterim:** temel değer ile kimya katkısı ayrı görünür, örneğin "99 (+8)".
 - Kimya inceleme ekranı, en etkili üç bağlantıyı ve yeteneklerin kimya öncesi/sonrası değerlerini göstermeye devam eder.
 
 ## 8. Modlar ve akış
@@ -393,6 +522,23 @@ Ekranlardan önce kurulur ve her değişiklikte otomatik çalışır:
 3. **"Her seçimin sonucu var" testi:** her ayar tek tek değiştirildiğinde ilgili istatistik ölçülebilir şekilde değişmeli.
 4. **Senaryo testleri:** 6.3'teki gibi yazılı futbol senaryoları beklenen yönde sonuç vermeli.
 5. **Tutarlılık:** aynı tohum aynı maçı üretmeli (online için şart).
+6. **Dağılım:** aynı kadroların farklı tohumlarla oynadığı yüzlerce maçta sonuçlar istatistiksel olarak anlamlı bir dağılım göstermeli. Bir maçın tekrarlanabilir olması motorun gerçekçi olduğu anlamına gelmez.
+
+Ek testler:
+
+| Test | Ne kontrol eder? |
+|---|---|
+| Yetenek izolasyonu | Her yetenek gerçekten kullanılıyor mu? Tek bir yetenek değiştirilince ilgili istatistik değişiyor mu? |
+| Pozisyon / diziliş testi | 17 diziliş sahada gerçekten farklı davranıyor mu (bölge doluluğu, pas ağları, atak koridorları)? |
+| Zincir testi | Bir önceki aksiyonun sonucu bir sonrakini etkiliyor mu (örneğin başarılı çalım sonraki aksiyonu kolaylaştırıyor mu)? |
+| Savunma testi | İkincil savunmacı ve takım savunması katkıları çalışıyor mu? Toplanarak aşırı güçlü hale gelmiyor mu? |
+| Kaleci testi | Farklı kaleci yetenek profilleri farklı sonuçlar üretiyor mu (refleks / pozisyon / hava / bire bir)? |
+| Rastgelelik testi | Aynı koşullarda sonuç dağılımları tutarlı mı? Her aksiyonun belirsizliği tasarlandığı gibi mi? |
+| Uç değer testi | 99'luk (kimyayla ~107) oyuncular ya da 1'lik değerler motoru bozuyor mu? |
+| İstismar testi | Bir taktik, kombinasyon ya da aksiyon sürekli avantaj sağlıyor mu? |
+| Taktik etkileşim testi | 6.4'teki kombinasyonlar beklenen yönde ve aşırı güçlü olmadan çalışıyor mu? |
+| Ofsayt testi | Ofsayt kararları geometrik kurala uyuyor mu? Hat yüksekliği ve koşu zamanlaması beklenen yönde etkiliyor mu? |
+| Maç saati testi | Takım başına topa sahip olma sayısı ve ölü top süreleri gerçekçi aralıkta mı? |
 
 ## 11. Açık sorular (sonraki oturum)
 
@@ -402,16 +548,27 @@ Ekranlardan önce kurulur ve her değişiklikte otomatik çalışır:
 2. **Online kopma:** taktik süresi içinde bağlantı koparsa, yeniden bağlanana kadar bekleme süresi ne olsun?
 3. **Hızlı izleme:** maç sırasında 2x hızlandırma veya "sonuca atla" tuşu olsun mu?
 4. **Kimya ile taktik ilişkisi:** kimya şimdilik sadece yetenek çarpanı. İleride ikili aksiyonlara da bağlansın mı? (Şimdilik hayır.)
+5. **Oyuncu hareketi ve konumlandırma (4.5):** kayma, takip, geçiş, pas üçgenleri, kaleci oyun kurma ve ceza sahası yerleşim kuralları. Soru–cevap oturumunda kurulacak.
 
 ## 12. Yol haritası
 
-1. **Matematik:** bu belgeye 4.3'teki k ve b değerleri, her mücadelenin yetenek ağırlıkları ve taktik etki büyüklükleri gerekçeleriyle eklenir.
-2. **Veri:**
+Kodlamadan önce çözülecekler (sırasıyla):
+
+1. **Oyuncu hareketi ve konumlandırma (4.5):** soru–cevapla kurallar, sonra bu belgeye eklenir.
+2. **Aksiyon ve mücadele zincirleri:** üç katmanlı savunma (4.6) dahil, her halkanın yetenek ağırlıkları.
+3. **Şut ve gol hesaplaması (5.5):** isabet, kalite, kaleci, sekme.
+4. **Ofsayt geometrisi (5.6).**
+5. **Taktiklerin birlikte çalışma matematiği (6.4).**
+6. **Matematik:** aksiyon başına k ve b değerleri (4.3), maç saati süreleri (4.7) ve taktik etki büyüklükleri gerekçeleriyle bu belgeye eklenir.
+
+Sonra:
+
+7. **Veri:**
    - mevki ve kimya alanlarıyla 1000–1500 oyunculuk havuz;
    - yetenek değerlerinin üretimi;
    - tutarlılık testleri;
    - kulüp kulüp inceleme.
-3. **Motor + laboratuvar:** saf JavaScript modülü (ekransız), tohumlu rastgelelik, bölüm 10 testleri.
-4. **Ekranlar:** draft (mevcut tasarım), taktik, maç (3 panel), maç sonu.
-5. **Modlar:** bota karşı → aynı telefon → online 1v1 → parti turnuvası.
-6. **Geçiş:** yeni sürüm eskisinin her modunu karşılayınca ana menü yeniye bağlanır. Eski çekirdek (`neon-xi-core.html`) ve yaklaşık 20 yama dosyası silinir.
+8. **Motor + laboratuvar:** saf JavaScript modülü (ekransız), tohumlu rastgelelik, bölüm 10 testleri.
+9. **Ekranlar:** draft (mevcut tasarım), taktik, maç (3 panel), maç sonu.
+10. **Modlar:** bota karşı → aynı telefon → online 1v1 → parti turnuvası.
+11. **Geçiş:** yeni sürüm eskisinin her modunu karşılayınca ana menü yeniye bağlanır. Eski çekirdek (`neon-xi-core.html`) ve yaklaşık 20 yama dosyası silinir.
