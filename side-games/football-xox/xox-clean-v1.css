@@ -1,0 +1,70 @@
+/* NEON XI — Futbol XOX game screen, calm version. Loaded last; overrides the earlier layered skins
+   (premium, hybrid, dark-arena, neon-grid-v4) on the game screen only. Matte tiles, thin lines, no glow;
+   colour only where it means something: X lime, O cyan, and the player whose turn it is. 
+   Selectors carry html.nx-xox:not(#_):not(#_) so they outrank xox-neon-grid-v4.css (which uses one :not(#_));
+   that file still styles the answer picker, which stays as it is.*/
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"]{
+  --xc-bg:#06080a;--xc-s1:#0f1418;--xc-s2:#141a20;--xc-line:rgba(255,255,255,.08);--xc-line2:rgba(255,255,255,.14);
+  --xc-ink:#eef3f6;--xc-mute:#9aa7b1;--xc-faint:#66727c;--xc-x:#baff18;--xc-o:#2fe0ff;--xc-red:#ff7a8a;
+  background:radial-gradient(70% 40% at 50% 0%,rgba(186,255,24,.05),transparent 70%),linear-gradient(180deg,#0a0d10,var(--xc-bg) 60%)!important;
+}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"]::before,html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"]::after{display:none!important}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .app{background:none!important;box-shadow:none!important}
+
+/* no decorative pseudo-elements, glows or slants anywhere on the game screen */
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] :is(.boardWrap,.grid,.cell,.head,.corner,.scorebar,.playerBox,.actionBar,.actionBtn,.status,.hero,.newBoardBtn)::before,
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] :is(.boardWrap,.grid,.cell,.head,.corner,.scorebar,.playerBox,.actionBar,.actionBtn,.status,.hero,.newBoardBtn)::after{content:none!important;display:none!important}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] :is(.boardWrap,.scorebar,.actionBar,.status,.hero) *{text-shadow:none!important}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] :is(.boardWrap,.grid,.cell,.head,.corner,.playerBox,.actionBtn,.status,.newBoardBtn,.mark){clip-path:none!important;filter:none!important;animation:none!important}
+
+/* title */
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .hero{background:none!important;border:0!important;box-shadow:none!important;padding:4px 2px 0!important;margin:0 0 10px!important}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .hero .eyebrow{display:none!important}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .hero h1{font-size:clamp(24px,7vw,32px)!important}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .hero .subtitle{color:var(--xc-faint)!important;font-size:11px!important;letter-spacing:.16em!important}
+
+/* players */
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .scorebar{display:grid!important;grid-template-columns:1fr 28px 1fr!important;align-items:center!important;gap:8px!important;margin:0 0 10px!important;padding:0!important;background:none!important;border:0!important;box-shadow:none!important}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .playerBox{--pc:var(--xc-x);display:flex!important;flex-wrap:nowrap!important;flex-direction:row!important;justify-content:flex-start!important;align-items:center!important;gap:10px!important;min-height:54px!important;height:auto!important;padding:8px 12px!important;border-radius:14px!important;background:var(--xc-s1)!important;border:1px solid var(--xc-line)!important;box-shadow:none!important;color:var(--xc-mute)!important;font:700 14px/1.1 var(--nxu-display,"Barlow Condensed",sans-serif)!important;letter-spacing:.04em!important;transform:none!important}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .playerBox.right{--pc:var(--xc-o);flex-direction:row-reverse!important;text-align:right!important}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .playerBox.px-active{border-color:color-mix(in srgb,var(--pc) 55%,transparent)!important;color:var(--xc-ink)!important;background:color-mix(in srgb,var(--pc) 7%,var(--xc-s1))!important}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .playerBox .mark{display:grid!important;place-items:center!important;flex:0 0 34px!important;width:34px!important;height:34px!important;border-radius:10px!important;background:color-mix(in srgb,var(--pc) 13%,transparent)!important;color:var(--pc)!important;font:900 20px/1 var(--nxu-display,"Barlow Condensed",sans-serif)!important;border:0!important;box-shadow:none!important}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .playerBox.px-idle{opacity:.7}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .playerBox>div:not(.mark){position:static!important;flex:1 1 auto!important;width:auto!important;min-width:0!important;overflow:hidden!important;white-space:nowrap!important;text-overflow:ellipsis!important;font:800 15px/1.1 var(--nxu-display,"Barlow Condensed",sans-serif)!important;transform:none!important}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .playerBox .mark::before,html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .playerBox .mark::after{filter:none!important;box-shadow:none!important}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .scorebar .turn{display:grid!important;place-items:center!important;background:none!important;border:0!important;box-shadow:none!important;width:auto!important;height:auto!important}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .scorebar .turn *{display:none!important}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .scorebar .turn::after{content:none!important;display:none!important}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .scorebar .turn::before{color:var(--xc-faint)!important;text-shadow:none!important;font:800 12px/1 var(--nxu-display,"Barlow Condensed",sans-serif)!important;letter-spacing:.12em!important;background:none!important}
+
+/* board */
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .boardWrap{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;margin:0 0 12px!important}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .grid{display:grid!important;grid-template-columns:minmax(78px,.95fr) repeat(3,1fr)!important;gap:7px!important;padding:0!important;background:none!important;border:0!important;box-shadow:none!important}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .head,html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .corner{display:grid!important;place-items:center!important;min-height:62px!important;padding:6px 4px!important;border-radius:12px!important;background:var(--xc-s2)!important;border:1px solid var(--xc-line)!important;box-shadow:none!important;text-align:center!important}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .head>div{display:grid!important;justify-items:center!important;gap:2px!important}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .head small{display:block!important;color:var(--xc-faint)!important;font:700 8.5px/1 var(--nxu-display,"Barlow Condensed",sans-serif)!important;letter-spacing:.16em!important}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .head .conditionGlyph{display:none!important}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .head .headText{display:-webkit-box!important;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:normal!important;overflow-wrap:normal!important;hyphens:none!important;color:var(--xc-ink)!important;font:800 12.5px/1.08 var(--nxu-display,"Barlow Condensed",sans-serif)!important;letter-spacing:.01em!important}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .head .countryFlag{font-size:16px!important;line-height:1!important}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .corner{background:transparent!important;border-style:dashed!important}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .corner .turnGlyph{display:none!important;font:900 26px/1 var(--nxu-display,"Barlow Condensed",sans-serif)!important}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"][data-xox-turn="X"] .corner .turnX{display:block!important;color:var(--xc-x)!important}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"][data-xox-turn="O"] .corner .turnO{display:block!important;color:var(--xc-o)!important}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .cell{position:relative!important;display:grid!important;place-items:center!important;align-content:center!important;gap:2px!important;aspect-ratio:1/1!important;min-height:0!important;padding:4px!important;border-radius:14px!important;background:var(--xc-s1)!important;border:1px solid var(--xc-line)!important;box-shadow:none!important;color:var(--xc-ink)!important;transform:none!important;transition:border-color .15s ease,background .15s ease!important}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .cell:not(:disabled):is(:hover,:focus-visible){border-color:color-mix(in srgb,var(--xc-x) 50%,transparent)!important;background:color-mix(in srgb,var(--xc-x) 5%,var(--xc-s1))!important;outline:none!important}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"][data-xox-turn="O"] .cell:not(:disabled):is(:hover,:focus-visible){border-color:color-mix(in srgb,var(--xc-o) 50%,transparent)!important;background:color-mix(in srgb,var(--xc-o) 5%,var(--xc-s1))!important}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .cell .emptyHint{color:rgba(255,255,255,.18)!important;font:300 24px/1 system-ui,sans-serif!important;background:none!important;filter:none!important;width:auto!important;height:auto!important}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .cell.claimed{--cc:var(--xc-x);background:color-mix(in srgb,var(--cc) 8%,var(--xc-s1))!important;border-color:color-mix(in srgb,var(--cc) 35%,transparent)!important;opacity:1!important}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .cell.claimed.o{--cc:var(--xc-o)}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .cell .cellMark{color:var(--cc)!important;font:900 clamp(26px,9vw,38px)/1 var(--nxu-display,"Barlow Condensed",sans-serif)!important}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .cell .cellName{max-width:100%!important;overflow:hidden!important;color:var(--xc-mute)!important;font:700 10.5px/1.1 var(--nxu-body,"Barlow",sans-serif)!important;white-space:nowrap!important;text-overflow:ellipsis!important}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .cell:disabled:not(.claimed){opacity:.75}
+
+/* actions + status */
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .actionBar{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;margin:0 0 10px!important;background:none!important;border:0!important;box-shadow:none!important}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .actionBtn,html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .newBoardBtn{min-height:46px!important;padding:0 12px!important;border-radius:12px!important;background:var(--xc-s1)!important;border:1px solid var(--xc-line2)!important;box-shadow:none!important;color:var(--xc-ink)!important;font:800 13px/1 var(--nxu-display,"Barlow Condensed",sans-serif)!important;letter-spacing:.14em!important;transform:none!important}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .actionBtn.resignAction{color:var(--xc-red)!important;border-color:color-mix(in srgb,var(--xc-red) 35%,transparent)!important}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .newBoardBtn{width:100%!important}
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .status{margin:0 0 10px!important;padding:10px 12px!important;border-radius:12px!important;background:var(--xc-s1)!important;border:1px solid var(--xc-line)!important;box-shadow:none!important;color:var(--xc-mute)!important;font:600 13px/1.35 var(--nxu-body,"Barlow",sans-serif)!important;text-align:left!important}
+/* X / O glyphs: keep the drawn marks, drop their glow */
+html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .app :is(.mark,.cellMark,.turnGlyph),html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .app :is(.mark,.cellMark,.turnGlyph)::before,html.nx-xox:not(#_):not(#_) body[data-ct-screen="game"] .app :is(.mark,.cellMark,.turnGlyph)::after{filter:none!important;text-shadow:none!important;box-shadow:none!important}
