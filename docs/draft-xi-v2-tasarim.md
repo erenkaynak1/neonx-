@@ -15,6 +15,16 @@
 > - zincir olasılığı ölçümü, meta avcısının arama yöntemi ve yeni laboratuvar testleri (10).
 > Revizyon 4 (2026-11-18): oyuncu hareketi ve konumlandırma kuralları (4.5) soru–cevapla belirlendi; mevki uyumluluk tablosu (2.4) onaylandı; spiker olayların sebebini de anlatır (9.1, 13.2); açık sorular kapatıldı (online kopma 8, hızlı izleme 9.1, kimya kapsamı 7); spikere absürt komik yorum katmanı eklendi (9.1).
 > Revizyon 5 (2026-11-18): matematiğin başlangıç değerleri eklendi (bölüm 14): k katsayıları, yetenek ağırlıkları, taktik etkisinin büyüklüğü (15 puan), hedef olay sıklıkları (maç başına 3–3,5 gol).
+> Revizyon 6 (2026-11-18): üçüncü dış değerlendirmeden kabul edilenler eklendi:
+> - bölge + koordinat sistemi (3.1);
+> - hareket motorunun matematiği ve öncelik sistemi (4.5.10);
+> - zincir başarısının simülasyonla ölçülmesi (4.3);
+> - tek mücadele tablosu ve taktik etkilerinin birleştirme kuralı (14.6, 14.4);
+> - gol ortalamasının hedef değil izlenen gösterge olması (14.2, 14.5);
+> - online için ev sahibi hesaplar + rakip doğrular + tam sayı matematiği (13.3);
+> - botun draftı için pozisyon uygunluğu (8);
+> - laboratuvarın kabul kriterleri (10.1);
+> - önce küçük prototip (12).
 
 ## 0. Oyunun özü
 
@@ -162,8 +172,11 @@ Boy etkisi sınırlıdır ve hava topu yeteneğinin önüne geçmez. Hava topu y
 ### 3.1 Bölge ızgarası
 
 - Saha **6 boy × 5 en = 30 bölge**. Boyda: kendi ceza sahası, kendi yarı alanı (2), rakip yarı alanı (2), rakip ceza sahası. Ende: sol kanat, sol iç, merkez, sağ iç, sağ kanat.
-- Her oyuncunun her an bir bölgesi vardır. Bu bölge diziliş + taktik + topun yeri + takımın topa sahip olup olmamasından hesaplanır.
-- 2D ekran bu ızgarayı birebir kullanır; diskler bölgelerin içinde hafifçe dağıtılarak çizilir.
+- **Bölge + koordinat (hibrit):** her oyuncunun ve topun her an **sürekli bir konumu (x, y)** vardır; saha 105 × 68 metre olarak modellenir. Bölge, bu konumdan türetilir.
+  - **Bölgeler** stratejik yerleşimi taşır: diziliş şablonları (4.5.1), kayma, hangi bölgenin boş kaldığı, istatistikler.
+  - **Koordinatlar** geometrik hesapları taşır: mücadeleye kimin gireceği (mesafe), pas hattındaki savunmacılar, ofsayt (5.6), şut açısı ve mesafesi, şutun yönü ve kalecinin erişimi (5.5).
+  - Böylece aynı bölgedeki iki oyuncudan biri savunma çizgisinin önünde, diğeri arkasında olabilir; ofsayt buna göre doğru hesaplanır.
+- 2D ekran oyuncuları koordinatlarına göre çizer; ızgara arka planda silik durur.
 
 ### 3.2 Dizilişler (17)
 
@@ -230,7 +243,12 @@ Her mücadele:
 
 **Yetenek katlanmasının önlenmesi:** bir aksiyon zincirinde aynı yetenek gereğinden fazla halkada kullanılıp etkisi katlanmamalıdır. Her halkanın yetenek ağırlıkları zincir bütününde kontrol edilir. Örneğin orta zincirinde "orta" yeteneği sadece isabet halkasında kullanılır, topun düştüğü noktayı belirlerken ikinci kez kullanılmaz.
 
-**Zincir olasılığı:** bir zincirdeki mücadelelerin başarı olasılıkları çarpılarak birleşir. Her halka %80 olsa bile 5 halkalı bir zincirin tamamlanma olasılığı `0,8^5 ≈ %33`'tür. Bu yüzden katsayılar sadece tek tek mücadelelere bakılarak değil, **zincirin toplam olasılığı** da ölçülerek kalibre edilir. Örneğin bir takımın kendi yarı sahasından rakip ceza sahasına ulaşma oranı gerçek futbol aralığında olmalıdır (laboratuvar, bölüm 10).
+**Zincir olasılığı:** bir zincirdeki mücadelelerin başarı olasılıkları çarpılarak birleşir. Her halka %80 olsa bile 5 halkalı bir zincirin tamamlanma olasılığı `0,8^5 ≈ %33`'tür. Ama Draft XI'da halkalar birbirinden bağımsız değildir: bir aşamanın sonucu sonraki aşamanın koşullarını değiştirir (başarılı pas sonrası baskıdan kurtulan oyuncunun sonraki aksiyonu kolaylaşır; başarılı çalım sayısal üstünlük yaratır). Bu yüzden:
+- her aşama ayrı ayrı ölçülür;
+- zincirin toplam başarısı basit çarpımla değil, **gerçek simülasyonlardan** ölçülür;
+- "zincir en zayıf halkası kadar güçlüdür" bir tasarım ilkesidir, hesaplama kuralı değildir.
+
+Örneğin bir takımın kendi yarı sahasından rakip ceza sahasına ulaşma oranı gerçek futbol aralığında olmalıdır (laboratuvar, bölüm 10).
 
 Sonra 0–1 arası bir zar çekilir. Zar P'den küçükse saldıran kazanır.
 
@@ -336,6 +354,32 @@ Orta ya da korner geldiğinde herkes topa koşmaz. Oyuncular **yeteneklerine gö
   - orta hat: ikisinin arası.
 
 Kim kime karşı çıkacağı bu dağılımdan, topun düştüğü nokta (5.3) da hangi eşleşmenin mücadeleye gireceğini belirler.
+
+#### 4.5.10 Hareket motorunun matematiği
+
+Yukarıdaki davranışların nasıl hesaplanacağı:
+
+**Yeniden değerlendirme sıklığı:** her aksiyonun başında (top bir oyuncudan diğerine geçtiğinde, bir mücadele sonuçlandığında) bütün oyuncuların hedef konumu yeniden hesaplanır. Motor saniye saniye değil aksiyon aksiyon ilerlediği için bu yeterlidir.
+
+**Hedef konum** dört katmanın toplamıdır:
+1. şablon konumu: dizilişin hücum ya da savunma şablonundaki bölgenin merkezi (4.5.1);
+2. taktik kaydırması: hücum yönü, tempo, hat yüksekliği, kapatılan alan (4.5.2);
+3. top çekimi: topa yakın oyuncular topa doğru çekilir; çekim topa olan mesafe arttıkça azalır;
+4. görev: oyuncunun o anki görevi (aşağıdaki öncelik sistemi) hedefi kendi noktasına taşır, örneğin marke edilen rakibin yanı ya da kapatılan boş alan.
+
+**Hedefe ulaşma süresi:** `süre = mesafe / koşu hızı`. Koşu hızı **Hız** yeteneğinden doğrusal olarak türetilir: yaklaşık 1 hız → 6 m/s, 99 hız → 9,5 m/s. Aksiyonun süresi (4.7) içinde hedefe yetişemeyen oyuncu, aksiyon anında yolun bir kısmındadır. Kim mücadeleye girer, kim geç kalır, kontrada kimin döneceği bundan çıkar.
+
+**Savunmada öncelik sistemi:** bir savunmacının aynı anda birden fazla görevi olabilir (örneğin 6 numara hem merkezdeki rakibi marke ediyor hem ileri çıkan bekin arkasını kapatmalı). Her görev bir **tehdit puanı** alır, savunmacı en yüksek puanlı görevi seçer:
+1. **Topu taşıyan rakibe baskı:** en yakın savunmacının birinci görevi (pres yoğunluğu ikinci presçiyi ekler).
+2. **Kaleye en yakın boştaki tehdit:** rakip kaleye yakın ve boştaysa puanı çok yüksektir.
+3. **Topun gidebileceği boş alan:** bindirme sonrası açılan alan gibi; puanı, topun oraya gitme ihtimaline ve alanın kaleye yakınlığına bağlıdır.
+4. **Marke edilen oyuncu:** bölgedeki rakibi takip; puanı, rakibin kaleye yakınlığına ve topa uzaklığına bağlıdır.
+
+Taktik puanları kaydırır: "kapatılan alan" ilgili koridordaki alan görevlerinin puanını artırır.
+
+**Doğru seçimi okumak:** savunmacı tehdit puanlarını her zaman doğru göremez. En yüksek puanlı görevi seçme olasılığı **Markaj** (savunmada konum okuma) ve **Pozisyon alma** yeteneklerine bağlıdır. Yetenek düşükse daha düşük puanlı görevi seçebilir; örneğin merkezdeki rakibi bırakmaz ve bekin arkası açık kalır. Bu, 4.5.4'teki çakışma kuralının savunmadaki karşılığıdır.
+
+**Hücumda çakışma:** iki oyuncu aynı hedef noktaya yöneldiğinde, hedefi daha yüksek pozisyon alma değerine sahip olan doğru okur. Diğeri bir olasılıkla komşu boş noktaya kayar, aksi halde yığılma olur (4.5.4).
 
 ### 4.6 Savunmanın üç katmanı
 
@@ -444,7 +488,7 @@ Ofsayt bir hız yarışı değil, **pasın atıldığı andaki konuma bağlı bi
 5. Ofsayt konumunu kontrol et: hücumcu o anda topun ve sondan ikinci rakibin önündeyse ofsayttır.
 6. Ofsayt değilse koşu ve hız avantajını hesapla.
 
-- Bölge ızgarası bu kontrol için yeterince ince değildir. Bu yüzden **savunma çizgisinin boydaki tam konumu** ve koşucunun konumu bölge içinde sürekli bir değer olarak tutulur. Savunma çizgisini hat yüksekliği ve topun yeri belirler.
+- Kontrol koordinatlarla yapılır (3.1): pas anında koşucunun, topun ve sondan ikinci rakibin boydaki konumları karşılaştırılır. Savunma çizgisinin konumunu hat yüksekliği ve topun yeri belirler.
 - **Pozisyon alma yeteneği koşunun zamanlamasını belirler:** iyi pozisyon alan forvet koşuya doğru anda başlar ve ofsayta düşmeden çizgiye en yakın yerden çıkar. Kötü zamanlama ya ofsayt ya da geç ve verimsiz koşu demektir.
 - Yüksek hat ofsayt ihtimalini artırır. Ama tuzak bozulursa, yani koşucu doğru zamanladıysa, koşucu arkada boş alanla karşı karşıya kalır ve hız yarışı başlar (yüksek riskli büyük fırsat).
 - **Koşu ve pas zamanlaması:** pasçının vizyonu pasın atılma anını, koşucunun pozisyon alması koşuya başlama anını belirler. 95 vizyonlu bir oyuncu 95 pozisyon almalı bir forvete doğru zamanda pas atabilir. Forvet erken koşarsa ofsayta düşer, geç koşarsa savunmacı pası keser ya da forvete yetişir.
@@ -618,8 +662,9 @@ Bu riskler, yoğun presin her rakibe karşı en iyi seçim olmamasını sağlaya
   - *Orta:* bir oyun tarzı seçer (örneğin kanat ortası) ve draftta buna uygun yetenekleri alır; taktiği kendi güçlü yanlarına göredir.
   - *Zor:* tarzına uygun oyuncu seçer, kimyayı kollar, senin seçtiğin oyunculara göre counter düşünür. Taktiği hem kendi gücüne hem senin kadronun zayıflıklarına göre seçer.
   - Bot hiçbir zorlukta senin **taktik** seçimini görmez; sadece kadronu görür.
+  - **Pozisyon uygunluğu (sadece bot için):** botun "bu oyuncu bu pozisyona ne kadar uygun" diye karar verebilmesi için her pozisyona yetenek ağırlıkları tanımlanır (örneğin AM: vizyon, kısa pas, ilk dokunuş, pozisyon alma; LWB: hız, orta, top kapma, markaj). Bu ağırlıklar **motorda kullanılmaz** ve oyuncuya genel güç olarak gösterilmez; motorda verim, sahada girilen mücadelelerin yeteneklerinden kendiliğinden çıkar.
 - **Aynı telefonda 2 kişi:** draft sırayla yapılır. Taktikte Oyuncu 1 seçer, "Telefonu Oyuncu 2'ye ver" perdesi gelir, sonra Oyuncu 2 seçer. Maç başlayınca iki taktik de açılır.
-- **Online 1v1:** draft bitince rakip kadro görünür. İki taraf aynı anda 90 sn içinde taktik seçer; süre biterse son kaydedilen ya da varsayılan dengeli taktikle oynanır. Maç tek bir tohumla (seed) iki cihazda aynı oynanır.
+- **Online 1v1:** draft bitince rakip kadro görünür. İki taraf aynı anda 90 sn içinde taktik seçer; süre biterse son kaydedilen ya da varsayılan dengeli taktikle oynanır. Maçı ev sahibi cihaz hesaplar, rakip cihaz oynatır ve doğrular (13.3).
   - **Bağlantı koparsa:** taktik seçimi sırasında kopan oyuncuya yeniden bağlanması için **30 saniye** tanınır; seçim süresi bu sırada durur. 30 saniyede dönmezse son kaydedilen ya da varsayılan dengeli taktikle oynanır. Maç zaten iki cihazda aynı tohumla hesaplandığı için (13.3) maç sırasında kopan oyuncu geri döndüğünde maçı kaldığı yerden izler; sonuç değişmez.
 - **Parti turnuvası:** mevcut parti ve turnuva altyapısı. Elemede beraberlik direkt penaltıyla çözülür. Penaltılar penaltıcının bitiriciliği ile kalecinin bire birinin karşılaşmasıdır; atıcı sırası otomatiktir (bitiricilik sırası).
 
@@ -707,6 +752,23 @@ Ek testler:
 3. **Değerlendirme:** her karşılaşma çok sayıda farklı tohumla oynanır. Test başına maç sayısı, sonucun istatistiksel olarak anlamlı olmasına yetecek kadar seçilir; kesin sayı motor hızına göre belirlenir.
 4. **Karar:** bulunan en iyi taktiklere karşı ayrıca en iyi cevap aranır. Her taktiğin onu yenen bir cevabı varsa meta yoktur. Yoksa rapor verilir ve mantığa gerçek bir counter eklenir (ilke 4).
 
+### 10.1 Kabul kriterleri
+
+Her test için başarı ölçütü ve örnek sayısı (başlangıç önerisi; motor hızı ölçülünce kesinleşir):
+
+| Test | Başarılı sayılır | Örnek |
+|---|---|---|
+| Tekrarlanabilirlik | Aynı kadro + taktik + tohum, 100 tekrarda birebir aynı olay kaydı (hash) | 100 maç |
+| Dağılım | Aynı kadrolar farklı tohumlarla: sonuçların yayılımı makul, tek bir skora yığılma yok | 1.000 maç |
+| Olay sıklıkları | Gol, şut, isabet, faul, kart, pas isabeti gerçek futbol aralıklarında (14.5) | 10.000 maç |
+| Yetenek izolasyonu | Bir yetenek 20 puan artınca ilgili istatistik beklenen yönde ve istatistiksel olarak anlamlı değişir | yetenek başına 2.000 maç |
+| Taktik izolasyonu | Bir ayar değişince ilgili istatistik beklenen yönde değişir; etkisi olmayan ayar yok | ayar başına 2.000 maç |
+| Meta avcısı | Bulunan en iyi taktiklerin her birini yenen bir cevap var | arama sonunda her aday için 5.000 maç |
+| Senaryo testleri (6.3 gibi) | Beklenen yönde sonuç | senaryo başına 2.000 maç |
+| Uç değer | 1'lik ve ~107'lik değerlerle motor hata vermez, olasılıklar 0–1 aralığında kalır | sınır kombinasyonları |
+| Online doğrulama | Ev sahibi ve rakip cihazın hesapladığı olay kaydı özeti farklı tarayıcılarda aynı | 3 tarayıcı × 100 maç |
+| Performans | Ekransız 1.000 maç makul sürede (örneğin bir dakikanın altında) | 1.000 maç |
+
 ## 11. Açık sorular
 
 Şu an açık soru yok. Kapatılanlar (2026-11-18):
@@ -728,15 +790,16 @@ Kodlamadan önce çözülecekler (sırasıyla):
 
 Sonra:
 
-8. **Veri:**
+8. **Küçük prototip (önce bu):** 40–60 oyunculuk örnek havuz ve 3–4 diziliş ile motor + laboratuvar kurulur. Motor doğrulanmadan 1500 oyunculuk havuz ve 34 şablonun tamamı üretilmez.
+9. **Veri:**
    - mevki uyumluluk listesi, baskın/zayıf ayak, boy ve kimya alanlarıyla 1000–1500 oyunculuk havuz;
    - yetenek değerlerinin üretimi;
    - tutarlılık testleri;
    - kulüp kulüp inceleme.
-9. **Motor + laboratuvar:** saf JavaScript modülü (ekransız), tohumlu rastgelelik, bölüm 10 testleri.
-10. **Ekranlar:** draft (mevcut tasarım), taktik, maç (3 panel), maç sonu.
-11. **Modlar:** bota karşı → aynı telefon → online 1v1 → parti turnuvası.
-12. **Geçiş:** yeni sürüm eskisinin her modunu karşılayınca ana menü yeniye bağlanır. Eski çekirdek (`neon-xi-core.html`) ve yaklaşık 20 yama dosyası silinir.
+10. **Motor + laboratuvar (tam):** saf JavaScript modülü (ekransız), tohumlu rastgelelik, bölüm 10 testleri.
+11. **Ekranlar:** draft (mevcut tasarım), taktik, maç (3 panel), maç sonu.
+12. **Modlar:** bota karşı → aynı telefon → online 1v1 → parti turnuvası.
+13. **Geçiş:** yeni sürüm eskisinin her modunu karşılayınca ana menü yeniye bağlanır. Eski çekirdek (`neon-xi-core.html`) ve yaklaşık 20 yama dosyası silinir.
 
 ## 13. Motor mimarisi
 
@@ -782,7 +845,12 @@ Bu kayıt motorun tek çıktısıdır. Spiker, 2D saha, canlı istatistik, oyunc
 
 - Aynı kadrolar + aynı taktikler + aynı tohum (seed) = aynı maç: aynı sonuç ve aynı olay sırası.
 - Rastgelelik tek bir tohumlu sayı üreticisinden gelir. Motor içinde başka hiçbir rastgelelik kaynağı (saat, `Math.random`) kullanılmaz.
-- Online maçta iki cihaz aynı tohum ve aynı girdilerle maçı ayrı ayrı hesaplar ve aynı sonuca ulaşır. Hile ve tutarsızlık kontrolü için iki cihazın olay kaydının özeti (hash) karşılaştırılır.
+- **Online maç: ev sahibi hesaplar, rakip doğrular.** Aynı tohum iki cihazda her koşulda aynı sonucu garanti etmez: rastgele sayıların tüketilme sırası, motor sürümü ya da tarayıcılar arasındaki sayısal farklar (örneğin `Math.exp` farklı tarayıcılarda son basamakta farklı sonuç verebilir) maçları ayrıştırabilir. Sunucuda hesaplama ücretli plan gerektirdiği için şimdilik kullanılmaz. Bunun yerine:
+  - maçı **ev sahibi cihaz** hesaplar ve olay kaydını Firebase'e yazar; rakip cihaz bu kaydı oynatır, sonucu belirlemez (Saha Fethi'deki yöntem);
+  - hileye karşı rakip cihaz maçı arka planda aynı tohum ve girdilerle **yeniden hesaplar** ve olay kaydının özetini (hash) karşılaştırır; uyuşmazsa maç geçersiz sayılır ve bildirilir;
+  - doğrulamanın güvenilir olması için motor **tam sayı (sabit noktalı) matematik** kullanır: olasılıklar binde/on binde birlik tam sayılarla hesaplanır, lojistik fonksiyon için kendi `exp` tablomuz kullanılır, tarayıcının ondalıklı matematik fonksiyonlarına güvenilmez;
+  - motor sürümü olay kaydına yazılır; iki cihaz farklı sürümdeyse maç başlamaz.
+  - İleride bütçe olursa hesaplama sunucuya taşınabilir; motor ekrandan ayrı olduğu için (13.4) bu kolaydır.
 - Hata bulunan bir maç, tohumu ve girdileriyle birlikte birebir yeniden oynatılabilir.
 - Tekrarlanabilirlik gerçekçilik demek değildir: aynı kadroların farklı tohumlarla oynadığı maçların sonuç dağılımı ayrıca ölçülür (bölüm 10).
 
@@ -816,7 +884,7 @@ Kullanıcının sezgisi "X puan fark → başarı yüzdesi" olarak alındı ve k
 
 ### 14.2 Temel zorluklar (B)
 
-- **Kendiliğinden kalibre edilenler:** şut ve gol zorluğu sabit bir yüzde olarak seçilmez. Laboratuvar, **maç başına ortalama gol 3–3,5** aralığına oturacak şekilde şut isabeti ve kaleci karşılaşmasının B değerlerini ayarlar. Sabit olan, yeteneğin ne kadar fark yarattığıdır (k). Örnek sonuç (k = 0,085, eşit yetenekte ~%30 başlangıç varsayımıyla):
+- **Şut ve gol zorluğu:** sabit bir yüzde olarak seçilmez; sabit olan, yeteneğin ne kadar fark yarattığıdır (k). Şut isabeti ve kaleci karşılaşmasının B değerleri, gerçek futbolun şut başına gol ve isabet oranlarına göre başlatılır. **Maç başına 3–3,5 gol bir hedef değil, izlenen bir denge göstergesidir:** önce bütün zincirler (pas, savunma, şut) tek tek doğrulanır; gol ortalaması aralığın dışında kalırsa sorunun hangi zincirden kaynaklandığı aranır. Bitiricilik ya da kaleci başarısı ortalamayı tutturmak için keyfi olarak değiştirilmez. Örnek sonuç (k = 0,085, eşit yetenekte ~%30 başlangıç varsayımıyla):
 
 | Pozisyon | Bitiricilik vs kaleci | Gol olasılığı |
 |---|---|---|
@@ -848,9 +916,10 @@ Kullanıcının sezgisi "X puan fark → başarı yüzdesi" olarak alındı ve k
 
 - Bir taktik ayarının bir mücadeleye etkisi **15 puan** kadardır. Örnek: "Kanatları kapat" seçildiğinde kanattaki hücumcu, 15 puan daha iyi bir rakiple karşılaşmış gibi zorlanır (ikincil savunmacı desteği, B'ye eklenir); aynı anda merkezdeki aksiyonlar o oranda kolaylaşır.
 - Sonuç: taktik, yetenek farkından biraz daha ağır basar; doğru counter kadro farkını önemli ölçüde dengeleyebilir. Bu bilinçli bir tercihtir.
+- **Birleştirme kuralı:** bir mücadeleyi aynı anda birden fazla taktik ayarı etkilerse etkiler basitçe toplanmaz (üç ayar 45 puan ederdi ve motor bozulurdu). Etkiler büyükten küçüğe sıralanır: en büyüğü tam, ikincisi yarısı, üçüncüsü dörtte biri oranında eklenir; toplam etki **en fazla 25 puan** olur. Ters yönlü etkiler (birinin kolaylaştırdığını diğeri zorlaştırıyorsa) önce birbirinden çıkarılır. Örnek: yoğun pres (+15) ve yüksek hat (+15) aynı anda bir savunmacıya katkı yapıyorsa toplam 15 + 7,5 = 22,5 puan.
 - Risk: 15 puan büyük bir etki olduğu için bazı kombinasyonların (6.4) aşırı güçlü çıkma ihtimali vardır. Meta avcısı (10) bunu özellikle kontrol eder. Bir sorun çıkarsa önce mantığa gerçek counter eklenir (ilke 4); etki büyüklüğü sadece kullanıcı onayıyla değişir.
 
-### 14.5 Hedef olay sıklıkları (laboratuvar kontrolü)
+### 14.5 İzlenen olay sıklıkları (teşhis göstergeleri, hedef değil)
 
 | Ölçü | Hedef |
 |---|---|
@@ -862,3 +931,23 @@ Kullanıcının sezgisi "X puan fark → başarı yüzdesi" olarak alındı ve k
 | Kırmızı kart | ~20 maçta bir; sert müdahalede daha sık |
 | Pas isabeti (genel) | gerçek futbol aralığı, ~%80–90 |
 | Uzun pas isabeti | ~%50–60 |
+
+### 14.6 Tek mücadele tablosu
+
+Her mücadele tek bir satırda tanımlanır. Katsayılar bu tablo tamamlanmadan kesinleşmez. "Belirlenecek" yazan hücreler sonraki matematik oturumunda doldurulacak.
+
+| Mücadele | Saldıranın S'i | Savunanın D'si (ya da sabit zorluk) | Durum etkisi (B) | Taktik etkisi | k |
+|---|---|---|---|---|---|
+| Çalım | Dribling 60 + Hız 30 + Güç 10 | Top kapma 50 + Markaj 25 + Hız 25 | Alan genişliği, ikincil savunmacı | Pres, kapatılan alan, müdahale sertliği | 0,085 |
+| Baskı altında kontrol | İlk dokunuş (ağırlıklar belirlenecek) | Baskı yapanın Top kapma + Hız (ağırlıklar belirlenecek) | Pasın hızı ve yüksekliği | Pres | 0,085 |
+| Kısa pas | Kısa pas + Vizyon (ağırlıklar belirlenecek) | Baskısızsa sabit zorluk; hattaki savunmacı varsa Markaj + Top kapma (belirlenecek) | Mesafe, açı, hattaki savunmacı sayısı | Pas tarzı, kapatılan alan | 0,054 (baskısız) |
+| Uzun pas | Uzun pas + Vizyon (belirlenecek) | Sabit zorluk; hattaki savunmacılar (belirlenecek) | Mesafe, açı | Pas tarzı, hat yüksekliği | 0,043 (baskısız) |
+| Ara pası | Vizyon + Kısa/Uzun pas; koşucunun Pozisyon alma + Hız (belirlenecek) | Markaj + Hız; ofsayt geometrisi | Koşu zamanlaması, mesafe | Bitiriş tercihi, hat yüksekliği | belirlenecek |
+| Orta | Orta (belirlenecek) | Sabit zorluk; bekin baskısı | Mesafe, baskı | Bitiriş tercihi, kapatılan alan | belirlenecek |
+| Hava topu | Hava topu 70 + Güç 30 (+ Pozisyon alma, topa ilk ulaşma) | Hava topu 70 + Güç 30 | Boy farkı, topun yüksekliği, ceza sahası yerleşimi | Ceza sahası yerleşimi, hat yüksekliği | 0,110 |
+| Şut isabeti (içeride) | Bitiricilik 80 + İlk dokunuş 20 | Sabit zorluk | Mesafe, açı, baskı, zayıf ayak | Bitiriş tercihi | 0,085 |
+| Şut isabeti (dışarıda) | Uzaktan şut 100 | Sabit zorluk | Mesafe, açı, baskı, zayıf ayak | Bitiriş tercihi | 0,085 |
+| Kurtarış | Şut kalitesi | Şut tipine göre kaleci yetenekleri (14.3) | Şutun yönü ve kalecinin konumu | — | 0,085 |
+| Araya girme | Pasçının S'i | Markaj + Top kapma (belirlenecek) | Savunmacının hatta uzaklığı | Kapatılan alan, pres | belirlenecek |
+| Pres (top kazanma) | Taşıyıcının İlk dokunuş / Dribling | Presçinin Top kapma + Hız (belirlenecek) | Pres tetikleyicisi, presçi sayısı | Pres yoğunluğu | belirlenecek |
+| Ofsayt zamanlaması | Koşucunun Pozisyon alma; pasçının Vizyon | Savunma çizgisinin konumu (geometri) | Hat yüksekliği | Hat yüksekliği | belirlenecek |
