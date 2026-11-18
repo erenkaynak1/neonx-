@@ -13,7 +13,7 @@
 > - şut yönü ve kaleci erişimi (5.5);
 > - topsuz davranışların yetenek sonucu olarak tanımlanması (4.5);
 > - zincir olasılığı ölçümü, meta avcısının arama yöntemi ve yeni laboratuvar testleri (10).
-> Revizyon 4 (2026-11-18): oyuncu hareketi ve konumlandırma kuralları (4.5) soru–cevapla belirlendi; mevki uyumluluk tablosu (2.4) onaylandı; spiker olayların sebebini de anlatır (9.1, 13.2).
+> Revizyon 4 (2026-11-18): oyuncu hareketi ve konumlandırma kuralları (4.5) soru–cevapla belirlendi; mevki uyumluluk tablosu (2.4) onaylandı; spiker olayların sebebini de anlatır (9.1, 13.2); açık sorular kapatıldı (online kopma 8, hızlı izleme 9.1, kimya kapsamı 7).
 
 ## 0. Oyunun özü
 
@@ -606,6 +606,7 @@ Bu riskler, yoğun presin her rakibe karşı en iyi seçim olmamasını sağlaya
 - **Etki:** tüm yeteneklere `kimya/10 × %8` çarpan katkısı. 10 kimya = +%8.
 - **99 sınırı yok:** kimya katkısıyla yetenek 99'u aşabilir (99 × 1,08 ≈ 107). Sebep: kimya futbol bilgisini ödüllendiren güçlü bir katkı olarak kalmalı; 99'da sınırlansaydı en iyi oyuncularda hiç etkisi olmazdı. Formül iki değer arasındaki farka baktığı için matematik bundan etkilenmez; lojistik katsayılar bu genişlemiş aralıkta (yaklaşık 1–107) kalibre edilir.
 - **Gösterim:** temel değer ile kimya katkısı ayrı görünür, örneğin "99 (+8)".
+- **Kapsam (karar, 2026-11-18):** kimya ikili aksiyonlara (iki oyuncu arasındaki pas, orta vb.) ayrıca bağlanmaz. Tek etkisi oyuncu yeteneklerine yaptığı artıştır.
 - Kimya inceleme ekranı, en etkili üç bağlantıyı ve yeteneklerin kimya öncesi/sonrası değerlerini göstermeye devam eder.
 
 ## 8. Modlar ve akış
@@ -618,6 +619,7 @@ Bu riskler, yoğun presin her rakibe karşı en iyi seçim olmamasını sağlaya
   - Bot hiçbir zorlukta senin **taktik** seçimini görmez; sadece kadronu görür.
 - **Aynı telefonda 2 kişi:** draft sırayla yapılır. Taktikte Oyuncu 1 seçer, "Telefonu Oyuncu 2'ye ver" perdesi gelir, sonra Oyuncu 2 seçer. Maç başlayınca iki taktik de açılır.
 - **Online 1v1:** draft bitince rakip kadro görünür. İki taraf aynı anda 90 sn içinde taktik seçer; süre biterse son kaydedilen ya da varsayılan dengeli taktikle oynanır. Maç tek bir tohumla (seed) iki cihazda aynı oynanır.
+  - **Bağlantı koparsa:** taktik seçimi sırasında kopan oyuncuya yeniden bağlanması için **30 saniye** tanınır; seçim süresi bu sırada durur. 30 saniyede dönmezse son kaydedilen ya da varsayılan dengeli taktikle oynanır. Maç zaten iki cihazda aynı tohumla hesaplandığı için (13.3) maç sırasında kopan oyuncu geri döndüğünde maçı kaldığı yerden izler; sonuç değişmez.
 - **Parti turnuvası:** mevcut parti ve turnuva altyapısı. Elemede beraberlik direkt penaltıyla çözülür. Penaltılar penaltıcının bitiriciliği ile kalecinin bire birinin karşılaşmasıdır; atıcı sırası otomatiktir (bitiricilik sırası).
 
 ## 9. Ekranlar
@@ -637,6 +639,7 @@ Bu riskler, yoğun presin her rakibe karşı en iyi seçim olmamasını sağlaya
 - **Panel davranışı:** her panelde **tam ekran** ve **kapat** tuşu var. Kapatılan panelin yeri kalan panellere paylaştırılır; kapatılan panel bir tuşla geri açılır.
 - **Dar ekran (dikey telefon):** saha + spiker açık başlar, taktik paneli bir dokunuşla açılır. Yan çevrilmiş telefonda, tablette ve masaüstünde üç panel açık başlar.
 - Önemli anlar (gol, büyük kurtarış, kırmızı kart) sahanın üzerinde kısa yazıyla vurgulanır.
+- **Hızlı izleme:** maç sırasında **1x / 2x** hız tuşu ve **"Sonuca atla"** tuşu vardır. Motor maçı zaten baştan sona hesapladığı için (13.4) bunlar sadece oynatmayı değiştirir, sonucu asla değiştirmez. "Sonuca atla" doğrudan maç sonu ekranına geçer. Online maçta her oyuncu kendi cihazındaki oynatma hızını seçer.
 
 ### 9.2 Maç sonu
 
@@ -692,11 +695,12 @@ Ek testler:
 3. **Değerlendirme:** her karşılaşma çok sayıda farklı tohumla oynanır. Test başına maç sayısı, sonucun istatistiksel olarak anlamlı olmasına yetecek kadar seçilir; kesin sayı motor hızına göre belirlenir.
 4. **Karar:** bulunan en iyi taktiklere karşı ayrıca en iyi cevap aranır. Her taktiğin onu yenen bir cevabı varsa meta yoktur. Yoksa rapor verilir ve mantığa gerçek bir counter eklenir (ilke 4).
 
-## 11. Açık sorular (sonraki oturum)
+## 11. Açık sorular
 
-1. **Online kopma:** taktik süresi içinde bağlantı koparsa, yeniden bağlanana kadar bekleme süresi ne olsun?
-2. **Hızlı izleme:** maç sırasında 2x hızlandırma veya "sonuca atla" tuşu olsun mu?
-3. **Kimya ile taktik ilişkisi:** kimya şimdilik sadece yetenek çarpanı. İleride ikili aksiyonlara da bağlansın mı? (Şimdilik hayır.)
+Şu an açık soru yok. Kapatılanlar (2026-11-18):
+- **Online kopma:** kararı 8. bölümde.
+- **Hızlı izleme:** kararı 9.1'de.
+- **Kimya ile taktik ilişkisi:** kimya ikili aksiyonlara bağlanmaz; sadece oyuncu yeteneklerine artış olarak etki eder (7).
 
 ## 12. Yol haritası
 
