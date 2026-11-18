@@ -1,8 +1,11 @@
 # Draft XI v2 — Tasarım Belgesi
 
 > Durum: **taslak, birlikte okunacak.** Kod yazılmadı. Bu belge onaylanınca önce matematik (katsayılar), sonra kod.
+>
 > Kaynak: kullanıcıyla yapılan soru–cevap oturumu (2026-11-17). Her karar burada yazılı olandır; değişiklik önce bu belgede yapılır.
+>
 > Revizyon 2 (2026-11-17): dış değerlendirmedeki kabul edilen maddeler eklendi. Oyuncu hareketi ve konumlandırma (bölüm 4.5), üç katmanlı savunma (4.6), aksiyona özel rastgelelik (4.3), maç saati (4.7), geometrik ofsayt (5.6), şut isabeti ile kalitesinin ayrımı (5.5), taktik etkileşimleri (6.4), kimyanın 99 üstüne çıkabilmesi (7) ve genişletilmiş laboratuvar (10) eklendi.
+>
 > Revizyon 3 (2026-11-18): ikinci dış değerlendirmeden kabul edilen maddeler eklendi:
 > - formülün işaret düzeltmesi ve "her etkenin tek yeri" kuralı (4.3);
 > - motor mimarisi: durum makinesi, olay kaydı, tekrarlanabilirlik, motor ve sunum ayrımı, iki ayrı saat (bölüm 13);
@@ -13,8 +16,11 @@
 > - şut yönü ve kaleci erişimi (5.5);
 > - topsuz davranışların yetenek sonucu olarak tanımlanması (4.5);
 > - zincir olasılığı ölçümü, meta avcısının arama yöntemi ve yeni laboratuvar testleri (10).
+>
 > Revizyon 4 (2026-11-18): oyuncu hareketi ve konumlandırma kuralları (4.5) soru–cevapla belirlendi; mevki uyumluluk tablosu (2.4) onaylandı; spiker olayların sebebini de anlatır (9.1, 13.2); açık sorular kapatıldı (online kopma 8, hızlı izleme 9.1, kimya kapsamı 7); spikere absürt komik yorum katmanı eklendi (9.1).
+>
 > Revizyon 5 (2026-11-18): matematiğin başlangıç değerleri eklendi (bölüm 14): k katsayıları, yetenek ağırlıkları, taktik etkisinin büyüklüğü (15 puan), hedef olay sıklıkları (maç başına 3–3,5 gol).
+>
 > Revizyon 6 (2026-11-18): üçüncü dış değerlendirmeden kabul edilenler eklendi:
 > - bölge + koordinat sistemi (3.1);
 > - hareket motorunun matematiği ve öncelik sistemi (4.5.10);
