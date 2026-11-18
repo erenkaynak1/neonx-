@@ -13,6 +13,7 @@
 > - şut yönü ve kaleci erişimi (5.5);
 > - topsuz davranışların yetenek sonucu olarak tanımlanması (4.5);
 > - zincir olasılığı ölçümü, meta avcısının arama yöntemi ve yeni laboratuvar testleri (10).
+> Revizyon 4 (2026-11-18): oyuncu hareketi ve konumlandırma kuralları (4.5) soru–cevapla belirlendi; mevki uyumluluk tablosu (2.4) onaylandı; spiker olayların sebebini de anlatır (9.1, 13.2).
 
 ## 0. Oyunun özü
 
@@ -120,7 +121,7 @@ Kalecinin oyun kurması ayrı yetenek değildir; takımın pas tarzından gelir 
 
 Her oyuncunun **oynayabildiği mevkiler listesi** vardır. Oyuncu sadece bu listedeki pozisyonlara yerleştirilebilir. 17 dizilişin hepsinin gerçekten oynanabilmesi için mevki etiketleri genişletilir: **LWB, RWB** (kanat bek), **LM, RM** (geniş orta saha), **AM** (10 numara).
 
-Önerilen varsayılan uyumluluk (veri üretiminde her oyuncu için ayrıca kontrol edilir):
+Varsayılan uyumluluk (**onaylandı, 2026-11-18**; veri üretiminde her oyuncu için ayrıca kontrol edilir):
 
 | Oyuncunun ana mevkisi | Oynayabileceği pozisyonlar (varsayılan) |
 |---|---|
@@ -242,55 +243,98 @@ Sonra 0–1 arası bir zar çekilir. Zar P'den küçükse saldıran kazanır.
 
 ### 4.5 Oyuncu hareketi ve konumlandırma
 
-> Motorun temeli. Kim kiminle karşılaşacak, pas seçenekleri ve kontra boşlukları buradan doğar. **Bu bölüm bir sonraki soru–cevap oturumunda ayrıntılandırılacak.** Aşağıdakiler çerçeve ve cevaplanması gereken sorulardır.
+> Motorun temeli. Kim kiminle karşılaşacak, pas seçenekleri ve kontra boşlukları buradan doğar. Kurallar 2026-11-18 soru–cevap oturumunda belirlendi.
 
-Oyuncular dizilişte duran diskler değil, futbol oynayan birimlerdir. Her oyuncunun üç konum davranışı vardır:
+Oyuncular dizilişte duran diskler değil, futbol oynayan birimlerdir. Her oyuncunun her anda bir **hedef konumu** ve bir **hareket davranışı** vardır. Hedef konum üç katmandan hesaplanır:
 
-1. **Top bizdeyken temel pozisyon:** dizilişin hücum yerleşimi, taktikle kaydırılmış hali (hücum yönü, tempo).
-2. **Top rakipteyken temel pozisyon:** dizilişin savunma yerleşimi, taktikle kaydırılmış hali (hat yüksekliği, kapatılan alan).
-3. **Topun bulunduğu bölgeye göre dinamik hareket:** temel pozisyondan, topun konumuna ve oyunun anına göre kayma.
+1. **Top bizdeyken temel pozisyon:** dizilişin **hücum şablonu**, taktikle kaydırılmış hali.
+2. **Top rakipteyken temel pozisyon:** dizilişin **savunma şablonu**, taktikle kaydırılmış hali.
+3. **Dinamik hareket:** temel pozisyondan, topun konumuna ve oyunun anına göre kayma (aşağıdaki kurallar).
 
-Cevaplanacak sorular (örnekler):
-- Top merkezdeyken sağ kanattaki oyuncu ne yapar: genişlikte mi kalır, içeri mi kat eder?
-- Orta saha topu aldığında forvet savunma arkasına koşar mı, topa mı gelir?
-- Sol bek hücuma katıldığında arkasındaki boşluğu kim kapatır?
-- Top rakibe geçtiğinde hücum oyuncuları hangi bölgeleri savunur?
-- Rakibinden kurtulan oyuncu boş alanı nasıl değerlendirir?
+Bu hareketler sadece animasyon değildir: kim kiminle karşılaşacak, hangi bölge boş kalacak, bunlar doğrudan buradan çıkar ve mücadele matematiğine girer. Oyuncular hiçbir zaman rastgele konum değiştirerek simüle edilmez; her hareketin bir kuralı vardır.
 
-Alt sistemler:
+**Topsuz davranışlar yeteneklerin sonucudur, ayrı mekanik değildir.** Forvetin savunmacının arkasında kaybolması, orta sahanın baskıdan kurtulmak için yana açılması, bir oyuncunun savunmacıyı üzerine çekip arkadaşına alan açması ayrı ayrı modellenmez. Bunlar **pozisyon alma** (doğru boşluğu bulma ve zamanlama) ile **vizyon** (taşıyıcının bu hareketleri görmesi) yeteneklerinin sonucunda ortaya çıkar.
 
-Her oyuncunun her anda bir **hedef konumu** ve bir **hareket davranışı** vardır. Hedef konum yukarıdaki üç davranıştan hesaplanır; hareket davranışı oyuncunun o hedefe nasıl ve ne zaman gittiğidir. Bu hareketler sadece animasyon değildir: kim kiminle karşılaşacak, hangi bölge boş kalacak, bunlar doğrudan buradan çıkar ve mücadele matematiğine girer.
+#### 4.5.1 Diziliş şablonları
 
-Örnek (sağ bek):
-- **Top bizde:** takım sağdan hücum ediyorsa ileri çıkar. Kanatçı içeri kat ediyorsa çizgide genişlik verir. Top sol kanattaysa ceza sahasına ikinci dalga koşusu yapabilir.
-- **Top kaybedildi:** önce kendi savunma bölgesine dönmeye çalışır. Dönüş süresi boyunca arkasındaki alan açık kalır ve rakip bu alanı kullanabilir (4.5.3).
+Her dizilişin iki şablonu vardır; 17 diziliş × 2 = 34 şablon. Şablon her pozisyonun ızgaradaki temel bölgesini verir. Dizilişlerin sahada gerçekten farklı davranması bu şablonlardan gelir. Örnekler:
+- **4-3-3:** top bizdeyken bekler ileri çıkar, 6 numara stoperlerin önünde kalır (yaklaşık 2-3-5); top rakipteyken kanatçılar geri iner (4-5-1).
+- **3-5-2:** top bizdeyken kanat bekler en ileride genişlik verir (3-2-5); top rakipteyken kanat bekler hatta iner (5-3-2).
 
-**Topsuz davranışlar yeteneklerin sonucudur, ayrı mekanik değildir.** Forvetin savunmacının arkasında kaybolması, orta sahanın baskıdan kurtulmak için yana açılması, kanatçının çizgide beklemesi ya da bir oyuncunun savunmacıyı üzerine çekip arkadaşına alan açması ayrı ayrı modellenmez. Bunlar **pozisyon alma** (doğru boşluğu bulma ve zamanlama) ile **vizyon** (taşıyıcının bu hareketleri görmesi) yeteneklerinin sonucunda ortaya çıkar. Pozisyon alması yüksek oyuncu boşa çıkma mücadelesini (4.4) daha sık kazanır; vizyonu yüksek taşıyıcı bu boşluğu daha sık görür.
+Taktik şablonu kaydırır: hücum yönü ve tempo hücum şablonunu; hat yüksekliği, pres ve kapatılan alan savunma şablonunu.
 
-Oyuncular hiçbir zaman rastgele konum değiştirerek simüle edilmez. Her hareketin bir kuralı vardır.
+#### 4.5.2 Kayma
 
-#### 4.5.1 Kayma kuralları
-Takım, topun bulunduğu tarafa doğru blok halinde kayar. Kayma miktarı diziliş, kapatılan alan ve pres ayarıyla belirlenir. Kayan takımın karşı tarafı incelir; bu, oyun değiştiren uzun pasların değerini doğal olarak üretir.
+Takım, topun bulunduğu tarafa blok halinde kayar. Kayma miktarını **kapatılan alan** ayarı belirler:
+- **Dengeli:** orta düzeyde kayma.
+- **Kanatlar:** topun olduğu kanada güçlü kayma (2'ye 1); karşı kanat boşalır.
+- **Merkez:** dar blok; kanatlara az kayma.
 
-#### 4.5.2 Alan savunması ve takip
-Savunmacının iki görevi vardır: bölgesindeki oyuncuyu takip etmek ya da pas kanalını kapatmak. Hangisinin seçileceği topun yerine ve markaj yeteneğine bağlıdır. Takip edilen oyuncu bölgeden çıkınca savunmacı ne zaman bırakıp yerinde kalır, bu kuralla tanımlanır.
+Karşı tarafın boşalması, oyun değiştiren uzun pasların değerini doğal olarak üretir.
 
-#### 4.5.3 Geçiş savunması (top kaybı)
-Top kaybedildiği anda takım savunma düzenine hemen dönmez. Her oyuncunun dönüş süresi, uzaklığına ve hızına bağlıdır. Bu süre boyunca açık kalan bölgeler rakibin kontra fırsatını (5.4) belirler. İleri çıkmış bek ve orta sahalar en geç dönenlerdir.
+#### 4.5.3 Bireysel hücum hareketleri
 
-#### 4.5.4 Destek ve pas üçgenleri
+- **Bek bindirmesi:** hücum yönü o kanatsa ve top o taraftaysa bek ileri çıkar; karşı bek geride kalır ve savunma üçlü olur. Hızlı bek daha sık ve daha ileri çıkar, çünkü geri dönebilir. Kanat bek (LWB/RWB) her zaman daha ileridedir.
+- **Arka kapatma:** ileri çıkan bekin arkasını dizilişte DM varsa o kapatır (stoperlerin arasına ya da yanına iner). DM yoksa yakın stoper kanata kayar, diğer stoperler de kayar. Böylece bindirmeden sonra savunma üçlü kalır. Boşluğa yapılan kontrada bu oyuncunun hızı ve markajı belirleyicidir.
+- **Forvet:** orta saha topu aldığında forvetin hareketi bitiriş tercihine ve yeteneğine göre değişir:
+  - "Ara pası" seçiliyse ve forvet hızlıysa savunma arkasına koşar;
+  - "Orta" seçiliyse ceza sahasına girer;
+  - kısa pas oyununda ve forvet güçlü, ilk dokunuşu iyiyse topa gelip duvar olur.
+
+  Koşunun zamanlaması pozisyon alma yeteneğinden gelir (ofsayt, 5.6).
+- **Kanat oyuncusu (top merkezdeyken):** ters ayaklı kanatçı içeri girer (şut ve ara pası alanı), doğal ayaklı kanatçı çizgide genişlik verir. Arkadaki bek bindirdiyse kanatçı içeri girer ve genişliği bek alır.
+- **Orta sahalar (top bizdeyken):**
+  - **DM** stoperlerin önünde pas istasyonu olur;
+  - **CM**'ler pas üçgenlerini kurmak için topa yakın bölgelere açılır (kısa pasta daha yakın, uzun pasta daha ileri);
+  - **AM** rakip orta saha ile savunma arasındaki boşlukları arar.
+
+  Pozisyon alma, doğru boşluğu ne kadar sık bulduklarını belirler.
+- **Kanat bekler (3'lü / 5'li dizilişler):** iki yönlü oynar. Top bizdeyken kanat oyuncusu gibi en ileride genişlik verir; top rakipteyken savunma hattına inip beşli oluşturur. Geçişte en uzun yolu koşan oyuncudur; hızı ve dönüş süresi kanadın kapanıp kapanmayacağını belirler.
+
+#### 4.5.4 Çakışma: iki oyuncu aynı bölgeye yönelirse
+
+Doğru seçimi **pozisyon alma** yeteneği belirler. Pozisyon alması yüksek oyuncu boşluğu doğru okuyup komşu bölgeye kayar. Düşükse iki oyuncu aynı yere yığılabilir. Bunun iki sonucu olabilir:
+- **avantaj:** o bölgede sayısal üstünlük (örneğin kanatta 2'ye 1);
+- **dezavantaj:** başka bir yerde boşluk (pas seçeneği eksilir, top kaybında açık kalan bölge).
+
+Böylece pozisyon alma yeteneğinin takım düzenine de görünür bir etkisi olur.
+
+#### 4.5.5 Destek ve pas üçgenleri
+
 Taşıyıcının çevresindeki takım arkadaşları pas seçeneği oluşturur. Bir seçeneğin değeri, o arkadaşın boşta olup olmamasına (4.4), uzaklığına ve pas hattındaki savunmacı sayısına bağlıdır. Kısa pas oyunu, bu üçgenler kurulabildiği ölçüde anlam kazanır. Dizilişin ve pas tarzının üçgen kurma kapasitesi farklıdır.
 
-#### 4.5.5 Kaleci ile oyun kurma
-Kale vuruşunda ve kaleciye geri pasta kalecinin seçenekleri:
-- kısa pasla stopere ya da beke çıkış;
-- orta mesafe pasla orta sahaya;
-- uzun degajla forvete.
+#### 4.5.6 Savunma hareketleri
 
-Seçim, pas tarzına ve rakibin presine göre yapılır. Kısa çıkışta rakip presini aşmak ayrı bir mücadeledir: pas hattındaki presçiler ve alıcının ilk dokunuşu. Uzun degajda hedef oyuncu hava topu ve güç mücadelesine girer. Kalecinin ayakla oyun yeteneği olmadığı için kısa pas isabeti sabit bir zorlukla çözülür. Kalecinin oyun kurmadaki etkisini takımın pas tarzı belirler.
+- **Savunma çizgisi:** temel yükseklik hat ayarından gelir. Top sahibine baskı yoksa (uzun pas atabilir) çizgi geri çekilir; baskı varsa ileri çıkar. Çizgi birlikte hareket eder ve ofsayt geometrisi (5.6) buna bağlıdır. Markajı düşük stoper çizgiyi bozabilir.
+- **Alan savunması, devir teslim:** savunmacı kendi bölgesindeki rakibi takip eder; rakip bölgeden çıkınca bir sonraki bölgenin savunmacısına devreder. Devir anında markajı düşük oyuncular koşucuyu kaçırabilir ve rakip boşta kalır. Hücumcu iki bölge arasındaki boşluğu bulursa pozisyon alma yeteneği işe yarar.
+- **Pres tetikleyicileri:** rakip topu çizgi kenarında, sırtı dönük, kötü kontrolle ya da geri pasla aldığında pres olasılığı artar. Yoğun preste bu anların hepsinde, az preste sadece en belirgininde basılır. Pres yoğunluğu ayrıca topa yakın bölgelere kaç oyuncunun kayacağını belirler (4.6, 5.2).
+- **Hücum oyuncularının savunması:** savunma şablonu yerlerini belirler (4-3-3'te kanatçılar 4-5-1'e iner, forvet ilk presi yapar). Yoğun preste forvetler stoperlere bastırır, az preste orta çizgide bekler. Kanatçının geri dönüş süresi hızına bağlıdır.
 
-#### 4.5.6 Ceza sahası içi yerleşim
-Orta ya da korner geldiğinde herkes topa koşmaz. Hücumcular ve savunmacılar dört noktaya dağılır: **yakın direk, penaltı noktası, arka direk** ve **seken top bölgesi** (ceza sahası önü). Kimin hangi noktaya gideceği hava topu ve pozisyon alma yeteneklerine ve dizilişe göre belirlenir. Topun düştüğü nokta (5.3) hangi eşleşmenin mücadeleye gireceğini belirler.
+#### 4.5.7 Geçişler
+
+- **Top kaybı:** topa en yakın oyuncu hemen baskı yapar (yoğun preste iki oyuncu). Diğerleri savunma şablonundaki yerlerine döner; dönüş süresi mesafeye ve hıza bağlıdır. Dönmeyen oyuncuların bıraktığı bölgeler rakip kontrası (5.4) için açık kalır. İleri çıkmış bekler ve orta sahalar en geç dönenlerdir.
+- **Top kazanma (kontra):** top kazanıldığı anda ileride olan hücumcular (forvet, kanatlar, AM) kontraya koşar; arkadan hızlı bir orta saha ya da bek de katılabilir. Savunmacılar yerinde kalır. Sayısal durum (örneğin 3'e 2) bu dağılımdan doğar.
+
+#### 4.5.8 Kaleci ile oyun kurma
+
+Kaleci topu aldığında seçimini **pas tarzı** ve **rakibin presi** belirler:
+- kısa pas tarzında stopere ya da beke kısa çıkış; rakip yoğun pres yapıyor ve stoperler kapalıysa uzun degaja döner;
+- uzun pas tarzında forvete ya da kanada degaj;
+- karışık tarzda boştaki oyuncuya göre seçer.
+
+Kısa çıkışta rakip presini aşmak ayrı bir mücadeledir: pas hattındaki presçiler ve alıcının ilk dokunuşu. Uzun degajda hedef oyuncu hava topu ve güç mücadelesine girer. Kalecinin ayakla oyun yeteneği olmadığı için kısa pas isabeti sabit bir zorlukla çözülür.
+
+#### 4.5.9 Ceza sahası içi yerleşim (orta ve korner)
+
+Orta ya da korner geldiğinde herkes topa koşmaz. Oyuncular **yeteneklerine göre otomatik** olarak dört noktaya dağılır:
+- **Hücumda:** hava topu en iyi oyuncu penaltı noktasına, ikinci en iyi yakın ya da arka direğe gider; uzaktan şutu iyi oyuncu seken top bölgesinde (ceza sahası önü) bekler.
+- **Savunmada:** hava topu en iyi oyuncular en tehlikeli noktalara yerleşir, biri yakın direği tutar.
+- **Kornerde hücuma çıkan oyuncu sayısı** hat ayarına bağlıdır:
+  - yüksek hat: iki stoper dahil kalabalık çıkılır (daha çok kafa şansı, kontra riski);
+  - alçak hat: bir stoper çıkar, üç oyuncu kontraya karşı geride kalır;
+  - orta hat: ikisinin arası.
+
+Kim kime karşı çıkacağı bu dağılımdan, topun düştüğü nokta (5.3) da hangi eşleşmenin mücadeleye gireceğini belirler.
 
 ### 4.6 Savunmanın üç katmanı
 
@@ -582,6 +626,13 @@ Bu riskler, yoğun presin her rakibe karşı en iyi seçim olmamasını sağlaya
 
 - **Sol:** dikey 2D saha. Kaleler üstte ve altta, numaralı neon diskler, top, pas çizgileri. Mücadele anında iki oyuncu vurgulanır. Sahanın üstünde skor, dakika ve baskı barı.
 - **Orta:** spiker. Canlı ve taktiğe bağlıdır: mücadele detayını ve ara ara taktik gözlemlerini anlatır ("Sağ kanat atakları işliyor: 6 ortadan 4'ü isabetli").
+  - **Spiker "neden"i anlatır.** Spiker sadece ne olduğunu değil, **neden olduğunu** da söyler. Böylece oyuncu her olayın kendi seçimlerinin (kadro, taktik, kimya) ve rakibin seçimlerinin sonucu olduğunu görür, motorun derinliği hissedilir. Sebepler olay kaydındaki (13.2) gerçek verilerden gelir, uydurulmaz. Örnekler:
+    - *Konumlanma:* "Bek bindirdi, arkasını kapatacak 6 numara yetişemedi; kontra tam o boşluktan geldi." / "Stoper koşucuyu devrederken kaçırdı, forvet bomboş kaldı."
+    - *Çakışma:* "İki orta saha aynı bölgeye yığıldı, sol iç koridor boş kaldı."
+    - *Taktik:* "Rakip kanatları kapattı, ortalar artık ceza sahasına ulaşmıyor." / "Yüksek hat bir kez daha ofsayt tuzağı kurdu, ama Mbappé koşuyu doğru zamanladı."
+    - *Yetenek karşılaşması:* "Haaland hava topunda Van Dijk'i geçti (%58)." / "Ters ayaklı kanatçı içeri kat edip uzak köşeye vurdu."
+    - *Kimya:* "Eski takım arkadaşları Saka ile Ødegaard'ın paslaşması yine işledi."
+  - Spiker her olayda değil, **anlamlı anlarda** sebep söyler: goller, büyük fırsatlar, top kayıpları sonrası kontralar, taktik bir örüntü oluştuğunda (örneğin aynı koridordan üst üste atak). Ayrıca ara ara toplu gözlem yapar: "Son 15 dakikada sağ koridordan 6 atak geldi; rakibin sol beki hızda yetişemiyor."
 - **Sağ:** taktik ve istatistik. İki takımın taktikleri gösterilir (rakibinki maç başında açılır). Canlı istatistikler: koridor başına atak, orta, ikili mücadele başarı oranları, şut ve isabet.
 - **Panel davranışı:** her panelde **tam ekran** ve **kapat** tuşu var. Kapatılan panelin yeri kalan panellere paylaştırılır; kapatılan panel bir tuşla geri açılır.
 - **Dar ekran (dikey telefon):** saha + spiker açık başlar, taktik paneli bir dokunuşla açılır. Yan çevrilmiş telefonda, tablette ve masaüstünde üç panel açık başlar.
@@ -643,17 +694,15 @@ Ek testler:
 
 ## 11. Açık sorular (sonraki oturum)
 
-1. **Mevki uyumluluk listesi (2.4):** önerilen varsayılan tablo ve yeni etiketler (LWB, RWB, LM, RM, AM) onay bekliyor.
-2. **Online kopma:** taktik süresi içinde bağlantı koparsa, yeniden bağlanana kadar bekleme süresi ne olsun?
-3. **Hızlı izleme:** maç sırasında 2x hızlandırma veya "sonuca atla" tuşu olsun mu?
-4. **Kimya ile taktik ilişkisi:** kimya şimdilik sadece yetenek çarpanı. İleride ikili aksiyonlara da bağlansın mı? (Şimdilik hayır.)
-5. **Oyuncu hareketi ve konumlandırma (4.5):** kayma, takip, geçiş, pas üçgenleri, kaleci oyun kurma ve ceza sahası yerleşim kuralları. Soru–cevap oturumunda kurulacak.
+1. **Online kopma:** taktik süresi içinde bağlantı koparsa, yeniden bağlanana kadar bekleme süresi ne olsun?
+2. **Hızlı izleme:** maç sırasında 2x hızlandırma veya "sonuca atla" tuşu olsun mu?
+3. **Kimya ile taktik ilişkisi:** kimya şimdilik sadece yetenek çarpanı. İleride ikili aksiyonlara da bağlansın mı? (Şimdilik hayır.)
 
 ## 12. Yol haritası
 
 Kodlamadan önce çözülecekler (sırasıyla):
 
-1. **Oyuncu hareketi ve konumlandırma (4.5):** soru–cevapla kurallar, sonra bu belgeye eklenir.
+1. **Oyuncu hareketi ve konumlandırma (4.5):** ✓ kurallar belirlendi (2026-11-18). Kalan iş: 34 diziliş şablonunun bölge tabloları.
 2. **Aksiyon ve mücadele zincirleri:** üç katmanlı savunma (4.6) dahil, her halkanın yetenek ağırlıkları.
 3. **Şut ve gol hesaplaması (5.5):** isabet, kalite, kaleci, sekme.
 4. **Ofsayt geometrisi (5.6).**
@@ -706,7 +755,10 @@ Motor maç boyunca her mücadeleyi kaydeder:
 - kullanılan yetenekler ve ağırlıklı değerleri (kimya dahil), B'yi oluşturan etkenler;
 - hesaplanan başarı olasılığı P ve çekilen zar;
 - sonuç (kazanan, topun yeni yeri, skor, kart);
-- taktik bağlamı (bu aksiyonu hangi taktik ayarı tetikledi).
+- taktik bağlamı (bu aksiyonu hangi taktik ayarı tetikledi);
+- konumlanma bağlamı: aksiyonun doğduğu yerleşim sebebi (bindirme sonrası boşluk, devir teslimde kaçırılan koşucu, çakışma, pres tetikleyicisi, geç dönen oyuncu).
+
+Spikerin "neden" anlatımı (9.1) bu bağlam alanlarından üretilir.
 
 Bu kayıt motorun tek çıktısıdır. Spiker, 2D saha, canlı istatistik, oyuncu puanları ve maç sonu taktik karşılaştırması bu kayıttan üretilir. "Neden kazandım / kaybettim" sorusunun cevabı (ilke 5) teknik olarak bu kayıtla verilir.
 
