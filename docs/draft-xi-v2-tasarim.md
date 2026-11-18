@@ -14,6 +14,7 @@
 > - topsuz davranışların yetenek sonucu olarak tanımlanması (4.5);
 > - zincir olasılığı ölçümü, meta avcısının arama yöntemi ve yeni laboratuvar testleri (10).
 > Revizyon 4 (2026-11-18): oyuncu hareketi ve konumlandırma kuralları (4.5) soru–cevapla belirlendi; mevki uyumluluk tablosu (2.4) onaylandı; spiker olayların sebebini de anlatır (9.1, 13.2); açık sorular kapatıldı (online kopma 8, hızlı izleme 9.1, kimya kapsamı 7); spikere absürt komik yorum katmanı eklendi (9.1).
+> Revizyon 5 (2026-11-18): matematiğin başlangıç değerleri eklendi (bölüm 14): k katsayıları, yetenek ağırlıkları, taktik etkisinin büyüklüğü (15 puan), hedef olay sıklıkları (maç başına 3–3,5 gol).
 
 ## 0. Oyunun özü
 
@@ -793,3 +794,71 @@ Bu kayıt motorun tek çıktısıdır. Spiker, 2D saha, canlı istatistik, oyunc
 - **İstatistik katmanı** sonuçları toplar.
 
 Motor hiçbir zaman animasyona bağlı olmaz. Animasyon motorun sonucunu gösterir, sonucu belirlemez. Görsel efektler maç matematiğini etkilemez. Böylece motor laboratuvarda ekransız binlerce maç oynayabilir ve ileride mobil uygulamaya geçişte yeniden yazılması gerekmez.
+
+## 14. Matematik: başlangıç değerleri
+
+> Soru–cevapla belirlenen sezgisel başlangıç değerleri (2026-11-18). Hepsi `P = 1 / (1 + e^-(k·(S − D) − B))` formülünün (4.3) katsayılarıdır. Bunlar **başlangıçtır**: laboratuvar (10) gerçek futbol olay sıklıklarıyla ve meta testleriyle kontrol eder. Bir değer değişirse önce bu tablo değişir.
+
+### 14.1 Fark belirleyiciliği (k)
+
+Kullanıcının sezgisi "X puan fark → başarı yüzdesi" olarak alındı ve k'ya çevrildi (`k = ln(p/(1−p)) / fark`).
+
+| Mücadele tipi | Sezgi | k (puan başına) |
+|---|---|---|
+| Çalım, top taşıma (dribling vs savunma) | Eşitte %50, 10 puan fark → ~%70 | **0,085** |
+| Baskı altında ilk dokunuş (kontrol vs baskı) | Çalım kadar | **0,085** |
+| Hava topu | Çalımdan daha belirleyici: 10 puan → ~%75 | **0,110** |
+| Şut isabeti ve kaleci karşılaşması | Çalım kadar belirleyici | **0,085** |
+| Baskısız kısa pas (sabit zorluğa karşı) | 50'lik pasçı ~%85, 90'lık ~%98 | **0,054** |
+| Baskısız uzun pas, 30 m+ (sabit zorluğa karşı) | 60'lık pasçı ~%45, 90'lık ~%75 | **0,043** |
+
+Örnek (çalım): 85 dribling (ağırlıklı S) karşısında 75 savunma (ağırlıklı D) → ~%70; 20 puan fark → ~%85.
+
+### 14.2 Temel zorluklar (B)
+
+- **Kendiliğinden kalibre edilenler:** şut ve gol zorluğu sabit bir yüzde olarak seçilmez. Laboratuvar, **maç başına ortalama gol 3–3,5** aralığına oturacak şekilde şut isabeti ve kaleci karşılaşmasının B değerlerini ayarlar. Sabit olan, yeteneğin ne kadar fark yarattığıdır (k). Örnek sonuç (k = 0,085, eşit yetenekte ~%30 başlangıç varsayımıyla):
+
+| Pozisyon | Bitiricilik vs kaleci | Gol olasılığı |
+|---|---|---|
+| Ceza sahası içi, normal | 80 vs 80 | ~%30 |
+| Aynı | 95 vs 80 | ~%60 |
+| Aynı | 70 vs 85 | ~%11 |
+| Karşı karşıya | 95 vs 80 | ~%75 (mesafe ve açı zorluğu düşük) |
+
+- **Sabit zorluğa karşı çözülenler** (kısa pas, uzun pas): B değerleri 14.1'deki iki referans noktasından çıkar.
+- **Araya girme:** pas hattında savunmacı yoksa araya girme olmaz. Her savunmacı ayrı ayrı ve sırayla dener; değerleri toplanmaz (4.6). Mesafe uzadıkça hat uzar, daha çok savunmacı hatta girer.
+
+### 14.3 Yetenek ağırlıkları (S ve D)
+
+| Mücadele | Saldıranın S'i | Savunanın D'si |
+|---|---|---|
+| Çalım | Dribling %60 + Hız %30 + Güç %10 (dar alanda hızın payı azalır, geniş alanda artar) | Top kapma %50 + Markaj %25 + Hız %25 |
+| Hava topu | Hava topu %70 + Güç %30 (+ hücumcuda topa ilk ulaşmada pozisyon alma) | Hava topu %70 + Güç %30 |
+| Ceza sahası içi şut isabeti | Bitiricilik %80 + İlk dokunuş %20 (zayıf ayakla vuruşta zayıf ayak seviyesi düşürür) | — (sabit zorluk + baskı) |
+| Ceza sahası dışı şut isabeti | Uzaktan şut %100 | — (sabit zorluk + baskı) |
+| Kurtarış: yakın / sert | şut kalitesi | Refleks %70 + Pozisyon %30 |
+| Kurtarış: uzaktan / açılı | şut kalitesi | Pozisyon %60 + Refleks %40 |
+| Kurtarış: kafa | şut kalitesi | Hava topları %50 + Pozisyon %30 + Refleks %20 |
+| Kurtarış: karşı karşıya | şut kalitesi | Bire bir %70 + Refleks %30 |
+
+- **Boy (hava topu):** iki oyuncu arasındaki boy farkı başarıya küçük bir katkı yapar, yaklaşık **10 cm → %3–4**. Hava topu yeteneğinin önüne geçmez (2.5).
+- Henüz belirlenmeyen ağırlıklar (pas, orta, ara pası, araya girme, pres, ofsayt zamanlaması) sonraki oturumda aynı yöntemle eklenecek.
+
+### 14.4 Taktik etkisinin büyüklüğü
+
+- Bir taktik ayarının bir mücadeleye etkisi **15 puan** kadardır. Örnek: "Kanatları kapat" seçildiğinde kanattaki hücumcu, 15 puan daha iyi bir rakiple karşılaşmış gibi zorlanır (ikincil savunmacı desteği, B'ye eklenir); aynı anda merkezdeki aksiyonlar o oranda kolaylaşır.
+- Sonuç: taktik, yetenek farkından biraz daha ağır basar; doğru counter kadro farkını önemli ölçüde dengeleyebilir. Bu bilinçli bir tercihtir.
+- Risk: 15 puan büyük bir etki olduğu için bazı kombinasyonların (6.4) aşırı güçlü çıkma ihtimali vardır. Meta avcısı (10) bunu özellikle kontrol eder. Bir sorun çıkarsa önce mantığa gerçek counter eklenir (ilke 4); etki büyüklüğü sadece kullanıcı onayıyla değişir.
+
+### 14.5 Hedef olay sıklıkları (laboratuvar kontrolü)
+
+| Ölçü | Hedef |
+|---|---|
+| Maç başına ortalama gol | 3–3,5 |
+| Faul (takım başına, normal müdahale sertliği) | ~10–12 |
+| Sarı kart (takım başına, normal) | ~2 |
+| Sert müdahalede | ~16 faul, ~3–4 sarı |
+| Temkinli müdahalede | ~7 faul, ~1 sarı |
+| Kırmızı kart | ~20 maçta bir; sert müdahalede daha sık |
+| Pas isabeti (genel) | gerçek futbol aralığı, ~%80–90 |
+| Uzun pas isabeti | ~%50–60 |
