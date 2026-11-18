@@ -13,7 +13,7 @@
 > - şut yönü ve kaleci erişimi (5.5);
 > - topsuz davranışların yetenek sonucu olarak tanımlanması (4.5);
 > - zincir olasılığı ölçümü, meta avcısının arama yöntemi ve yeni laboratuvar testleri (10).
-> Revizyon 4 (2026-11-18): oyuncu hareketi ve konumlandırma kuralları (4.5) soru–cevapla belirlendi; mevki uyumluluk tablosu (2.4) onaylandı; spiker olayların sebebini de anlatır (9.1, 13.2); açık sorular kapatıldı (online kopma 8, hızlı izleme 9.1, kimya kapsamı 7).
+> Revizyon 4 (2026-11-18): oyuncu hareketi ve konumlandırma kuralları (4.5) soru–cevapla belirlendi; mevki uyumluluk tablosu (2.4) onaylandı; spiker olayların sebebini de anlatır (9.1, 13.2); açık sorular kapatıldı (online kopma 8, hızlı izleme 9.1, kimya kapsamı 7); spikere absürt komik yorum katmanı eklendi (9.1).
 
 ## 0. Oyunun özü
 
@@ -635,6 +635,17 @@ Bu riskler, yoğun presin her rakibe karşı en iyi seçim olmamasını sağlaya
     - *Yetenek karşılaşması:* "Haaland hava topunda Van Dijk'i geçti (%58)." / "Ters ayaklı kanatçı içeri kat edip uzak köşeye vurdu."
     - *Kimya:* "Eski takım arkadaşları Saka ile Ødegaard'ın paslaşması yine işledi."
   - Spiker her olayda değil, **anlamlı anlarda** sebep söyler: goller, büyük fırsatlar, top kayıpları sonrası kontralar, taktik bir örüntü oluştuğunda (örneğin aynı koridordan üst üste atak). Ayrıca ara ara toplu gözlem yapar: "Son 15 dakikada sağ koridordan 6 atak geldi; rakibin sol beki hızda yetişemiyor."
+  - **Komik yorumlar (absürt mizah katmanı):** spiker ara sıra sokak ağzıyla, abartılı ve absürt yorumlar yapar. Bu oyuna kimlik katar. Kurallar:
+    - **Olaya bağlıdır:** her espri bir olay tipine bağlıdır ve sadece o olay olduğunda çıkar. Örnekler:
+      - *sert şut:* "Gavura vurur gibi vurdu!!"
+      - *şaşırtıcı an (beklenmedik kurtarış, çalım, ters köşe):* "Vay babayın düşmanlarına!!!"
+      - *sert müdahale:* "Lülülülü, doktor yok mu doktor!"
+      - kaçan net gol, kaleci hatası, ofsayt tuzağına düşme, direk gibi olaylar için de espri havuzu olur.
+    - **Seyrek ve tekrarsız:** maç başına birkaç kez (örneğin 90 dakikada 3–5); aynı espri aynı maçta tekrar etmez. Sık kullanılırsa etkisini kaybeder.
+    - **Sebebi bozmaz:** espri, sebep anlatımının (yukarıda) yerine geçmez, onun yanında gelir. Örnek: "Gavura vurur gibi vurdu!! Uzaktan şut 91, kaleci pozisyonda yakaladı ama tutamadı, korner."
+    - **Seçilmiş havuz:** espriler ayrı bir metin dosyasında (olay tipi → satırlar) tutulur. Kullanıcı ekleyip çıkarabilir; motor kodu değişmez.
+    - **Ayar:** ayarlarda "Komik yorumlar: açık / kapalı" seçeneği olur. Varsayılan açık.
+    - **Not (yayın öncesi kontrol):** mobil mağazalarda yayınlanacağı için havuzdaki her satır bir kez gözden geçirilir. Bir grubu aşağıladığı şeklinde okunabilecek ifadeler (örneğin "gavur" bazı kişilerce gayrimüslimlere yönelik aşağılayıcı bulunabilir) için karar kullanıcınındır; istenirse yerine aynı tadı veren alternatifler konur ("Kale direğini söküyordu!!").
 - **Sağ:** taktik ve istatistik. İki takımın taktikleri gösterilir (rakibinki maç başında açılır). Canlı istatistikler: koridor başına atak, orta, ikili mücadele başarı oranları, şut ve isabet.
 - **Panel davranışı:** her panelde **tam ekran** ve **kapat** tuşu var. Kapatılan panelin yeri kalan panellere paylaştırılır; kapatılan panel bir tuşla geri açılır.
 - **Dar ekran (dikey telefon):** saha + spiker açık başlar, taktik paneli bir dokunuşla açılır. Yan çevrilmiş telefonda, tablette ve masaüstünde üç panel açık başlar.
