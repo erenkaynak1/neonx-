@@ -53,14 +53,11 @@ try{
   await page.locator('#nxEntry [data-entry-action="guest"]').click();
   await page.locator('#nxEntry[hidden]').waitFor({state:'attached',timeout});
   await page.waitForFunction(()=>document.getElementById('nxEntry')?.hidden===true,null,{timeout});
-  await page.locator('.nx-social-shade.open #nxUsername').waitFor({state:'visible',timeout});
-  const uid=await page.evaluate(async()=>{
-    const {getApp}=await import('https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js');
-    const {getAuth}=await import('https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js');
-    return getAuth(getApp()).currentUser?.uid||null;
-  });
-  assert(uid,'Guest session was not established');
-  mark('Guest login uses Firebase and opens username selection',{uid:uid.slice(0,8)});
+  await page.waitForFunction(()=>Boolean(window.NEON_IDENTITY?.uid&&window.NEON_SOCIAL?.profile?.username),null,{timeout});
+  const identity=await page.evaluate(()=>({uid:window.NEON_IDENTITY.uid,username:window.NEON_SOCIAL.profile.username}));
+  assert(identity.uid,'Guest session was not established');
+  assert(/^Misafir\\d{4,5}$/.test(identity.username),`Unexpected automatic guest name: ${identity.username}`);
+  mark('Guest login creates a Firebase session and assigns an automatic guest name',{uid:identity.uid.slice(0,8),username:identity.username});
 
   await page.reload({waitUntil:'domcontentloaded',timeout});
   await page.waitForFunction(()=>window.NEON_XI_ENTRY&&document.getElementById('nxEntry').hidden===true,null,{timeout});
@@ -75,4 +72,4 @@ try{
   report.ok=true;
 }catch(error){report.error=String(error?.stack||error);await page.screenshot({path:path.join(out,'entry-failure.png'),fullPage:false}).catch(()=>{});throw error}
 finally{await fs.writeFile(path.join(out,'report.json'),JSON.stringify(report,null,2));await context.close();await browser.close()}
-console.log('PASS: first login, actual controls, Google cancellation, guest username, restored session and sign-out.');
+console.log('PASS: first login, actual controls, Google cancellation, automatic guest identity, restored session and sign-out.');
