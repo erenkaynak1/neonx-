@@ -61,7 +61,7 @@ async function signInGoogle(){
     throw e;
   }
 }
-async function continueAsGuest(){message('Misafir hesabı hazırlanıyor…');try{const result=auth.currentUser?{user:auth.currentUser}:await signInAnonymously(auth);state.user=result.user;message('Misafir olarak devam ediyorsun. Şimdi oyun içi adını seç.')}catch(e){const detail=e?.code==='auth/operation-not-allowed'?'Firebase panelinde Anonim giriş sağlayıcısı etkinleştirilmemiş.':(e?.message||'Misafir hesabı oluşturulamadı.');message(detail,true);throw e}}
+async function continueAsGuest(){message('Yeni misafir hesabı hazırlanıyor…');try{if(auth.currentUser)await signOut(auth);const result=await signInAnonymously(auth);state.user=result.user;message('Yeni misafir hesabın hazır. Şimdi oyun içi adını seç.');return result}catch(e){const detail=e?.code==='auth/operation-not-allowed'?'Firebase panelinde Anonim giriş sağlayıcısı etkinleştirilmemiş.':(e?.message||'Misafir hesabı oluşturulamadı.');message(detail,true);throw e}}
 async function signOutGoogle(){await stopPresence();await signOut(auth);message('Hesaptan çıkış yapıldı.')}
 
 function shell(){
@@ -310,7 +310,7 @@ function bindUser(user){
   state.userOffs.push(onValue(ref(db,'social/higherLower/allTime'),s=>{state.hlAll=s.val()||{};if(state.tab==='leaderboard')renderLeaderboard()},()=>{state.hlAll={}}));
   watch(`social/userParty/${user.uid}`,s=>{state.partyId=s.val()||'';state.partyOff?.();state.party=null;if(!state.partyId){render();return}state.partyOff=onValue(ref(db,`social/parties/${state.partyId}`),p=>{state.party=p.val();const l=state.party?.launch;if(l?.mode&&l?.nonce)navigateParty(l);render()})});
 }
-function bind(){onAuthStateChanged(auth,user=>{if(user)bindUser(user);else{stopPresence();clearUserBindings();state.user=null;button.textContent='GİRİŞ';button.dataset.count='0';render()}})}
+function bind(){onAuthStateChanged(auth,user=>{window.NEON_XI_ENTRY?.resolveAuth?.(user);if(user)bindUser(user);else{stopPresence();clearUserBindings();state.user=null;button.textContent='GİRİŞ';button.dataset.count='0';render()}})}
 
 shell();bind();
 // Player card: opens from any leaderboard place ([data-lb-player]) with avatar, stats, head-to-head and
