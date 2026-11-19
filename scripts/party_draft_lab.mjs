@@ -11,18 +11,22 @@ const HOME_READY='#bootHome.nx-approved-home-v1 .nx-home-map';
 const FRIENDS_ENTRY='#bootHome.nx-approved-home-v1 .nx-hotspot[data-action="friends"]';
 async function beginGuestOnPage(page){
   const entry=page.locator('#nxEntry [data-entry-action="guest"]');
-  if(await entry.count()){
+  if(await entry.count()&&await entry.isVisible().catch(()=>false)){
     await page.waitForFunction(()=>{
       const gate=document.getElementById('nxEntry');
       return Boolean(gate&&!gate.hidden&&gate.dataset.phase==='welcome');
     },null,{timeout:TIMEOUT});
     await entry.click();
-    await page.locator('.nx-social-shade.open .nx-social-view.active #nxUsername').waitFor({state:'visible',timeout:TIMEOUT});
-    return;
+  }else{
+    const hasProfile=await page.evaluate(()=>Boolean(window.NEON_IDENTITY?.uid&&window.NEON_SOCIAL?.profile?.username));
+    if(!hasProfile){
+      await page.locator(FRIENDS_ENTRY).click();
+      const active=page.locator('.nx-social-shade.open .nx-social-view.active');
+      await active.locator('[data-act="guest-login"]').click();
+    }
   }
-  await page.locator(FRIENDS_ENTRY).click();
-  const active=page.locator('.nx-social-shade.open .nx-social-view.active');
-  await active.locator('[data-act="guest-login"]').click();
+  await page.waitForFunction(()=>Boolean(window.NEON_IDENTITY?.uid&&window.NEON_SOCIAL?.profile?.username),null,{timeout:TIMEOUT});
+  return page.evaluate(()=>({uid:window.NEON_IDENTITY.uid,username:window.NEON_SOCIAL.profile.username}));
 }
 await fs.mkdir(OUT_DIR,{recursive:true});
 
@@ -43,18 +47,15 @@ async function makeBot(browser,label){
 }
 
 async function guestSignIn(bot){
-  const {page,username}=bot;
-  await beginGuestOnPage(page);
-  const shade=page.locator('.nx-social-shade.open');await shade.waitFor({state:'visible'});
-  const active=shade.locator('.nx-social-view.active');
-  const input=active.locator('#nxUsername');await input.waitFor({state:'visible'});await input.fill(username);await active.locator('[data-act="claim"]').click();
-  await page.waitForFunction(name=>document.body.textContent.includes(`@${name}`),username,{timeout:TIMEOUT});
-  await page.waitForFunction(()=>Boolean(window.NEON_IDENTITY?.uid&&window.NEON_SOCIAL_CONSISTENCY?.diagnostics),null,{timeout:15000});
-  bot.uid=await page.evaluate(()=>window.NEON_IDENTITY.uid);assert.ok(bot.uid,`${username}: UID oluşmadı`);
-  const close=shade.locator('.nx-social-close');if(await close.isVisible().catch(()=>false))await close.click();await shade.waitFor({state:'hidden',timeout:10000}).catch(()=>{});
-}
-
-async function api(bot,method,...args){return bot.page.evaluate(async({method,args})=>{const x=window.NEON_SOCIAL_CONSISTENCY;if(!x||typeof x[method]!=='function')throw new Error(`Consistency API missing: ${method}`);return await x[method](...args)},{method,args})}
+  const {page}=bot,identity=await beginGuestOnPage(page);
+  bot.uid=identity.uid;bot.username=identity.username;
+  assert.ok(bot.uid&&bot.username,'Misafir oturumu veya otomatik oyuncu adı oluşmadı');
+  const shade=page.locator('.nx-social-shade.open');
+  const close=shade.locator('.nx-social-close');
+  if(await close.isVisible().catch(()=>false))await close.click();
+  await shade.waitFor({state:'hidden',timeout:10000}).catch(()=>{});
+  return identity;
+}async function api(bot,method,...args){return bot.page.evaluate(async({method,args})=>{const x=window.NEON_SOCIAL_CONSISTENCY;if(!x||typeof x[method]!=='function')throw new Error(`Consistency API missing: ${method}`);return await x[method](...args)},{method,args})}
 async function diagnostics(bot){return api(bot,'diagnostics')}
 async function readRoom(page,code){return page.evaluate(async roomCode=>{const [{getApp,getApps},{getDatabase,get,ref}]=await Promise.all([import('https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js'),import('https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js')]);if(!getApps().length)return null;return (await get(ref(getDatabase(getApp()),`rooms/${roomCode}`))).val()},code)}
 async function waitRoom(page,code,predicate,timeout=20000){const start=Date.now();let room=null;while(Date.now()-start<timeout){room=await readRoom(page,code);if(predicate(room))return room;await new Promise(r=>setTimeout(r,250))}return room}
