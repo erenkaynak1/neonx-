@@ -56,7 +56,7 @@ try{
   await page.waitForFunction(()=>Boolean(window.NEON_IDENTITY?.uid&&window.NEON_SOCIAL?.profile?.username),null,{timeout});
   const identity=await page.evaluate(()=>({uid:window.NEON_IDENTITY.uid,username:window.NEON_SOCIAL.profile.username}));
   assert(identity.uid,'Guest session was not established');
-  assert(/^Misafir\\d{4,5}$/.test(identity.username),`Unexpected automatic guest name: ${identity.username}`);
+  assert(/^Misafir\d{4,5}$/.test(identity.username),`Unexpected automatic guest name: ${identity.username}`);
   mark('Guest login creates a Firebase session and assigns an automatic guest name',{uid:identity.uid.slice(0,8),username:identity.username});
 
   await page.reload({waitUntil:'domcontentloaded',timeout});
