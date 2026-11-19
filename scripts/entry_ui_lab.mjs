@@ -78,7 +78,7 @@ try{
 
   await page.reload({waitUntil:'domcontentloaded',timeout});
   await page.waitForFunction(()=>window.NEON_XI_ENTRY&&document.getElementById('nxEntry').hidden===true,null,{timeout});
-  await page.waitForFunction(()=>window.NEON_IDENTITY?.uid===window.__nxExpectedGuestUid,null,{timeout}).catch(()=>{});
+  await page.waitForFunction(()=>Boolean(window.NEON_IDENTITY?.uid),null,{timeout});
   const restored=await page.evaluate(()=>window.NEON_IDENTITY?.uid||'');
   assert.equal(restored,secondIdentity.uid,'The newly created guest identity must persist on reload');
   mark('Fresh guest identity persists across reloads');
