@@ -27,6 +27,7 @@ on:
       - 'scripts/party_draft_lab.mjs'
       - 'scripts/entry_ui_lab.mjs'
       - 'scripts/party_draft_tournament_lab.mjs'
+      - 'scripts/arcade_nav_ui_lab.mjs'
       - '.github/workflows/neon-bot-lab.yml'
       - 'index.html'
       - 'neon-xi-core.html'
