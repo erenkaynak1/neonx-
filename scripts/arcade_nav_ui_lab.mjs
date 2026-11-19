@@ -51,7 +51,7 @@ try{
     });
     assert.equal(menu.panelPosition,'relative',name+': refreshed game menu should use normal-flow panel positioning');
     assert.equal(menu.gridDisplay,'grid',name+': game mode cards lost their grid');
-    assert.equal(menu.helpPosition,'absolute',name+': help card lost game styling');
+    assert.equal(menu.helpPosition,'relative',name+': refreshed help card should stay in normal document flow');
     assert.equal(menu.buttonCount,3,name+': mode choices missing');
     assert(menu.panelRect.height>100&&menu.panelRect.height<450,name+': menu panel has invalid size');
     assert(menu.panelRect.width>200&&menu.panelRect.width<=390,name+': menu panel exceeds mobile width');
