@@ -69,6 +69,18 @@ try{
   await page.evaluate(()=>window.NEON_SOCIAL.signOut());
   await page.waitForFunction(()=>document.getElementById('nxEntry')?.dataset.phase==='welcome'&&!document.getElementById('nxEntry').hidden,null,{timeout});
   mark('Signing out shows sign-in screen again');
+
+  await page.locator('#nxEntry [data-entry-action="guest"]').click();
+  await page.waitForFunction(()=>Boolean(window.NEON_IDENTITY?.uid&&window.NEON_SOCIAL?.profile?.username),null,{timeout});
+  const secondIdentity=await page.evaluate(()=>({uid:window.NEON_IDENTITY.uid,username:window.NEON_SOCIAL.profile.username}));
+  assert.notEqual(secondIdentity.uid,identity.uid,'A new explicit guest login must create a different Firebase UID');
+  mark('Each explicit guest login creates a fresh independent Firebase identity',{firstUid:identity.uid.slice(0,8),secondUid:secondIdentity.uid.slice(0,8)});
+
+  await page.reload({waitUntil:'domcontentloaded',timeout});
+  await page.waitForFunction(()=>window.NEON_XI_ENTRY&&document.getElementById('nxEntry').hidden===true,null,{timeout});
+  const restored=await page.evaluate(()=>window.NEON_IDENTITY?.uid||'');
+  assert.equal(restored,secondIdentity.uid,'The newly created guest identity must persist on reload');
+  mark('Fresh guest identity persists across reloads');
   report.ok=true;
 }catch(error){report.error=String(error?.stack||error);await page.screenshot({path:path.join(out,'entry-failure.png'),fullPage:false}).catch(()=>{});throw error}
 finally{await fs.writeFile(path.join(out,'report.json'),JSON.stringify(report,null,2));await context.close();await browser.close()}
