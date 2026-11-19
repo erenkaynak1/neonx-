@@ -11,18 +11,22 @@ const HOME_READY='#bootHome.nx-approved-home-v1 .nx-home-map';
 const FRIENDS_ENTRY='#bootHome.nx-approved-home-v1 .nx-hotspot[data-action="friends"]';
 async function beginGuestOnPage(page){
   const entry=page.locator('#nxEntry [data-entry-action="guest"]');
-  if(await entry.count()){
+  if(await entry.count()&&await entry.isVisible().catch(()=>false)){
     await page.waitForFunction(()=>{
       const gate=document.getElementById('nxEntry');
       return Boolean(gate&&!gate.hidden&&gate.dataset.phase==='welcome');
     },null,{timeout:TIMEOUT});
     await entry.click();
-    await page.locator('.nx-social-shade.open .nx-social-view.active #nxUsername').waitFor({state:'visible',timeout:TIMEOUT});
-    return;
+  }else{
+    const hasProfile=await page.evaluate(()=>Boolean(window.NEON_IDENTITY?.uid&&window.NEON_SOCIAL?.profile?.username));
+    if(!hasProfile){
+      await page.locator(FRIENDS_ENTRY).click();
+      const active=page.locator('.nx-social-shade.open .nx-social-view.active');
+      await active.locator('[data-act="guest-login"]').click();
+    }
   }
-  await page.locator(FRIENDS_ENTRY).click();
-  const active=page.locator('.nx-social-shade.open .nx-social-view.active');
-  await active.locator('[data-act="guest-login"]').click();
+  await page.waitForFunction(()=>Boolean(window.NEON_IDENTITY?.uid&&window.NEON_SOCIAL?.profile?.username),null,{timeout:TIMEOUT});
+  return page.evaluate(()=>({uid:window.NEON_IDENTITY.uid,username:window.NEON_SOCIAL.profile.username}));
 }
 await fs.mkdir(OUT_DIR,{recursive:true});
 
@@ -50,21 +54,14 @@ async function makeBot(browser,label){
 }
 
 async function guestSignIn(bot){
-  const {page,username}=bot;
-  await beginGuestOnPage(page);
-  const active=page.locator('.nx-social-shade.open .nx-social-view.active');
-  
-  const input=active.locator('#nxUsername');await input.waitFor({state:'visible'});await input.fill(username);await active.locator('[data-act="claim"]').click();
-  await page.waitForFunction(name=>document.body.textContent.includes(`@${name}`),username,{timeout:TIMEOUT});
-  await page.waitForFunction(()=>Boolean(window.NEON_IDENTITY?.uid),null,{timeout:15000});
-  bot.uid=await page.evaluate(()=>window.NEON_IDENTITY.uid);
-  assert.ok(bot.uid,`${username}: UID oluşmadı`);
-  const close=page.locator('.nx-social-shade.open .nx-social-close');if(await close.isVisible().catch(()=>false))await close.click();
+  const {page}=bot,identity=await beginGuestOnPage(page);
+  bot.uid=identity.uid;bot.username=identity.username;
+  assert.ok(bot.uid&&bot.username,'Misafir oturumu veya otomatik oyuncu adı oluşmadı');
+  const close=page.locator('.nx-social-shade.open .nx-social-close');
+  if(await close.isVisible().catch(()=>false))await close.click();
   await page.locator('.nx-social-shade.open').waitFor({state:'hidden',timeout:10000}).catch(()=>{});
-  return {username,uid:bot.uid};
-}
-
-async function openDrawer(bot,tab='friends'){
+  return identity;
+}async function openDrawer(bot,tab='friends'){
   const {page}=bot,layer=page.locator('#bootHome.nx-approved-home-v1 .nx-social-drawer-layer.open');
   if(!(await layer.isVisible().catch(()=>false))){await page.locator(FRIENDS_ENTRY).click();await layer.waitFor({state:'visible'})}
   const targetTab=['friends','lobby','invites'].includes(tab)?tab:'friends';
