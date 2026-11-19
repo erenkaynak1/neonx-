@@ -10,18 +10,22 @@ const token=`${Date.now().toString(36)}${Math.random().toString(36).slice(2,7)}`
 const FRIENDS_ENTRY='#bootHome.nx-approved-home-v1 .nx-hotspot[data-action="friends"]';
 async function beginGuestOnPage(page){
   const entry=page.locator('#nxEntry [data-entry-action="guest"]');
-  if(await entry.count()){
+  if(await entry.count()&&await entry.isVisible().catch(()=>false)){
     await page.waitForFunction(()=>{
       const gate=document.getElementById('nxEntry');
       return Boolean(gate&&!gate.hidden&&gate.dataset.phase==='welcome');
     },null,{timeout:TIMEOUT});
     await entry.click();
-    await page.locator('.nx-social-shade.open .nx-social-view.active #nxUsername').waitFor({state:'visible',timeout:TIMEOUT});
-    return;
+  }else{
+    const hasProfile=await page.evaluate(()=>Boolean(window.NEON_IDENTITY?.uid&&window.NEON_SOCIAL?.profile?.username));
+    if(!hasProfile){
+      await page.locator(FRIENDS_ENTRY).click();
+      const active=page.locator('.nx-social-shade.open .nx-social-view.active');
+      await active.locator('[data-act="guest-login"]').click();
+    }
   }
-  await page.locator(FRIENDS_ENTRY).click();
-  const active=page.locator('.nx-social-shade.open .nx-social-view.active');
-  await active.locator('[data-act="guest-login"]').click();
+  await page.waitForFunction(()=>Boolean(window.NEON_IDENTITY?.uid&&window.NEON_SOCIAL?.profile?.username),null,{timeout:TIMEOUT});
+  return page.evaluate(()=>({uid:window.NEON_IDENTITY.uid,username:window.NEON_SOCIAL.profile.username}));
 }
 await fs.mkdir(OUT,{recursive:true});
 const report={token,startedAt:new Date().toISOString(),baseUrl:BASE_URL,scenarios:[],bots:[]};
@@ -46,19 +50,14 @@ async function makeBot(browser,label){
 }
 
 async function signIn(bot){
-  const p=bot.page;
-  await beginGuestOnPage(p);
-  const active=p.locator('.nx-social-shade.open .nx-social-view.active');
-  
-  const input=active.locator('#nxUsername');await input.waitFor({state:'visible'});await input.fill(bot.username);await active.locator('[data-act="claim"]').click();
-  await p.waitForFunction(name=>document.body.textContent.includes(`@${name}`),bot.username,{timeout:TIMEOUT});
-  await p.waitForFunction(()=>Boolean(window.NEON_IDENTITY?.uid&&window.NEON_SOCIAL_CONSISTENCY),null,{timeout:TIMEOUT});
-  bot.uid=await p.evaluate(()=>window.NEON_IDENTITY.uid);assert.ok(bot.uid);
-  const close=p.locator('.nx-social-shade.open .nx-social-close');if(await close.isVisible().catch(()=>false))await close.click();
-  return {uid:bot.uid,username:bot.username};
-}
-
-async function call(bot,method,...args){return bot.page.evaluate(async({method,args})=>{const api=window.NEON_SOCIAL_CONSISTENCY;if(!api||typeof api[method]!=='function')throw new Error(`Missing consistency method ${method}`);return await api[method](...args)},{method,args})}
+  const identity=await beginGuestOnPage(bot.page);
+  bot.uid=identity.uid;bot.username=identity.username;
+  assert.ok(bot.uid&&bot.username,'Misafir oturumu veya otomatik oyuncu adı oluşmadı');
+  const close=bot.page.locator('.nx-social-shade.open .nx-social-close');
+  if(await close.isVisible().catch(()=>false))await close.click();
+  await bot.page.locator('.nx-social-shade.open').waitFor({state:'hidden',timeout:10000}).catch(()=>{});
+  return identity;
+}async function call(bot,method,...args){return bot.page.evaluate(async({method,args})=>{const api=window.NEON_SOCIAL_CONSISTENCY;if(!api||typeof api[method]!=='function')throw new Error(`Missing consistency method ${method}`);return await api[method](...args)},{method,args})}
 async function diag(bot){return call(bot,'diagnostics')}
 async function expectReject(promise,pattern){try{await promise}catch(error){if(pattern)assert.match(String(error?.message||error),pattern);return String(error?.message||error)}throw new Error('İşlem beklenen şekilde reddedilmedi')}
 async function befriend(a,b){await Promise.all([call(a,'sendFriend',b.uid,b.username),call(b,'sendFriend',a.uid,a.username)]);await waitUntil(async()=>{const [da,db]=await Promise.all([diag(a),diag(b)]);return da.friends?.[b.uid]&&db.friends?.[a.uid]&&Object.keys(da.requests||{}).length===0&&Object.keys(db.requests||{}).length===0},`${a.label}-${b.label} friendship convergence`)}
