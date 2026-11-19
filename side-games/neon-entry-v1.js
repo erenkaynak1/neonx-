@@ -76,6 +76,9 @@
     if(previousFocus?.isConnected)previousFocus.focus({preventScroll:true});
   }
   function resolveAuth(user){
+    // A guest switch signs out the previous identity before creating a fresh anonymous account.
+    // Keep the welcome flow busy during that intentional null-auth transition to avoid a screen flash.
+    if(!user&&busy&&intent==='guest')return;
     checked=true;clearTimeout(timer);authUser=user||null;
     if(user){
       const originatedHere=Boolean(intent),wasGuest=intent==='guest';
