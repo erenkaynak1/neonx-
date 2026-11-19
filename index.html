@@ -81,7 +81,7 @@ html,body{margin:0;min-height:100%;background:#050708;color:#baff18;font-family:
       '<script type="module" src="./social/party-ready-notify-v1.js?v='+VERSION+'"><\/script>'+ 
       '<link rel="stylesheet" href="./match-mobile-layout-fix-v1.css?v='+VERSION+'">'+
       '<script src="./side-games/neon-entry-v1.js?v='+VERSION+'"><\/script>'+ 
-      '<script type="module" src="./side-games/neon-entry-auth-v1.js?v='+VERSION+'"><\/script>'+REVEAL_SCRIPT;
+      REVEAL_SCRIPT;
     const pos=[...html.matchAll(/<\/body\s*>/gi)].at(-1)?.index ?? -1;
     if(pos<0)throw new Error('Core document contract failed: </body> missing');
     html=html.slice(0,pos)+injector+html.slice(pos);
