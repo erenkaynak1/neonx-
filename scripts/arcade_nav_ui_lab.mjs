@@ -49,15 +49,15 @@ try{
         iconWidth:icon?.width||0,iconHeight:icon?.height||0,helpPosition:helpStyle.position,
         helpRect:help.getBoundingClientRect().toJSON(),bodyBackground:getComputedStyle(document.body).backgroundColor};
     });
-    assert.equal(menu.panelPosition,'absolute',name+': game menu lost positioned panel CSS');
+    assert.equal(menu.panelPosition,'relative',name+': refreshed game menu should use normal-flow panel positioning');
     assert.equal(menu.gridDisplay,'grid',name+': game mode cards lost their grid');
     assert.equal(menu.helpPosition,'absolute',name+': help card lost game styling');
     assert.equal(menu.buttonCount,3,name+': mode choices missing');
     assert(menu.panelRect.height>100&&menu.panelRect.height<450,name+': menu panel has invalid size');
     assert(menu.panelRect.width>200&&menu.panelRect.width<=390,name+': menu panel exceeds mobile width');
     assert(menu.iconWidth>10&&menu.iconWidth<90&&menu.iconHeight<90,name+': giant unstyled SVG icon');
-    assert(menu.clipPath!=='none',name+': cut-corner panel lost');
-    assert(menu.background!=='rgba(0, 0, 0, 0)'&&menu.background!=='transparent',name+': neon panel background lost');
+    assert.equal(menu.clipPath,'none',name+': refreshed clean menu should not retain legacy cut-corner clipping');
+    assert(menu.background==='rgba(0, 0, 0, 0)'||menu.background==='transparent',name+': refreshed menu panel should remain visually unframed');
     result.gameMenu=menu;
 
    }
