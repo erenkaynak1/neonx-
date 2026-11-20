@@ -33,6 +33,10 @@
 > - önce küçük prototip (12).
 >
 > Revizyon 7 (2026-11-20): mücadele tablosu (14.6) tamamlandı: kontrol, pres, kısa ve uzun pas, araya girme, ara pası, ofsayt zamanlaması, orta ve bek bloğu, kafa vuruşu, penaltı, direkt frikik, faul olasılığı. Vizyon savunmada oyunu okuma olarak da kullanılır.
+>
+> Revizyon 8 (2026-11-20): 17 dizilişin 34 şablonu yazıldı (bölüm 15).
+>
+> Revizyon 9 (2026-11-20): kalan 20 açık noktanın 17'si kapatıldı (bölüm 16); havuz seçimi, maç öncesi ekranı ve 2D saha ayrıntıları kullanıcı kararıyla ertelendi (bölüm 11).
 
 ## 0. Oyunun özü
 
@@ -777,18 +781,38 @@ Her test için başarı ölçütü ve örnek sayısı (başlangıç önerisi; mo
 | Online doğrulama | Ev sahibi ve rakip cihazın hesapladığı olay kaydı özeti farklı tarayıcılarda aynı | 3 tarayıcı × 100 maç |
 | Performans | Ekransız 1.000 maç makul sürede (örneğin bir dakikanın altında) | 1.000 maç |
 
-## 11. Açık sorular
+## 11. Açık noktalar
 
-Şu an açık soru yok. Kapatılanlar (2026-11-18):
-- **Online kopma:** kararı 8. bölümde.
-- **Hızlı izleme:** kararı 9.1'de.
-- **Kimya ile taktik ilişkisi:** kimya ikili aksiyonlara bağlanmaz; sadece oyuncu yeteneklerine artış olarak etki eder (7).
+> Kullanıcı kararı (2026-11-20): **hiçbir şey açıkta kalmayacak.** 20 maddenin 17'si soru–cevapla kapatıldı (ayrıntılar bölüm 16'da). Kalan üçü, kullanıcının kararıyla sonraki aşamaya **ertelendi**; açık değil, takvimi belli.
+
+| # | Konu | Durum |
+|---|---|---|
+| 1 | Aksiyon seçiminin temel olasılıkları | ✓ 16.1 |
+| 2 | Taktik ayarlarının etki türü ve büyüklüğü | ✓ 16.2 |
+| 3 | Zayıf ayak kaybı | ✓ 16.3 |
+| 4 | Aksiyon sürelerinin seçimi | ✓ 16.4 |
+| 5 | Tehdit puanı formülü | ✓ 16.5 |
+| 6 | Doğru görev / çakışmada kayma olasılığı | ✓ 16.5 |
+| 7 | Top çekimi | ✓ 16.5 |
+| 8 | Ofsayt zamanlama hatası | ✓ 16.6 |
+| 9 | Pres tetikleyici olasılıkları | ✓ 16.7 |
+| 10 | İkinci topun düştüğü yer | ✓ 16.8 |
+| 11 | Kaleci çıkışları | ✓ 16.9 |
+| 12 | Kart kuralları | ✓ 16.10 |
+| 13 | Duran toplar (korner, frikik, taç) | ✓ 16.11 |
+| 14 | Draft kuralları | ✓ 16.12 |
+| 15 | Havuz seçimi | **Ertelendi** (kullanıcı: "havuzu sonra yapacağız"); veri aşamasında kararlaştırılacak |
+| 16 | Bot algoritmaları | ✓ 16.13 |
+| 17 | Maç sonu oyuncu puanı | ✓ 16.14 |
+| 18 | Spiker kuralları | ✓ 16.15 |
+| 19 | Maç öncesi taktik ekranı | **Ertelendi** (kullanıcı: "bu ekranı sonra yaparız"); taslak tuvalde duruyor |
+| 20 | 2D saha görsel ayrıntıları | **Ertelendi** (kullanıcı: "sonra sor"); ekran aşamasında sorulacak |
 
 ## 12. Yol haritası
 
 Kodlamadan önce çözülecekler (sırasıyla):
 
-1. **Oyuncu hareketi ve konumlandırma (4.5):** ✓ kurallar belirlendi (2026-11-18). Kalan iş: 34 diziliş şablonunun bölge tabloları.
+1. **Oyuncu hareketi ve konumlandırma (4.5):** ✓ kurallar belirlendi (2026-11-18); ✓ 34 diziliş şablonu yazıldı (bölüm 15, 2026-11-20).
 2. **Aksiyon ve mücadele zincirleri:** üç katmanlı savunma (4.6) dahil, her halkanın yetenek ağırlıkları.
 3. **Şut ve gol hesaplaması (5.5):** isabet, kalite, kaleci, sekme.
 4. **Ofsayt geometrisi (5.6).**
@@ -966,3 +990,409 @@ Her mücadele tek bir satırda tanımlanır. Ağırlıklar yüzde olarak verilir
 | Direkt frikik | Uzaktan şut 70 + Orta 30 (falso) | Önce baraj bloğu (barajdaki oyuncu sayısı mesafeye göre), sonra isabet (sabit zorluk), sonra kaleci: Pozisyon 60 + Refleks 40 | Mesafe, açı | — | 0,085; gerçek futbolda direkt frikik golü ~%6–8 (gösterge) |
 
 **Faul olasılığı:** savunmacı bir mücadeleyi kaybettiğinde faul olasılığı = temel oran × müdahale sertliği çarpanı × top kapma çarpanı. Top kapma düştükçe çarpan artar: top kapması 90 olan stoper nadiren faul yapar, 50 olan sık yapar. Temel oran, izlenen faul sıklığıyla (14.5, takım başına ~10–12) başlatılır.
+
+## 15. Diziliş şablonları (34 şablon)
+
+> Revizyon 8 (2026-11-20). Her dizilişin iki şablonu: **top bizdeyken** ve **top rakipteyken** her pozisyonun temel bölgesi. Hareket kuralları (4.5) bu temel bölgelerden başlar.
+
+### 15.1 Gösterim ve okuma kuralları
+
+- **Bölge adı:** sütun harfi + satır numarası. Sütunlar soldan sağa (hücum yönüne bakarken) **A** sol kanat, **B** sol iç, **C** merkez, **D** sağ iç, **E** sağ kanat. Satırlar kendi kalemizden rakip kaleye **1–6**: 1 kendi ceza sahamız, 2–3 kendi yarı sahamız, 4–5 rakip yarı saha, 6 rakip ceza sahası. Örnek: **E5** rakip yarı sahada sağ kanat.
+- **Referans durum:**
+  - *Top bizdeyken:* top rakip yarı sahada, orta koridorda; takım yerleşik hücumda.
+  - *Top rakipteyken:* **orta hat**, top orta koridorda, rakip kendi yarı sahasında oyun kuruyor.
+- **Bölge içi konum:** oyuncunun koordinatı (3.1) bölgenin merkezinden başlar. Aynı bölgede iki oyuncu varsa "önde / geride" ya da sol / sağ yarıya ayrılırlar (tabloda yazılı). Kaleci kale çizgisinin ~8 m önündedir.
+- **"Stoperlerin önü":** ön libero C2'nin üst kısmında, stoperlerle orta saha hattı arasında durur.
+
+### 15.2 Şablonları kaydıran genel kurallar
+
+Tablolar sadece referans durumdur. Her aksiyonun başında hedef konum (4.5.10) şu kaydırmalarla hesaplanır:
+1. **Topun boydaki yeri (top bizdeyken):** top kendi yarı sahamızdaysa (oyun kurma) kaleci hariç herkes **1 satır geri** gelir; forvetler en fazla 5. satıra iner. Top rakip ceza sahası çevresindeyse (satır 5–6) orta saha ve bekler **yarım satır ileri** gelir.
+2. **Hat yüksekliği (top rakipteyken):** *alçak* → kaleci hariç herkes 1 satır geri (savunma hattı 1. satırın üst kısmı, forvet 3. satır); *yüksek* → herkes 1 satır ileri (savunma hattı 3. satır, forvet 5. satır).
+3. **Topun ende yeri (kayma, 4.5.2):** top bir kanattaysa takım o tarafa kayar. *Dengeli:* herkes topa doğru yarım sütun. *Kanatlar:* top tarafındaki bek, kanat oyuncusu ve en yakın orta saha tam bir sütun, diğerleri yarım sütun; karşı kanat oyuncusu içeri girer. *Merkez:* C koridorundakiler yerinde kalır, kanat oyuncuları yarım sütun içeri.
+4. **Hücum yönü (top bizdeyken):** seçilen koridorun tarafındaki bek ve orta saha yarım satır ileri; *dengeli* değişiklik yapmaz.
+5. **Tempo:** *hızlı* tempoda forvetler ve kanat oyuncuları son çizgide (satır 6) kalır; *sabırlı* tempoda orta sahalar topa yarım satır yaklaşır (pas üçgeni için).
+6. **Bireysel hareketler:** bek bindirmesi, arka kapatma, forvet koşuları, kanatçının içeri girmesi vb. bu kaydırılmış şablonun üstüne eklenir (4.5.3–4.5.9). Kırmızı kartta en hücumdaki pozisyon boşaltılır, kalanlar şablona en yakın şekilde yeniden dağılır (3.3).
+
+### 15.3 Şablon tabloları
+
+#### 4-4-2
+Dengeli iki forvet. Orta sahada biri tutar, biri ileri çıkar.
+
+| Pozisyon | Mevki | Top bizde | Top rakipte |
+|---|---|---|---|
+| GK | GK | C1 | C1 |
+| Sol bek | LB | A4 | A2 |
+| Sol stoper | CB | B2 | B2 |
+| Sağ stoper | CB | D2 | D2 |
+| Sağ bek | RB | E4 | E2 |
+| Sol orta saha | LM | A5 | A3 |
+| Merkez orta saha (tutan) | CM | C3 | B3 |
+| Merkez orta saha (çıkan) | CM | C4 | D3 |
+| Sağ orta saha | RM | E5 | E3 |
+| Sol forvet | ST | B6 | C4 (önde) |
+| Sağ forvet | ST | D6 | C4 (geride) |
+
+#### 4-3-3
+Üç forvet, tek ön libero. Savunmada kanatçılar inip 4-1-4-1 olur.
+
+| Pozisyon | Mevki | Top bizde | Top rakipte |
+|---|---|---|---|
+| GK | GK | C1 | C1 |
+| Sol bek | LB | A4 | A2 |
+| Sol stoper | CB | B2 | B2 |
+| Sağ stoper | CB | D2 | D2 |
+| Sağ bek | RB | E4 | E2 |
+| Ön libero | DM | C3 | C2 (stoperlerin önü) |
+| Sol iç orta saha | CM | B4 | B3 |
+| Sağ iç orta saha | CM | D4 | D3 |
+| Sol kanat | LW | A5 | A3 |
+| Santrfor | ST | C6 | C4 |
+| Sağ kanat | RW | E5 | E3 |
+
+#### 4-2-3-1
+Çift ön libero, 10 numara. Savunmada 4-4-1-1.
+
+| Pozisyon | Mevki | Top bizde | Top rakipte |
+|---|---|---|---|
+| GK | GK | C1 | C1 |
+| Sol bek | LB | A4 | A2 |
+| Sol stoper | CB | B2 | B2 |
+| Sağ stoper | CB | D2 | D2 |
+| Sağ bek | RB | E4 | E2 |
+| Sol ön libero | DM | B3 | B3 |
+| Sağ ön libero | DM | D3 | D3 |
+| Sol kanat | LW | A5 | A3 |
+| 10 numara | AM | C5 | C4 (geride) |
+| Sağ kanat | RW | E5 | E3 |
+| Santrfor | ST | C6 | C4 (önde) |
+
+#### 4-1-4-1
+4-3-3'ün daha temkinli hali: geniş orta sahalar kanatçılardan daha geride oynar.
+
+| Pozisyon | Mevki | Top bizde | Top rakipte |
+|---|---|---|---|
+| GK | GK | C1 | C1 |
+| Sol bek | LB | A3 | A2 |
+| Sol stoper | CB | B2 | B2 |
+| Sağ stoper | CB | D2 | D2 |
+| Sağ bek | RB | E3 | E2 |
+| Ön libero | DM | C3 | C2 (stoperlerin önü) |
+| Sol iç orta saha | CM | B4 | B3 |
+| Sağ iç orta saha | CM | D4 | D3 |
+| Sol orta saha | LM | A5 | A3 |
+| Sağ orta saha | RM | E5 | E3 |
+| Santrfor | ST | C6 | C4 |
+
+#### 4-4-1-1
+İkinci forvet santrforun arkasında; savunmada ilk presi ikisi birlikte yapar.
+
+| Pozisyon | Mevki | Top bizde | Top rakipte |
+|---|---|---|---|
+| GK | GK | C1 | C1 |
+| Sol bek | LB | A4 | A2 |
+| Sol stoper | CB | B2 | B2 |
+| Sağ stoper | CB | D2 | D2 |
+| Sağ bek | RB | E4 | E2 |
+| Sol orta saha | LM | A5 | A3 |
+| Merkez orta saha (tutan) | CM | C3 | B3 |
+| Merkez orta saha (çıkan) | CM | C4 | D3 |
+| Sağ orta saha | RM | E5 | E3 |
+| İkinci forvet | AM | C5 | C4 (geride) |
+| Santrfor | ST | C6 | C4 (önde) |
+
+#### 4-3-2-1
+Noel ağacı: dar, merkezde kalabalık. Genişliği sadece bekler verir.
+
+| Pozisyon | Mevki | Top bizde | Top rakipte |
+|---|---|---|---|
+| GK | GK | C1 | C1 |
+| Sol bek | LB | A4 | A2 |
+| Sol stoper | CB | B2 | B2 |
+| Sağ stoper | CB | D2 | D2 |
+| Sağ bek | RB | E4 | E2 |
+| Sol orta saha | CM | B3 | B3 |
+| Merkez orta saha | CM | C3 | C3 |
+| Sağ orta saha | CM | D3 | D3 |
+| Sol 10 numara | AM | B5 | B4 |
+| Sağ 10 numara | AM | D5 | D4 |
+| Santrfor | ST | C6 | C4 |
+
+#### 4-1-2-1-2
+Elmas: dar, iki forvet. Kanatlar boş; genişliği bekler verir.
+
+| Pozisyon | Mevki | Top bizde | Top rakipte |
+|---|---|---|---|
+| GK | GK | C1 | C1 |
+| Sol bek | LB | A4 | A2 |
+| Sol stoper | CB | B2 | B2 |
+| Sağ stoper | CB | D2 | D2 |
+| Sağ bek | RB | E4 | E2 |
+| Ön libero | DM | C3 | C2 (stoperlerin önü) |
+| Sol iç orta saha | CM | B4 | B3 |
+| Sağ iç orta saha | CM | D4 | D3 |
+| 10 numara | AM | C5 | C4 |
+| Sol forvet | ST | B6 | B4 |
+| Sağ forvet | ST | D6 | D4 |
+
+#### 4-2-2-2
+Kutu orta saha: iki ön libero, iki iç 10 numara, iki forvet. Savunmada 10 numaralar kanatlara açılır.
+
+| Pozisyon | Mevki | Top bizde | Top rakipte |
+|---|---|---|---|
+| GK | GK | C1 | C1 |
+| Sol bek | LB | A4 | A2 |
+| Sol stoper | CB | B2 | B2 |
+| Sağ stoper | CB | D2 | D2 |
+| Sağ bek | RB | E4 | E2 |
+| Sol ön libero | DM | B3 | B3 |
+| Sağ ön libero | DM | D3 | D3 |
+| Sol 10 numara | AM | B5 | A3 |
+| Sağ 10 numara | AM | D5 | E3 |
+| Sol forvet | ST | B6 | C4 (önde) |
+| Sağ forvet | ST | D6 | C4 (geride) |
+
+#### 4-3-1-2
+Üç merkez orta saha, bir 10 numara, iki forvet. Dar.
+
+| Pozisyon | Mevki | Top bizde | Top rakipte |
+|---|---|---|---|
+| GK | GK | C1 | C1 |
+| Sol bek | LB | A4 | A2 |
+| Sol stoper | CB | B2 | B2 |
+| Sağ stoper | CB | D2 | D2 |
+| Sağ bek | RB | E4 | E2 |
+| Sol orta saha | CM | B3 | B3 |
+| Merkez orta saha | CM | C3 | C3 |
+| Sağ orta saha | CM | D3 | D3 |
+| 10 numara | AM | C5 | C4 |
+| Sol forvet | ST | B6 | B4 |
+| Sağ forvet | ST | D6 | D4 |
+
+#### 4-5-1
+Temkinli: bekler az çıkar, orta saha beşli hat. Tek forvet yalnız kalır.
+
+| Pozisyon | Mevki | Top bizde | Top rakipte |
+|---|---|---|---|
+| GK | GK | C1 | C1 |
+| Sol bek | LB | A3 | A2 |
+| Sol stoper | CB | B2 | B2 |
+| Sağ stoper | CB | D2 | D2 |
+| Sağ bek | RB | E3 | E2 |
+| Sol orta saha | LM | A4 | A3 |
+| Sol iç orta saha | CM | B3 | B3 |
+| Merkez orta saha | CM | C3 | C3 |
+| Sağ iç orta saha | CM | D3 | D3 |
+| Sağ orta saha | RM | E4 | E3 |
+| Santrfor | ST | C6 | C4 |
+
+#### 3-5-2
+Üç stoper, iki yönlü kanat bekler. Savunmada 5-3-2.
+
+| Pozisyon | Mevki | Top bizde | Top rakipte |
+|---|---|---|---|
+| GK | GK | C1 | C1 |
+| Sol stoper | CB | B2 | B2 |
+| Merkez stoper | CB | C2 | C2 |
+| Sağ stoper | CB | D2 | D2 |
+| Sol kanat bek | LWB | A5 | A2 |
+| Sağ kanat bek | RWB | E5 | E2 |
+| Ön libero | DM | C3 | C3 |
+| Sol iç orta saha | CM | B4 | B3 |
+| Sağ iç orta saha | CM | D4 | D3 |
+| Sol forvet | ST | B6 | B4 |
+| Sağ forvet | ST | D6 | D4 |
+
+#### 3-4-3
+Üç stoper, dört orta saha, üç forvet. Savunmada kanatçılar iner: 5-4-1.
+
+| Pozisyon | Mevki | Top bizde | Top rakipte |
+|---|---|---|---|
+| GK | GK | C1 | C1 |
+| Sol stoper | CB | B2 | B2 |
+| Merkez stoper | CB | C2 | C2 |
+| Sağ stoper | CB | D2 | D2 |
+| Sol kanat bek | LWB | A4 | A2 |
+| Sağ kanat bek | RWB | E4 | E2 |
+| Sol merkez orta saha | CM | B3 | B3 |
+| Sağ merkez orta saha | CM | D3 | D3 |
+| Sol kanat | LW | A5 | A3 |
+| Santrfor | ST | C6 | C4 |
+| Sağ kanat | RW | E5 | E3 |
+
+#### 3-4-2-1
+İki iç 10 numara santrforun arkasında. Savunmada 5-2-2-1.
+
+| Pozisyon | Mevki | Top bizde | Top rakipte |
+|---|---|---|---|
+| GK | GK | C1 | C1 |
+| Sol stoper | CB | B2 | B2 |
+| Merkez stoper | CB | C2 | C2 |
+| Sağ stoper | CB | D2 | D2 |
+| Sol kanat bek | LWB | A5 | A2 |
+| Sağ kanat bek | RWB | E5 | E2 |
+| Sol merkez orta saha | CM | B3 | B3 |
+| Sağ merkez orta saha | CM | D3 | D3 |
+| Sol 10 numara | AM | B5 | B4 |
+| Sağ 10 numara | AM | D5 | D4 |
+| Santrfor | ST | C6 | C4 |
+
+#### 3-4-1-2
+Bir 10 numara, iki forvet. Savunmada 10 numara orta sahaya iner: 5-3-2.
+
+| Pozisyon | Mevki | Top bizde | Top rakipte |
+|---|---|---|---|
+| GK | GK | C1 | C1 |
+| Sol stoper | CB | B2 | B2 |
+| Merkez stoper | CB | C2 | C2 |
+| Sağ stoper | CB | D2 | D2 |
+| Sol kanat bek | LWB | A5 | A2 |
+| Sağ kanat bek | RWB | E5 | E2 |
+| Sol merkez orta saha | CM | B3 | B3 |
+| Sağ merkez orta saha | CM | D3 | D3 |
+| 10 numara | AM | C5 | C3 |
+| Sol forvet | ST | B6 | B4 |
+| Sağ forvet | ST | D6 | D4 |
+
+#### 5-3-2
+3-5-2'nin temkinli hali: kanat bekler daha az ileri çıkar.
+
+| Pozisyon | Mevki | Top bizde | Top rakipte |
+|---|---|---|---|
+| GK | GK | C1 | C1 |
+| Sol stoper | CB | B2 | B2 |
+| Merkez stoper | CB | C2 | C2 |
+| Sağ stoper | CB | D2 | D2 |
+| Sol kanat bek | LWB | A4 | A2 |
+| Sağ kanat bek | RWB | E4 | E2 |
+| Sol orta saha | CM | B4 | B3 |
+| Merkez orta saha | CM | C3 | C3 |
+| Sağ orta saha | CM | D4 | D3 |
+| Sol forvet | ST | B6 | B4 |
+| Sağ forvet | ST | D6 | D4 |
+
+#### 5-4-1
+En temkinli: beşli savunma, dörtlü orta saha, tek forvet.
+
+| Pozisyon | Mevki | Top bizde | Top rakipte |
+|---|---|---|---|
+| GK | GK | C1 | C1 |
+| Sol stoper | CB | B2 | B2 |
+| Merkez stoper | CB | C2 | C2 |
+| Sağ stoper | CB | D2 | D2 |
+| Sol kanat bek | LWB | A3 | A2 |
+| Sağ kanat bek | RWB | E3 | E2 |
+| Sol orta saha | LM | A5 | A3 |
+| Merkez orta saha (tutan) | CM | C3 | B3 |
+| Merkez orta saha (çıkan) | CM | C4 | D3 |
+| Sağ orta saha | RM | E5 | E3 |
+| Santrfor | ST | C6 | C4 |
+
+#### 5-2-3
+Beşli savunma ama üç forvet; savunmada kanatçılar kontra için yukarıda bekler.
+
+| Pozisyon | Mevki | Top bizde | Top rakipte |
+|---|---|---|---|
+| GK | GK | C1 | C1 |
+| Sol stoper | CB | B2 | B2 |
+| Merkez stoper | CB | C2 | C2 |
+| Sağ stoper | CB | D2 | D2 |
+| Sol kanat bek | LWB | A4 | A2 |
+| Sağ kanat bek | RWB | E4 | E2 |
+| Sol merkez orta saha | CM | B3 | B3 |
+| Sağ merkez orta saha | CM | D3 | D3 |
+| Sol kanat | LW | A5 | A4 |
+| Santrfor | ST | C6 | C4 |
+| Sağ kanat | RW | E5 | E4 |
+
+## 16. Kapanan ayrıntılar (2026-11-20)
+
+### 16.1 Aksiyon seçiminin temel ağırlıkları
+
+Talimatsız (temel) ağırlıklar gerçek futbol dağılımından gelir; laboratuvar gerçek pas/şut sayılarıyla kontrol eder.
+
+| Bölge | Pas | Taşıma | Çalım | Orta | Şut | Ara pası |
+|---|---|---|---|---|---|---|
+| Kendi yarı saha (satır 1–3) | %80 | %15 | %5 | — | — | — |
+| Orta saha (satır 4) | %65 | %20 | %10 | — | %5 (uzaktan) | — |
+| Son üçte bir, kanat (A/E, satır 5–6) | %40 | — | %20 | %30 | %10 | — |
+| Son üçte bir, merkez (B–D, satır 5) | %45 | — | %15 | — | %30 | %10 |
+| Ceza sahası içi (satır 6, B–D) | %30 | — | %10 | — | %60 | — |
+
+Bu ağırlıklar talimat (16.2, ×2) ve yetenek tercihi (%30 payı, 4.2) ile çarpılır, sonra vizyon karar kalitesini uygular.
+
+### 16.2 Taktik ayarlarının etki türü
+
+Her ayar sadece bir türde çalışır, çift sayım olmaz:
+- **Puan etkisi (mücadeleye, ~15 puan, birleştirme kuralı 14.4):** Kapatılan alan, Müdahale sertliği, Pres (presçi sayısı ve baskı), Hat yüksekliği (ofsayt ve arkaya koşu).
+- **Sıklık etkisi (seçim ağırlığına):** Hücum yönü, Pas tarzı, Bitiriş tercihi, Tempo, Top kazanınca. Seçilen seçeneğin temel ağırlığı **×2** olur (örneğin "Bitiriş: Orta" → kanatta orta ağırlığı iki katı; "Hücum yönü: Sağ" → sağ koridora pas ağırlığı iki katı). Bu, takım talimatının %70'lik payını oluşturur.
+
+### 16.3 Zayıf ayak
+
+Seviye başına **5 puan** kayıp: 5 → 0, 4 → −5, 3 → −10, 2 → −15, 1 → −20 (ilgili yeteneğin S değerinden).
+
+### 16.4 Aksiyon süreleri
+
+Aralık içindeki yer mesafeye göre seçilir (uzun mesafe aralığın üst ucu). Tempo hepsini çarpar: hızlı ×0,8, dengeli ×1, sabırlı ×1,25; sabırlı tempoda pas arası bekleme eklenir. **Rastgelelik yoktur:** aynı durum hep aynı süreyi verir.
+
+### 16.5 Hareket olasılıkları
+
+- **Doğru görev seçimi:** savunmacının değeri = Markaj %60 + Pozisyon alma %40. 50 → %70, 90 → %95 doğru seçim (aradaki değerler doğrusal). Yanlış seçimde ikinci en yüksek puanlı görevi yapar. Aynı eğri hücumda çakışmada doğru kaymayı (Pozisyon alma ile) belirler.
+- **Tehdit puanı (0–100):** kaleye yakınlık (ceza sahası 100, kendi yarı saha 60, orta çizgi 30) × boşta olma (boşsa 1, marke ediliyorsa 0,5) × topun oraya gitme ihtimali (pas hattı açık mı). Topu taşıyana baskı her zaman en yüksek önceliktir. Kapatılan alan ayarı ilgili koridordaki puanları ×1,3 yapar.
+- **Top çekimi:** topa 15 m içindeki oyuncu, şablon noktası ile top arasındaki yolun %30'u kadar topa yaklaşır; 30 m'de %10; daha uzakta çekim yok.
+
+### 16.6 Ofsayt zamanlaması
+
+Koşucunun zamanlama hatası (değer = Pozisyon alma %70 + pasçının Vizyon %30): 99 → ~0,15 m, 50 → ~0,75 m, 1 → ~1,5 m (erken ya da geç yönünde). Erken çıkan ve çizgiyi geçen ofsayta düşer; geç kalan koşuda avantaj kaybeder. İzlenen gösterge: maç başına takım başına ofsayt gerçek futbolun alt aralığında (kullanıcı "daha az ofsayt" seçti).
+
+### 16.7 Pres tetikleyicileri
+
+Tetikleyici an (çizgi kenarı, sırtı dönük, kötü kontrol, geri pas) oluştuğunda en yakın oyuncunun basma olasılığı: az %15, orta %40, yoğun %75. Tetikleyici yokken: az %0, orta %10, yoğun %30. Yoğun preste ikinci presçi de gelir (ikincil savunmacı, B'ye).
+
+### 16.8 İkinci topun düştüğü yer
+
+- Kaleci çelmesi: %60 ceza sahası içi (yan taraf), %25 korner, %15 ceza sahası önü.
+- Blok: %50 şutu çekenin önü, %30 yan bölge, %20 korner.
+- Kafa ile uzaklaştırma: savunmacının hava topu kalitesine göre ceza sahası önü ile orta saha arası (iyi kafa daha uzağa).
+
+Sonra o bölgedekiler topa yarışır (5.7).
+
+### 16.9 Kaleci çıkışları
+
+Top savunma arkasına atıldığında kaleci ile koşucu topa yarışır: kaleci Bire bir %70 + Pozisyon %30, koşucu Hız. Yüksek hatta kaleci 5 m daha önde durur, daha sık çıkar; kaçırırsa boş kale riski. Alçak hatta neredeyse çıkmaz.
+
+### 16.10 Kart kuralları
+
+- Normal faul: ~%12 sarı.
+- Taktik faul (kontrayı kesmek, rakip hızla geçerken): ~%60 sarı.
+- Son adam ya da net gol pozisyonunu faulle engelleme: kırmızı.
+- Müdahale sertliği oranları çarpar: temkinli ×0,6, sert ×1,6.
+- Sert ve geç müdahale (top kapma çok düşük + sert ayar): ~%2 direkt kırmızı.
+- **Faul esprileri** (komik yorum havuzu, 9.1): "Vay babayın kemiklerine, o nasıl müdahale?", "Rakibine aduket çekti!", "Doktor yok mu doktor!!???", "Kramponlarıyla rakibin sırtını kaşıdı!", "Hakem [takım adı] takımını kollamaya devam ediyor!", "Ohannes az yavaş la!".
+
+### 16.11 Duran toplar
+
+- **Korner:** varsayılan uzun (ceza sahasına orta). Kısa pas tarzında ve takımın ceza sahasındaki hava topu ortalaması rakipten 8+ puan düşükse kısa korner olasılığı ~%40, diğer durumlarda ~%10.
+- **Frikik:** 18–28 m merkezde kullanıcının uzaktan şutu 75 ve üzeriyse şut, değilse orta; 28 m ve üzeri ya da açılı frikikte orta. Baraj: 18–22 m → 4–5 kişi, 22–28 m → 3–4, açılı → 1–2.
+- **Taç:** en yakın bek ya da kanat atar; yakındaki boş oyuncuya kısa pas gibi çözülür (sabit, kolay zorluk); alıcı baskı altında kontrol yapar. Uzun taç yok.
+- **Kale vuruşu:** kaleci ile oyun kurma kuralları (4.5.8).
+
+### 16.12 Draft kuralları
+
+Şimdiki kurallar aynen korunur: yılan sırası (A-B, B-A, …), 11 tur; havuzun tamamı görünür (mevki filtresi ve arama); her seçim boş bir pozisyona uymak zorunda (mevki uyumluluk listesi, 2.4); diziliş draft sırasında değiştirilebilir; "otomatik doldur" tuşu var. **Tek ek:** online ve parti modunda seçim başına **30 saniye**; süre dolarsa boş bir pozisyon için en uygun oyuncu otomatik seçilir (botun pozisyon uygunluğu ölçüsüyle). Bota karşı ve aynı telefonda süre yok.
+
+### 16.13 Bot algoritmaları
+
+- **Kolay:** pozisyon uygunluğu en yüksek ilk 10 aday arasından rastgele seçer; taktik rastgele ama makul.
+- **Orta:** draft başında bir oyun tarzı seçer (orta, ara pası, kontra, uzun top); adayları uygunluk + tarzın istediği yetenekler + kimya ile puanlar; taktik tarzına göre.
+- **Zor:** ortaya ek olarak rakibin seçtiği oyuncuların zayıf koridorunu hesaplar ve ona göre oyuncu ve taktik seçer (örneğin rakip bekler yavaşsa hızlı kanatçı + kanat hücumu). Taktik seçimi için ekransız motorla küçük bir arama yapar. Rakibin taktiğini görmez (8).
+
+### 16.14 Maç sonu oyuncu puanı
+
+Herkes 6,0 ile başlar. Her mücadele, kazanma olasılığına göre puan ekler ya da çıkarır: zor mücadeleyi kazanmak çok, kolay mücadeleyi kaybetmek çok etkiler. Ek olaylar: gol +1,0, asist +0,6, kurtarış +0,3, gole yol açan hata −0,8, kırmızı kart −1,5. Not 3,0–10,0 aralığında kalır. Maçın oyuncusu en yüksek not (eşitlikte kazanan takımdan).
+
+### 16.15 Spiker kuralları
+
+- **Anlamlı an:** her zaman gol, isabetli şut, direk, penaltı, kart, ofsayt, büyük kurtarış. Ayrıca başarı şansı %25'in altındaki bir mücadele kazanılırsa (sürpriz) ya da %75'in üstündeki kaybedilirse (hata); kontra başlangıcı; son üçte birde top kaybı. Kendi yarı sahadaki sıradan paslar anlatılmaz.
+- **Taktik gözlemleri:** maç dakikasıyla her ~10 dakikada bir özet; ayrıca belirgin bir örüntü oluşunca hemen (aynı koridordan üst üste 3 atak, bir mücadele tipinde %70+ başarı gibi). Aynı gözlem 15 dakika içinde tekrar etmez.
+- **Sebep cümleleri:** her sebep tipi (bindirme boşluğu, devir teslimde kaçırma, çakışma, taktik karşılaşma, yetenek farkı, kimya) için birkaç farklı cümle şablonu; içine olay kaydındaki gerçek isim ve sayılar yerleştirilir. Aynı şablon üst üste kullanılmaz. Esprilerle aynı dosya yapısında tutulur.
