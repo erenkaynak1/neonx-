@@ -779,12 +779,37 @@ Her test için başarı ölçütü ve örnek sayısı (başlangıç önerisi; mo
 | Online doğrulama | Ev sahibi ve rakip cihazın hesapladığı olay kaydı özeti farklı tarayıcılarda aynı | 3 tarayıcı × 100 maç |
 | Performans | Ekransız 1.000 maç makul sürede (örneğin bir dakikanın altında) | 1.000 maç |
 
-## 11. Açık sorular
+## 11. Açık noktalar (kapatılacak)
 
-Şu an açık soru yok. Kapatılanlar (2026-11-18):
-- **Online kopma:** kararı 8. bölümde.
-- **Hızlı izleme:** kararı 9.1'de.
-- **Kimya ile taktik ilişkisi:** kimya ikili aksiyonlara bağlanmaz; sadece oyuncu yeteneklerine artış olarak etki eder (7).
+> Kullanıcı kararı (2026-11-20): **hiçbir şey açıkta kalmayacak.** Aşağıdaki her madde soru–cevapla kapatılır; kapanan madde ✓ ile işaretlenir ve ilgili bölüme işlenir.
+
+**Motor ve matematik**
+1. Aksiyon seçiminin temel olasılıkları: hangi bölgede, hangi taktikle pas / taşıma / çalım / orta / şut seçeneklerinin ağırlıkları (4.2).
+2. Her taktik ayarının tam olarak hangi mücadeleye ya da sıklığa etki ettiği ve sayısal büyüklüğü; 15 puanın hangi ayarlarda geçerli olduğu, tempo ve pas tarzı gibi sıklık ayarlarının etkisi (6, 14.4).
+3. Zayıf ayak kaybının büyüklüğü: seviye 1–5 → S'den kaç puan düşer (2.5).
+4. Maç saati: aksiyon sürelerinin aralıktan nasıl seçileceği (4.7).
+5. Savunmada tehdit puanının formülü (4.5.10).
+6. Savunmacının doğru görevi seçme olasılığı ve hücumda çakışmada kayma olasılığı: yetenekten olasılığa dönüşüm (4.5.4, 4.5.10).
+7. Hedef konumda top çekiminin gücü (4.5.10).
+8. Ofsayt zamanlama hatasının metre ölçeği (5.6, 14.6).
+9. Pres tetikleyicilerinin olasılıkları: az / orta / yoğun preste hangi anda ne sıklıkla basılır (4.5.6).
+10. İkinci topun düştüğü yerin dağılımı (5.7).
+11. Kaleci çıkışları: ara pası ve uzun topa karşı kalecinin kalesini terk etmesi (süpürücü davranış).
+
+**Kurallar ve duran toplar**
+12. Kart kuralları: sarı ve kırmızı kart olasılıkları, "sert faul" tanımı (5.8).
+13. Duran toplar: kornerde kısa / uzun seçimi, frikikte orta mı şut mu kararı, baraj sayısı, taç ve kale vuruşu ayrıntıları (5.9).
+
+**Oyun ve veri**
+14. Draft kuralları belgede yazılı değil ("şimdiki gibi"): seçim sırası, aday sayısı, süre, mevki zorunlulukları.
+15. Havuz seçimi: 1000–1500 oyuncunun seçim ölçütü (tanınmışlık eşiği, mevki ve lig dağılımı).
+16. Bot algoritmaları: orta seviyede "oyun tarzı" seçimi, zor seviyede counter hesabı; botun taktik seçimi.
+17. Maç sonu oyuncu puanı ve maçın oyuncusunun formülü (9.2).
+
+**Sunum**
+18. Spiker: "anlamlı an" tanımı, sebep cümlelerinin şablon yapısı, taktik gözlemlerinin sıklığı (9.1).
+19. Maç öncesi taktik ekranının içeriği (taslak çizildi, ayrıntılar ertelendi).
+20. 2D sahanın görsel ayrıntıları: hız, animasyon, vurgu kuralları (taslak beğenildi, "daha düzgün yapılacak").
 
 ## 12. Yol haritası
 
