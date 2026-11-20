@@ -541,7 +541,7 @@ Kullanıcılar otomatik seçilir: her duran top tipi için ilgili yeteneği en y
 
 ## 6. Taktik ayarları ve etkileri
 
-Her ayarın **sahada net bir karşılığı** ve **kendine özgü bir riski** var. Tablolar etkinin yönünü gösterir; büyüklükler matematik adımında belirlenecek.
+Her ayarın **sahada net bir karşılığı** ve **kendine özgü bir riski** var. Tablolar etkinin yönünü gösterir; büyüklükleri 14.4'te (ayar başına ~15 puan, birleşik en fazla 25).
 
 ### 6.1 Hücum
 
