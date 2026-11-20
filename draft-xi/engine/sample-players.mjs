@@ -70,7 +70,7 @@ export const BY_ID = Object.fromEntries(PLAYERS.map(p => [p.id, p]));
 // Squads for the lab: formation + slotId → player id
 export const SQUADS = {
   A: { name: 'Takım A', formation: '4-3-3', slots: { GK: 'alisson', RB: 'trent', RCB: 'saliba', LCB: 'vandijk', LB: 'theo', DM: 'rodri', LCM: 'pedri', RCM: 'odegaard', RW: 'saka', ST: 'haaland', LW: 'vinicius' } },
-  B: { name: 'Takım B', formation: '4-4-2', slots: { GK: 'courtois', RB: 'hakimi', RCB: 'rudiger', LCB: 'bastoni', LB: 'grimaldo', RM: 'olise', LCM: 'rice', RCM: 'bellingham', LM: 'musiala', LS: 'mbappe', RS: 'kane' } },
-  C: { name: 'Takım C', formation: '3-5-2', slots: { GK: 'donnarumma', LCB: 'gvardiol', CB: 'marquinhos', RCB: 'konate', RWB: 'frimpong', LWB: 'dimarco', DM: 'kimmich', RCM: 'valverde', LCM: 'barella', LS: 'lautaro', RS: 'isak' } },
+  B: { name: 'Takım B', formation: '4-4-2', slots: { GK: 'courtois', RB: 'hakimi', RCB: 'rudiger', LCB: 'bastoni', LB: 'grimaldo', RM: 'olise', CM1: 'rice', CM2: 'bellingham', LM: 'musiala', LST: 'mbappe', RST: 'kane' } },
+  C: { name: 'Takım C', formation: '3-5-2', slots: { GK: 'donnarumma', LCB: 'gvardiol', CB: 'marquinhos', RCB: 'konate', RWB: 'frimpong', LWB: 'dimarco', DM: 'kimmich', RCM: 'valverde', LCM: 'barella', LST: 'lautaro', RST: 'isak' } },
   D: { name: 'Takım D', formation: '4-2-3-1', slots: { GK: 'ederson', RB: 'semedo', RCB: 'skriniar', LCB: 'sanchez', LB: 'eren', LDM: 'torreira', RDM: 'kante', LW: 'kerem', AM: 'sara', RW: 'barisalper', ST: 'osimhen' } },
 };
