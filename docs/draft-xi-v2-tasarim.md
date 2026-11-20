@@ -35,6 +35,8 @@
 > Revizyon 7 (2026-11-20): mücadele tablosu (14.6) tamamlandı: kontrol, pres, kısa ve uzun pas, araya girme, ara pası, ofsayt zamanlaması, orta ve bek bloğu, kafa vuruşu, penaltı, direkt frikik, faul olasılığı. Vizyon savunmada oyunu okuma olarak da kullanılır.
 >
 > Revizyon 8 (2026-11-20): 17 dizilişin 34 şablonu yazıldı (bölüm 15).
+>
+> Revizyon 9 (2026-11-20): kalan 20 açık noktanın 17'si kapatıldı (bölüm 16); havuz seçimi, maç öncesi ekranı ve 2D saha ayrıntıları kullanıcı kararıyla ertelendi (bölüm 11).
 
 ## 0. Oyunun özü
 
@@ -779,37 +781,32 @@ Her test için başarı ölçütü ve örnek sayısı (başlangıç önerisi; mo
 | Online doğrulama | Ev sahibi ve rakip cihazın hesapladığı olay kaydı özeti farklı tarayıcılarda aynı | 3 tarayıcı × 100 maç |
 | Performans | Ekransız 1.000 maç makul sürede (örneğin bir dakikanın altında) | 1.000 maç |
 
-## 11. Açık noktalar (kapatılacak)
+## 11. Açık noktalar
 
-> Kullanıcı kararı (2026-11-20): **hiçbir şey açıkta kalmayacak.** Aşağıdaki her madde soru–cevapla kapatılır; kapanan madde ✓ ile işaretlenir ve ilgili bölüme işlenir.
+> Kullanıcı kararı (2026-11-20): **hiçbir şey açıkta kalmayacak.** 20 maddenin 17'si soru–cevapla kapatıldı (ayrıntılar bölüm 16'da). Kalan üçü, kullanıcının kararıyla sonraki aşamaya **ertelendi**; açık değil, takvimi belli.
 
-**Motor ve matematik**
-1. Aksiyon seçiminin temel olasılıkları: hangi bölgede, hangi taktikle pas / taşıma / çalım / orta / şut seçeneklerinin ağırlıkları (4.2).
-2. Her taktik ayarının tam olarak hangi mücadeleye ya da sıklığa etki ettiği ve sayısal büyüklüğü; 15 puanın hangi ayarlarda geçerli olduğu, tempo ve pas tarzı gibi sıklık ayarlarının etkisi (6, 14.4).
-3. Zayıf ayak kaybının büyüklüğü: seviye 1–5 → S'den kaç puan düşer (2.5).
-4. Maç saati: aksiyon sürelerinin aralıktan nasıl seçileceği (4.7).
-5. Savunmada tehdit puanının formülü (4.5.10).
-6. Savunmacının doğru görevi seçme olasılığı ve hücumda çakışmada kayma olasılığı: yetenekten olasılığa dönüşüm (4.5.4, 4.5.10).
-7. Hedef konumda top çekiminin gücü (4.5.10).
-8. Ofsayt zamanlama hatasının metre ölçeği (5.6, 14.6).
-9. Pres tetikleyicilerinin olasılıkları: az / orta / yoğun preste hangi anda ne sıklıkla basılır (4.5.6).
-10. İkinci topun düştüğü yerin dağılımı (5.7).
-11. Kaleci çıkışları: ara pası ve uzun topa karşı kalecinin kalesini terk etmesi (süpürücü davranış).
-
-**Kurallar ve duran toplar**
-12. Kart kuralları: sarı ve kırmızı kart olasılıkları, "sert faul" tanımı (5.8).
-13. Duran toplar: kornerde kısa / uzun seçimi, frikikte orta mı şut mu kararı, baraj sayısı, taç ve kale vuruşu ayrıntıları (5.9).
-
-**Oyun ve veri**
-14. Draft kuralları belgede yazılı değil ("şimdiki gibi"): seçim sırası, aday sayısı, süre, mevki zorunlulukları.
-15. Havuz seçimi: 1000–1500 oyuncunun seçim ölçütü (tanınmışlık eşiği, mevki ve lig dağılımı).
-16. Bot algoritmaları: orta seviyede "oyun tarzı" seçimi, zor seviyede counter hesabı; botun taktik seçimi.
-17. Maç sonu oyuncu puanı ve maçın oyuncusunun formülü (9.2).
-
-**Sunum**
-18. Spiker: "anlamlı an" tanımı, sebep cümlelerinin şablon yapısı, taktik gözlemlerinin sıklığı (9.1).
-19. Maç öncesi taktik ekranının içeriği (taslak çizildi, ayrıntılar ertelendi).
-20. 2D sahanın görsel ayrıntıları: hız, animasyon, vurgu kuralları (taslak beğenildi, "daha düzgün yapılacak").
+| # | Konu | Durum |
+|---|---|---|
+| 1 | Aksiyon seçiminin temel olasılıkları | ✓ 16.1 |
+| 2 | Taktik ayarlarının etki türü ve büyüklüğü | ✓ 16.2 |
+| 3 | Zayıf ayak kaybı | ✓ 16.3 |
+| 4 | Aksiyon sürelerinin seçimi | ✓ 16.4 |
+| 5 | Tehdit puanı formülü | ✓ 16.5 |
+| 6 | Doğru görev / çakışmada kayma olasılığı | ✓ 16.5 |
+| 7 | Top çekimi | ✓ 16.5 |
+| 8 | Ofsayt zamanlama hatası | ✓ 16.6 |
+| 9 | Pres tetikleyici olasılıkları | ✓ 16.7 |
+| 10 | İkinci topun düştüğü yer | ✓ 16.8 |
+| 11 | Kaleci çıkışları | ✓ 16.9 |
+| 12 | Kart kuralları | ✓ 16.10 |
+| 13 | Duran toplar (korner, frikik, taç) | ✓ 16.11 |
+| 14 | Draft kuralları | ✓ 16.12 |
+| 15 | Havuz seçimi | **Ertelendi** (kullanıcı: "havuzu sonra yapacağız"); veri aşamasında kararlaştırılacak |
+| 16 | Bot algoritmaları | ✓ 16.13 |
+| 17 | Maç sonu oyuncu puanı | ✓ 16.14 |
+| 18 | Spiker kuralları | ✓ 16.15 |
+| 19 | Maç öncesi taktik ekranı | **Ertelendi** (kullanıcı: "bu ekranı sonra yaparız"); taslak tuvalde duruyor |
+| 20 | 2D saha görsel ayrıntıları | **Ertelendi** (kullanıcı: "sonra sor"); ekran aşamasında sorulacak |
 
 ## 12. Yol haritası
 
@@ -1307,3 +1304,95 @@ Beşli savunma ama üç forvet; savunmada kanatçılar kontra için yukarıda be
 | Sol kanat | LW | A5 | A4 |
 | Santrfor | ST | C6 | C4 |
 | Sağ kanat | RW | E5 | E4 |
+
+## 16. Kapanan ayrıntılar (2026-11-20)
+
+### 16.1 Aksiyon seçiminin temel ağırlıkları
+
+Talimatsız (temel) ağırlıklar gerçek futbol dağılımından gelir; laboratuvar gerçek pas/şut sayılarıyla kontrol eder.
+
+| Bölge | Pas | Taşıma | Çalım | Orta | Şut | Ara pası |
+|---|---|---|---|---|---|---|
+| Kendi yarı saha (satır 1–3) | %80 | %15 | %5 | — | — | — |
+| Orta saha (satır 4) | %65 | %20 | %10 | — | %5 (uzaktan) | — |
+| Son üçte bir, kanat (A/E, satır 5–6) | %40 | — | %20 | %30 | %10 | — |
+| Son üçte bir, merkez (B–D, satır 5) | %45 | — | %15 | — | %30 | %10 |
+| Ceza sahası içi (satır 6, B–D) | %30 | — | %10 | — | %60 | — |
+
+Bu ağırlıklar talimat (16.2, ×2) ve yetenek tercihi (%30 payı, 4.2) ile çarpılır, sonra vizyon karar kalitesini uygular.
+
+### 16.2 Taktik ayarlarının etki türü
+
+Her ayar sadece bir türde çalışır, çift sayım olmaz:
+- **Puan etkisi (mücadeleye, ~15 puan, birleştirme kuralı 14.4):** Kapatılan alan, Müdahale sertliği, Pres (presçi sayısı ve baskı), Hat yüksekliği (ofsayt ve arkaya koşu).
+- **Sıklık etkisi (seçim ağırlığına):** Hücum yönü, Pas tarzı, Bitiriş tercihi, Tempo, Top kazanınca. Seçilen seçeneğin temel ağırlığı **×2** olur (örneğin "Bitiriş: Orta" → kanatta orta ağırlığı iki katı; "Hücum yönü: Sağ" → sağ koridora pas ağırlığı iki katı). Bu, takım talimatının %70'lik payını oluşturur.
+
+### 16.3 Zayıf ayak
+
+Seviye başına **5 puan** kayıp: 5 → 0, 4 → −5, 3 → −10, 2 → −15, 1 → −20 (ilgili yeteneğin S değerinden).
+
+### 16.4 Aksiyon süreleri
+
+Aralık içindeki yer mesafeye göre seçilir (uzun mesafe aralığın üst ucu). Tempo hepsini çarpar: hızlı ×0,8, dengeli ×1, sabırlı ×1,25; sabırlı tempoda pas arası bekleme eklenir. **Rastgelelik yoktur:** aynı durum hep aynı süreyi verir.
+
+### 16.5 Hareket olasılıkları
+
+- **Doğru görev seçimi:** savunmacının değeri = Markaj %60 + Pozisyon alma %40. 50 → %70, 90 → %95 doğru seçim (aradaki değerler doğrusal). Yanlış seçimde ikinci en yüksek puanlı görevi yapar. Aynı eğri hücumda çakışmada doğru kaymayı (Pozisyon alma ile) belirler.
+- **Tehdit puanı (0–100):** kaleye yakınlık (ceza sahası 100, kendi yarı saha 60, orta çizgi 30) × boşta olma (boşsa 1, marke ediliyorsa 0,5) × topun oraya gitme ihtimali (pas hattı açık mı). Topu taşıyana baskı her zaman en yüksek önceliktir. Kapatılan alan ayarı ilgili koridordaki puanları ×1,3 yapar.
+- **Top çekimi:** topa 15 m içindeki oyuncu, şablon noktası ile top arasındaki yolun %30'u kadar topa yaklaşır; 30 m'de %10; daha uzakta çekim yok.
+
+### 16.6 Ofsayt zamanlaması
+
+Koşucunun zamanlama hatası (değer = Pozisyon alma %70 + pasçının Vizyon %30): 99 → ~0,15 m, 50 → ~0,75 m, 1 → ~1,5 m (erken ya da geç yönünde). Erken çıkan ve çizgiyi geçen ofsayta düşer; geç kalan koşuda avantaj kaybeder. İzlenen gösterge: maç başına takım başına ofsayt gerçek futbolun alt aralığında (kullanıcı "daha az ofsayt" seçti).
+
+### 16.7 Pres tetikleyicileri
+
+Tetikleyici an (çizgi kenarı, sırtı dönük, kötü kontrol, geri pas) oluştuğunda en yakın oyuncunun basma olasılığı: az %15, orta %40, yoğun %75. Tetikleyici yokken: az %0, orta %10, yoğun %30. Yoğun preste ikinci presçi de gelir (ikincil savunmacı, B'ye).
+
+### 16.8 İkinci topun düştüğü yer
+
+- Kaleci çelmesi: %60 ceza sahası içi (yan taraf), %25 korner, %15 ceza sahası önü.
+- Blok: %50 şutu çekenin önü, %30 yan bölge, %20 korner.
+- Kafa ile uzaklaştırma: savunmacının hava topu kalitesine göre ceza sahası önü ile orta saha arası (iyi kafa daha uzağa).
+
+Sonra o bölgedekiler topa yarışır (5.7).
+
+### 16.9 Kaleci çıkışları
+
+Top savunma arkasına atıldığında kaleci ile koşucu topa yarışır: kaleci Bire bir %70 + Pozisyon %30, koşucu Hız. Yüksek hatta kaleci 5 m daha önde durur, daha sık çıkar; kaçırırsa boş kale riski. Alçak hatta neredeyse çıkmaz.
+
+### 16.10 Kart kuralları
+
+- Normal faul: ~%12 sarı.
+- Taktik faul (kontrayı kesmek, rakip hızla geçerken): ~%60 sarı.
+- Son adam ya da net gol pozisyonunu faulle engelleme: kırmızı.
+- Müdahale sertliği oranları çarpar: temkinli ×0,6, sert ×1,6.
+- Sert ve geç müdahale (top kapma çok düşük + sert ayar): ~%2 direkt kırmızı.
+- **Faul esprileri** (komik yorum havuzu, 9.1): "Vay babayın kemiklerine, o nasıl müdahale?", "Rakibine aduket çekti!", "Doktor yok mu doktor!!???", "Kramponlarıyla rakibin sırtını kaşıdı!", "Hakem [takım adı] takımını kollamaya devam ediyor!", "Ohannes az yavaş la!".
+
+### 16.11 Duran toplar
+
+- **Korner:** varsayılan uzun (ceza sahasına orta). Kısa pas tarzında ve takımın ceza sahasındaki hava topu ortalaması rakipten 8+ puan düşükse kısa korner olasılığı ~%40, diğer durumlarda ~%10.
+- **Frikik:** 18–28 m merkezde kullanıcının uzaktan şutu 75 ve üzeriyse şut, değilse orta; 28 m ve üzeri ya da açılı frikikte orta. Baraj: 18–22 m → 4–5 kişi, 22–28 m → 3–4, açılı → 1–2.
+- **Taç:** en yakın bek ya da kanat atar; yakındaki boş oyuncuya kısa pas gibi çözülür (sabit, kolay zorluk); alıcı baskı altında kontrol yapar. Uzun taç yok.
+- **Kale vuruşu:** kaleci ile oyun kurma kuralları (4.5.8).
+
+### 16.12 Draft kuralları
+
+Şimdiki kurallar aynen korunur: yılan sırası (A-B, B-A, …), 11 tur; havuzun tamamı görünür (mevki filtresi ve arama); her seçim boş bir pozisyona uymak zorunda (mevki uyumluluk listesi, 2.4); diziliş draft sırasında değiştirilebilir; "otomatik doldur" tuşu var. **Tek ek:** online ve parti modunda seçim başına **30 saniye**; süre dolarsa boş bir pozisyon için en uygun oyuncu otomatik seçilir (botun pozisyon uygunluğu ölçüsüyle). Bota karşı ve aynı telefonda süre yok.
+
+### 16.13 Bot algoritmaları
+
+- **Kolay:** pozisyon uygunluğu en yüksek ilk 10 aday arasından rastgele seçer; taktik rastgele ama makul.
+- **Orta:** draft başında bir oyun tarzı seçer (orta, ara pası, kontra, uzun top); adayları uygunluk + tarzın istediği yetenekler + kimya ile puanlar; taktik tarzına göre.
+- **Zor:** ortaya ek olarak rakibin seçtiği oyuncuların zayıf koridorunu hesaplar ve ona göre oyuncu ve taktik seçer (örneğin rakip bekler yavaşsa hızlı kanatçı + kanat hücumu). Taktik seçimi için ekransız motorla küçük bir arama yapar. Rakibin taktiğini görmez (8).
+
+### 16.14 Maç sonu oyuncu puanı
+
+Herkes 6,0 ile başlar. Her mücadele, kazanma olasılığına göre puan ekler ya da çıkarır: zor mücadeleyi kazanmak çok, kolay mücadeleyi kaybetmek çok etkiler. Ek olaylar: gol +1,0, asist +0,6, kurtarış +0,3, gole yol açan hata −0,8, kırmızı kart −1,5. Not 3,0–10,0 aralığında kalır. Maçın oyuncusu en yüksek not (eşitlikte kazanan takımdan).
+
+### 16.15 Spiker kuralları
+
+- **Anlamlı an:** her zaman gol, isabetli şut, direk, penaltı, kart, ofsayt, büyük kurtarış. Ayrıca başarı şansı %25'in altındaki bir mücadele kazanılırsa (sürpriz) ya da %75'in üstündeki kaybedilirse (hata); kontra başlangıcı; son üçte birde top kaybı. Kendi yarı sahadaki sıradan paslar anlatılmaz.
+- **Taktik gözlemleri:** maç dakikasıyla her ~10 dakikada bir özet; ayrıca belirgin bir örüntü oluşunca hemen (aynı koridordan üst üste 3 atak, bir mücadele tipinde %70+ başarı gibi). Aynı gözlem 15 dakika içinde tekrar etmez.
+- **Sebep cümleleri:** her sebep tipi (bindirme boşluğu, devir teslimde kaçırma, çakışma, taktik karşılaşma, yetenek farkı, kimya) için birkaç farklı cümle şablonu; içine olay kaydındaki gerçek isim ve sayılar yerleştirilir. Aynı şablon üst üste kullanılmaz. Esprilerle aynı dosya yapısında tutulur.
