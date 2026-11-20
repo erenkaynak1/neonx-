@@ -1619,3 +1619,27 @@ body.nx-prematch-active .nx-main-start { min-height: 50px; }
   body.nx-prematch-active .nx-balance-cursor,
   body.nx-prematch-active .nx-power-numbers em { transition-duration: .01ms !important; }
 }
+
+/* Keep the Draft team/pool switcher pinned below the mobile top bar.
+   The draft screen itself is the scrolling content, so sticky positioning can
+   be defeated by its overflow/height rules. A viewport-fixed nav is reliable
+   on iOS Safari and remains reachable after long player lists. */
+@media (max-width:760px){
+  body.nx-draft-active .nxDraftMobileNav{
+    position:fixed!important;
+    top:calc(66px + env(safe-area-inset-top,0px))!important;
+    left:50%!important;
+    right:auto!important;
+    width:min(calc(100vw - 20px),500px)!important;
+    margin:0!important;
+    transform:translateX(-50%)!important;
+    z-index:160100!important;
+    box-sizing:border-box!important;
+  }
+  body.nx-draft-active #draftScreen:not(.hidden){
+    padding-top:76px!important;
+  }
+  body.nx-draft-active #draftScreen:not(.hidden) > .screenTitle{
+    display:none!important;
+  }
+}
