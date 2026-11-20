@@ -4,7 +4,7 @@ import {getDatabase,ref,set,get,update,onValue,serverTimestamp} from 'https://ww
 
 const firebaseConfig={apiKey:'AIzaSyBLpXHGGTHXykKrnu8_Hv1i71oc3tpTNvY',authDomain:'neonxi.firebaseapp.com',databaseURL:'https://neonxi-default-rtdb.europe-west1.firebasedatabase.app',projectId:'neonxi',storageBucket:'neonxi.firebasestorage.app',messagingSenderId:'667191549799',appId:'1:667191549799:web:1e40feacbee09ed7f3d9c2'};
 const app=getApps().length?getApp():initializeApp(firebaseConfig),auth=getAuth(app),db=getDatabase(app);
-const $=id=>document.getElementById(id),state={uid:'',room:'',roomData:null,off:null,mode:'duel',solo:false,stream:null,recorder:null,chunks:[],speech:null,recordingMode:'',transcript:'',blobUrl:'',turnBusy:false,originalBlob:null,secretAnswer:'',pcmStop:null,audioContext:null};
+const $=id=>document.getElementById(id),state={uid:'',room:'',roomData:null,off:null,mode:'duel',solo:false,stream:null,lastMicReleaseAt:0,recorder:null,chunks:[],speech:null,recordingMode:'',transcript:'',blobUrl:'',turnBusy:false,originalBlob:null,secretAnswer:'',pcmStop:null,audioContext:null};
 const toast=msg=>{const el=$('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('show'),Math.min(7000,2600+String(msg).length*45))};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const roomRef=()=>ref(db,'reverseXI/rooms/'+state.room);
@@ -90,8 +90,8 @@ function openRoom(){$('intro').hidden=true;$('game').hidden=false;if(state.off)s
 // whole match let iOS/Android mute the track after a few turns (speech recognition or another app takes
 // the mic): recordings then came out silent. An open mic also keeps iOS in call-audio mode, which makes
 // the opponent's audio very quiet or silent on playback.
-function releaseStream(){const s=state.stream;state.stream=null;try{s?.getTracks().forEach(t=>t.stop())}catch{}}
-async function getStream(){releaseStream();state.stream=await withTimeout(navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}}),10000,'Mikrofon açılamadı. İzinleri kontrol edip tekrar dene.');return state.stream}
+function releaseStream(){const s=state.stream;state.stream=null;try{s?.getTracks().forEach(t=>t.stop())}catch{}if(s)state.lastMicReleaseAt=Date.now()}
+async function getStream(){releaseStream();const wait=Math.max(0,1000-(Date.now()-state.lastMicReleaseAt));if(wait)await new Promise(resolve=>setTimeout(resolve,wait));state.stream=await withTimeout(navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}}),10000,'Mikrofon açılamadı. İzinleri kontrol edip tekrar dene.');return state.stream}
 function recognize(){return new Promise(async(resolve,reject)=>{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){reject(new Error('speech'));return}const rec=new SR();rec.lang='tr-TR';rec.interimResults=false;rec.maxAlternatives=4;rec.onresult=e=>resolve([...e.results[0]].map(x=>x.transcript).sort((a,b)=>b.length-a.length)[0]);rec.onerror=()=>reject(new Error('recognition'));rec.start();state.speech=rec})}
 function recordingMimeType(){
  const ua=navigator.userAgent||'';
@@ -152,7 +152,7 @@ async function startManualRecording(mode){
   // context's microphone input silent. If the input still delivers only zeros, the mic is reattached
   // automatically (up to twice) instead of ending with "Kayıtta ses yok".
   const chunks=[];let ctx=null,source=null,processor=null,alive=false,stopped=false,retries=0,watch=null;
-  const detach=()=>{if(processor)processor.onaudioprocess=null;try{source?.disconnect();processor?.disconnect()}catch{}const old=ctx;ctx=null;if(old&&old.state!=='closed')old.close().catch(()=>{})};
+  const detach=async()=>{if(processor)processor.onaudioprocess=null;try{source?.disconnect();processor?.disconnect()}catch{}const old=ctx;ctx=null;if(old&&old.state!=='closed')await old.close().catch(()=>{});};
   const attach=async s=>{
    ctx=new AC();state.audioContext=ctx;await withTimeout(ctx.resume(),2500,'Ses sistemi başlatılamadı. Tekrar dene.');
    source=ctx.createMediaStreamSource(s);processor=ctx.createScriptProcessor(4096,1,1);
@@ -161,13 +161,13 @@ async function startManualRecording(mode){
   };
   const check=async()=>{
    if(stopped||alive)return;
-   if(retries>=1){toast('Mikrofon yanıt vermiyor. Durdurup tekrar dene.');return}
-   retries++;detach();try{stream=await openMic();if(stopped){releaseStream();return}await attach(stream)}catch{}
+   if(retries>=1){toast('Mikrofon yanıt vermiyor. Kaydı sıfırladım; tekrar dokunup dene.');stopped=true;clearTimeout(watch);state.discardRecording=true;finishManualRecording(new Blob([],{type:'audio/wav'}),mode,button);return}
+   retries++;await detach();try{stream=await openMic();if(stopped){releaseStream();return}await attach(stream)}catch(error){console.warn('RE:VERSE iOS microphone recovery failed',error)}
    watch=setTimeout(check,REOPEN_MS);
   };
   await attach(stream);watch=setTimeout(check,REOPEN_MS);
   state.pcmStop=async()=>{
-   stopped=true;clearTimeout(watch);const rate=ctx?.sampleRate||48000;detach();
+   stopped=true;clearTimeout(watch);const rate=ctx?.sampleRate||48000;await detach();
    const total=chunks.reduce((n,x)=>n+x.length,0);
    const samples=new Float32Array(total);let offset=0;for(const chunk of chunks){samples.set(chunk,offset);offset+=chunk.length}
    if(total===0||peak(samples)<SILENCE){state.discardRecording=true;finishManualRecording(new Blob([],{type:'audio/wav'}),mode,button);toast(total===0?'Mikrofondan ses alınamadı. Tuşta “KONUŞ” yazmasını bekleyip tekrar kaydet.':'Kayıtta ses duyulmadı. Tuşta “KONUŞ” yazınca mikrofona yakın konuşup tekrar kaydet.');return}
