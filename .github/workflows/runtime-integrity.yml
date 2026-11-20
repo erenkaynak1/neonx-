@@ -14,6 +14,7 @@ on:
       - 'side-games/**'
       - 'assets/ui/**'
       - 'scripts/**'
+      - 'draft-xi/**'
       - '.github/workflows/runtime-integrity.yml'
 
 permissions:
@@ -47,6 +48,8 @@ jobs:
         run: node scripts/test_fethet_online.cjs
       - name: RE:VERSE name matcher
         run: node scripts/test_reverse_name_match.cjs
+      - name: Draft XI v2 engine (determinism, event log, sanity)
+        run: node scripts/test_draft_xi_engine.mjs
       - name: First-login Firebase session and exact artwork contracts
         run: node scripts/test_neon_entry.cjs
       - name: Welcome controller JavaScript syntax
