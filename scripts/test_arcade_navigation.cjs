@@ -12,8 +12,8 @@ assert(home.includes('UI.navMarkup("home")'),'Home must render the shared naviga
 assert(!/const (navIcons|NAV_ITEMS)=/.test(home),'Home must not carry its own copy of the navigation');
 assert(nav.includes("nav.innerHTML=navMarkup('')"),'Side-game footer must render the shared navigation markup');
 const items=[...nav.matchAll(/\{key:'([a-z]+)',label:'([^']+)',name:'([^']+)'(,primary:true)?\}/g)].map(m=>({key:m[1],label:m[2],primary:Boolean(m[4])}));
-assert.deepEqual(items.map(i=>i.key),['home','friends','play','lobby','leaderboard'],'Navigation destinations changed');
-assert.deepEqual(items.map(i=>i.label),['ANA SAYFA','SOSYAL','OYNA','LOBİ','LİDERLİK'],'Navigation labels changed');
+assert.deepEqual(items.map(i=>i.key),['home','friends','play','leaderboard','profile'],'Navigation destinations changed');
+assert.deepEqual(items.map(i=>i.label),['ANA SAYFA','SOSYAL','OYNA','LİDERLİK','PROFİL'],'Navigation labels changed');
 assert.deepEqual(items.filter(i=>i.primary).map(i=>i.key),['play'],'Exactly one primary navigation action is allowed');
 for(const key of items.map(i=>i.key))assert(new RegExp('\\n'+key+":'<").test(nav),'Missing navigation icon: '+key);
 for(const token of ['.nx-nav{position:fixed','grid-template-columns:repeat(5,minmax(0,1fr))','--nxu-nav-h:64px','.nx-nav-item[aria-current="page"]{color:var(--nxu-action)}','nx-arcade-has-footer','env(safe-area-inset-bottom','prefers-reduced-motion:reduce']){

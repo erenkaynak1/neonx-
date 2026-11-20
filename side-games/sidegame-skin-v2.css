@@ -194,7 +194,8 @@ body.sg-skin .sgm::before{content:"";position:absolute;inset:0;z-index:-1;pointe
   background:linear-gradient(180deg,rgba(0,7,6,.3),rgba(0,8,5,.34) 45%,rgba(0,5,4,.6) 100%)}
 body.sg-skin .sgm-logo{position:absolute;z-index:4;left:4.7%;top:max(9cqw,env(safe-area-inset-top,0px));width:33.5%;text-align:center;text-decoration:none}
 body.sg-skin .sgm-logo img{display:block;width:100%;height:auto}
-body.sg-skin .sgm-logo span{display:block;margin-top:1.5%;color:#c4ecb0;font:500 1.65cqw/1 var(--sg-body)!important;letter-spacing:.55em}
+body.sg-skin .sgm-logo{min-height:44px}
+body.sg-skin .sgm-logo span{display:block;margin-top:4px;color:#d9f3c9;font:700 11px/1 var(--sg-body)!important;letter-spacing:.16em;white-space:nowrap}
 body.sg-skin .sgm-hero{position:absolute;z-index:3;left:7.2%;top:33cqw;width:58%;text-align:left}
 body.sg-skin .sgm-hero h1,body.sg-skin .sgm-hero h2{
   margin:0 0 4%!important;padding:0!important;color:#f6fbff!important;

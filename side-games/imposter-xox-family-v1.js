@@ -28,11 +28,11 @@
   // The three user-visible actions use the existing state machine and social bridge.
   renderMenu=function(root){
     root.classList.add('nx-imp-menu');
-    const logo=make('div','nx-imp-logo');
-    logo.innerHTML='<div class="nx-imp-logo-art"><img src="../assets/ui/logo-neon-xi.svg" alt="NEON XI"></div><span>SIDE GAME</span>';
+    const logo=make('a','nx-imp-logo');logo.href='./index.html';logo.setAttribute('aria-label','Yan oyunlara dön');
+    logo.innerHTML='<div class="nx-imp-logo-art"><img src="../assets/ui/logo-neon-xi.svg" alt="NEON XI"></div><span>YAN OYUNLAR</span>';
     root.append(logo);
     const title=make('div','title-wrap nx-imp-hero');
-    title.append(make('div','crest','NEON XI · SIDE GAME'));
+    title.append(make('div','crest','NEON XI · YAN OYUN'));
     const headline=make('h1','title');headline.innerHTML='FUTBOL <span>IMPOSTER</span>';
     title.append(headline,make('div','subtitle','Bir kişi gerçeği bilmiyor. Aranızdaki imposteri bul.'));
     root.append(title);

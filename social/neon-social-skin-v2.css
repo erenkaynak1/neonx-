@@ -201,14 +201,15 @@ html.nx-home-v2 .nx-social-shade .nx-social-panel .nx-social-tabs{display:none}
 @media(min-width:900px){#bootHome.nx-approved-home-v1 .nxh .nx-social-drawer-layer .nx-social-drawer{width:420px}}
 
 /* ================= Notification toasts ================= */
-.nx-safe-toast-stack.nx-safe-toast-stack{top:calc(env(safe-area-inset-top,0px) + 8px);left:8px;right:8px;width:auto;gap:var(--nxu-2);font-family:var(--nxu-body)}
+.nx-safe-toast-stack.nx-safe-toast-stack{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);left:8px;right:8px;width:auto;gap:var(--nxu-2);font-family:var(--nxu-body)}
 .nx-safe-toast-stack .nx-safe-toast{gap:var(--nxu-3);padding:10px 10px 10px var(--nxu-4);border:1px solid var(--nxu-line-strong);border-radius:var(--nxu-radius);background:rgba(23,29,35,.97);box-shadow:inset 3px 0 0 var(--nxu-action),0 16px 44px rgba(0,0,0,.55);color:var(--nxu-text);animation:nxs-toast 320ms var(--nxu-ease)}
 .nx-safe-toast-stack .nx-safe-toast b{margin-bottom:3px;color:var(--nxu-action);font:700 12px/1.2 var(--nxu-display);letter-spacing:.14em}
 .nx-safe-toast-stack .nx-safe-toast span{color:var(--nxu-text);font-size:14px;line-height:1.35}
 .nx-safe-toast-stack .nx-safe-toast button{min-height:44px;padding:0 var(--nxu-4);border:1px solid var(--nxu-line-strong);border-radius:var(--nxu-radius);background:transparent;color:var(--nxu-text);font:700 14px/1 var(--nxu-display);letter-spacing:.08em;cursor:pointer}
 @keyframes nxs-toast{from{opacity:0;transform:translateY(-12px)}}
 /* On the home screen toasts sit under the top bar so profile, notifications and settings stay reachable. */
-html.nx-home-v2 body:has(#bootHome.active) .nx-safe-toast-stack.nx-safe-toast-stack{top:calc(env(safe-area-inset-top,0px) + 68px)}
+/* Toasts sit at the bottom (above the home nav) so they never cover the Social drawer's tabs or the header. */
+html.nx-home-v2 body:has(#bootHome.active) .nx-safe-toast-stack.nx-safe-toast-stack{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 76px)}
 @media(min-width:600px){.nx-safe-toast-stack.nx-safe-toast-stack,html.nx-home-v2 body:has(#bootHome.active) .nx-safe-toast-stack.nx-safe-toast-stack{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 88px);left:auto;right:var(--nxu-5);width:360px}}
 
 @media(prefers-reduced-motion:reduce){

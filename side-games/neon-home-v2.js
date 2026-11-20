@@ -126,7 +126,7 @@ input,select{border-radius:8px!important}`;
           </section>
         </div>
         <section class="nxh-quiz" aria-labelledby="nxh-quiz-title">
-          <div class="nxh-section-head"><h2 id="nxh-quiz-title">QUIZ OYUNLARI <small>${GAMES.length} OYUN</small></h2><a class="nxh-more" href="./side-games/index.html" aria-label="Tüm quiz oyunları">TÜMÜ${icon("chevron")}</a></div>
+          <div class="nxh-section-head"><h2 id="nxh-quiz-title">YAN OYUNLAR <small>${GAMES.length} OYUN</small></h2><a class="nxh-more" href="./side-games/index.html" aria-label="Tüm yan oyunlar">TÜMÜ${icon("chevron")}</a></div>
           <div class="nxh-grid">${games}</div>
         </section>
         <footer class="nxh-foot">
@@ -186,6 +186,25 @@ input,select{border-radius:8px!important}`;
       actions[action]();
     });
     UI?.bindNavFeedback?.(nav);
+    // Guests are no longer pushed into the profile sheet after sign-in; a dismissible card suggests linking Google instead.
+    const NUDGE_KEY="nxGoogleNudgeOff";
+    const nudgeOff=()=>{try{return localStorage.getItem(NUDGE_KEY)==="1"}catch{return false}};
+    const nudge=()=>{
+      const p=window.NEON_SOCIAL?.profile,card=stage.querySelector(".nxh-nudge");
+      const want=Boolean(p?.username)&&p.accountType==="guest"&&!nudgeOff();
+      if(!want){card?.remove();return}
+      if(card)return;
+      const n=document.createElement("section");n.className="nxh-nudge";n.setAttribute("aria-label","Hesabını bağla");
+      n.innerHTML=`<div class="nxh-nudge-copy"><b>Arkadaşların seni kolayca bulsun</b><span>Google hesabını bağla, kendine özel bir oyuncu adı seç. İlerlemen de korunur.</span></div><div class="nxh-nudge-actions"><button type="button" class="nxh-nudge-go" data-action="profile">BAĞLA</button><button type="button" class="nxh-nudge-later" data-nudge-later>Sonra</button></div>`;
+      n.querySelector("[data-nudge-later]").addEventListener("click",()=>{try{localStorage.setItem(NUDGE_KEY,"1")}catch{}n.remove()});
+      stage.querySelector(".nxh-main")?.prepend(n);
+    };
+    setInterval(nudge,1500);
+    // Deep link from the side-game nav (?nxOpen=profile): open the profile sheet once the social core is up.
+    if(new URLSearchParams(location.search).get("nxOpen")==="profile"){
+      history.replaceState(null,"",location.pathname+location.hash);
+      let tries=0;const t=setInterval(()=>{if(window.NEON_SOCIAL?.open&&!document.getElementById("nxEntry")?.checkVisibility?.()){clearInterval(t);actions.profile()}else if(++tries>100)clearInterval(t)},150);
+    }
     stage.addEventListener("animationend",e=>{if(e.target===nav)stage.classList.remove("nxh-enter")});
     setTimeout(()=>stage.classList.remove("nxh-enter"),1200);
 

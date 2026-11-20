@@ -145,8 +145,8 @@
     .winner{color:var(--team-color);font:900 clamp(17px,5vw,23px) 'Orbitron',sans-serif;text-shadow:0 0 18px rgba(var(--team-rgb),.36)}
     .sourceNote{margin:0;color:#9caf9f;font-size:11px;line-height:1.4}
   </style>
-  <link rel="stylesheet" href="../neon-arcade-ui-v1.css?v=20261111-home-v2">
-  <link rel="stylesheet" href="../sidegame-skin-v2.css?v=20261112-sgm">
+  <link rel="stylesheet" href="../neon-arcade-ui-v1.css?v=20261120-genel-ux1">
+  <link rel="stylesheet" href="../sidegame-skin-v2.css?v=20261120-genel-ux1">
 </head>
 <body class="sg-skin sg-en11">
 <script src="../sidegame-loader-v1.js?v=20261117-boot" data-title="EN 11"></script>
@@ -228,7 +228,7 @@
       return '<div class=\"top\"><a class=\"back\" href=\"../index.html\">← YAN OYUNLAR</a><div class=\"brandMini\">NEON XI</div></div>';
     }
     function hero(sub){
-      return '<section class=\"hero\"><div class=\"eyebrow\">NEON XI · SIDE GAME</div><h1>EN <span>11</span></h1><div class=\"desc\">'+esc(sub||'Parametreyi seç, yedi kişilik kadronu kur ve rakibini geç.')+'</div></section>';
+      return '<section class=\"hero\"><div class=\"eyebrow\">NEON XI · YAN OYUN</div><h1>EN <span>11</span></h1><div class=\"desc\">'+esc(sub||'Parametreyi seç, yedi kişilik kadronu kur ve rakibini geç.')+'</div></section>';
     }
     // EN 11 menu, same layout as the XOX / Imposter / Career Twin menus. There is no parameter
     // screen: a random parameter with enough verified data is drawn when a match starts.
@@ -243,7 +243,7 @@
       return '<button type="button" class="sgm-mode"'+(disabled?' disabled':' data-view="'+view+'"')+' aria-label="'+esc(label+'. '+detail)+'"><span class="sgm-mode-icon">'+sgmIcon(icon)+'</span><span class="sgm-mode-copy"><strong>'+esc(label)+'</strong><small>'+esc(detail)+'</small></span>'+(disabled?'<span class="sgm-soon">YAKINDA</span>':'<span class="sgm-mode-arrow">'+sgmIcon('arrow')+'</span>')+'</button>';
     }
     function sgmFrame(inner){
-      return '<div class="sgm"><a class="sgm-logo" href="../index.html" aria-label="Yan oyunlar"><img src="../../assets/ui/logo-neon-xi.svg" alt="NEON XI"><span>SIDE GAME</span></a>'+
+      return '<div class="sgm"><a class="sgm-logo" href="../index.html" aria-label="Yan oyunlara dön"><img src="../../assets/ui/logo-neon-xi.svg" alt="NEON XI"><span>YAN OYUNLAR</span></a>'+
       '<div class="sgm-hero"><h1>EN <span>11</span></h1><p>Yedi kişilik kadronu kur, değerler sahada belirsin, rakibini geç.</p></div>'+
       '<img class="sgm-emblem" src="../assets/en11-emblem-v1.svg" alt="" aria-hidden="true" decoding="async" draggable="false">'+inner+'</div>';
     }
@@ -550,6 +550,6 @@
 <script type="module" src="../../social/party-match-broker-v1.js?v=20261116-fx-online"></script>
 <script type="module" src="../../social/neon-social.js?v=20261116-lb-alltime"></script>
 <script type="module" src="../../social/party-ready-notify-v1.js?v=20261116-fx-online"></script>
-<script src="../neon-arcade-ui-v1.js?v=20261111-home-v2"></script>
+<script src="../neon-arcade-ui-v1.js?v=20261120-genel-ux1"></script>
 </body>
 </html>

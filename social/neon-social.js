@@ -156,7 +156,7 @@ function renderLeaderboard(){
   if(!window.NEON_LB){v.innerHTML='<div class="nx-social-card nx-social-muted">Liderlik tablosu yükleniyor…</div>';ensureLeaderboardView().then(()=>{if(state.tab==='leaderboard')renderLeaderboard()});return}
   const tab=state.lbTab||'allTime',{rows,unit,empty}=leaderboardData(tab),LB=window.NEON_LB;
   const note=tab==='weekly'?`Pazartesi başlayan haftanın en çok kazananları · Sıfırlanmaya <b>${LB.weekLeft()}</b>`:tab==='allTime'?'Tamamlanan online maçların kalıcı sıralaması.':'Higher or Lower en uzun seriler · tüm sorular tek tabloda.';
-  v.innerHTML=`<div class="nx-social-card nx-lb-card"><div class="nx-lb-head"><span class="nx-social-label">LİDERLİK TABLOSU</span><span class="nxlb-live">CANLI</span></div>
+  v.innerHTML=`<div class="nx-social-card nx-lb-card"><div class="nx-lb-head"><span class="nx-social-label">LİDERLİK TABLOSU</span>${rows.length?'<span class="nxlb-live">CANLI</span>':''}</div>
     <div class="nx-lb-tabs" role="tablist">${LB_TABS.map(([id,label])=>`<button type="button" role="tab" data-lb-tab="${id}" aria-selected="${id===tab}" class="${id===tab?'on':''}">${label}</button>`).join('')}</div>
     <p class="nx-social-muted nx-lb-note">${note}</p>
     ${LB.html(rows,{id:'social-'+tab,me:state.user?.uid,unit,empty,limit:50})}

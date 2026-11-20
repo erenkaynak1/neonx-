@@ -57,7 +57,7 @@
     if(!art.getAttribute('src')){
       art.addEventListener('load',()=>{if(!entry.hidden)entry.dataset.phase='welcome'},{once:true});
       art.addEventListener('error',()=>{entry.dataset.phase='welcome';setStatus('Giriş görseli yüklenemedi. Sayfayı yenileyebilirsin.')},{once:true});
-      art.src=artURL;
+      art.src=artURL;entry.style.setProperty('--nx-entry-art',`url("${artURL}")`);
     }
   }
   function hideWelcome(){
@@ -86,7 +86,8 @@
       if(originatedHere){
         setTimeout(()=>{
           const social=window.NEON_SOCIAL;
-          if(!social?.profile&&(wasGuest||social?.open))social?.open?.('friends');
+          // Guests land on the home screen; only a new Google account (no player name yet) is taken to the profile sheet.
+          if(!wasGuest&&!social?.profile)social?.open?.('friends');
         },wasGuest?400:1100);
       }
     }else{

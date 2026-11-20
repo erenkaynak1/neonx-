@@ -30,7 +30,7 @@
   /* Text */
   --nxu-text:#F3F6F8;
   --nxu-text-2:#AAB6C0;
-  --nxu-text-3:#75828D;
+  --nxu-text-3:#7F8C97;
   --nxu-on-lime:#0B1005;
 
   /* Roles */
@@ -109,3 +109,10 @@ body.nx-arcade-has-footer>.nx-social-launch{display:none!important}
 @media(prefers-reduced-motion:reduce){
   .nx-nav-item,.nx-nav-icon,.nx-nav-item::before,.nx-nav-badge,.nx-arcade-choice-shade,.nx-arcade-choice,.nx-arcade-option,#nx-arcade-feedback{transition:none!important;animation:none!important}
 }
+
+/* One back affordance on every side-game menu: the logo block links to the side-game hub and carries a readable
+   "‹ YAN OYUNLAR" label (it was 6 px, and on XOX, Kariyer İkizi and Imposter the logo was not a link at all). */
+body .sgm-logo,body .xoxMenuLogo,body .ctMenuLogo,body .nx-imp-logo{display:block;text-decoration:none;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+body .sgm-logo span,body .xoxMenuLogo span,body .ctMenuLogo span,body .nx-imp-logo span{display:block;font-size:11px!important;line-height:1!important;font-weight:700!important;letter-spacing:.16em!important;color:var(--nxu-text)!important;white-space:nowrap}
+body .sgm-logo span::before,body .xoxMenuLogo span::before,body .ctMenuLogo span::before,body .nx-imp-logo span::before{content:"‹";margin-right:.45em;font-size:1.35em;letter-spacing:0;vertical-align:-.08em;color:var(--nxu-action)}
+body .sgm-logo:focus-visible,body .xoxMenuLogo:focus-visible,body .ctMenuLogo:focus-visible,body .nx-imp-logo:focus-visible{outline:2px solid var(--nxu-action);outline-offset:4px;border-radius:6px}

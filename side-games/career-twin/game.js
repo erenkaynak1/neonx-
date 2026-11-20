@@ -15,15 +15,15 @@
   function modeButton(label,iconName,primary,fn){const b=E('button','menuMode'+(primary?' isPrimary':'')),inside=E('span','menuModeInside'),iconBox=E('span','menuModeIcon'),copy=E('span','menuModeCopy',esc(label)),arrow=E('span','menuModeArrow');b.type='button';b.setAttribute('aria-label',label);b.onclick=fn;iconBox.appendChild(menuIcon(iconName));arrow.appendChild(menuIcon('chevron'));inside.append(iconBox,copy,arrow);b.appendChild(inside);return b}
   function injectCss(){}
   function top(){const t=E('div','topbar'),a=E('a','back'),copy=E('span','backCopy','YAN OYUNLAR');a.href='../index.html';a.setAttribute('aria-label','Yan oyunlara dön');a.append(menuIcon('gamepad','backIcon'),copy);t.append(a,E('div','pool',''));app.appendChild(t)}
-  function brand(sub){const b=E('div','brand');b.innerHTML='<div class="eyebrow">NEON XI · SIDE GAME</div><h1>KARİYER <span>İKİZİ</span></h1><div class="subtitle">'+esc(sub||'Hedef futbolcuya en yakın kariyeri seç')+'</div>';app.appendChild(b)}
+  function brand(sub){const b=E('div','brand');b.innerHTML='<div class="eyebrow">NEON XI · YAN OYUN</div><h1>KARİYER <span>İKİZİ</span></h1><div class="subtitle">'+esc(sub||'Hedef futbolcuya en yakın kariyeri seç')+'</div>';app.appendChild(b)}
   function field(label,placeholder,value,max){const w=E('div');w.appendChild(E('div','label',esc(label)));const i=E('input','field');i.placeholder=placeholder;i.value=value||'';if(max)i.maxLength=max;w.appendChild(i);return[w,i]}
   function render(){const params=new URLSearchParams(location.search);window.scrollTo(0,0);document.body.dataset.ctScreen=S.screen;document.body.dataset.ctRole=S.role||'';document.body.dataset.ctCapture=params.get('capture')||'';document.body.dataset.ctQa=params.get('qa')||'';app.innerHTML='';top();if(S.screen==='boot')return renderBoot();if(S.screen==='menu')return renderMenu();if(S.screen==='lobby')return renderLobby();if(S.screen==='game'){reportOnlineResult(view());return renderGame()}}
   function renderBoot(){brand('Oyuncu verileri yükleniyor…');app.appendChild(E('div','card center','<div class="spinner"></div><div class="hint">Transfermarkt master havuzu hazırlanıyor.</div>'))}
   function renderMenu(){
     // XOX-family presentation only. Game modes and existing handlers are unchanged.
     app.querySelector('.topbar')?.remove();
-    const logo=E('div','ctMenuLogo');
-    logo.innerHTML='<div class="ctLogoArt"><img src="../../assets/ui/logo-neon-xi.svg" alt="NEON XI"></div><span>SIDE GAME</span>';
+    const logo=E('a','ctMenuLogo');logo.href='../index.html';logo.setAttribute('aria-label','Yan oyunlara dön');
+    logo.innerHTML='<div class="ctLogoArt"><img src="../../assets/ui/logo-neon-xi.svg" alt="NEON XI"></div><span>YAN OYUNLAR</span>';
     app.appendChild(logo);
     brand('Hedef futbolcuya en yakın kariyeri seç');
     const motif=E('div','ctMenuMotif');

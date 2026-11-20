@@ -24,7 +24,7 @@ const guestFlow=social.slice(social.indexOf('async function continueAsGuest()'),
 assert(guestFlow.indexOf('await signOut(auth)')<guestFlow.indexOf('await signInAnonymously(auth)'),'Every explicit guest login must replace the previous Firebase identity');
 assert(code.includes("api[method]()"),'Buttons must delegate to existing social auth implementation');
 assert(code.includes("window.NEON_XI_ENTRY={"),'Welcome controller bridge missing');
-assert(code.includes("if(!social?.profile"),'New accounts must see username chooser');
+assert(code.includes("if(!wasGuest&&!social?.profile)"),'New Google accounts must see the username chooser; guests land on the home screen');
 assert(code.includes("guide.hidden=false"),'Help button must open real guide');
 for(const file of ['neon-entry-v1.css','neon-entry-v1.js'])assert(index.includes('./side-games/'+file+"?v='+VERSION"),'Root must load '+file);
 assert(/const VERSION='20\d{6}-[a-z0-9-]+'/.test(index),'A dated and explicit cache token is required for injected assets');

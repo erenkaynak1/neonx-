@@ -195,3 +195,13 @@
   .nxh-scroll{scroll-behavior:auto!important}
 }
 .nx-reduced-effects .nxh *,.nx-reduced-effects .nxh *::before,.nx-reduced-effects .nxh *::after{animation:none!important}
+
+/* Guest nudge: link Google for a custom name (replaces the profile sheet that used to pop open after sign-in). */
+.nxh .nxh-nudge{display:flex;align-items:center;gap:12px;margin:0 0 12px;padding:12px 12px 12px 14px;border:1px solid var(--nxu-line-strong);border-left:3px solid var(--nxu-action);border-radius:var(--nxu-radius-l);background:var(--nxu-surface-1)}
+.nxh .nxh-nudge-copy{flex:1;min-width:0;display:grid;gap:3px}
+.nxh .nxh-nudge-copy b{color:var(--nxu-text);font:700 14px/1.2 var(--nxu-body)}
+.nxh .nxh-nudge-copy span{color:var(--nxu-text-2);font:500 13px/1.35 var(--nxu-body)}
+.nxh .nxh-nudge-actions{display:grid;gap:6px;flex:none}
+.nxh .nxh-nudge-go{min-height:44px;padding:0 16px;border:0;border-radius:10px;background:var(--nxu-action);color:var(--nxu-on-lime);font:800 14px/1 var(--nxu-display);letter-spacing:.08em;cursor:pointer}
+.nxh .nxh-nudge-later{min-height:32px;border:0;background:none;color:var(--nxu-text-2);font:600 13px/1 var(--nxu-body);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.nxh .nxh-nudge :focus-visible{outline:2px solid var(--nxu-action);outline-offset:2px}
