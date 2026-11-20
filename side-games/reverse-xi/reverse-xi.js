@@ -147,32 +147,24 @@ async function startManualRecording(mode){
  let stream=await openMic();state.recordingMode=mode;state.transcript='';state.altHeard=[];
  const button=$(mode==='name'?'record-name':'record-imitation');button.classList.add('recording');button.classList.remove('live');button.textContent='◌ MİKROFON AÇILIYOR…';
  const AC=window.AudioContext||window.webkitAudioContext;
- if(isIOSAudio()&&AC){
-  // A fresh AudioContext per recording: after an <audio> element has played, iOS can leave an older
-  // context's microphone input silent. If the input still delivers only zeros, the mic is reattached
-  // automatically (up to twice) instead of ending with "Kayıtta ses yok".
-  const chunks=[];let ctx=null,source=null,processor=null,alive=false,stopped=false,retries=0,watch=null;
-  const detach=async()=>{if(processor)processor.onaudioprocess=null;try{source?.disconnect();processor?.disconnect()}catch{}const old=ctx;ctx=null;if(old&&old.state!=='closed')await old.close().catch(()=>{});};
-  const attach=async s=>{
-   ctx=new AC();state.audioContext=ctx;await withTimeout(ctx.resume(),2500,'Ses sistemi başlatılamadı. Tekrar dene.');
-   source=ctx.createMediaStreamSource(s);processor=ctx.createScriptProcessor(4096,1,1);
-   processor.onaudioprocess=e=>{const d=e.inputBuffer.getChannelData(0);if(!alive&&peak(d)>DEAD){alive=true;markLive(button)}if(alive)chunks.push(new Float32Array(d));e.outputBuffer.getChannelData(0).fill(0)};
-   source.connect(processor);processor.connect(ctx.destination);
-  };
-  const check=async()=>{
-   if(stopped||alive)return;
-   if(retries>=1){toast('Mikrofon yanıt vermiyor. Kaydı sıfırladım; tekrar dokunup dene.');stopped=true;clearTimeout(watch);await detach();state.discardRecording=true;finishManualRecording(new Blob([],{type:'audio/wav'}),mode,button);return}
-   retries++;await detach();try{stream=await openMic();if(stopped){releaseStream();return}await attach(stream)}catch(error){console.warn('RE:VERSE iOS microphone recovery failed',error)}
-   watch=setTimeout(check,REOPEN_MS);
-  };
-  await attach(stream);watch=setTimeout(check,REOPEN_MS);
-  state.pcmStop=async()=>{
-   stopped=true;clearTimeout(watch);const rate=ctx?.sampleRate||48000;await detach();
-   const total=chunks.reduce((n,x)=>n+x.length,0);
-   const samples=new Float32Array(total);let offset=0;for(const chunk of chunks){samples.set(chunk,offset);offset+=chunk.length}
-   if(total===0||peak(samples)<SILENCE){state.discardRecording=true;finishManualRecording(new Blob([],{type:'audio/wav'}),mode,button);toast(total===0?'Mikrofondan ses alınamadı. Tuşta “KONUŞ” yazmasını bekleyip tekrar kaydet.':'Kayıtta ses duyulmadı. Tuşta “KONUŞ” yazınca mikrofona yakın konuşup tekrar kaydet.');return}
-   finishManualRecording(encodeWav(downsample(samples,rate,TARGET_RATE),TARGET_RATE),mode,button);
-  };
+ if(isIOSAudio()){
+  // iOS Safari records directly from the MediaStream. Avoid ScriptProcessor/AudioContext
+  // microphone capture here: repeatedly creating and closing audio contexts can leave the
+  // next recording with a silent input after an audio element has played.
+  if(!window.MediaRecorder)throw new Error('Bu iPhone tarayıcısı ses kaydını desteklemiyor.');
+  const mime=recordingMimeType();
+  const rec=new MediaRecorder(stream,mime?{mimeType:mime}:undefined);
+  state.recorder=rec;state.chunks=[];
+  rec.ondataavailable=e=>{if(e.data?.size&&state.recorder===rec)state.chunks.push(e.data)};
+  rec.onerror=()=>{if(state.recorder!==rec)return;state.discardRecording=true;finishManualRecording(new Blob([]),mode,button);toast('Kayıt sırasında hata oluştu. Tekrar dene.')};
+  rec.onstop=()=>{if(state.recorder!==rec)return;finishManualRecording(new Blob(state.chunks,{type:rec.mimeType||mime||'audio/mp4'}),mode,button)};
+  rec.start();
+  const track=stream.getAudioTracks()[0];
+  if(track){
+   const onUnmute=()=>{if(state.recorder===rec&&state.recordingMode===mode)markLive(button);track.removeEventListener('unmute',onUnmute)};
+   track.addEventListener('unmute',onUnmute);
+  }
+  setTimeout(()=>{if(state.recorder===rec&&rec.state==='recording'&&!state.micLive)markLive(button)},700);
  }else{
   if(!window.MediaRecorder)throw new Error('Bu tarayıcı ses kaydını desteklemiyor.');
   const mime=recordingMimeType();let rec=null,monitor=null,watch=null,retries=0;
