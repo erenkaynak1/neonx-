@@ -25,3 +25,7 @@ body.nx-entry-open{overflow:hidden!important}
 #nxEntryGuide .nx-entry-guide-close{position:absolute;top:11px;right:12px;min-width:42px;min-height:42px;border:1px solid #597f40;border-radius:11px;background:#07120c;color:#fff;font-size:24px;cursor:pointer}
 #nxEntryGuide button:focus-visible{outline:2px solid #caff79;outline-offset:3px}
 @media(prefers-reduced-motion:reduce){#nxEntry .nx-entry-canvas,#nxEntry .nx-entry-hotspot rect{transition:none}#nxEntry .nx-entry-spinner{animation:none}}
+
+/* Letterbox fill: the welcome art keeps its exact geometry (hotspots are mapped onto it); the bands above and
+   below it on tall phones show a blurred, darkened copy instead of flat black. */
+#nxEntry::before{content:"";position:absolute;inset:-40px;z-index:-1;background:var(--nx-entry-art,none) center/cover no-repeat;filter:blur(28px) brightness(.38) saturate(1.2);transform:translateZ(0);pointer-events:none}

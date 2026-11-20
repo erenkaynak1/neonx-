@@ -14,6 +14,7 @@ leaderboard:'<path d="M9.5 20V5h5v15"/><path d="M4 20v-8.5h5.5"/><path d="M14.5 
 bell:'<path d="M6 16.5V11a6 6 0 1 1 12 0v5.5l1.5 2h-15Z"/><path d="M10 20.5a2.2 2.2 0 0 0 4 0"/>',
 settings:'<path d="M4 7h8M18 7h2M4 17h2M12 17h8"/><circle cx="15" cy="7" r="2.5"/><circle cx="9" cy="17" r="2.5"/>',
 single:'<circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.8 3.1-6 7-6s7 2.2 7 6"/>',
+profile:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.6 18.3c1.2-2 3.1-3.1 5.4-3.1s4.2 1.1 5.4 3.1"/>',
 bot:'<rect x="5" y="8" width="14" height="11" rx="3"/><path d="M12 8V4.5M9.5 13h.01M14.5 13h.01M10 16h4M2.5 12.5v3M21.5 12.5v3"/>',
 online:'<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.6 2.3 3.8 5.1 3.8 8.5s-1.2 6.2-3.8 8.5c-2.6-2.3-3.8-5.1-3.8-8.5s1.2-6.2 3.8-8.5Z"/>',
 tournament:'<path d="M8 4h8v5a4 4 0 0 1-8 0Z"/><path d="M8 6H5v1.5a3 3 0 0 0 3 3M16 6h3v1.5a3 3 0 0 1-3 3M12 13v3.5M8.5 20h7M10 16.5h4V20h-4Z"/>',
@@ -29,8 +30,9 @@ const NAV_ITEMS=[
   {key:'home',label:'ANA SAYFA',name:'Ana sayfa'},
   {key:'friends',label:'SOSYAL',name:'Sosyal'},
   {key:'play',label:'OYNA',name:'Oyna',primary:true},
-  {key:'lobby',label:'LOBİ',name:'Lobi'},
-  {key:'leaderboard',label:'LİDERLİK',name:'Liderlik'}
+  {key:'leaderboard',label:'LİDERLİK',name:'Liderlik'},
+  // The lobby lives inside Sosyal (its badge counts requests and invites); the fifth slot is the profile.
+  {key:'profile',label:'PROFİL',name:'Profil'}
 ];
 /* One markup for every screen. `data-action` is the home contract, `data-nx-nav` the side-game one. */
 function navMarkup(active=''){
@@ -83,6 +85,8 @@ function addFooter(){
  const tabs={friends:'friends',play:'play',lobby:'party',leaderboard:'leaderboard'};
  nav.addEventListener('click',async e=>{
   const a=e.target.closest('[data-nx-nav]');if(!a)return;
+  // The profile sheet is framed by the home screen: open it there.
+  if(a.dataset.nxNav==='profile'){e.preventDefault();location.href=paths.home+'?nxOpen=profile';return}
   const tab=tabs[a.dataset.nxNav];if(!tab)return;
   e.preventDefault();const api=await social();
   if(api)api.open(tab);else flash('Sosyal bağlantı yüklenemedi. İnternet bağlantını kontrol et.');
@@ -91,7 +95,13 @@ function addFooter(){
  watchSocialCount(count=>setNavBadge(nav,count));
 }
 
-document.addEventListener('click',e=>{if(!atRoot)return;const btn=e.target.closest('#bootHome.nx-approved-home-v1 [data-action="online"]');if(btn){e.preventDefault();e.stopImmediatePropagation();openChoice('draft')}},true);
+document.addEventListener('click',e=>{if(!atRoot)return;const btn=e.target.closest('#bootHome.nx-approved-home-v1 [data-action="online"]');if(btn){e.preventDefault();e.stopImmediatePropagation();openPlaySheet('draft')}},true);
+/* ONLINE on the home screen opens the same OYNA sheet as the bottom nav (one online entry point), Draft preselected. */
+function openPlaySheet(mode){
+ const nav=document.querySelector('#bootHome .nx-home-nav [data-action="play"]');if(!nav){openChoice(mode);return}
+ nav.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true}));
+ let n=0;const t=setInterval(()=>{const sel=document.querySelector('.nx-social-shade.open #nxMode');if(sel){clearInterval(t);if([...sel.options].some(o=>o.value===mode)&&sel.value!==mode){sel.value=mode;sel.dispatchEvent(new Event('change',{bubbles:true}))}}else if(++n>40)clearInterval(t)},75);
+}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&dialog?.classList.contains('open')){e.preventDefault();closeChoice()}});
 async function settingsDeepLink(){if(!atRoot||new URLSearchParams(location.search).get('nxOpenSettings')!=='1')return;for(let i=0;i<100;i++){const b=document.querySelector('#bootHome.nx-approved-home-v1 [data-action="settings"]');if(b){history.replaceState(null,'',paths.home);b.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true}));return}await new Promise(r=>setTimeout(r,100))}flash('Ayarlar yüklenemedi.')}
 window.NEON_ARCADE_UI={openChoice,choose,openSettings,flash,icons,svg,navItems:NAV_ITEMS,navMarkup,setNavBadge,bindNavFeedback,watchSocialCount};

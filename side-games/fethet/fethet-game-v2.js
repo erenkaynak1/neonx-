@@ -137,7 +137,7 @@
   };
   const sgmIcon = n => `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${SGM_ICONS[n]}</svg>`;
   const sgmMode = (view, label, detail, icon) => `<button type="button" class="sgm-mode" data-view="${view}" aria-label="${esc(label + '. ' + detail)}"><span class="sgm-mode-icon">${sgmIcon(icon)}</span><span class="sgm-mode-copy"><strong>${esc(label)}</strong><small>${esc(detail)}</small></span><span class="sgm-mode-arrow">${sgmIcon('arrow')}</span></button>`;
-  const sgmFrame = inner => `<div class="sgm"><a class="sgm-logo" href="../index.html" aria-label="Yan oyunlar"><img src="../../assets/ui/logo-neon-xi.svg" alt="NEON XI"><span>SIDE GAME</span></a>
+  const sgmFrame = inner => `<div class="sgm"><a class="sgm-logo" href="../index.html" aria-label="Yan oyunlara dön"><img src="../../assets/ui/logo-neon-xi.svg" alt="NEON XI"><span>YAN OYUNLAR</span></a>
     <div class="sgm-hero"><h1>SAHA <span>FETHİ</span></h1><p>Türkiye haritasında futbol bilginle şehir fethet.</p></div>
     <img class="sgm-emblem" src="../assets/fethet-emblem-v1.svg?v=1" alt="" aria-hidden="true" decoding="async" draggable="false">${inner}</div>`;
   function renderMenu(view = 'modes') {

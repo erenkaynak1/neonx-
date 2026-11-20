@@ -27,15 +27,15 @@
   const markName=m=>m==='X'?'OYUNCU 1':'OYUNCU 2';
 
   function shell(){app.innerHTML='';const top=E('div','top topbar'),back=E('a','back'),copy=E('span','backCopy','YAN OYUNLAR');back.href='../index.html';back.setAttribute('aria-label','Yan oyunlara dön');back.append(menuIcon('gamepad','backIcon'),copy);top.append(back);app.appendChild(top)}
-  function brand(sub='İki koşulu aynı anda sağlayan futbolcuyu bul.'){const h=E('section','hero brand');h.innerHTML='<div class="eyebrow">NEON XI · SIDE GAME</div><h1>FUTBOL <span>XOX</span></h1><div class="desc subtitle">'+esc(sub)+'</div>';app.appendChild(h)}
+  function brand(sub='İki koşulu aynı anda sağlayan futbolcuyu bul.'){const h=E('section','hero brand');h.innerHTML='<div class="eyebrow">NEON XI · YAN OYUN</div><h1>FUTBOL <span>XOX</span></h1><div class="desc subtitle">'+esc(sub)+'</div>';app.appendChild(h)}
   function field(label,placeholder,value,max){const w=E('div','fieldWrap');w.appendChild(E('div','label',esc(label)));const i=E('input','field');i.placeholder=placeholder;i.value=value||'';if(max)i.maxLength=max;w.appendChild(i);return[w,i]}
   function render(){window.scrollTo(0,0);document.body.dataset.ctScreen=S.screen;document.body.dataset.ctRole=S.role||'';document.body.dataset.xoxTurn=S.game?.turn||'';shell();if(S.screen==='boot')return renderBoot();if(S.screen==='menu')return renderMenu();if(S.screen==='lobby')return renderLobby();if(S.screen==='game'){reportOnlineResult(S.game);return renderGame()}}
   function renderBoot(){brand('Oyuncu havuzu ve online sistem yükleniyor…');app.appendChild(E('div','card center','<div class="spinner"></div><div class="hint">NEON XI gerçek zamanlı oda servisi hazırlanıyor.</div>'))}
   function renderMenu(){
     // Menu-only presentation; existing local/social/matchmaking handlers stay shared.
     app.querySelector('.topbar')?.remove();
-    const logo=E('div','xoxMenuLogo');
-    logo.innerHTML='<div class="xoxLogoArt"><img src="../../assets/ui/logo-neon-xi.svg" alt="NEON XI"></div><span>SIDE GAME</span>';
+    const logo=E('a','xoxMenuLogo');logo.href='../index.html';logo.setAttribute('aria-label','Yan oyunlara dön');
+    logo.innerHTML='<div class="xoxLogoArt"><img src="../../assets/ui/logo-neon-xi.svg" alt="NEON XI"></div><span>YAN OYUNLAR</span>';
     app.appendChild(logo);
     brand();
     const motif=E('img','xoxMenuMotif');

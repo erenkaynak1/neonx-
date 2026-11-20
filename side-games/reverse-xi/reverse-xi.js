@@ -328,7 +328,7 @@ updateStage=function(){
 $('pass-ready')?.addEventListener('click',()=>{state.passAck=state.roomData?.turn||0;updateStage()});
 $('local-start')?.addEventListener('click',startLocal);
 $('local-open')?.addEventListener('click',()=>{$('local-sheet').hidden=false;$('local-open').classList.add('active');$('local-a')?.focus()});
-$('start-solo').onclick=()=>toast('Solo AI modu sonraki geliştirme adımında etkinleştirilecek. Multiplayer çekirdeği hazırlandı.');
+$('start-solo').onclick=()=>toast('Yapay zekâya karşı modu sonraki geliştirme adımında etkinleştirilecek. Multiplayer çekirdeği hazırlandı.');
 window.addEventListener('beforeunload',()=>state.stream?.getTracks().forEach(t=>t.stop()));
 await ensureAuth().catch(e=>toast('Kimlik bağlantısı kurulamadı: '+e.message));
 const startup=new URLSearchParams(location.search),partyCode=startup.get('nxCode')||'',partyName=startup.get('nxName')||'NEON Oyuncu';

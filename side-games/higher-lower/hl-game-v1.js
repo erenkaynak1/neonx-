@@ -102,7 +102,7 @@
   function renderMenu() {
     S.screen = 'menu';
     const best = store.get('best', 0);
-    app.innerHTML = `<header class="hl-top"><a class="hl-back" href="../index.html" aria-label="Yan oyunlar">‹</a><div class="hl-brand"><small>NEON XI · SIDE GAME</small><h1 class="sr">Higher or Lower</h1></div></header>
+    app.innerHTML = `<header class="hl-top"><a class="hl-back" href="../index.html" aria-label="Yan oyunlar">‹</a><div class="hl-brand"><small>NEON XI · YAN OYUN</small><h1 class="sr">Higher or Lower</h1></div></header>
       <section class="hl-hero">
         <img class="hl-logo" src="./assets/hl-logo-v1.webp" width="760" height="420" alt="Higher or Lower" decoding="async">
         <p>İki futbolcu, tek soru. Doğru olanı seç, seriyi büyüt. İlk hatada oyun biter; her yeni oyunda soru değişir.</p>
