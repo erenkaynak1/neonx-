@@ -17,7 +17,7 @@
 > - topsuz davranışların yetenek sonucu olarak tanımlanması (4.5);
 > - zincir olasılığı ölçümü, meta avcısının arama yöntemi ve yeni laboratuvar testleri (10).
 >
-> Revizyon 4 (2026-11-18): oyuncu hareketi ve konumlandırma kuralları (4.5) soru–cevapla belirlendi; mevki uyumluluk tablosu (2.4) onaylandı; spiker olayların sebebini de anlatır (9.1, 13.2); açık sorular kapatıldı (online kopma 8, hızlı izleme 9.1, kimya kapsamı 7); spikere absürt komik yorum katmanı eklendi (9.1).
+> Revizyon 4 (2026-11-18): oyuncu hareketi ve konumlandırma kuralları (4.5) soru–cevapla belirlendi; mevki uyumluluk tablosu (2.4) onaylandı; spiker olayların sebebini de anlatır (9.1, 13.2); açık sorular kapatıldı (online kopma 8, hızlı izleme 9.1, kimya kapsamı 7); spikere absürt komik yorum katmanı eklendi (9.1); espriler bolca (~10–14 / maç), meme ve sosyal medya diliyle, "gavur" aynen kalır.
 >
 > Revizyon 5 (2026-11-18): matematiğin başlangıç değerleri eklendi (bölüm 14): k katsayıları, yetenek ağırlıkları, taktik etkisinin büyüklüğü (15 puan), hedef olay sıklıkları (maç başına 3–3,5 gol).
 >
@@ -699,11 +699,21 @@ Bu riskler, yoğun presin her rakibe karşı en iyi seçim olmamasını sağlaya
       - *şaşırtıcı an (beklenmedik kurtarış, çalım, ters köşe):* "Vay babayın düşmanlarına!!!"
       - *sert müdahale:* "Lülülülü, doktor yok mu doktor!"
       - kaçan net gol, kaleci hatası, ofsayt tuzağına düşme, direk gibi olaylar için de espri havuzu olur.
-    - **Seyrek ve tekrarsız:** maç başına birkaç kez (örneğin 90 dakikada 3–5); aynı espri aynı maçta tekrar etmez. Sık kullanılırsa etkisini kaybeder.
+    - **Bolca ama tekrarsız (kullanıcı kararı, 2026-11-20):** maç başına **~10–14 espri**; aynı espri aynı maçta tekrar etmez, aynı olay tipinden iki espri arasında en az 5 maç dakikası olur. Havuz bunu taşıyacak kadar büyük tutulur: başlangıçta en az ~150 satır, olay tipi başına en az ~10.
     - **Sebebi bozmaz:** espri, sebep anlatımının (yukarıda) yerine geçmez, onun yanında gelir. Örnek: "Gavura vurur gibi vurdu!! Uzaktan şut 91, kaleci pozisyonda yakaladı ama tutamadı, korner."
     - **Seçilmiş havuz:** espriler ayrı bir metin dosyasında (olay tipi → satırlar) tutulur. Kullanıcı ekleyip çıkarabilir; motor kodu değişmez.
     - **Ayar:** ayarlarda "Komik yorumlar: açık / kapalı" seçeneği olur. Varsayılan açık.
-    - **Not (yayın öncesi kontrol):** mobil mağazalarda yayınlanacağı için havuzdaki her satır bir kez gözden geçirilir. Bir grubu aşağıladığı şeklinde okunabilecek ifadeler (örneğin "gavur" bazı kişilerce gayrimüslimlere yönelik aşağılayıcı bulunabilir) için karar kullanıcınındır; istenirse yerine aynı tadı veren alternatifler konur ("Kale direğini söküyordu!!").
+    - **Dil ve tarz:** sokak ağzı + **meme ve modern sosyal medya dili**. Kullanıcının örnekleri aynen kalır ("Gavura vurur gibi vurdu!!" dahil; kullanıcı kararı, 2026-11-20). Meme dilinden örnek satırlar (başlangıç havuzu için yön, kesin metin değil):
+      - *Bek kontraya yetişemeyince:* "POV: bek kontraya yetişmeye çalışıyor 🏃💨" / "Bek şu an 'beni neden buraya getirdiniz' modunda"
+      - *Kötü orta:* "Bu orta değil, Google Haritalar'da kayboldu" / "Ortaya bak, tribüne kargo gönderdi"
+      - *Ters köşe çalım:* "Kanatçı: 'beni kim durdurabilir?' Bek: 'ben?' Kanatçı: 'yok sen değilsin'" / "Main character enerjisi"
+      - *Büyük kurtarış:* "Kaleci GTA'dan çıkmış gibi uçtu" / "Kaleci bugün 'hayır' kelimesinin vücut bulmuş hali"
+      - *Zayıf şut:* "Bu şut %4 şarjla çekildi" / "Şut değil, kaleciye kibar bir rica"
+      - *Direk:* "Plot twist: direk!" / "Direk bugün maçın en iyi defans oyuncusu"
+      - *Ofsayt:* "Erken kalkan yol alır demişler, abartmış" / "Ofsayt çizgisi: 'kanka bi dur'"
+      - *Savunma hatası:* "Defans şu an 'aradığınız kişiye ulaşılamıyor' modunda" / "NPC moduna geçen bir stoper"
+      - *Gol:* "Ayağına sağlık, hesabına bereket" / "Rakip defansa 'iyi misin' mesajı attık"
+    - **Sınır:** espriler sahadaki olaya ve oyuna yönelik olur. Gerçek oyuncuların görünüşü, kökeni, özel hayatı ya da başına gelen gerçek olaylar espri konusu yapılmaz; oyuncu adı yalnızca o andaki aksiyonla birlikte geçer.
 - **Sağ:** taktik ve istatistik. İki takımın taktikleri gösterilir (rakibinki maç başında açılır). Canlı istatistikler: koridor başına atak, orta, ikili mücadele başarı oranları, şut ve isabet.
 - **Panel davranışı:** her panelde **tam ekran** ve **kapat** tuşu var. Kapatılan panelin yeri kalan panellere paylaştırılır; kapatılan panel bir tuşla geri açılır.
 - **Dar ekran (dikey telefon):** saha + spiker açık başlar, taktik paneli bir dokunuşla açılır. Yan çevrilmiş telefonda, tablette ve masaüstünde üç panel açık başlar.
