@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#070b0a">
+<title>Draft XI v2 — Motor Testi</title>
+<style>
+:root{--bg:#070b0a;--s1:#0f1418;--s2:#141a20;--line:rgba(255,255,255,.09);--fg:#e8efe9;--mut:#9aa79f;--a:#baff18;--b:#2fe0ff;--red:#ff7a8a;--yel:#ffd34d}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:980px;margin:0 auto;padding:16px max(16px,env(safe-area-inset-left)) 48px max(16px,env(safe-area-inset-right))}
+h1{font:800 26px/1.1 system-ui;margin:4px 0 4px;letter-spacing:.02em}h1 span{color:var(--a)}
+.note{color:var(--mut);font-size:13px;margin:0 0 14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.card{background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:14px}
+.card h2{font:700 13px/1 system-ui;letter-spacing:.14em;color:var(--mut);margin:0 0 10px}
+label{display:grid;gap:4px;font-size:12px;color:var(--mut);margin-bottom:8px}
+select{min-height:40px;border-radius:9px;border:1px solid var(--line);background:var(--s2);color:var(--fg);font:600 14px system-ui;padding:0 10px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+button.go{width:100%;min-height:52px;border:0;border-radius:12px;background:var(--a);color:#0a0f02;font:800 18px system-ui;letter-spacing:.12em;cursor:pointer;margin:12px 0}
+button.go:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.score{display:flex;align-items:center;justify-content:center;gap:16px;font:800 34px system-ui;margin:4px 0 2px}
+.score .ta{color:var(--a);font-size:16px}.score .tb{color:var(--b);font-size:16px}
+.sub{text-align:center;color:var(--mut);font-size:13px}
+.ev{display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--line);font-size:14px}
+.ev .m{width:34px;flex:none;font-weight:800;color:var(--mut)}
+.ev.goal{background:rgba(186,255,24,.07)}.ev.goal .m{color:var(--a)}
+.ev.card-y .m{color:var(--yel)}.ev.card-r .m{color:var(--red)}
+.log{max-height:520px;overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+td,th{padding:5px 6px;border-bottom:1px solid var(--line);text-align:center}
+td:nth-child(2),th:nth-child(2){text-align:center;color:var(--mut)}
+td:first-child{color:var(--a);font-weight:700}td:last-child{color:var(--b);font-weight:700}
+.rt{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px}
+.rt div{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--line)}
+.rt b{font-variant-numeric:tabular-nums}
+.motm{color:var(--yel);font-weight:700}
+.tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.tabs button{min-height:36px;padding:0 12px;border-radius:9px;border:1px solid var(--line);background:var(--s2);color:var(--mut);font:700 13px system-ui;cursor:pointer}
+.tabs button.on{border-color:var(--a);color:var(--a)}
+.batch{font-size:14px}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <h1>DRAFT XI <span>v2</span> · Motor testi</h1>
+  <p class="note">Yeni maç motorunun ilk sürümü. Ekranlar henüz yok: burada takımları ve taktikleri seçip motorun ürettiği maçı okuyorsun. Oyuncu değerleri test için ilk değerlendirme, henüz incelenmedi.</p>
+
+  <div class="grid">
+    <section class="card" aria-labelledby="h-a"><h2 id="h-a" style="color:var(--a)">SENİN TAKIMIN</h2><div id="formA"></div></section>
+    <section class="card" aria-labelledby="h-b"><h2 id="h-b" style="color:var(--b)">RAKİP</h2><div id="formB"></div></section>
+  </div>
+  <button class="go" id="play" type="button">MAÇI OYNA</button>
+  <div class="tabs"><button type="button" id="b100">100 maç simüle et (ortalama)</button></div>
+
+  <section id="result" hidden>
+    <div class="card" style="margin-bottom:12px">
+      <div class="score"><span class="ta" id="nA"></span><span id="sc"></span><span class="tb" id="nB"></span></div>
+      <div class="sub" id="meta"></div>
+    </div>
+    <div class="grid">
+      <section class="card"><h2>MAÇIN AKIŞI</h2><div class="log" id="log"></div></section>
+      <section class="card"><h2>İSTATİSTİK</h2><table id="stats"></table><h2 style="margin-top:16px">OYUNCU NOTLARI</h2><div class="rt" id="ratings"></div></section>
+    </div>
+  </section>
+  <section id="batchOut" class="card batch" hidden></section>
+</main>
+
+<script type="module">
+import { simulateMatch, ENGINE_VERSION } from './engine/match.mjs?v=2';
+import { SQUADS, BY_ID } from './engine/sample-players.mjs?v=2';
+
+const OPT = {
+  direction: ['Hücum yönü', [['balanced', 'Dengeli'], ['left', 'Sol'], ['centre', 'Merkez'], ['right', 'Sağ']]],
+  passing: ['Pas tarzı', [['mixed', 'Karışık'], ['short', 'Kısa'], ['long', 'Uzun']]],
+  finishing: ['Bitiriş', [['mixed', 'Karışık'], ['cross', 'Orta'], ['through', 'Ara pası'], ['long', 'Uzaktan şut'], ['dribble', 'Çalım']]],
+  tempo: ['Tempo', [['balanced', 'Dengeli'], ['patient', 'Sabırlı'], ['fast', 'Hızlı']]],
+  onWin: ['Top kazanınca', [['settled', 'Yerleşik'], ['counter', 'Kontra']]],
+  line: ['Hat yüksekliği', [['mid', 'Orta'], ['low', 'Alçak'], ['high', 'Yüksek']]],
+  press: ['Pres', [['mid', 'Orta'], ['low', 'Az'], ['high', 'Yoğun']]],
+  closed: ['Kapatılan alan', [['balanced', 'Dengeli'], ['wings', 'Kanatlar'], ['centre', 'Merkez']]],
+  tackling: ['Müdahale', [['normal', 'Normal'], ['careful', 'Temkinli'], ['hard', 'Sert']]],
+};
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+function form(el, side, def) {
+  const squads = Object.entries(SQUADS).map(([k, s]) => `<option value="${k}"${k === def ? ' selected' : ''}>${esc(s.name)} · ${s.formation} · ${esc(BY_ID[Object.values(s.slots).slice(-1)[0]].name)}…</option>`).join('');
+  el.innerHTML = `<label>Kadro<select id="${side}-squad">${squads}</select></label>
+  <div class="row2">${Object.entries(OPT).map(([k, [lab, opts]]) => `<label>${lab}<select id="${side}-${k}">${opts.map(([v, t]) => `<option value="${v}">${t}</option>`).join('')}</select></label>`).join('')}</div>`;
+}
+form(document.getElementById('formA'), 'A', 'A'); form(document.getElementById('formB'), 'B', 'B');
+const squad = k => ({ name: SQUADS[k].name, formation: SQUADS[k].formation, players: Object.fromEntries(Object.entries(SQUADS[k].slots).map(([s, id]) => [s, BY_ID[id]])) });
+const tactic = side => Object.fromEntries(Object.keys(OPT).map(k => [k, document.getElementById(`${side}-${k}`).value]));
+const nm = id => BY_ID[id]?.name || id;
+const minute = t => Math.min(90, Math.floor(t / 600) + 1) + "'";
+
+function line(e, names) {
+  const who = e.p ? nm(e.p) : '';
+  switch (e.type) {
+    case 'goal': return ['goal', `⚽ GOL! ${who} (${{ in: 'ceza sahası', out: 'uzaktan', head: 'kafa', one: 'karşı karşıya', pen: 'penaltı', fk: 'frikik' }[e.shotType] || ''})${e.assist && e.assist !== e.p ? ' · asist ' + nm(e.assist) : ''} — ${names[e.team]}`];
+    case 'save': return ['', `🧤 ${who} kurtardı${e.by ? ' (' + nm(e.by) + ')' : ''}${e.kind === 'penalty' ? ' — PENALTI KURTARIŞI' : ''}`];
+    case 'post': return ['', `Direk! ${who}`];
+    case 'miss': return ['', `${who} auta vurdu`];
+    case 'block': return ['', `${who} şutu blokladı`];
+    case 'foul': return [e.card === 'red' ? 'card-r' : e.card === 'yellow' ? 'card-y' : '', `${who} faul yaptı (${nm(e.on)})${e.card === 'yellow' ? ' · SARI KART' : e.card === 'red' ? ' · KIRMIZI KART' : ''}`];
+    case 'offside': return ['', `Ofsayt: ${who}`];
+    case 'corner': return ['', `Korner — ${names[e.team]}`];
+    case 'through': return ['', `${who} ara pası attı, ${nm(e.to)} kaleciyle karşı karşıya!`];
+    case 'keeper_rush': return ['', `${who} kalesini terk edip topu kaptı`];
+    case 'reshape': return ['card-r', `${names[e.team]} 10 kişi: ${who} boşalan pozisyona geçti`];
+    case 'half_time': return ['', '— Devre arası —'];
+    default: return null;
+  }
+}
+
+function render(r, names) {
+  document.getElementById('result').hidden = false; document.getElementById('batchOut').hidden = true;
+  document.getElementById('nA').textContent = names[0]; document.getElementById('nB').textContent = names[1];
+  document.getElementById('sc').textContent = `${r.score[0]} – ${r.score[1]}`;
+  document.getElementById('meta').textContent = `Motor v${r.engine} · tohum ${r.seed} · olay kaydı özeti ${r.digest} · ${r.events.length} olay`;
+  const out = [];
+  for (const e of r.events) { const l = line(e, names); if (l) out.push(`<div class="ev ${l[0]}"><span class="m">${minute(e.t)}</span><span>${esc(l[1])}</span></div>`); }
+  document.getElementById('log').innerHTML = out.join('') || '<p class="note">Kayda değer olay yok.</p>';
+  const [a, b] = r.stats; const pct = (x, y) => y ? Math.round((100 * x) / y) + '%' : '—';
+  const poss = Math.round((100 * a.possession) / (a.possession + b.possession));
+  const rows = [['Gol', a.goals, b.goals], ['Topa sahip olma', poss + '%', (100 - poss) + '%'], ['Şut', a.shots, b.shots], ['İsabetli şut', a.onTarget, b.onTarget],
+    ['Pas (isabet)', `${a.passes} (${pct(a.passesOk, a.passes)})`, `${b.passes} (${pct(b.passesOk, b.passes)})`], ['Orta (isabet)', `${a.crosses} (${pct(a.crossesOk, a.crosses)})`, `${b.crosses} (${pct(b.crossesOk, b.crosses)})`],
+    ['Çalım (başarılı)', `${a.dribbles} (${a.dribblesOk})`, `${b.dribbles} (${b.dribblesOk})`], ['Hava topu kazanma', pct(a.aerialsWon, a.aerials), pct(b.aerialsWon, b.aerials)],
+    ['Ara pası', a.throughs, b.throughs], ['Pres (top kazanma)', `${a.presses} (${a.pressWins})`, `${b.presses} (${b.pressWins})`], ['Korner', a.corners, b.corners], ['Ofsayt', a.offsides, b.offsides],
+    ['Faul', a.fouls, b.fouls], ['Sarı / kırmızı', `${a.yellows} / ${a.reds}`, `${b.yellows} / ${b.reds}`], ['Sağ / sol koridor atağı', `${a.rightCorridorAttacks} / ${a.leftCorridorAttacks}`, `${b.rightCorridorAttacks} / ${b.leftCorridorAttacks}`]];
+  document.getElementById('stats').innerHTML = rows.map(([k, x, y]) => `<tr><td>${x}</td><td>${k}</td><td>${y}</td></tr>`).join('');
+  document.getElementById('ratings').innerHTML = r.ratings.map((team, s) => `<div style="display:block;border:0">${team.map(p => `<div><span class="${p.id === r.motm.id ? 'motm' : ''}">${esc(nm(p.id))}${p.id === r.motm.id ? ' ★' : ''}</span><b style="color:${s ? 'var(--b)' : 'var(--a)'}">${p.rating.toFixed(1)}</b></div>`).join('')}</div>`).join('');
+}
+
+document.getElementById('play').addEventListener('click', () => {
+  const kA = document.getElementById('A-squad').value, kB = document.getElementById('B-squad').value;
+  const seed = (Date.now() % 1000000) | 0;
+  const r = simulateMatch({ home: squad(kA), away: squad(kB), seed, tacticHome: tactic('A'), tacticAway: tactic('B') });
+  render(r, [SQUADS[kA].name + (kA === kB ? ' (1)' : ''), SQUADS[kB].name + (kA === kB ? ' (2)' : '')]);
+  document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+});
+document.getElementById('b100').addEventListener('click', () => {
+  const kA = document.getElementById('A-squad').value, kB = document.getElementById('B-squad').value;
+  let w = 0, d = 0, l = 0, gf = 0, ga = 0; const base = (Date.now() % 100000) | 0;
+  for (let i = 0; i < 100; i++) { const r = simulateMatch({ home: squad(kA), away: squad(kB), seed: base + i, tacticHome: tactic('A'), tacticAway: tactic('B'), log: false }); gf += r.score[0]; ga += r.score[1]; if (r.score[0] > r.score[1]) w++; else if (r.score[0] === r.score[1]) d++; else l++; }
+  const o = document.getElementById('batchOut'); o.hidden = false; document.getElementById('result').hidden = true;
+  o.innerHTML = `<h2>100 MAÇ · aynı kadro ve taktiklerle</h2><p><b style="color:var(--a)">${w} galibiyet</b> · ${d} beraberlik · <b style="color:var(--b)">${l} mağlubiyet</b></p><p>Ortalama skor: ${(gf / 100).toFixed(2)} – ${(ga / 100).toFixed(2)}</p><p class="note">Taktiklerini değiştirip tekrar dene: hangi ayarın sonucu nasıl değiştirdiğini burada görebilirsin.</p>`;
+  o.scrollIntoView({ behavior: 'smooth' });
+});
+document.title = `Draft XI v2 — Motor Testi (v${ENGINE_VERSION})`;
+</script>
+</body>
+</html>

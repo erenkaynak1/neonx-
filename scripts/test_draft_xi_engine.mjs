@@ -34,6 +34,14 @@ assert.ok(a.events.length > 300, 'event log is the engine output');
 for (const e of a.events) assert.ok(typeof e.type === 'string' && Number.isInteger(e.t), 'event has type and integer time');
 assert.equal(a.events.filter(e => e.type === 'goal').length, a.score[0] + a.score[1], 'goals in the log match the score');
 
+// match ratings (16.14) and formations (15)
+import('../draft-xi/engine/formations.mjs').then(({ FORMATIONS }) => {
+  assert.equal(Object.keys(FORMATIONS).length, 17, 'all 17 formation templates (section 15)');
+  for (const [name, slots] of Object.entries(FORMATIONS)) { assert.equal(slots.length, 11, name); assert.equal(new Set(slots.map(x => x[0])).size, 11, name + ' unique slot ids'); }
+});
+assert.equal(a.ratings.length, 2); for (const team of a.ratings) for (const r of team) assert.ok(r.rating >= 3 && r.rating <= 10, 'rating in 3.0–10.0');
+assert.ok(a.motm && a.motm.id, 'man of the match chosen');
+
 // broad sanity over a small batch (the full lab is scripts/draft_xi_lab.mjs)
 let goals = 0, shots = 0; const N = 24; const pairs = [['A', 'B'], ['C', 'D'], ['A', 'C'], ['B', 'D']];
 for (let i = 0; i < N; i++) { const [h, w] = pairs[i % 4]; const r = simulateMatch({ home: squad(h), away: squad(w), seed: 300 + i, log: false }); goals += r.score[0] + r.score[1]; shots += r.stats[0].shots + r.stats[1].shots; }

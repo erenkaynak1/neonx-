@@ -6,7 +6,7 @@
 import { makeRng, prob, bForBase, combineTactics, weighted, hash, pickWeighted } from './core.mjs';
 import { FORMATIONS, zonePoint, PITCH_W, PITCH_L, COL_W, ROW_L } from './formations.mjs';
 
-export const ENGINE_VERSION = '0.1.0';
+export const ENGINE_VERSION = '0.2.0';
 
 // k: milli-logit per attribute point (14.1)
 const K = { duel: 85, air: 110, short: 54, long: 43, shot: 85, cross: 43 };
@@ -112,6 +112,10 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
   const stats = teams.map(() => ({ goals: 0, shots: 0, onTarget: 0, xg: 0, passes: 0, passesOk: 0, longPasses: 0, longOk: 0, crosses: 0, crossesOk: 0,
     dribbles: 0, dribblesOk: 0, throughs: 0, throughsOk: 0, offsides: 0, fouls: 0, yellows: 0, reds: 0, corners: 0, possession: 0, headerGoals: 0,
     aerials: 0, aerialsWon: 0, presses: 0, pressWins: 0, freeKickGoals: 0, penalties: 0, attacks: 0, rightCorridorAttacks: 0, leftCorridorAttacks: 0 }));
+  // match ratings (16.14): hundredths, start 6.00
+  teams.forEach(tm => tm.players.forEach(p => { p.rating = 600; }));
+  const rate = (pl, d) => { if (pl) pl.rating += d; };
+  const duel = (winner, loser, pWinner) => { const d = Math.trunc((10000 - pWinner) / 1000); rate(winner, d); rate(loser, -d); };
   let t = 0; // deciseconds
   const END = 54000, HALF = 27000;
   let half = 1;
@@ -209,7 +213,7 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     return tacticPts(list);
   }
 
-  function foulCheck(def, atk, pt, kind) {
+  function foulCheck(def, atk, pt, kind, force = false) {
     const T = tac(def.side ?? opp(st.poss));
     const sert = T.tackling === 'hard' ? 200 : T.tackling === 'careful' ? 55 : 100; // foul-rate multiplier (14.5: hard ~16, careful ~7 fouls)
     const tacV = def.a.tac; const lowTac = 100 + Math.trunc((Math.max(0, 70 - tacV) * 100) / 60);
@@ -218,7 +222,7 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     const inOwnBox = z.row === 6 && z.col >= 1 && z.col <= 3;
     let pf = Math.trunc((p * (inOwnBox ? 15 : 100) * (kind === 'race' ? 30 : 100)) / 10000);
     if (def.yellow) pf = Math.trunc((pf * 25) / 100); // a booked player plays carefully
-    if (rng.roll() >= pf) return false;
+    if (!force && rng.roll() >= pf) return false;
     const ds = opp(st.poss); stats[ds].fouls++;
     // card (16.10)
     const others = active(ds).filter(d => d !== def && d.mevki !== 'GK' && rel(st.poss, d.cur).y > z.r.y).length;
@@ -228,19 +232,30 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     if (dogso && (!inOwnBox || rng.int(4) === 0)) card = 'red';
     else if (dogso) card = def.yellow ? 'red' : 'yellow';
     if (!card && !dogso) {
-      let pY = st.counter > 0 || kind === 'race' ? 6000 : 1800;
+      let pY = st.counter > 0 || kind === 'race' ? 6000 : 1500;
       pY = Math.trunc((pY * (sert === 200 ? 160 : sert === 55 ? 60 : 100)) / 100); // card multiplier (16.10)
       if (sert === 200 && tacV < 55 && rng.roll() < 200) card = 'red';
       else if (rng.roll() < pY) card = def.yellow ? 'red' : 'yellow';
     }
     if (card === 'yellow') { def.yellow = 1; stats[ds].yellows++; }
-    if (card === 'red') { def.off = true; stats[ds].reds++; }
+    if (card === 'red') { def.off = true; stats[ds].reds++; rate(def, -150); reorganize(ds, def); }
     log('foul', ds, def, { on: atk.player.id, card, kind, row: z.row });
     // restart
     const inBox = z.row === 6 && z.col >= 1 && z.col <= 3;
     if (inBox) { penalty(st.poss); return true; }
     freeKick(st.poss, pt);
     return true;
+  }
+
+  // red card (3.3): the most attacking player drops into the vacated position, the defence keeps its numbers
+  function reorganize(side, gone) {
+    const pool = active(side).filter(p => p.mevki !== 'GK');
+    if (!pool.length) return;
+    const top = pool.reduce((a, b) => (b.homePoss.y > a.homePoss.y ? b : a));
+    if (gone.mevki === 'GK') { top.mevki = 'GK'; top.a = { ...top.a, ref: 35, gpos: 35, ghd: 35, one: 35 }; top.homePoss = gone.homePoss; top.homeDef = gone.homeDef; return; }
+    if (top.homePoss.y <= gone.homePoss.y) return; // the sent-off player was already the most attacking
+    top.homePoss = gone.homePoss; top.homeDef = gone.homeDef; top.mevki = gone.mevki;
+    log('reshape', side, top, { into: gone.slot });
   }
 
   // ---------- shots (5.5, 14.6) ----------
@@ -284,10 +299,12 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     const r2 = rng.roll();
     if (r2 < pG) {
       stats[side].goals++; if (type === 'head') stats[side].headerGoals++;
+      rate(shooter, 100); if (st.lastPasser && st.lastPasser !== shooter) rate(st.lastPasser, 60); duel(shooter, gk, pG);
       log('goal', side, shooter, { shotType: type, pOn, pG, assist: st.lastPasser?.player.id ?? null });
       return kickoff(ds);
     }
     const margin = r2 - pG;
+    rate(gk, 30); duel(gk, shooter, 10000 - pG);
     if (margin > 3500 || type === 'head' && margin > 2000) { log('save', ds, gk, { kind: 'hold', by: shooter.player.id }); return gkBall(ds); }
     log('save', ds, gk, { kind: 'parry', by: shooter.player.id });
     return secondBall(side, 'parry', fromPt);
@@ -300,7 +317,8 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     const pG = prob(weighted(taker.a, W.pen), weighted(gk.a, W.gkPen), K.duel, REF.penB);
     advance(400);
     stats[side].shots++; stats[side].onTarget++;
-    if (rng.roll() < pG) { stats[side].goals++; log('goal', side, taker, { shotType: 'pen', pG }); return kickoff(opp(side)); }
+    if (rng.roll() < pG) { stats[side].goals++; rate(taker, 100); log('goal', side, taker, { shotType: 'pen', pG }); return kickoff(opp(side)); }
+    rate(gk, 60);
     log('save', opp(side), gk, { kind: 'penalty', by: taker.player.id });
     return gkBall(opp(side));
   }
@@ -351,7 +369,8 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     const hDiff = atk.player.height - df.player.height;
     const pA = prob(weighted(atk.a, W.airAtk), weighted(df.a, W.air), K.air, -hDiff * 14);
     log('aerial', side, atk, { vs: df.player.id, p: pA });
-    if (rng.roll() < pA) { stats[side].aerialsWon++; st.lastPasser = crosser; return shoot(side, atk, 'head', { x: spot.x, y: spot.y }); }
+    if (rng.roll() < pA) { stats[side].aerialsWon++; duel(atk, df, pA); st.lastPasser = crosser; return shoot(side, atk, 'head', { x: spot.x, y: spot.y }); }
+    duel(df, atk, 10000 - pA);
     log('clear', ds, df);
     return secondBall(ds, 'clear', spot);
   }
@@ -376,7 +395,7 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     const pAcc = prob(S, REF.crossFixed, K.cross, REF.crossB + press + crossPts * PT);
     const r = rng.roll();
     advance(durOf(30, 50, 50, side));
-    if (r >= pAcc) { log('cross_bad', side, crosser, { p: pAcc }); const rr = rng.int(10); return rr < 3 ? corner(side) : rr < 6 ? gkBall(ds) : secondBall(ds, 'clear', toAbs(side, { x: 340, y: 950 })); }
+    if (r >= pAcc) { log('cross_bad', side, crosser, { p: pAcc }); const rr = rng.int(10); return rr < 4 ? corner(side) : rr < 7 ? gkBall(ds) : secondBall(ds, 'clear', toAbs(side, { x: 340, y: 950 })); }
     stats[side].crossesOk++;
     const near = rel(side, crosser.cur).x < PITCH_W / 2;
     const spots = [{ x: near ? 290 : 390, y: 990 }, { x: 340, y: 935 }, { x: near ? 400 : 280, y: 975 }];
@@ -390,7 +409,7 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     st.ball = { x: PITCH_W >> 1, y: PITCH_L >> 1 };
     teams.forEach(tm => tm.players.forEach(p => { p.cur = null; }));
     st.lastPasser = null;
-    const taker = active(side).filter(p => ['CM', 'DM', 'AM'].includes(p.mevki))[0] || active(side)[1];
+    const taker = active(side).filter(p => ['CM', 'DM', 'AM'].includes(p.mevki))[0] || active(side).filter(p => p.mevki !== 'GK')[0];
     st.lastDt = 0; setPoss(side, taker, st.ball, 'kickoff');
   }
   function gkBall(side) { const gk = keeper(side); advance(80); setPoss(side, gk, gk.cur || toAbs(side, { x: 340, y: 80 }), 'keeper'); }
@@ -400,7 +419,8 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     const T = tac(side), oT = tac(opp(side));
     const goLong = T.passing === 'long' || (T.passing !== 'short' && oT.press === 'high');
     if (!goLong) return setPoss(side, gk, st.ball, 'goalkick_short');
-    const target = active(side).filter(p => p.mevki === 'ST' || p.mevki === 'LW' || p.mevki === 'RW')[0] || active(side)[9];
+    const outfield = active(side).filter(p => p.mevki !== 'GK');
+    const target = outfield.filter(p => p.mevki === 'ST' || p.mevki === 'LW' || p.mevki === 'RW')[0] || outfield.reduce((a, b) => (b.homePoss.y > a.homePoss.y ? b : a));
     layout();
     const [df] = nearest(opp(side), target.cur);
     const pA = prob(weighted(target.a, W.air), weighted(df.a, W.air), K.air, -(target.player.height - df.player.height) * 14);
@@ -414,7 +434,7 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     const atkSide = kind === 'clear' ? opp(lastSide) : lastSide; // side that attacked
     const r = rng.roll(); let landRel;
     if (kind === 'parry') { if (r < 2500) { advance(60); return corner(atkSide); } landRel = r < 8500 ? { x: rng.int(2) ? 200 : 480, y: 960 } : { x: 340, y: 820 }; }
-    else if (kind === 'block') { if (r < 2000) { advance(60); return corner(atkSide); } landRel = r < 7000 ? { ...rel(atkSide, pt), y: rel(atkSide, pt).y - 40 } : { x: rel(atkSide, pt).x + (rng.int(2) ? 140 : -140), y: rel(atkSide, pt).y - 20 }; }
+    else if (kind === 'block') { if (r < 3000) { advance(60); return corner(atkSide); } landRel = r < 7000 ? { ...rel(atkSide, pt), y: rel(atkSide, pt).y - 40 } : { x: rel(atkSide, pt).x + (rng.int(2) ? 140 : -140), y: rel(atkSide, pt).y - 20 }; }
     else if (kind === 'post') landRel = { x: 340 + (rng.int(2) ? 80 : -80), y: 960 };
     else { // headed clearance: better headers clear further
       const dfAir = 700; landRel = { x: 120 + rng.int(440), y: 820 - Math.trunc((dfAir - 600) / 2) - rng.int(150) };
@@ -484,7 +504,7 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     for (const { p, d } of cands) {
       const pts = defPoints(ds, p.cur, 'intercept');
       const pI = Math.trunc((prob(weighted(p.a, W.intercept), S, K.duel, REF.interceptB - pts * PT) * (100 - d)) / 100);
-      if (rng.roll() < pI) { log('intercept', ds, p, { from: passer.player.id, kind: kindName }); return p; }
+      if (rng.roll() < pI) { duel(p, passer, pI); log('intercept', ds, p, { from: passer.player.id, kind: kindName }); return p; }
     }
     return null;
   }
@@ -494,7 +514,8 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     if (!d || dd > 30) return true;
     const pts = defPoints(ds, receiver.cur, 'press');
     const pC = prob(weighted(receiver.a, W.control), weighted(d.a, W.tackler), K.duel, pts * PT);
-    if (rng.roll() < pC) { if (foulCheck(d, receiver, receiver.cur, 'press')) return 'foul'; return true; }
+    if (rng.roll() < pC) { duel(receiver, d, pC); if (foulCheck(d, receiver, receiver.cur, 'press')) return 'foul'; return true; }
+    duel(d, receiver, 10000 - pC);
     log('lost_control', side, receiver, { by: d.player.id });
     setPoss(ds, d, receiver.cur, 'won');
     return false;
@@ -516,7 +537,7 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     const zr = zoneOf(side, m.cur); if (zr.row >= 5) { if (zr.col >= 3) stats[side].rightCorridorAttacks++; else if (zr.col <= 1) stats[side].leftCorridorAttacks++; }
     if (rng.roll() >= pOk) {
       // inaccurate: nearest opponent to the target picks it up
-      log('pass_bad', side, h, { to: m.player.id, kind, p: pOk });
+      log('pass_bad', side, h, { to: m.player.id, kind, p: pOk }); rate(h, -Math.trunc(pOk / 2000));
       const rr = rng.int(100);
       if (rr < 35) { // out of play: throw-in for the opponent (16.11)
         const mr = rel(side, m.cur); const tp = toAbs(side, { x: mr.x < PITCH_W / 2 ? 5 : PITCH_W - 5, y: mr.y });
@@ -528,7 +549,7 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     }
     const thief = interceptRun(side, h, from, m.cur, S, kind);
     if (thief) { setPoss(opp(side), thief, thief.cur, 'intercept'); return; }
-    stats[side].passesOk++; if (kind === 'long') stats[side].longOk++;
+    stats[side].passesOk++; if (kind === 'long') stats[side].longOk++; rate(h, Math.trunc((10000 - pOk) / 2000));
     st.lastPasser = h; st.ball = { ...m.cur };
     log('pass', side, h, { to: m.player.id, kind });
     if (kind === 'long' && rng.int(2)) { // aerial reception
@@ -557,9 +578,11 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     const pW = prob(weighted(h.a, Wc), weighted(d.a, W.tackler), K.duel, second + pts * PT);
     advance(durOf(20, 40, 50, side));
     if (rng.roll() < pW) {
+      duel(h, d, pW);
       if (foulCheck(d, h, h.cur, 'tackle')) return;
       stats[side].dribblesOk++; h.cur = stepTo(70); st.ball = { ...h.cur }; st.beaten = d; log('dribble', side, h, { past: d.player.id, p: pW }); return;
     }
+    duel(d, h, 10000 - pW);
     log('tackle', ds, d, { on: h.player.id, p: pW });
     setPoss(ds, d, h.cur, 'tackle');
   }
@@ -596,11 +619,13 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     const linePts = combineTactics([dT.line === 'high' ? 15 : dT.line === 'low' ? -15 : 0]);
     const pR = prob(weighted(run.a, W.runner), weighted(chaser.a, W.chaser), K.duel, -linePts * PT);
     if (rng.roll() < pR) {
+      duel(run, chaser, pR);
       if (foulCheck(chaser, run, target, 'race')) return;
       stats[side].throughsOk++; run.cur = target; st.ball = { ...target }; st.lastPasser = h;
       log('through', side, h, { to: run.player.id, p: pR });
       return shoot(side, run, 'one', target);
     }
+    duel(chaser, run, 10000 - pR);
     log('chase_lost', ds, chaser, { on: run.player.id });
     setPoss(ds, chaser, target, 'chase');
   }
@@ -626,7 +651,12 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     const pts = defPoints(ds, h.cur, 'press');
     const pC = prob(weighted(h.a, W.control), weighted(d.a, W.tackler), K.duel, second + pts * PT);
     advance(15);
-    if (rng.roll() < pC) { st.beaten = d; return foulCheck(d, h, h.cur, 'press'); } // a beaten presser leaves space behind him (6.2)
+    if (rng.roll() < pC) { duel(h, d, pC); st.beaten = d; return foulCheck(d, h, h.cur, 'press'); } // a beaten presser leaves space behind him (6.2)
+    duel(d, h, 10000 - pC);
+    // pressing carries a foul risk even when the presser gets the ball: he arrives at speed (user decision 2026-11-20)
+    const sertP = T.tackling === 'hard' ? 200 : T.tackling === 'careful' ? 55 : 100;
+    const rush = Math.trunc(((T.press === 'high' ? 1100 : T.press === 'low' ? 300 : 600) * sertP) / 100);
+    if (rng.roll() < rush) return foulCheck(d, h, h.cur, 'press', true);
     stats[ds].pressWins++;
     log('press_win', ds, d, { on: h.player.id, p: pC });
     setPoss(ds, d, h.cur, 'press');
@@ -657,7 +687,12 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     }
   }
   log('full_time', null, null);
+  const ratings = teams.map(tm => tm.players.map(p => ({ id: p.player.id, slot: p.slot, rating: clamp(p.rating, 300, 1000) / 100 })));
+  const all = ratings.flatMap((r, side) => r.map(x => ({ ...x, side })));
+  const winSide = stats[0].goals === stats[1].goals ? -1 : stats[0].goals > stats[1].goals ? 0 : 1;
+  const motm = all.sort((a, b) => b.rating - a.rating || (b.side === winSide) - (a.side === winSide))[0];
+  log('ratings', null, null, { motm: motm.id });
   const digest = hash(JSON.stringify(events));
-  return { engine: ENGINE_VERSION, seed, score: [stats[0].goals, stats[1].goals], stats, events, digest,
+  return { engine: ENGINE_VERSION, seed, score: [stats[0].goals, stats[1].goals], stats, events, digest, ratings, motm,
     teams: teams.map(tm => ({ name: tm.name, formation: tm.formation, tactic: tm.tactic, chemistry: tm.players.map(p => [p.player.id, p.chem]) })) };
 }

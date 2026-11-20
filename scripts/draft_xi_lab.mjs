@@ -83,3 +83,37 @@ console.log(`[Yetenek izolasyonu] Takım A bitiricilik +20 → gol/maç ${f1(cr0
 // 5) squad strength vs result (no target ratio; just shows the spread)
 const ab = run(M, { pair: ['A', 'D'] });
 console.log(`\n[Sonuç dağılımı] A–D: A kazanır ${pct(ab.homeWins)}, beraberlik ${pct(ab.draws)}, D kazanır ${pct(1 - ab.homeWins - ab.draws)}`);
+
+// 6) meta hunter (10, 10.1): same squad on both sides so only the tactics differ.
+//    Round robin of random tactics, then search for a counter to the best one. Run with --meta.
+if (process.argv.includes('--meta')) {
+  const OPTIONS = { direction: ['left', 'centre', 'right', 'balanced'], passing: ['short', 'mixed', 'long'], finishing: ['cross', 'through', 'long', 'dribble'],
+    tempo: ['patient', 'balanced', 'fast'], onWin: ['counter', 'settled'], line: ['low', 'mid', 'high'], press: ['low', 'mid', 'high'],
+    closed: ['wings', 'centre', 'balanced'], tackling: ['careful', 'normal', 'hard'] };
+  let rs = 12345; const rnd = n => { rs = (Math.imul(rs, 1103515245) + 12345) >>> 0; return rs % n; };
+  const randomTactic = () => Object.fromEntries(Object.entries(OPTIONS).map(([k, v]) => [k, v[rnd(v.length)]]));
+  const label = tc => Object.values(tc).join('/');
+  const PER = Number(process.env.META_MATCHES || 40);
+  const duelT = (t1, t2, seedBase) => { // points per match for t1, home/away alternated
+    let pts = 0;
+    for (let i = 0; i < PER; i++) {
+      const home = i % 2 === 0;
+      const r = simulateMatch({ home: squad('A'), away: squad('A'), seed: seedBase + i, tacticHome: home ? t1 : t2, tacticAway: home ? t2 : t1, log: false });
+      const [g1, g2] = home ? r.score : [r.score[1], r.score[0]];
+      pts += g1 > g2 ? 3 : g1 === g2 ? 1 : 0;
+    }
+    return pts / PER;
+  };
+  const pool = [{}, ...Array.from({ length: 8 }, randomTactic)];
+  const table = pool.map(() => 0);
+  for (let i = 0; i < pool.length; i++) for (let j = i + 1; j < pool.length; j++) {
+    const p = duelT(pool[i], pool[j], 50000 + i * 100 + j * 7); table[i] += p; table[j] += 3 - p;
+  }
+  const order = table.map((v, i) => [v / (pool.length - 1), i]).sort((a, b) => b[0] - a[0]);
+  console.log(`\n[Meta avcısı] ${pool.length} taktik, çift başına ${PER} maç (aynı kadro iki tarafta). Maç başına puan:`);
+  for (const [v, i] of order) console.log(`  ${v.toFixed(2)}  ${i === 0 ? 'varsayılan (dengeli)' : label(pool[i])}`);
+  const best = pool[order[0][1]];
+  let counter = null, cv = 0;
+  for (let k = 0; k < 16; k++) { const c = randomTactic(); const v = duelT(c, best, 90000 + k * 50); if (v > cv) { cv = v; counter = c; } }
+  console.log(`  En iyi taktiğe karşı bulunan en iyi cevap: ${cv.toFixed(2)} puan/maç (${label(counter)}) → ${cv > 1.5 ? 'cevabı var, meta yok' : 'belirgin cevap bulunamadı: incelenmeli'}`);
+}
