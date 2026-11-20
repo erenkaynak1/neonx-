@@ -161,7 +161,7 @@ async function startManualRecording(mode){
   };
   const check=async()=>{
    if(stopped||alive)return;
-   if(retries>=1){toast('Mikrofon yanıt vermiyor. Kaydı sıfırladım; tekrar dokunup dene.');stopped=true;clearTimeout(watch);state.discardRecording=true;finishManualRecording(new Blob([],{type:'audio/wav'}),mode,button);return}
+   if(retries>=1){toast('Mikrofon yanıt vermiyor. Kaydı sıfırladım; tekrar dokunup dene.');stopped=true;clearTimeout(watch);await detach();state.discardRecording=true;finishManualRecording(new Blob([],{type:'audio/wav'}),mode,button);return}
    retries++;await detach();try{stream=await openMic();if(stopped){releaseStream();return}await attach(stream)}catch(error){console.warn('RE:VERSE iOS microphone recovery failed',error)}
    watch=setTimeout(check,REOPEN_MS);
   };
