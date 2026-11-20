@@ -31,6 +31,8 @@
 > - botun draftı için pozisyon uygunluğu (8);
 > - laboratuvarın kabul kriterleri (10.1);
 > - önce küçük prototip (12).
+>
+> Revizyon 7 (2026-11-20): mücadele tablosu (14.6) tamamlandı: kontrol, pres, kısa ve uzun pas, araya girme, ara pası, ofsayt zamanlaması, orta ve bek bloğu, kafa vuruşu, penaltı, direkt frikik, faul olasılığı. Vizyon savunmada oyunu okuma olarak da kullanılır.
 
 ## 0. Oyunun özü
 
@@ -99,7 +101,7 @@ Güçlü kadro kur, taktikle harmanla, futbol bilginle (kimya) güçlendir. **Hi
 | Pas | **Kısa pas** | Kısa/orta mesafe pas isabeti, araya girmeye karşı |
 | | **Uzun pas** | Uzun top, çapraz pas, presi atlama |
 | | **Orta** | Kanattan orta, korner, frikik ortası |
-| | **Vizyon** | Ara pası, karar kalitesi (en iyi seçeneği görme) |
+| | **Vizyon** | Ara pası, karar kalitesi (en iyi seçeneği görme); savunmada oyunu okuma (araya girme) |
 | Savunma | **Top kapma** | Çalıma karşı müdahale, pas arası, faul ihtimali (düşük top kapma → daha çok faul) |
 | | **Markaj** | Topsuz oyuncuyu takip, pas hattını kapatma, şut bloğu |
 | Fizik | **Hız** | Hız yarışları, kontra, arkaya koşu, pres mesafesi |
@@ -916,7 +918,7 @@ Kullanıcının sezgisi "X puan fark → başarı yüzdesi" olarak alındı ve k
 | Kurtarış: karşı karşıya | şut kalitesi | Bire bir %70 + Refleks %30 |
 
 - **Boy (hava topu):** iki oyuncu arasındaki boy farkı başarıya küçük bir katkı yapar, yaklaşık **10 cm → %3–4**. Hava topu yeteneğinin önüne geçmez (2.5).
-- Henüz belirlenmeyen ağırlıklar (pas, orta, ara pası, araya girme, pres, ofsayt zamanlaması) sonraki oturumda aynı yöntemle eklenecek.
+- Pas, orta, ara pası, araya girme, pres, kontrol, ofsayt zamanlaması, penaltı ve frikik ağırlıkları tek mücadele tablosunda (14.6).
 
 ### 14.4 Taktik etkisinin büyüklüğü
 
@@ -940,20 +942,27 @@ Kullanıcının sezgisi "X puan fark → başarı yüzdesi" olarak alındı ve k
 
 ### 14.6 Tek mücadele tablosu
 
-Her mücadele tek bir satırda tanımlanır. Katsayılar bu tablo tamamlanmadan kesinleşmez. "Belirlenecek" yazan hücreler sonraki matematik oturumunda doldurulacak.
+Her mücadele tek bir satırda tanımlanır. Ağırlıklar yüzde olarak verilir; S ve D bu ağırlıklı ortalamalardır (kimya katkısı dahil). Tablo 2026-11-20 itibarıyla tamamlandı.
 
 | Mücadele | Saldıranın S'i | Savunanın D'si (ya da sabit zorluk) | Durum etkisi (B) | Taktik etkisi | k |
 |---|---|---|---|---|---|
 | Çalım | Dribling 60 + Hız 30 + Güç 10 | Top kapma 50 + Markaj 25 + Hız 25 | Alan genişliği, ikincil savunmacı | Pres, kapatılan alan, müdahale sertliği | 0,085 |
-| Baskı altında kontrol | İlk dokunuş (ağırlıklar belirlenecek) | Baskı yapanın Top kapma + Hız (ağırlıklar belirlenecek) | Pasın hızı ve yüksekliği | Pres | 0,085 |
-| Kısa pas | Kısa pas + Vizyon (ağırlıklar belirlenecek) | Baskısızsa sabit zorluk; hattaki savunmacı varsa Markaj + Top kapma (belirlenecek) | Mesafe, açı, hattaki savunmacı sayısı | Pas tarzı, kapatılan alan | 0,054 (baskısız) |
-| Uzun pas | Uzun pas + Vizyon (belirlenecek) | Sabit zorluk; hattaki savunmacılar (belirlenecek) | Mesafe, açı | Pas tarzı, hat yüksekliği | 0,043 (baskısız) |
-| Ara pası | Vizyon + Kısa/Uzun pas; koşucunun Pozisyon alma + Hız (belirlenecek) | Markaj + Hız; ofsayt geometrisi | Koşu zamanlaması, mesafe | Bitiriş tercihi, hat yüksekliği | belirlenecek |
-| Orta | Orta (belirlenecek) | Sabit zorluk; bekin baskısı | Mesafe, baskı | Bitiriş tercihi, kapatılan alan | belirlenecek |
-| Hava topu | Hava topu 70 + Güç 30 (+ Pozisyon alma, topa ilk ulaşma) | Hava topu 70 + Güç 30 | Boy farkı, topun yüksekliği, ceza sahası yerleşimi | Ceza sahası yerleşimi, hat yüksekliği | 0,110 |
+| Baskı altında kontrol | İlk dokunuş 70 + Güç 20 + Dribling 10 | Top kapma 50 + Markaj 25 + Hız 25 | Pasın hızı ve yüksekliği | Pres | 0,085 |
+| Pres (top kazanma) | Taşıyıcının o anki aksiyonu (kontrol / çalım / pas) | Presçi: Top kapma 50 + Markaj 25 + Hız 25; ikinci presçi ikincil savunmacı olarak B'ye | Pres tetikleyicisi, presçi sayısı | Pres yoğunluğu | aksiyonun k'sı |
+| Kısa pas | Kısa pas 80 + Vizyon 20 | Baskısızsa sabit zorluk; hattaki her savunmacı ayrı ayrı araya girmeyi dener | Mesafe, açı, hattaki savunmacı sayısı | Pas tarzı, kapatılan alan | 0,054 (baskısız) |
+| Uzun pas | Uzun pas 75 + Vizyon 25 | Sabit zorluk; hattaki savunmacılar ayrı ayrı | Mesafe, açı | Pas tarzı, hat yüksekliği | 0,043 (baskısız) |
+| Araya girme | Pasçının S'i | Top kapma 70 + Vizyon 20 + Markaj 10 | Savunmacının pas hattına uzaklığı: hat üzerinde tam şans, 5 m'de yarı, 10 m ve üzeri araya giremez (pasın hızı bu mesafeyi ölçekler) | Kapatılan alan, pres | 0,085 |
+| Ara pası (pas) | Vizyon 50 + Kısa ya da Uzun pas 50 (mesafeye göre) | Hattaki savunmacılar (araya girme satırı) | Mesafe, boşluğun genişliği | Bitiriş tercihi, hat yüksekliği | 0,085 |
+| Ara pası (koşu yarışı) | Koşucu: Hız 60 + Pozisyon alma 40 | Savunmacı: Hız 60 + Markaj 40 | Başlangıç mesafesi, koşu zamanlaması | Hat yüksekliği | 0,085 |
+| Ofsayt zamanlaması | Koşucu Pozisyon alma 70 + Pasçı Vizyon 30 → zamanlama hatası (metre) | Geometrik kontrol: pas anında koşucu, top ve sondan ikinci rakip (5.6); çizginin düzeni stoperlerin markaj ortalamasına bağlı | Hat yüksekliği | Hat yüksekliği | 0,085 |
+| Orta (isabet) | Orta 85 + Vizyon 15 (zayıf ayakla ortada zayıf ayak seviyesi düşürür) | Sabit zorluk | Mesafe; bek baskısı: 2 m'den yakında zorluk artar ve blok şansı doğar, 2–5 m'de sadece zorluk artar, 5 m ve üzeri baskısız | Bitiriş tercihi, kapatılan alan | 0,043 (uzun pas gibi; orta da uzun mesafeli bir pastır) |
+| Orta (bek bloğu) | Ortacının Orta S'i | Bek: Markaj 60 + Hız 40 | Bekin mesafesi (2 m'den yakın) | Kapatılan alan | 0,085 |
+| Hava topu | Hava topu 70 + Güç 30 (+ Pozisyon alma, topa ilk ulaşma) | Hava topu 70 + Güç 30 | Boy farkı (10 cm → ~%3–4), topun yüksekliği, ceza sahası yerleşimi | Ceza sahası yerleşimi, hat yüksekliği | 0,110 |
+| Kafa vuruşu (isabet) | Hava topu 70 + Bitiricilik 30 | Sabit zorluk | Mesafe, açı, baskı | Bitiriş tercihi | 0,085 |
 | Şut isabeti (içeride) | Bitiricilik 80 + İlk dokunuş 20 | Sabit zorluk | Mesafe, açı, baskı, zayıf ayak | Bitiriş tercihi | 0,085 |
 | Şut isabeti (dışarıda) | Uzaktan şut 100 | Sabit zorluk | Mesafe, açı, baskı, zayıf ayak | Bitiriş tercihi | 0,085 |
 | Kurtarış | Şut kalitesi | Şut tipine göre kaleci yetenekleri (14.3) | Şutun yönü ve kalecinin konumu | — | 0,085 |
-| Araya girme | Pasçının S'i | Markaj + Top kapma (belirlenecek) | Savunmacının hatta uzaklığı | Kapatılan alan, pres | belirlenecek |
-| Pres (top kazanma) | Taşıyıcının İlk dokunuş / Dribling | Presçinin Top kapma + Hız (belirlenecek) | Pres tetikleyicisi, presçi sayısı | Pres yoğunluğu | belirlenecek |
-| Ofsayt zamanlaması | Koşucunun Pozisyon alma; pasçının Vizyon | Savunma çizgisinin konumu (geometri) | Hat yüksekliği | Hat yüksekliği | belirlenecek |
+| Penaltı | Bitiricilik 100 | Kaleci: Bire bir 60 + Refleks 40 | Eşit yetenekte ~%76 gol (gerçek futbol ortalaması) | — | 0,085 (çalım kadar belirleyici) |
+| Direkt frikik | Uzaktan şut 70 + Orta 30 (falso) | Önce baraj bloğu (barajdaki oyuncu sayısı mesafeye göre), sonra isabet (sabit zorluk), sonra kaleci: Pozisyon 60 + Refleks 40 | Mesafe, açı | — | 0,085; gerçek futbolda direkt frikik golü ~%6–8 (gösterge) |
+
+**Faul olasılığı:** savunmacı bir mücadeleyi kaybettiğinde faul olasılığı = temel oran × müdahale sertliği çarpanı × top kapma çarpanı. Top kapma düştükçe çarpan artar: top kapması 90 olan stoper nadiren faul yapar, 50 olan sık yapar. Temel oran, izlenen faul sıklığıyla (14.5, takım başına ~10–12) başlatılır.
