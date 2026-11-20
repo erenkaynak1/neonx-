@@ -13,17 +13,39 @@
     style.id = STYLE_ID;
     style.textContent = `
       #${BUTTON_ID}{
-        position:fixed;z-index:10050;width:44px;height:44px;
+        position:fixed;z-index:170000;width:46px;height:46px;
         display:none;place-items:center;padding:0;margin:0;
-        border:1px solid rgba(190,255,45,.68);border-radius:14px;
-        background:rgba(2,12,7,.96);color:#e7ff8a;
-        font:900 25px/1 system-ui,-apple-system,sans-serif;
-        box-shadow:0 8px 26px rgba(0,0,0,.58),0 0 18px rgba(186,255,24,.16);
+        border:1px solid rgba(190,255,45,.78);border-radius:14px;
+        background:rgba(2,12,7,.98);color:#e7ff8a;
+        font:900 27px/1 system-ui,-apple-system,sans-serif;
+        box-shadow:0 8px 26px rgba(0,0,0,.68),0 0 18px rgba(186,255,24,.22);
         -webkit-tap-highlight-color:transparent;touch-action:manipulation;
         backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)
       }
       #${BUTTON_ID}.show{display:grid}
       #${BUTTON_ID}:active{transform:scale(.96)}
+      @media(max-width:760px){
+        #chemInspector:not(.hidden){
+          position:fixed!important;
+          top:max(72px,calc(env(safe-area-inset-top,0px) + 68px))!important;
+          right:10px!important;
+          bottom:max(84px,calc(env(safe-area-inset-bottom,0px) + 78px))!important;
+          left:10px!important;
+          width:auto!important;
+          max-height:none!important;
+          overflow-x:hidden!important;
+          overflow-y:auto!important;
+          overscroll-behavior:contain!important;
+          -webkit-overflow-scrolling:touch!important;
+          z-index:300!important;
+          box-sizing:border-box!important
+        }
+        #chemInspector .chemInspectorHead{
+          position:sticky;top:-15px;z-index:5;
+          margin:-2px -2px 0;padding:5px 2px 9px;
+          background:linear-gradient(155deg,rgba(15,35,27,.99),rgba(7,13,11,.99))
+        }
+      }
     `;
     document.head.appendChild(style);
   }
