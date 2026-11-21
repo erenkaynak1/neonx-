@@ -48,7 +48,8 @@ const LEFT = new Set(['LB', 'LWB', 'LM', 'LW']);
 const V2 = new Set(['GK', 'RB', 'RWB', 'CB', 'LB', 'LWB', 'DM', 'CM', 'AM', 'RM', 'LM', 'RW', 'LW', 'ST']);
 // The source mixes display names and slugs for the same league; one display name each.
 const LIG = { 'premier-league': 'Premier League', laliga: 'La Liga', 'la-liga': 'La Liga', 'serie-a': 'Serie A', bundesliga: 'Bundesliga',
-  'ligue-1': 'Ligue 1', 'super-lig': 'Süper Lig', 'super-lig-tr': 'Süper Lig', BRA1: 'Brasileirão', 'liga-portugal': 'Liga Portugal', eredivisie: 'Eredivisie' };
+  'ligue-1': 'Ligue 1', 'super-lig': 'Süper Lig', 'super-lig-tr': 'Süper Lig', BRA1: 'Brasileirão', 'liga-portugal': 'Liga Portugal', eredivisie: 'Eredivisie',
+  'saudi-pro-league': 'Saudi Pro League', 'major-league-soccer': 'MLS' };
 const ligAdi = (l) => LIG[l] || LIG[String(l || '').toLowerCase()] || l || '';
 const BOY = { GK: 191, CB: 188, DM: 183, ST: 184, CM: 180, AM: 177, LB: 178, RB: 178, LWB: 177, RWB: 177, LM: 176, RM: 176, LW: 176, RW: 176 };
 

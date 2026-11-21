@@ -3120,6 +3120,10 @@ render();
       .toLowerCase();
   }
 
+  // Exposed for data patches loaded after the core (e.g. superlig-player-data-fm26-refresh): the generator lives
+  // inside this block, so they cannot see it by name.
+  window.NEON_XI_MAKE_EXTRA_PLAYER = makeExtraPlayer;
+
   function makeExtraPlayer(specification) {
     const [
       id,

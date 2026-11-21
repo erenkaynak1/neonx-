@@ -122,7 +122,9 @@
 
   try{
     if(typeof PLAYERS==='undefined' || !Array.isArray(PLAYERS)) throw new Error('PLAYERS unavailable');
-    if(typeof makeExtraPlayer!=='function') throw new Error('makeExtraPlayer unavailable');
+    // The core keeps its generator inside a block and exposes it as window.NEON_XI_MAKE_EXTRA_PLAYER.
+    const makeExtra=typeof makeExtraPlayer==='function'?makeExtraPlayer:window.NEON_XI_MAKE_EXTRA_PLAYER;
+    if(typeof makeExtra!=='function') throw new Error('makeExtraPlayer unavailable');
 
     for(const spec of REFRESH_SPECS){
       const [,name,,,,currentClub,league,overall,style]=spec;
@@ -131,7 +133,7 @@
       const previousPlayerClub=player?.club;
       const previousFormer=Array.isArray(player?.former)?player.former.slice():[];
 
-      const generated=makeExtraPlayer(spec);
+      const generated=makeExtra(spec);
       if(!generated){
         missing.push(name);
         continue;

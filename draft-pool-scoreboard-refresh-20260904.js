@@ -113,12 +113,14 @@
   try{
     if(typeof PLAYERS!=='undefined' && Array.isArray(PLAYERS)){
       const existing=new Set(PLAYERS.map((p)=>normalize(p?.name)));
-      if(typeof makeExtraPlayer==='function'){
+      // The core exposes its generator as window.NEON_XI_MAKE_EXTRA_PLAYER (it lives inside a block there).
+      const makeExtra=typeof makeExtraPlayer==='function'?makeExtraPlayer:window.NEON_XI_MAKE_EXTRA_PLAYER;
+      if(typeof makeExtra==='function'){
         for(const spec of SUPER_LIG_SPECS){
           const key=normalize(spec[1]);
           if(existing.has(key)) continue;
           try{
-            const footballer=makeExtraPlayer(spec);
+            const footballer=makeExtra(spec);
             if(footballer){
               PLAYERS.push(footballer);
               existing.add(key);
