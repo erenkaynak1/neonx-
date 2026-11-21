@@ -4,7 +4,8 @@
 //
 // Gizli değişkenler (Cloudflare → Worker → Settings → Variables and Secrets):
 //   GEMINI_API_KEY  (Secret, zorunlu)  Google AI Studio API anahtarı. Koda ya da sohbete asla yazılmaz.
-//   GEMINI_MODEL    (Text, isteğe bağlı) Varsayılan: gemini-2.5-flash; bulunamazsa gemini-flash-latest denenir.
+//   GEMINI_MODEL    (Text, isteğe bağlı) Belirli bir model zorlamak için. Boşsa Worker, anahtarın erişebildiği modelleri
+//                   Google'dan sorup en yeni hızlı (flash) modeli seçer; model kaldırılırsa sıradakine geçer.
 //
 // Durum: adresi tarayıcıda açmak (GET) anahtarın tanımlı olup olmadığını ve modeli gösterir; anahtarın kendisini asla göstermez.
 //
@@ -21,7 +22,30 @@ const FIREBASE_PROJECT = 'neonxi';
 const ORIGINS = ['https://erenkaynak1.github.io'];
 const LIMIT = { pencereMs: 10 * 60 * 1000, istek: 8 };
 const BUTCE = 20, SECIM = 5;
-const MODELLER = ['gemini-2.5-flash', 'gemini-flash-latest'];
+const GEMINI = 'https://generativelanguage.googleapis.com/v1beta';
+const YEDEK_MODEL = 'gemini-flash-latest';
+const MODEL_SURE_MS = 40000; // tek modele en fazla bu kadar beklenir
+let modelOnbellek = { at: 0, list: [] };
+
+// Anahtarın erişebildiği, generateContent destekleyen flash modelleri: en yeni sürüm önce, "lite" ve "preview" sonra.
+async function uygunModeller(env) {
+  if (Date.now() - modelOnbellek.at < 6 * 3600_000 && modelOnbellek.list.length) return modelOnbellek.list;
+  try {
+    const r = await fetch(`${GEMINI}/models?pageSize=200`, { headers: { 'x-goog-api-key': env.GEMINI_API_KEY } });
+    if (!r.ok) return [];
+    const surum = (n) => Number((n.match(/gemini-(\d+(?:\.\d+)?)/) || [])[1] || 0);
+    const list = ((await r.json()).models || [])
+      .filter((m) => (m.supportedGenerationMethods || []).includes('generateContent'))
+      .map((m) => String(m.name || '').replace(/^models\//, ''))
+      .filter((n) => /^gemini-\d+(\.\d+)?-flash(-lite)?(-preview[\w.-]*)?$/.test(n))
+      .sort((a, b) => (/lite/.test(a) - /lite/.test(b)) || (/preview/.test(a) - /preview/.test(b)) || surum(b) - surum(a));
+    modelOnbellek = { at: Date.now(), list };
+    return list;
+  } catch { return []; }
+}
+
+// Hız için "düşünme" kısılır: 2.x modellerde bütçe 0, diğerlerinde düşük seviye. Model bunu desteklemezse ayarsız denenir.
+const dusunme = (model) => /^gemini-2\./.test(model) ? { thinkingBudget: 0 } : { thinkingLevel: 'low' };
 const sayac = new Map(); // uid → [zaman damgaları] (her Worker örneğinde ayrı; kaba bir sınır)
 
 const izinli = (origin) => ORIGINS.includes(origin) || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin || '');
@@ -96,7 +120,10 @@ export default {
   async fetch(request, env) {
     const origin = request.headers.get('origin') || '';
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors(origin) });
-    if (request.method === 'GET') return json({ hakem: 'NEON Hakem', anahtar: !!env.GEMINI_API_KEY, model: env.GEMINI_MODEL || MODELLER[0] }, 200, origin);
+    if (request.method === 'GET') {
+      const modeller = env.GEMINI_API_KEY ? await uygunModeller(env) : [];
+      return json({ hakem: 'NEON Hakem', anahtar: !!env.GEMINI_API_KEY, model: env.GEMINI_MODEL || modeller[0] || YEDEK_MODEL, modeller: modeller.slice(0, 6) }, 200, origin);
+    }
     if (request.method !== 'POST') return json({ hata: 'yalnızca POST' }, 405, origin);
     if (!izinli(origin)) return json({ hata: 'izin yok' }, 403, origin);
     if (!env.GEMINI_API_KEY) return json({ hata: 'hakem ayarlanmadı' }, 503, origin);
@@ -115,21 +142,34 @@ export default {
     if (!kurulan) return json({ hata: 'geçersiz kadro' }, 400, origin);
 
     const istek = hakemIstegi(kurulan.konu, kurulan.taraflar);
-    const govde = JSON.stringify({
+    const govde = (model, dusun) => JSON.stringify({
       systemInstruction: { parts: [{ text: HAKEM_TALIMATI }] },
       contents: [{ role: 'user', parts: [{ text: istek.metin }] }],
-      generationConfig: { responseMimeType: 'application/json', responseSchema: HAKEM_SEMASI, temperature: 0.9 },
+      generationConfig: { responseMimeType: 'application/json', responseSchema: HAKEM_SEMASI, temperature: 0.9, ...(dusun ? { thinkingConfig: dusunme(model) } : {}) },
     });
-    // Model adı Google tarafında emekliye ayrılırsa (404) sıradaki model denenir.
-    const modeller = env.GEMINI_MODEL ? [env.GEMINI_MODEL, ...MODELLER] : MODELLER;
+    const cagir = (model, dusun) => fetch(`${GEMINI}/models/${encodeURIComponent(model)}:generateContent`, {
+      method: 'POST', headers: { 'content-type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY }, body: govde(model, dusun),
+      signal: AbortSignal.timeout(MODEL_SURE_MS),
+    });
+    // Sıra: zorlanan model (varsa), anahtarın erişebildiği en yeni flash modeller, son çare yedek takma ad.
+    const sira = [...new Set([env.GEMINI_MODEL, ...(await uygunModeller(env)).slice(0, 3), YEDEK_MODEL].filter(Boolean))];
     let r = null;
-    for (const model of [...new Set(modeller)]) {
-      r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
-        method: 'POST', headers: { 'content-type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY }, body: govde,
-      });
+    for (const model of sira) {
+      try {
+        r = await cagir(model, true);
+        if (r.status === 400) {
+          const hataMetni = await r.clone().text();
+          if (/thinking/i.test(hataMetni)) r = await cagir(model, false);  // model düşünme ayarını desteklemiyor
+        }
+      } catch (e) {
+        console.log('NEON Hakem: model zaman aşımı', model, e?.name || '');
+        r = null;
+        continue;
+      }
       if (r.status !== 404) break;
       console.log('NEON Hakem: model bulunamadı', model);
     }
+    if (!r) return json({ hata: 'hakem zaman aşımı', durum: 504 }, 504, origin);
     if (!r.ok) {
       // Google'ın hata mesajı anahtarı içermez; teşhis için kısaltılmış haliyle döner.
       let detay = '';

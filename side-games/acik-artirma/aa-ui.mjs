@@ -525,7 +525,7 @@ async function hakemeSor() {
       let token;
       try { token = await kimlikJetonu(); } catch (e) { hakemHatasi = 'giriş yapılamadı'; throw e; }
       const ctl = new AbortController();
-      const zaman = setTimeout(() => ctl.abort(), 60000); // the model can take a while; one minute per try
+      const zaman = setTimeout(() => ctl.abort(), 100000); // the Worker tries up to a few models (40 s each at most)
       const r = await fetch(HAKEM_URL, { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token }, body: JSON.stringify(govde), signal: ctl.signal }).finally(() => clearTimeout(zaman));
       if (r.ok) {
         const cevap = await r.json();
@@ -535,9 +535,13 @@ async function hakemeSor() {
       } else {
         let x = {}; try { x = await r.json(); } catch {}
         hakemHatasi = `kod ${r.status}${x.durum ? '/' + x.durum : ''}${x.hata ? ': ' + x.hata : ''}${x.detay ? ' (' + x.detay + ')' : ''}`;
-        if (r.status === 429 || r.status === 401 || r.status === 503) break;
+        if (r.status === 429 || r.status === 401 || r.status === 503 || r.status === 504) break;
       }
-    } catch (e) { console.warn('NEON Hakem', e); if (!hakemHatasi) hakemHatasi = e?.name === 'AbortError' ? 'zaman aşımı' : 'bağlantı kurulamadı'; }
+    } catch (e) {
+      console.warn('NEON Hakem', e);
+      if (!hakemHatasi) hakemHatasi = e?.name === 'AbortError' ? 'zaman aşımı' : 'bağlantı kurulamadı';
+      if (e?.name === 'AbortError') break;  // a second full wait would only double the delay
+    }
   }
   // No verdict after two tries: never a silent random result — the players decide (online: both vote).
   oylama = true;
