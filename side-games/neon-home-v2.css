@@ -68,15 +68,15 @@
 
 /* ---------- Draft XI: the main game ---------- */
 .nxh-hero{position:relative;overflow:hidden;border-radius:var(--nxu-radius-l);background:var(--nxu-surface-1);box-shadow:0 20px 50px rgba(0,0,0,.45)}
-.nxh-hero-stage{position:relative;display:flex;align-items:flex-end;min-height:clamp(248px,68vw,340px);padding:var(--nxu-4);isolation:isolate}
+.nxh-hero-stage{position:relative;display:flex;align-items:flex-end;min-height:clamp(196px,50vw,280px);padding:var(--nxu-4) var(--nxu-4) 14px;isolation:isolate}
 .nxh-hero-art{position:absolute;top:0;left:0;z-index:-2;width:148%;max-width:none;height:100%;object-fit:cover;object-position:50% 22%}
 .nxh-hero-stage::before{content:"";position:absolute;inset:0;z-index:-1;background:
   linear-gradient(90deg,rgba(10,13,16,.9) 0%,rgba(10,13,16,.62) 38%,transparent 70%),
   linear-gradient(0deg,var(--nxu-surface-1) 0%,rgba(16,21,26,.5) 30%,transparent 58%)}
 .nxh-hero-copy{display:grid;justify-items:start;gap:0;max-width:64%}
 .nxh-eyebrow{color:var(--nxu-action);font:700 12px/1 var(--nxu-display);letter-spacing:.18em}
-.nxh-hero h1{margin:6px 0 4px;color:var(--nxu-text);font:800 italic clamp(46px,14.5vw,60px)/.88 var(--nxu-display);letter-spacing:.005em;text-transform:none}
-.nxh-hero p{margin:0 0 var(--nxu-4);color:var(--nxu-text-2);font-size:14px;line-height:1.35}
+.nxh-hero h1{margin:4px 0 3px;color:var(--nxu-text);font:800 italic clamp(40px,12.5vw,56px)/.88 var(--nxu-display);letter-spacing:.005em;text-transform:none}
+.nxh-hero p{margin:0 0 12px;color:var(--nxu-text-2);font-size:13px;line-height:1.3}
 .nxh .nxh-cta{position:relative;display:inline-flex;align-items:center;gap:10px;min-height:48px;padding:0 18px 0 20px;background:var(--nxu-action);color:var(--nxu-on-lime);font:700 17px/1 var(--nxu-display);letter-spacing:.07em;clip-path:polygon(var(--nxu-cut) 0,100% 0,100% calc(100% - var(--nxu-cut)),calc(100% - var(--nxu-cut)) 100%,0 100%,0 var(--nxu-cut));overflow:hidden;transition:background-color var(--nxu-fast) ease,transform var(--nxu-fast) var(--nxu-ease)}
 .nxh-cta svg{width:20px;height:20px;stroke-width:2.2;transition:transform var(--nxu-med) var(--nxu-ease)}
 .nxh-cta::after{content:"";position:absolute;top:0;bottom:0;left:-60%;width:40%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-18deg);animation:nxh-sheen 1100ms var(--nxu-ease) 700ms 1 both}
@@ -98,13 +98,15 @@
 .nxh-more{display:inline-flex;align-items:center;gap:2px;min-height:44px;margin:-12px -6px -12px 0;padding:0 6px;color:var(--nxu-text-2);font:600 13px/1 var(--nxu-display);letter-spacing:.1em;transition:color var(--nxu-fast) ease}
 .nxh-more svg{width:16px;height:16px;stroke-width:2}
 .nxh-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--nxu-3)}
-.nxh-tile{position:relative;display:flex;align-items:flex-end;aspect-ratio:16/10.5;overflow:hidden;border-radius:var(--nxu-radius);background:var(--nxu-surface-1);isolation:isolate;transition:transform var(--nxu-fast) var(--nxu-ease)}
+.nxh-tile{position:relative;display:flex;align-items:flex-end;aspect-ratio:16/9.6;overflow:hidden;border-radius:var(--nxu-radius);background:var(--nxu-surface-1);isolation:isolate;transition:transform var(--nxu-fast) var(--nxu-ease)}
 .nxh-tile img{position:absolute;inset:0 0 auto 0;z-index:-2;width:100%;height:86%;object-fit:cover;object-position:50% 40%;transition:transform 420ms var(--nxu-ease)}
 .nxh-tile::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(0deg,rgba(5,7,8,.96) 0%,rgba(5,7,8,.8) 28%,rgba(5,7,8,.28) 58%,transparent 80%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.07);border-radius:inherit}
 .nxh-tile-copy{display:grid;gap:3px;min-width:0;padding:10px var(--nxu-3)}
 .nxh-tile-copy small{color:var(--nxu-info);font:600 11px/1 var(--nxu-display);letter-spacing:.14em}
 .nxh-tile-copy strong{overflow:hidden;font:700 18px/1.05 var(--nxu-display);letter-spacing:.03em;text-overflow:ellipsis;white-space:nowrap}
 .nxh-tile:active{transform:scale(.975)}
+/* odd count: the last game spans the whole row instead of sitting alone */
+@media(max-width:599px){.nxh-grid>.nxh-tile:last-child:nth-child(odd){grid-column:1/-1;aspect-ratio:16/5.6}.nxh-grid>.nxh-tile:last-child:nth-child(odd) img{height:100%;object-position:50% 50%}}
 
 /* Entering a mode: a short lime wash, then go. */
 .nxh .is-launching{position:relative}
