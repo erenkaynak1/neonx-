@@ -20,6 +20,7 @@ let geminiIstek = null;
 const kararlar = [];
 const modelIstekleri = [];
 let model404 = false;
+let model503 = false;
 globalThis.fetch = async (url, opt) => {
   url = String(url);
   if (url.includes('securetoken@system.gserviceaccount.com')) return new Response(JSON.stringify({ keys: [jwk] }));
@@ -35,6 +36,7 @@ globalThis.fetch = async (url, opt) => {
   }
   if (url.includes('generativelanguage.googleapis.com')) {
     modelIstekleri.push(url);
+    if (model503 && url.includes('gemini-3-flash:')) return new Response(JSON.stringify({ error: { message: 'high demand' } }), { status: 503 });
     if (model404 && url.includes('gemini-3-flash:')) return new Response(JSON.stringify({ error: { message: 'model not found' } }), { status: 404 });
     geminiIstek = { url, opt, body: JSON.parse(opt.body) };
     return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: JSON.stringify(kararlar.shift()) }] } }] }));
@@ -72,7 +74,7 @@ assert.equal(r.status, 200);
 assert.equal(r.headers.get('access-control-allow-origin'), ORIGIN);
 const cevap = await r.json();
 assert.ok(geminiIstek.url.endsWith('/models/gemini-3-flash:generateContent'), 'en yeni kararlı flash model seçilir');
-assert.deepEqual(geminiIstek.body.generationConfig.thinkingConfig, { thinkingLevel: 'low' }, 'düşünme kısılır (hız)');
+assert.deepEqual(geminiIstek.body.generationConfig.thinkingConfig, { thinkingLevel: 'minimal' }, 'düşünme en aza indirilir (hız)');
 assert.equal(geminiIstek.opt.headers['x-goog-api-key'], 'test-key', 'anahtar başlıkta gider, adreste değil');
 assert.ok(!geminiIstek.url.includes('test-key'));
 assert.equal(geminiIstek.body.generationConfig.responseMimeType, 'application/json');
@@ -103,7 +105,16 @@ kararlar.push({ kazanan: 'Taraf 1', ozet: 'x', maddeler: [], soygun: { madde: 'a
 const r404 = await istek({ konu: konu.id, taraflar }, { token: await jeton({ sub: 'u5' }) });
 assert.equal(r404.status, 200);
 const uretim = modelIstekleri.filter((u) => u.includes(':generateContent'));
-assert.ok(uretim[0].includes('gemini-3-flash:') && uretim[1].includes('gemini-3.1-flash-preview:'), 'kaldırılan modelden sonra sıradaki denenir');
+assert.ok(uretim[0].includes('gemini-3-flash:') && uretim[1].includes('gemini-2.0-flash-lite:'), 'kaldırılan modelden sonra sıradaki (lite) denenir');
+
+// Model yoğunsa (503) vazgeçilmez, sıradaki model denenir.
+model404 = false; model503 = true; modelIstekleri.length = 0;
+kararlar.push({ kazanan: 'Taraf 1', ozet: 'x', maddeler: [], soygun: { madde: 'a', neden: 'b' }, hata: { madde: 'a', neden: 'b' } });
+const r503 = await istek({ konu: konu.id, taraflar }, { token: await jeton({ sub: 'u7' }) });
+assert.equal(r503.status, 200, 'yoğun modelden sonra başka model cevap verir');
+const uretim503 = modelIstekleri.filter((u) => u.includes(':generateContent'));
+assert.ok(uretim503[0].includes('gemini-3-flash:') && uretim503.length >= 2, 'yoğunlukta sıradaki model');
+model503 = false;
 
 // Gemini hatası: kod ve kısa açıklama döner (teşhis için).
 globalThis.fetch = async (url) => String(url).includes('securetoken') ? new Response(JSON.stringify({ keys: [jwk] })) : new Response(JSON.stringify({ error: { message: 'API key not valid' } }), { status: 400 });
