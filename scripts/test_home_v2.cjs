@@ -19,7 +19,7 @@ for(const mode of ['single','bot','online','tournament'])assert(js.includes('{ac
 
 // Game shelf: every link resolves and every thumbnail is a real image asset at the shared size.
 const games=[...js.matchAll(/\{href:"([^"]+)",name:"([^"]+)",label:"[^"]+",tag:"[^"]+",art:"([^"]+)"\}/g)].map(m=>({href:m[1],name:m[2],art:m[3]}));
-assert.equal(games.length,8,'Eight quiz games are expected on the home shelf');
+assert.equal(games.length,9,'Nine quiz games are expected on the home shelf');
 const webpSize=file=>{const b=fs.readFileSync(file);assert.equal(b.toString('ascii',0,4),'RIFF');assert.equal(b.toString('ascii',8,12),'WEBP');const kind=b.toString('ascii',12,16);if(kind==='VP8 ')return [b.readUInt16LE(26)&0x3fff,b.readUInt16LE(28)&0x3fff];if(kind==='VP8L'){const v=b.readUInt32LE(21);return [(v&0x3fff)+1,((v>>14)&0x3fff)+1]}return [b.readUIntLE(24,3)+1,b.readUIntLE(27,3)+1]};
 for(const g of games){
   assert(fs.existsSync(path.join(root,'side-games',g.href)),'Broken game link: '+g.href);

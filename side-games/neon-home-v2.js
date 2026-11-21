@@ -26,7 +26,8 @@
     {href:"reverse-xi/index.html",name:"RE:VERSE",label:"RE:VERSE",tag:"SES TAKLİDİ",art:"thumb-reverse.webp"},
     {href:"en11/index.html",name:"EN 11",label:"EN 11",tag:"KADRO DRAFTI",art:"thumb-en11.webp"},
     {href:"higher-lower/index.html",name:"Higher or Lower",label:"HIGHER OR LOWER",tag:"SERİ TAHMİNİ",art:"thumb-higherlower-v2.webp"},
-    {href:"fethet/index.html",name:"Saha Fethi",label:"SAHA FETHİ",tag:"FETİH · ONLINE",art:"thumb-fethet.webp"}
+    {href:"fethet/index.html",name:"Saha Fethi",label:"SAHA FETHİ",tag:"FETİH · ONLINE",art:"thumb-fethet.webp"},
+    {href:"acik-artirma/index.html",name:"Açık Artırma",label:"AÇIK ARTIRMA",tag:"TEKLİF · AYNI TELEFON",art:"thumb-auction.webp"}
   ];
 
   /* The tournament hub is an embedded document: hand it the shared tokens so it matches the app.
