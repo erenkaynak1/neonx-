@@ -6,6 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { KONULAR } from '../side-games/acik-artirma/konular.mjs';
 import { HAKEM_TALIMATI, HAKEM_SEMASI, hakemIstegi } from '../side-games/acik-artirma/hakem.mjs';
+import { HAKEMLER } from '../side-games/acik-artirma/hakemler.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const src = fs.readFileSync(path.join(root, 'worker/hakem-worker.src.js'), 'utf8');
@@ -15,6 +16,7 @@ const out = src
   .replace('/*TALIMAT*/', JSON.stringify(HAKEM_TALIMATI))
   .replace('/*SEMA*/', JSON.stringify(HAKEM_SEMASI))
   .replace('/*ISTEK*/', hakemIstegi.toString())
+  .replace('/*STILLER*/', JSON.stringify(Object.fromEntries(HAKEMLER.map((h) => [h.id, h.stil]))))
   .replace('// Bu dosya şablondur;', '// ÜRETİLMİŞ DOSYA — elle düzenleme. Şablon: worker/hakem-worker.src.js;');
 const dest = path.join(root, 'worker/hakem-worker.js');
 if (process.argv.includes('--check')) {

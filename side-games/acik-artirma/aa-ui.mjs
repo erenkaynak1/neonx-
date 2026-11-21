@@ -9,6 +9,7 @@
 import { KONULAR } from './konular.mjs';
 import { yeniOyun, hamle, secenekler, oynanabilir, harcanan, BUTCE, SECIM, MADDE } from './oyun.mjs';
 import { hakemCevabi } from './hakem.mjs';
+import { hakemSec, pikselSVG } from './hakemler.mjs';
 
 const HAKEM_URL = 'https://neonxi-hakem.erenkynk50.workers.dev'; // Cloudflare Worker (worker/README.md); boşken hakem bağlı değil.
 const SURE = 10; // saniye / hamle
@@ -119,6 +120,7 @@ async function baslat() {
 
 async function oyunAkisi() {
   S.olaylar = [];
+  S.hakem = hakemSec(S.maddeler);  // same on both screens online (derived from the items)
   oylama = false;
   busy = true;
   setSkin(false);
@@ -438,7 +440,7 @@ function sonuc(karar) {
     ? `<div class="aa-res-head"><small>${k.yon === 'kotu' ? '↓ EN KÖTÜYÜ TOPLAYAN KAZANIR' : 'SONUÇ'}</small><h2>${esc(k.baslik)}</h2><p>Kadrolar hazır. Söz hakemde.</p></div>`
     : kazanan === 'berabere'
       ? `<div class="aa-res-head"><small>OYLAR FARKLI</small><h2>BERABERE</h2><p>İkiniz farklı kazanan seçtiniz; maç berabere yazıldı.</p></div>`
-      : `<div class="aa-res-head win p${kazanan}"><small>${karar.hakem ? 'HAKEM KARARI' : 'SİZİN KARARINIZ'}</small><h2>KAZANAN: ${esc(adi(kazanan))}</h2><p>${esc(k.baslik)}</p></div>`;
+      : `<div class="aa-res-head win p${kazanan}"><small>${karar.hakem ? esc(S.hakem.karari) : 'SİZİN KARARINIZ'}</small><h2>KAZANAN: ${esc(adi(kazanan))}</h2><p>${esc(k.baslik)}</p></div>`;
   setSkin(false);
   app.innerHTML = `
   <header class="aa-top">
@@ -464,6 +466,7 @@ function sonuc(karar) {
     sonuc({ kazanan: i, hakem: false });
     konfeti(i);
   }));
+  if (!karar && HAKEM_URL && !oylama) beklemeSatirlari();
   if (!karar && HAKEM_URL && !oylama && (!online() || NET.role === 'host')) hakemeSor();
   window.scrollTo({ top: 0, behavior: reduced() ? 'auto' : 'smooth' });
 }
@@ -477,12 +480,12 @@ const tarafAdlari = (text, karar) => String(text ?? '').replace(/Taraf\s*([12])/
 function judgeHTML(karar) {
   if (karar && karar.hakem) {
     const t = (x) => esc(tarafAdlari(x, karar));
-    return `<section class="aa-judge"><h3>NEON HAKEM</h3><p class="aa-judge-quote">“${t(karar.ozet)}”</p>
+    return `<section class="aa-judge"><div class="aa-judge-who">${pikselSVG(S.hakem, 0, 56, 'aa-px')}<div><h3>${esc(S.hakem.ad)}</h3><small>${esc(S.hakem.unvan)}</small></div></div><p class="aa-judge-quote">“${t(karar.ozet)}”</p>
       <div class="aa-cards2"><div class="rob"><small>YILIN SOYGUNU</small><b>${esc(karar.soygun.madde)}</b><span>${t(karar.soygun.neden)}</span></div>
       <div class="err"><small>EN PAHALI HATA</small><b>${esc(karar.hata.madde)}</b><span>${t(karar.hata.neden)}</span></div></div></section>`;
   }
   if (karar) return '';
-  if (HAKEM_URL && !oylama) return `<section class="aa-judge" id="aaJudge"><h3>NEON HAKEM</h3><div class="aa-spin" aria-hidden="true"></div><p>Hakem kadroları inceliyor…</p></section>`;
+  if (HAKEM_URL && !oylama) return beklemeHTML();
   const neden = oylama ? `Hakem şu an cevap veremedi${hakemHatasi && (!online() || NET.role === 'host') ? ` <small class="aa-judge-err">(${esc(hakemHatasi)})</small>` : ''}.` : 'Yapay zekâ hakem çok yakında burada olacak.';
   if (online()) {
     const oy = NET.votes[NET.me];
@@ -516,9 +519,32 @@ async function kimlikJetonu() {
 
 // The Worker builds the judge prompt itself from topic + item ids (no free text), shuffles the two sides and returns
 // { sira, karar }; hakemCevabi() checks the verdict and maps "Taraf 1/2" back to the players.
+// Waiting for the verdict: the judge character "thinks" (pixel art, blinking, thought bubble, rotating lines).
+function beklemeHTML() {
+  const h = S.hakem;
+  return `<section class="aa-judge aa-wait" id="aaJudge" aria-live="polite">
+    <div class="aa-wait-stage">
+      <div class="aa-bubble" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="aa-wait-px">${pikselSVG(h, 0, 132, 'aa-px f0')}${pikselSVG(h, 1, 132, 'aa-px f1')}</div>
+    </div>
+    <h3>${esc(h.ad)} DÜŞÜNÜYOR…</h3>
+    <p id="aaWaitLine">${esc(h.satirlar[0])}</p>
+  </section>`;
+}
+function beklemeSatirlari() {
+  let i = 0;
+  const id = setInterval(() => {
+    const el = document.getElementById('aaWaitLine');
+    if (!el || !document.querySelector('.aa-wait')) { clearInterval(id); return; }
+    i = (i + 1) % S.hakem.satirlar.length;
+    el.classList.remove('in'); void el.offsetWidth; el.classList.add('in');
+    el.textContent = S.hakem.satirlar[i];
+  }, 1800);
+}
+
 async function hakemeSor() {
   const taraflar = S.oyuncular.map((p) => ({ maddeler: p.secimler.map((m) => ({ ad: m.ad, kunye: m.kunye, fiyat: m.fiyat })) }));
-  const govde = { konu: S.konu.id, taraflar: S.oyuncular.map((p) => p.secimler.map((m) => ({ id: m.id, fiyat: m.fiyat }))) };
+  const govde = { konu: S.konu.id, hakem: S.hakem.id, taraflar: S.oyuncular.map((p) => p.secimler.map((m) => ({ id: m.id, fiyat: m.fiyat }))) };
   hakemHatasi = '';
   for (let deneme = 0; deneme < 2; deneme++) {
     try {

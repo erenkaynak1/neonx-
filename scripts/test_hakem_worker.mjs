@@ -107,6 +107,14 @@ assert.equal(r404.status, 200);
 const uretim = modelIstekleri.filter((u) => u.includes(':generateContent'));
 assert.ok(uretim[0].includes('gemini-3-flash:') && uretim[1].includes('gemini-2.0-flash-lite:'), 'kaldırılan modelden sonra sıradaki (lite) denenir');
 
+// Hakem karakteri: listeden id ile; üslup talimata eklenir, bilinmeyen id yok sayılır.
+kararlar.push({ kazanan: 'Taraf 1', ozet: 'x', maddeler: [], soygun: { madde: 'a', neden: 'b' }, hata: { madde: 'a', neden: 'b' } });
+await istek({ konu: konu.id, hakem: 'hoca', taraflar }, { token: await jeton({ sub: 'u8' }) });
+assert.ok(geminiIstek.body.systemInstruction.parts[0].text.includes('teknik direktör') && geminiIstek.body.systemInstruction.parts[0].text.includes('Kurgusal bir karaktersin'));
+kararlar.push({ kazanan: 'Taraf 1', ozet: 'x', maddeler: [], soygun: { madde: 'a', neden: 'b' }, hata: { madde: 'a', neden: 'b' } });
+await istek({ konu: konu.id, hakem: 'uydurma <script>', taraflar }, { token: await jeton({ sub: 'u9' }) });
+assert.ok(!geminiIstek.body.systemInstruction.parts[0].text.includes('KARAKTER'));
+
 // Model yoğunsa (503) vazgeçilmez, sıradaki model denenir.
 model404 = false; model503 = true; modelIstekleri.length = 0;
 kararlar.push({ kazanan: 'Taraf 1', ozet: 'x', maddeler: [], soygun: { madde: 'a', neden: 'b' }, hata: { madde: 'a', neden: 'b' } });
