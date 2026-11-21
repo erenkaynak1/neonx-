@@ -70,7 +70,7 @@
       h.textContent = k.baslik;
       const meta = document.createElement('p');
       meta.className = 'meta';
-      meta.textContent = `${TURLER[k.tur]} · ${k.maddeler.length} madde · `;
+      meta.textContent = `${TURLER[k.tur]} · ${k.maddeler.length} madde${k.taslak ? ' · TASLAK, oyunda çıkmaz' : ''} · `;
       const yon = document.createElement('span');
       if (k.yon === 'kotu') { yon.className = 'ters'; yon.textContent = '↓ en kötüyü toplayan kazanır'; }
       else yon.textContent = 'en iyiyi toplayan kazanır';

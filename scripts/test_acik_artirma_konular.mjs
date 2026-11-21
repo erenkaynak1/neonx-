@@ -16,7 +16,7 @@ for (const k of KONULAR) {
   assert.ok(k.yon === 'iyi' || k.yon === 'kotu', `${k.id}: yön iyi/kotu olmalı`);
   assert.equal(k.yon === 'kotu', k.tur === 'ters', `${k.id}: ters konular ve yalnızca onlar "kotu" yönlü`);
   assert.ok(k.baslik && k.baslik.length <= 60, `${k.id}: başlık 1–60 karakter`);
-  assert.ok(k.maddeler.length >= MADDE_PER_MAC, `${k.id}: en az ${MADDE_PER_MAC} madde (var: ${k.maddeler.length})`);
+  assert.ok(k.taslak || k.maddeler.length >= MADDE_PER_MAC, `${k.id}: en az ${MADDE_PER_MAC} madde (var: ${k.maddeler.length})`);
   const adlar = new Set();
   for (const m of k.maddeler) {
     assert.ok(m.ad && m.ad.length <= 40, `${m.id}: ad 1–40 karakter`);
