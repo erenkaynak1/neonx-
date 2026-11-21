@@ -103,13 +103,17 @@ function social(choice) {
   else window.NEON_SOCIAL?.open?.('play');
 }
 
-// Konu her zaman tüm oynanabilir konulardan rastgele gelir (seçilemez); bir önceki konu tekrar gelmez.
+// Konu her zaman rastgele gelir (seçilemez), ama torba usulü: her konu bir kez çıkmadan hiçbiri tekrar gelmez.
+// Torba boşalınca yeniden dolar; bir önceki konu yeni turun ilk konusu olmaz. Kalanlar cihazda saklanır.
 function konuSec() {
-  let havuz = KONU_LISTESI;
-  if (havuz.length > 1) havuz = havuz.filter((k) => k.id !== UI.sonKonu);
-  const k = havuz[Math.floor(Math.random() * havuz.length)];
-  UI.sonKonu = k.id; store.set('sonKonu', k.id);
-  return k;
+  const ids = new Set(KONU_LISTESI.map((k) => k.id));
+  let torba = store.get('torba', []).filter((id) => ids.has(id));
+  if (!torba.length) torba = [...ids];
+  let aday = torba.length > 1 ? torba.filter((id) => id !== UI.sonKonu) : torba;
+  const id = aday[Math.floor(Math.random() * aday.length)];
+  store.set('torba', torba.filter((x) => x !== id));
+  UI.sonKonu = id; store.set('sonKonu', id);
+  return KONU_LISTESI.find((k) => k.id === id);
 }
 
 /* ───────────── game ───────────── */
