@@ -258,6 +258,28 @@ const RAW = [
     ],
   },
 
+  {
+    id: 'fb-bjk-oynayanlar', tur: 'oyuncu', yon: 'iyi', baslik: 'Fenerbahçe ve Beşiktaş\'ta oynamış en iyi futbolcular',
+    maddeler: [
+      ['Rüştü Reçber', 'Fenerbahçe, Barcelona, Beşiktaş · 2002 Dünya Kupası üçüncülüğü'],
+      ['Mehmet Aurélio', 'Fenerbahçe, Real Betis, Beşiktaş · Millî Takım'],
+      ['Gökhan Gönül', 'Fenerbahçe, Beşiktaş · Millî Takım'],
+      ['Tümer Metin', 'Beşiktaş, Fenerbahçe · Millî Takım'],
+      ['Josef de Souza', 'Fenerbahçe, Beşiktaş · Brezilya'],
+      ['Mert Günok', 'Fenerbahçe, Başakşehir, Beşiktaş · Millî Takım'],
+      ['Cenk Tosun', 'Beşiktaş, Everton, Fenerbahçe · Millî Takım'],
+      ['Anderson Talisca', 'Beşiktaş, Al-Nassr, Fenerbahçe · Brezilya'],
+      ['Mert Nobre', 'Fenerbahçe, Beşiktaş · Brezilya'],
+      ['Burak Yılmaz', 'Fenerbahçe, Galatasaray, Beşiktaş, Lille · Millî Takım'],
+      ['Caner Erkin', 'Galatasaray, Fenerbahçe, Beşiktaş · Millî Takım'],
+      ['Michy Batshuayi', 'Beşiktaş, Fenerbahçe, Galatasaray · Belçika'],
+      ['Sergen Yalçın', 'Beşiktaş, Fenerbahçe, Galatasaray · Millî Takım'],
+      ['İsmail Köybaşı', 'Beşiktaş, Fenerbahçe · Millî Takım'],
+      ['Jeremain Lens', 'Fenerbahçe, Beşiktaş · Hollanda'],
+      ['Salih Uçan', 'Fenerbahçe, Roma, Beşiktaş · Millî Takım'],
+    ],
+  },
+
   // ───────── Ters konular (en kötüyü toplayan kazanır) ─────────
   {
     id: 'kazma-futbolcular', tur: 'ters', yon: 'kotu', baslik: 'Tarihin en kazma futbolcuları',
