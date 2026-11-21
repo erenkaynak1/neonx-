@@ -280,6 +280,24 @@ const RAW = [
     ],
   },
 
+  {
+    id: 'gs-bjk-oynayanlar', tur: 'oyuncu', yon: 'iyi', baslik: 'Galatasaray ve Beşiktaş\'ta oynamış en iyi futbolcular',
+    maddeler: [
+      ['Okan Buruk', 'Galatasaray, Inter, Beşiktaş · 2000 UEFA Kupası'],
+      ['Ayhan Akman', 'Gaziantepspor, Beşiktaş, Galatasaray · Millî Takım'],
+      ['Gökhan Zan', 'Beşiktaş, Galatasaray · Millî Takım'],
+      ['Burak Yılmaz', 'Fenerbahçe, Galatasaray, Beşiktaş, Lille · Millî Takım'],
+      ['Sergen Yalçın', 'Beşiktaş, Fenerbahçe, Galatasaray · Millî Takım'],
+      ['Caner Erkin', 'Galatasaray, Fenerbahçe, Beşiktaş · Millî Takım'],
+      ['Michy Batshuayi', 'Beşiktaş, Fenerbahçe, Galatasaray · Belçika'],
+      ['Ryan Babel', 'Liverpool, Beşiktaş, Galatasaray · Hollanda'],
+      ['Milot Rashica', 'Werder Bremen, Galatasaray, Beşiktaş · Kosova'],
+      ['Gedson Fernandes', 'Benfica, Galatasaray, Beşiktaş · Portekiz'],
+      ['Günay Güvenç', 'Kaleci · Beşiktaş, Göztepe, Galatasaray'],
+      ['Cenk Gönen', 'Kaleci · Beşiktaş, Galatasaray, Málaga'],
+    ],
+  },
+
   // ───────── Ters konular (en kötüyü toplayan kazanır) ─────────
   {
     id: 'kazma-futbolcular', tur: 'ters', yon: 'kotu', baslik: 'Tarihin en kazma futbolcuları',
