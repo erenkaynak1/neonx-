@@ -88,7 +88,7 @@ Oyun (telefon) ──► Aracı sunucu: Cloudflare Worker (Gemini anahtarı bura
 ### 3.2 Hakeme gönderilen
 
 - Konu başlığı ve yönü (en iyi / en kötü).
-- Her oyuncunun aldığı maddeler, künyeleri ve ödediği paralar.
+- Her oyuncunun aldığı maddeler ve künyeleri (fiyatsız). Fiyatlar en sonda ayrı "FİYAT LİSTESİ"nde, yalnızca soygun / hata kartları için; toplam harcama gönderilmez (para kazananı etkilemesin, kullanıcı kararı 2026-11-21).
 - Hakem talimatı: `side-games/acik-artirma/hakem.mjs` (`HAKEM_TALIMATI`). Kazanan maddelerin gerçek futbol değerine göre seçilir; **ödenen para kazananı belirlemez**, sadece "soygun" ve "pahalı hata" yorumlarında kullanılır. Set bütün olarak değerlendirilir. Uydurma istatistik yok. Gerçek kişilerin görünüşü, kökeni, ailesi, sağlığı ya da özel hayatıyla dalga geçilmez.
 - Adalet: oyuncuların listeleri hakeme **rastgele sırayla** ve takma adla ("Taraf 1 / Taraf 2") gönderilir; yapay zekâların ilk okunan listeyi kayırma eğilimini azaltır. Oyuncu adları ya da kişisel bilgi gönderilmez.
 
