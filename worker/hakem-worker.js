@@ -36,7 +36,8 @@ const LIMIT = { pencereMs: 10 * 60 * 1000, istek: 8 };
 const BUTCE = 20, SECIM = 5;
 const GEMINI = 'https://generativelanguage.googleapis.com/v1beta';
 const YEDEK_MODEL = 'gemini-flash-latest';
-const MODEL_SURE_MS = 40000; // tek modele en fazla bu kadar beklenir
+const MODEL_SURE_MS = 18000; // tek modele en fazla bu kadar beklenir; sonra sıradaki denenir
+const TOPLAM_SURE_MS = 80000; // bütün denemeler için üst sınır (oyun 100 sn bekler)
 let modelOnbellek = { at: 0, list: [] };
 
 // Anahtarın erişebildiği, generateContent destekleyen flash modelleri: en yeni sürüm önce, "lite" ve "preview" sonra.
@@ -56,8 +57,18 @@ async function uygunModeller(env) {
   } catch { return []; }
 }
 
-// Hız için "düşünme" kısılır: 2.x modellerde bütçe 0, diğerlerinde düşük seviye. Model bunu desteklemezse ayarsız denenir.
-const dusunme = (model) => /^gemini-2\./.test(model) ? { thinkingBudget: 0 } : { thinkingLevel: 'low' };
+// Deneme sırası: en yeni 2 kararlı flash, sonra en yeni 2 lite (daha hızlı, daha az yoğun), sonra önizlemeler, son çare takma ad.
+function denemeSirasi(env, liste) {
+  const kararli = liste.filter((n) => !/lite|preview/.test(n));
+  const lite = liste.filter((n) => /lite/.test(n) && !/preview/.test(n));
+  const onizleme = liste.filter((n) => /preview/.test(n));
+  return [...new Set([env.GEMINI_MODEL, ...kararli.slice(0, 2), ...lite.slice(0, 2), ...onizleme.slice(0, 1), YEDEK_MODEL].filter(Boolean))];
+}
+
+// Hız için "düşünme" en aza indirilir: 2.x modellerde bütçe 0, diğerlerinde "minimal", desteklenmezse "low", o da
+// desteklenmezse ayarsız.
+const DUSUNME_ADIMLARI = (model) => /^gemini-2\./.test(model) ? [{ thinkingBudget: 0 }, null] : [{ thinkingLevel: 'minimal' }, { thinkingLevel: 'low' }, null];
+const GECICI = new Set([429, 500, 502, 503, 504]); // yoğunluk / geçici hata: sıradaki model denenir
 const sayac = new Map(); // uid → [zaman damgaları] (her Worker örneğinde ayrı; kaba bir sınır)
 
 const izinli = (origin) => ORIGINS.includes(origin) || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin || '');
@@ -154,33 +165,39 @@ export default {
     if (!kurulan) return json({ hata: 'geçersiz kadro' }, 400, origin);
 
     const istek = hakemIstegi(kurulan.konu, kurulan.taraflar);
-    const govde = (model, dusun) => JSON.stringify({
+    const govde = (dusunme) => JSON.stringify({
       systemInstruction: { parts: [{ text: HAKEM_TALIMATI }] },
       contents: [{ role: 'user', parts: [{ text: istek.metin }] }],
-      generationConfig: { responseMimeType: 'application/json', responseSchema: HAKEM_SEMASI, temperature: 0.9, ...(dusun ? { thinkingConfig: dusunme(model) } : {}) },
+      generationConfig: { responseMimeType: 'application/json', responseSchema: HAKEM_SEMASI, temperature: 0.9, ...(dusunme ? { thinkingConfig: dusunme } : {}) },
     });
-    const cagir = (model, dusun) => fetch(`${GEMINI}/models/${encodeURIComponent(model)}:generateContent`, {
-      method: 'POST', headers: { 'content-type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY }, body: govde(model, dusun),
-      signal: AbortSignal.timeout(MODEL_SURE_MS),
+    const basla = Date.now();
+    const cagir = (model, dusunme) => fetch(`${GEMINI}/models/${encodeURIComponent(model)}:generateContent`, {
+      method: 'POST', headers: { 'content-type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY }, body: govde(dusunme),
+      signal: AbortSignal.timeout(Math.max(3000, Math.min(MODEL_SURE_MS, TOPLAM_SURE_MS - (Date.now() - basla)))),
     });
-    // Sıra: zorlanan model (varsa), anahtarın erişebildiği en yeni flash modeller, son çare yedek takma ad.
-    const sira = [...new Set([env.GEMINI_MODEL, ...(await uygunModeller(env)).slice(0, 3), YEDEK_MODEL].filter(Boolean))];
-    let r = null;
-    for (const model of sira) {
+    let r = null, sonHata = null;
+    for (const model of denemeSirasi(env, await uygunModeller(env))) {
+      if (Date.now() - basla > TOPLAM_SURE_MS - 3000) break;
       try {
-        r = await cagir(model, true);
-        if (r.status === 400) {
-          const hataMetni = await r.clone().text();
-          if (/thinking/i.test(hataMetni)) r = await cagir(model, false);  // model düşünme ayarını desteklemiyor
+        for (const dusunme of DUSUNME_ADIMLARI(model)) {
+          r = await cagir(model, dusunme);
+          if (r.status !== 400 || !/thinking/i.test(await r.clone().text())) break;  // düşünme ayarı desteklenmiyorsa bir sonrakini dene
         }
       } catch (e) {
         console.log('NEON Hakem: model zaman aşımı', model, e?.name || '');
         r = null;
         continue;
       }
-      if (r.status !== 404) break;
-      console.log('NEON Hakem: model bulunamadı', model);
+      if (r.ok) break;
+      if (r.status === 404) { console.log('NEON Hakem: model bulunamadı', model); continue; }
+      if (GECICI.has(r.status)) {
+        sonHata = r;
+        console.log('NEON Hakem: model yoğun', model, r.status);
+        continue;
+      }
+      break;  // kalıcı hata (anahtar, istek): başka model denemek boşuna
     }
+    if ((!r || r.status === 404) && sonHata) r = sonHata;  // en anlamlı hatayı (yoğunluk) bildir
     if (!r) return json({ hata: 'hakem zaman aşımı', durum: 504 }, 504, origin);
     if (!r.ok) {
       // Google'ın hata mesajı anahtarı içermez; teşhis için kısaltılmış haliyle döner.
