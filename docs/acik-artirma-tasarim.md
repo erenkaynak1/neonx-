@@ -68,7 +68,7 @@ Oyun (telefon) ──► Aracı sunucu: Cloudflare Worker (Gemini anahtarı bura
 
 - Konu başlığı ve yönü (en iyi / en kötü).
 - Her oyuncunun aldığı maddeler, künyeleri ve ödediği paralar.
-- Kullanıcının hazırladığı talimat (prompt) — **bekleniyor**.
+- Hakem talimatı: `side-games/acik-artirma/hakem.mjs` (`HAKEM_TALIMATI`). Kazanan maddelerin gerçek futbol değerine göre seçilir; **ödenen para kazananı belirlemez**, sadece "soygun" ve "pahalı hata" yorumlarında kullanılır. Set bütün olarak değerlendirilir. Uydurma istatistik yok. Gerçek kişilerin görünüşü, kökeni, ailesi, sağlığı ya da özel hayatıyla dalga geçilmez.
 - Adalet: oyuncuların listeleri hakeme **rastgele sırayla** ve takma adla ("Taraf 1 / Taraf 2") gönderilir; yapay zekâların ilk okunan listeyi kayırma eğilimini azaltır. Oyuncu adları ya da kişisel bilgi gönderilmez.
 
 ### 3.3 Hakemden beklenen (yapılandırılmış JSON)
@@ -92,7 +92,7 @@ Gemini'nin yapılandırılmış çıktı özelliğiyle bu şema zorunlu tutulur;
 
 ## 4. Açık noktalar
 
-1. **Hakem talimatı (prompt):** kullanıcı hazırladı, paylaşacak (anahtar olmadan).
+1. ~~Hakem talimatı~~ yazıldı (3.2); gerçek Gemini ile denendikten sonra ayarlanacak.
 2. **Konu listesi:** başlangıç için kaç konu, hangi konular (en iyi kadrolar, en iyi golcüler, en kazma kadrolar, …), her konuda kaç madde; maddelerin künyeleri.
 3. ~~Görsel tasarım~~ **Karar verildi** (2.1). Lobi ve konu kartı ekranları kodlama sırasında aynı dille çizilecek.
 4. ~~Parti modu~~ şimdilik yok. ~~Liderlik~~ karar verildi.
