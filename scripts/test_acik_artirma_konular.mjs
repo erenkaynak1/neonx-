@@ -47,7 +47,9 @@ import { HAKEM_TALIMATI, HAKEM_SEMASI, hakemIstegi, hakemCevabi } from '../side-
   assert.deepEqual(ters.sira, [1, 0]);
   assert.ok(ters.metin.startsWith(`KONU: ${konu.baslik}\nYÖN: EN İYİ`));
   assert.ok(ters.metin.indexOf(taraflar[1].maddeler[0].ad) < ters.metin.indexOf(taraflar[0].maddeler[0].ad), 'rastgele sıra uygulanmalı');
-  assert.ok(ters.metin.includes('Taraf 1 (harcadığı: 18 NP)'));
+  const [kadro, fiyat] = ters.metin.split('FİYAT LİSTESİ');
+  assert.ok(!/NP|harcad/.test(kadro), 'kadrolar fiyatsız gider (para kazananı etkilemesin)');
+  assert.ok(fiyat.includes(`- Taraf 1: ${taraflar[1].maddeler[1].ad} = 7 NP`), 'fiyatlar ayrı listede');
   const cevap = {
     kazanan: 'Taraf 1', ozet: 'Bu iş bitti.',
     maddeler: [...taraflar[0].maddeler, ...taraflar[1].maddeler].map((m) => ({ madde: m.ad, taraf: 'Taraf 1', yorum: 'iyi' })),

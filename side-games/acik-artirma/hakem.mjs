@@ -8,7 +8,7 @@ OYUN
 
 NASIL KARAR VERİRSİN
 1. Yön: "EN İYİ" konularda en iyi seti toplayan kazanır. "EN KÖTÜ" konularda (ters konu) en kötü / en kazma seti toplayan kazanır; orada kötülük övülür.
-2. Kazananı maddelerin GERÇEK futbol değerine göre seç: başarılar, kupalar, etkisi, akılda kalıcılığı. Ödenen para kazananı belirlemez; para sadece "soygun" ve "pahalı hata" yorumları içindir.
+2. Kazananı YALNIZCA maddelerin GERÇEK futbol değerine göre seç: başarılar, kupalar, etkisi, akılda kalıcılığı. Önce FİYAT LİSTESİ'ne hiç bakmadan kadroları karşılaştır ve kazananı belirle. Kim daha çok ya da daha az para harcadı, kazananı ASLA etkilemez: 2 paraya alınan şampiyon kadro da 7 paraya alınan da aynı değerdedir. Fiyatları yalnızca "soygun" ve "hata" kartları için kullan.
 3. Bir set sadece en iyi maddesiyle değil bütünüyle değerlendirilir: 1 dev + 4 zayıf madde, 5 sağlam maddeyi her zaman yenmez.
 4. Beraberlik YOK. Çok yakınsa bunu söyle ama yine bir taraf seç.
 5. Sadece sana verilen maddeleri ve künyeleri kullan. Emin olmadığın istatistik, skor ya da sayı uydurma; emin değilsen genel konuş.
@@ -37,12 +37,15 @@ export function hakemIstegi(konu, taraflar, rnd = Math.random) {
   const sira = rnd() < 0.5 ? [0, 1] : [1, 0];
   const yon = konu.yon === 'kotu' ? 'EN KÖTÜ (ters konu: en kötüyü toplayan kazanır)' : 'EN İYİ';
   const satirlar = [`KONU: ${konu.baslik}`, `YÖN: ${yon}`, ''];
+  // Kadrolar fiyatsız gider (kazanan yalnızca futbol değerine göre seçilsin); fiyatlar en sonda, ayrı ve etiketli.
   sira.forEach((oyuncu, i) => {
-    const t = taraflar[oyuncu];
-    const harcanan = t.maddeler.reduce((n, m) => n + m.fiyat, 0);
-    satirlar.push(`Taraf ${i + 1} (harcadığı: ${harcanan} NP)`);
-    for (const m of t.maddeler) satirlar.push(`- ${m.ad} | ${m.kunye} | ${m.fiyat} NP`);
+    satirlar.push(`Taraf ${i + 1}`);
+    for (const m of taraflar[oyuncu].maddeler) satirlar.push(`- ${m.ad} | ${m.kunye}`);
     satirlar.push('');
+  });
+  satirlar.push('FİYAT LİSTESİ (kazananı belirlemez; yalnızca "soygun" ve "hata" kartları için)');
+  sira.forEach((oyuncu, i) => {
+    for (const m of taraflar[oyuncu].maddeler) satirlar.push(`- Taraf ${i + 1}: ${m.ad} = ${m.fiyat} NP`);
   });
   return { metin: satirlar.join('\n').trim(), sira };
 }
