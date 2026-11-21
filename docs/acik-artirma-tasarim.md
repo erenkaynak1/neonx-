@@ -73,6 +73,13 @@ Oyun (telefon) ──► Aracı sunucu: Cloudflare Worker (Gemini anahtarı bura
 - **Online maçta:** kararı yalnızca maçı kuran cihaz ister ve sonucu rakibe gönderir; iki oyuncu aynı kararı görür.
 - **Hata durumu:** Gemini cevap vermezse ya da biçim bozuksa bir kez yeniden denenir; yine olmazsa maç "hakemsiz" biter: kullanıcıya açıkça söylenir, liderliğe yazılmaz ve aynı kadrolarla kararı yeniden isteme tuşu çıkar (sessizce rastgele karar verilmez).
 
+### 3.1.1 Kurulum ve kod (2026-11-21)
+
+- Worker: `worker/hakem-worker.js` (üretilen, Cloudflare'a yapıştırılır; şablon `worker/hakem-worker.src.js`, üretici `scripts/build_hakem_worker.mjs`). Adım adım kurulum: `worker/README.md`.
+- İstek: `{ konu, taraflar: [[{id, fiyat}×5]×2] }` + Firebase kimlik jetonu. Cevap: `{ sira, karar }`.
+- Hakem iki denemede cevap vermezse oyuncular karar verir (aynı telefonda seçim, online'da oylama); sessiz rastgele karar yok.
+- Metinlerdeki "Taraf 1 / Taraf 2" ekranda oyuncu adlarına çevrilir.
+
 ### 3.2 Hakeme gönderilen
 
 - Konu başlığı ve yönü (en iyi / en kötü).

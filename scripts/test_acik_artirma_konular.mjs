@@ -55,6 +55,7 @@ import { HAKEM_TALIMATI, HAKEM_SEMASI, hakemIstegi, hakemCevabi } from '../side-
   };
   const sonuc = hakemCevabi(cevap, ters, taraflar);
   assert.equal(sonuc.kazanan, 1, '"Taraf 1" bu sırada oyun içindeki 2. oyuncu');
+  assert.deepEqual(sonuc.sira, [1, 0], 'takma ad → oyuncu eşlemesi kararla birlikte döner');
   assert.equal(Object.keys(sonuc.yorumlar).length, 10);
   assert.equal(hakemCevabi({ ...cevap, kazanan: 'Berabere' }, ters, taraflar), null);
   assert.equal(hakemCevabi({ ...cevap, soygun: { madde: 'Uydurma madde', neden: 'x' } }, ters, taraflar), null);

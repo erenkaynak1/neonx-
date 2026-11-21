@@ -8,7 +8,7 @@
 // (same phone: one tap; online: both vote, a disagreement is a draw) — never a silent random verdict.
 import { KONULAR } from './konular.mjs';
 import { yeniOyun, hamle, secenekler, oynanabilir, harcanan, BUTCE, SECIM, MADDE } from './oyun.mjs';
-import { hakemIstegi, hakemCevabi } from './hakem.mjs';
+import { hakemCevabi } from './hakem.mjs';
 
 const HAKEM_URL = ''; // Cloudflare Worker adresi; boşken hakem bağlı değil.
 const SURE = 10; // saniye / hamle
@@ -30,6 +30,7 @@ const np = (n) => `${n}${NP}`;
 const UI = { adlar: store.get('adlar', ['Oyuncu 1', 'Oyuncu 2']), sonKonu: store.get('sonKonu', null) };
 let S = null; // oyun durumu
 let busy = false;
+let oylama = false; // the AI judge did not answer: the players decide (vote online)
 let timer = { id: 0, end: 0 };
 
 /* ───────────── online state ───────────── */
@@ -117,6 +118,7 @@ async function baslat() {
 
 async function oyunAkisi() {
   S.olaylar = [];
+  oylama = false;
   busy = true;
   setSkin(false);
   oyunEkrani();
@@ -428,7 +430,7 @@ function sonuc(karar) {
     return `<section class="aa-squad p${i}${kazanan === i ? ' winner' : ''}">
       <h3><span>${esc(p.ad)}</span><span>${np(harcanan(p))}</span></h3>
       ${p.secimler.map((m, j) => `<div class="aa-pick" style="--i:${j + i * 0.5}"><div><span>${esc(m.ad)}</span><em>${m.fiyat ? np(m.fiyat) : 'BEDAVA'}</em></div>
-        ${karar?.yorumlar?.[m.ad] ? `<p>${esc(karar.yorumlar[m.ad])}</p>` : ''}</div>`).join('')}
+        ${karar?.yorumlar?.[m.ad] ? `<p>${esc(tarafAdlari(karar.yorumlar[m.ad], karar))}</p>` : ''}</div>`).join('')}
     </section>`;
   };
   const head = kazanan == null
@@ -461,46 +463,76 @@ function sonuc(karar) {
     sonuc({ kazanan: i, hakem: false });
     konfeti(i);
   }));
-  if (!karar && HAKEM_URL && (!online() || NET.role === 'host')) hakemeSor();
+  if (!karar && HAKEM_URL && !oylama && (!online() || NET.role === 'host')) hakemeSor();
   window.scrollTo({ top: 0, behavior: reduced() ? 'auto' : 'smooth' });
 }
 
+// The judge only knows "Taraf 1 / Taraf 2"; show the players' names instead.
+const tarafAdlari = (text, karar) => String(text ?? '').replace(/Taraf\s*([12])/g, (m, d) => {
+  const kim = Array.isArray(karar?.sira) ? karar.sira[Number(d) - 1] : null;
+  return kim === 0 || kim === 1 ? adi(kim) : m;
+});
+
 function judgeHTML(karar) {
   if (karar && karar.hakem) {
-    return `<section class="aa-judge"><h3>NEON HAKEM</h3><p class="aa-judge-quote">“${esc(karar.ozet)}”</p>
-      <div class="aa-cards2"><div class="rob"><small>YILIN SOYGUNU</small><b>${esc(karar.soygun.madde)}</b><span>${esc(karar.soygun.neden)}</span></div>
-      <div class="err"><small>EN PAHALI HATA</small><b>${esc(karar.hata.madde)}</b><span>${esc(karar.hata.neden)}</span></div></div></section>`;
+    const t = (x) => esc(tarafAdlari(x, karar));
+    return `<section class="aa-judge"><h3>NEON HAKEM</h3><p class="aa-judge-quote">“${t(karar.ozet)}”</p>
+      <div class="aa-cards2"><div class="rob"><small>YILIN SOYGUNU</small><b>${esc(karar.soygun.madde)}</b><span>${t(karar.soygun.neden)}</span></div>
+      <div class="err"><small>EN PAHALI HATA</small><b>${esc(karar.hata.madde)}</b><span>${t(karar.hata.neden)}</span></div></div></section>`;
   }
   if (karar) return '';
-  if (HAKEM_URL) return `<section class="aa-judge" id="aaJudge"><h3>NEON HAKEM</h3><div class="aa-spin" aria-hidden="true"></div><p>Hakem kadroları inceliyor…</p></section>`;
+  if (HAKEM_URL && !oylama) return `<section class="aa-judge" id="aaJudge"><h3>NEON HAKEM</h3><div class="aa-spin" aria-hidden="true"></div><p>Hakem kadroları inceliyor…</p></section>`;
+  const neden = oylama ? 'Hakem şu an cevap veremedi.' : 'Yapay zekâ hakem çok yakında burada olacak.';
   if (online()) {
     const oy = NET.votes[NET.me];
     return `<section class="aa-judge" id="aaJudge"><h3>NEON HAKEM</h3>
-    <p>Yapay zekâ hakem çok yakında burada olacak. Şimdilik ikiniz de kazananı seçin: aynı kişiyi seçerseniz sonuç o olur, farklı seçerseniz maç berabere yazılır.</p>
+    <p>${neden} İkiniz de kazananı seçin: aynı kişiyi seçerseniz sonuç o olur, farklı seçerseniz maç berabere yazılır.</p>
     ${oy == null ? `<div class="aa-judge-btns">${[0, 1].map((i) => `<button type="button" class="p${i}" data-pick="${i}">${esc(adi(i))}</button>`).join('')}</div>`
       : `<p><b>${esc(adi(oy))}</b> dedin. Rakibinin oyu bekleniyor…</p><div class="aa-spin" aria-hidden="true"></div>`}</section>`;
   }
   return `<section class="aa-judge"><h3>NEON HAKEM</h3>
-    <p>Yapay zekâ hakem çok yakında burada olacak. Şimdilik kadroları karşılaştırın, kazananı siz seçin:</p>
+    <p>${neden} Kadroları karşılaştırın, kazananı siz seçin:</p>
     <div class="aa-judge-btns">${[0, 1].map((i) => `<button type="button" class="p${i}" data-pick="${i}">${esc(S.oyuncular[i].ad)}</button>`).join('')}</div></section>`;
 }
 
+// Firebase ID token for the judge Worker (it only answers signed-in players; guests sign in anonymously).
+// The web config is public (same as every NEON XI page); it is not a secret.
+const FB_CONFIG = { apiKey: 'AIzaSyBLpXHGGTHXykKrnu8_Hv1i71oc3tpTNvY', authDomain: 'neonxi.firebaseapp.com', databaseURL: 'https://neonxi-default-rtdb.europe-west1.firebasedatabase.app', projectId: 'neonxi', storageBucket: 'neonxi.firebasestorage.app', messagingSenderId: '667191549799', appId: '1:667191549799:web:1e40feacbee09ed7f3d9c2' };
+async function kimlikJetonu() {
+  const [appMod, authMod] = await Promise.all([
+    import('https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js'),
+    import('https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js'),
+  ]);
+  const app = appMod.getApps().length ? appMod.getApp() : appMod.initializeApp(FB_CONFIG);
+  const auth = authMod.getAuth(app);
+  let user = auth.currentUser || await new Promise((res) => {
+    const off = authMod.onAuthStateChanged(auth, (u) => { off(); res(u); });
+    setTimeout(() => res(auth.currentUser), 1500);
+  });
+  if (!user) user = (await authMod.signInAnonymously(auth)).user;
+  return user.getIdToken();
+}
+
+// The Worker builds the judge prompt itself from topic + item ids (no free text), shuffles the two sides and returns
+// { sira, karar }; hakemCevabi() checks the verdict and maps "Taraf 1/2" back to the players.
 async function hakemeSor() {
   const taraflar = S.oyuncular.map((p) => ({ maddeler: p.secimler.map((m) => ({ ad: m.ad, kunye: m.kunye, fiyat: m.fiyat })) }));
-  const istek = hakemIstegi(S.konu, taraflar);
+  const govde = { konu: S.konu.id, taraflar: S.oyuncular.map((p) => p.secimler.map((m) => ({ id: m.id, fiyat: m.fiyat }))) };
   for (let deneme = 0; deneme < 2; deneme++) {
     try {
-      const r = await fetch(HAKEM_URL, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ konu: S.konu.id, metin: istek.metin }) });
+      const token = await kimlikJetonu();
+      const r = await fetch(HAKEM_URL, { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token }, body: JSON.stringify(govde) });
       if (r.ok) {
-        const k = hakemCevabi(await r.json(), istek, taraflar);
+        const cevap = await r.json();
+        const k = Array.isArray(cevap?.sira) && hakemCevabi(cevap.karar, { sira: cevap.sira }, taraflar);
         if (k) { if (online()) { send({ c: 'karar', k }); rapor(k.kazanan); } sonuc({ ...k, hakem: true }); konfeti(k.kazanan); return; }
-      }
-    } catch {}
+      } else if (r.status === 429) break;
+    } catch (e) { console.warn('NEON Hakem', e); }
   }
-  const box = document.getElementById('aaJudge');
-  if (box) box.innerHTML = `<h3>NEON HAKEM</h3><p>Hakem şu an cevap veremedi; maç hakemsiz bitti ve sonuç kaydedilmedi.</p>
-    <button type="button" class="aa-ghost" id="aaRetry">KARARI TEKRAR İSTE</button>`;
-  document.getElementById('aaRetry')?.addEventListener('click', () => sonuc());
+  // No verdict after two tries: never a silent random result — the players decide (online: both vote).
+  oylama = true;
+  if (online()) send({ c: 'oylama' });
+  sonuc();
 }
 
 function konfeti(kim) {
@@ -606,6 +638,7 @@ function misafirVeri(m) {
   if (m.c === 'mv') { const h = m.h === 'pas' ? 'pas' : String(Number(m.h)); enqueue(() => { stopTimer(); return uygula(h, !!m.s); }); return; }
   if (m.c === 'nope') { busy = false; siraCiz(); return; }
   if (m.c === 'final') { enqueue(() => sonOy(m.v)); return; }
+  if (m.c === 'oylama') { enqueue(() => { if (NET.final === undefined) { oylama = true; sonuc(); } }); return; }
   if (m.c === 'karar' && m.k) { enqueue(() => { rapor(m.k.kazanan); sonuc({ ...m.k, hakem: true }); konfeti(m.k.kazanan); }); }
 }
 

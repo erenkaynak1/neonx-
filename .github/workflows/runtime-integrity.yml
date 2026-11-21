@@ -54,6 +54,8 @@ jobs:
         run: node scripts/test_acik_artirma_konular.mjs
       - name: Açık Artırma online contract
         run: node scripts/test_auction_online.cjs
+      - name: Açık Artırma judge Worker (built file up to date, auth, validation, rate limit)
+        run: node scripts/build_hakem_worker.mjs --check && node scripts/test_hakem_worker.mjs
       - name: First-login Firebase session and exact artwork contracts
         run: node scripts/test_neon_entry.cjs
       - name: Welcome controller JavaScript syntax
