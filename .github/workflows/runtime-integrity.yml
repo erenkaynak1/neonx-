@@ -50,6 +50,8 @@ jobs:
         run: node scripts/test_reverse_name_match.cjs
       - name: Draft XI v2 engine (determinism, event log, sanity)
         run: node scripts/test_draft_xi_engine.mjs
+      - name: Draft XI v2 player pool (built file up to date, engine-ready, random squads)
+        run: node scripts/build_draft_xi_pool.mjs --check && node scripts/test_draft_xi_pool.mjs 120
       - name: Açık Artırma topic list integrity
         run: node scripts/test_acik_artirma_konular.mjs
       - name: Açık Artırma online contract
