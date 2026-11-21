@@ -24,63 +24,58 @@ let S = null; // oyun durumu
 let busy = false;
 let timer = { id: 0, end: 0 };
 
-const GAVEL = `<svg class="aa-gavel" viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><rect x="14" y="10" width="22" height="12" rx="3" transform="rotate(45 25 16)"/><path d="M30 26 48 44"/><path d="M10 54h26"/><path d="M14 48h18"/></svg>`;
-
 /* ───────────── menu ───────────── */
-function menu() {
+// Menu: the shared NEON XI side-game menu (sidegame-skin-v2.css .sgm), the same as EN 11 / XOX / Imposter / Re:Verse.
+// The skin class is only on <body> while the menu is shown, so the game screens keep their own type and backdrop.
+const SGM_ICONS = {
+  phone: '<rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M10 5h4M11 18.5h2"/>',
+  friends: '<circle cx="9" cy="8.5" r="3.1"/><path d="M3.5 20v-2c0-3.5 2.3-5.4 5.5-5.4s5.5 1.9 5.5 5.4v2M17 6a3 3 0 0 1 0 5.8m1.2 2c2 .6 3 2.2 3 4.6V20"/>',
+  search: '<circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5M8 10.5h5m-2.5-2.5v5"/>',
+  arrow: '<path d="m9 6 6 6-6 6"/>',
+};
+const sgmIcon = (n) => `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${SGM_ICONS[n]}</svg>`;
+const sgmMode = (view, label, detail, icon, disabled) => `<button type="button" class="sgm-mode"${disabled ? ' disabled' : ` data-view="${view}"`} aria-label="${esc(label + '. ' + detail)}"><span class="sgm-mode-icon">${sgmIcon(icon)}</span><span class="sgm-mode-copy"><strong>${esc(label)}</strong><small>${esc(detail)}</small></span>${disabled ? '<span class="sgm-soon">YAKINDA</span>' : `<span class="sgm-mode-arrow">${sgmIcon('arrow')}</span>`}</button>`;
+const sgmFrame = (inner) => `<div class="sgm"><a class="sgm-logo" href="../index.html" aria-label="Yan oyunlara dön"><img src="../../assets/ui/logo-neon-xi.svg" alt="NEON XI"><span>YAN OYUNLAR</span></a>
+  <div class="sgm-hero"><h1>AÇIK <span>ARTIRMA</span></h1><p>${BUTCE} NEON parayla en iyi seti topla, rakibini açık artırmada geç.</p></div>
+  <img class="sgm-emblem" src="../assets/auction-emblem-v1.svg" alt="" aria-hidden="true" decoding="async" draggable="false">${inner}</div>`;
+
+function setSkin(on) { document.body.classList.toggle('sg-skin', on); document.body.classList.toggle('sg-auction', on); }
+
+function menu(view = 'modes') {
   stopTimer();
-  const turler = [['hepsi', 'Hepsi'], ...Object.entries(TURLER)];
-  app.innerHTML = `
-  <header class="aa-top">
-    <a class="aa-back" href="../index.html" aria-label="Yan oyunlar">‹</a>
-    <div class="aa-brand"><small>NEON XI</small><h1>AÇIK <i>ARTIRMA</i></h1></div><span></span>
-  </header>
-  <div class="aa-menu">
-    <section class="aa-hero">
-      ${GAVEL}
-      <div class="aa-coins" aria-hidden="true"><span class="aa-coin">NP</span><span class="aa-coin">NP</span><span class="aa-coin">NP</span></div>
-      <p>${BUTCE} NEON para, ${MADDE} madde, ${SECIM} seçim. En iyi seti topla; kararı yapay zekâ hakem versin.</p>
-    </section>
-    <section class="aa-box">
-      <span class="aa-label">MOD</span>
-      <div class="aa-modes">
-        <button type="button" class="aa-mode" aria-pressed="true"><b>AYNI TELEFON</b><span>İki kişi, tek ekran</span></button>
-        <button type="button" class="aa-mode" disabled><b>ONLINE 1V1</b><span>Yakında</span></button>
-      </div>
-      <div class="aa-names">
-        <label class="aa-name p0"><span>1. OYUNCU</span><input id="aaN0" maxlength="14" value="${esc(UI.adlar[0])}" autocomplete="off"></label>
-        <label class="aa-name p1"><span>2. OYUNCU</span><input id="aaN1" maxlength="14" value="${esc(UI.adlar[1])}" autocomplete="off"></label>
-      </div>
-    </section>
-    <section class="aa-box">
-      <span class="aa-label">KONU TÜRÜ</span>
-      <div class="aa-types" role="group" aria-label="Konu türü">
+  setSkin(true);
+  let inner;
+  if (view === 'local') {
+    const turler = [['hepsi', 'Hepsi'], ...Object.entries(TURLER)];
+    inner = `<section class="sgm-panel" aria-label="Tek telefon"><h2 class="sgm-heading">TEK TELEFON<button type="button" class="sgm-back" id="aaMenuBack">← GERİ</button></h2><div class="sgm-sheet">
+      <div class="sgm-field"><label for="aaN0">1. OYUNCU</label><input id="aaN0" maxlength="14" placeholder="Oyuncu 1" value="${esc(UI.adlar[0])}" autocomplete="off"></div>
+      <div class="sgm-field"><label for="aaN1">2. OYUNCU</label><input id="aaN1" maxlength="14" placeholder="Oyuncu 2" value="${esc(UI.adlar[1])}" autocomplete="off"></div>
+      <div class="sgm-field"><label>KONU TÜRÜ</label><div class="aa-types" role="group" aria-label="Konu türü">
         ${turler.map(([k, ad]) => `<button type="button" class="aa-type" data-tur="${k}" aria-pressed="${UI.tur === k}">${esc(ad)}</button>`).join('')}
-      </div>
-    </section>
-    <button type="button" class="aa-play" id="aaPlay">BAŞLA</button>
-    <details class="aa-box">
-      <summary>NASIL OYNANIR</summary>
-      <ol class="aa-rules">
-        <li>Bir konu çıkar, konudan <b>${MADDE} madde</b> sırayla açık artırmaya gelir.</li>
-        <li>Açan her maddede değişir. Açan, parası varsa <b>en az 1 NP</b> ile açmak zorunda.</li>
-        <li>Sonra sıran gelince <b>+1 / +2 / +3</b> artır ya da <b>PAS</b> de. Pas diyen çekilir, son teklifi veren alır.</li>
-        <li>${SURE} saniyede karar vermezsen pas sayılır (açılışta 1 NP ile açılır).</li>
-        <li>Paran biterse rakibin almak istemediği maddeler sana bedava gelir. İkinizin de parası biterse kalan maddeler sırayla dağıtılır.</li>
-        <li>${SECIM} seçimini dolduran artık almaz; kalanlar diğer oyuncuya gider.</li>
-        <li><b>↓</b> işaretli ters konularda en kötüyü toplayan kazanır.</li>
-      </ol>
-    </details>
-  </div>`;
+      </div></div>
+      <button type="button" class="sgm-btn primary" id="aaPlay">OYUNU BAŞLAT</button>
+      <p class="sgm-note">Aynı telefonda sırayla teklif verirsiniz. Konu maç başlarken rastgele seçilir.</p></div></section>`;
+  } else {
+    inner = `<section class="sgm-panel" aria-label="Oyun modu seç"><h2 class="sgm-heading">OYUN MODUNU SEÇ</h2><div class="sgm-grid">
+      ${sgmMode('local', 'TEK TELEFON', 'Aynı cihazda sırayla teklif verin', 'phone')}
+      ${sgmMode('friends', 'ARKADAŞLARINLA OYNA', 'Partini kur, arkadaşını davet et', 'friends', true)}
+      ${sgmMode('match', 'RAKİP ARA', 'Çevrimiçi bir rakiple eşleş', 'search', true)}
+      </div></section>
+      <section class="sgm-how" aria-label="Nasıl oynanır"><div class="sgm-how-badge" aria-hidden="true">?</div><div><h3>NASIL OYNANIR?</h3><p>Konudan ${MADDE} madde sırayla açık artırmaya çıkar. Açan en az 1 NP ile açar; sıra gelen +1/+2/+3 der ya da pas geçer. ${SECIM} seçimini topla; en iyi seti hakem seçer. ↓ işaretli ters konularda en kötüyü toplayan kazanır.</p></div></section>`;
+  }
+  app.innerHTML = sgmFrame(inner);
+  app.querySelectorAll('[data-view]').forEach((b) => b.addEventListener('click', () => menu(b.dataset.view)));
+  document.getElementById('aaMenuBack')?.addEventListener('click', () => menu());
   app.querySelectorAll('.aa-type').forEach((b) => b.addEventListener('click', () => {
     UI.tur = b.dataset.tur; store.set('tur', UI.tur);
     app.querySelectorAll('.aa-type').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
   }));
-  document.getElementById('aaPlay').addEventListener('click', () => {
+  document.getElementById('aaPlay')?.addEventListener('click', () => {
     UI.adlar = [0, 1].map((i) => document.getElementById('aaN' + i).value.trim().slice(0, 14) || `Oyuncu ${i + 1}`);
     store.set('adlar', UI.adlar);
     baslat();
   });
+  window.scrollTo(0, 0);
 }
 
 function konuSec(sabit) {
@@ -97,6 +92,7 @@ function konuSec(sabit) {
 async function baslat(sabitKonu) {
   S = yeniOyun({ konu: konuSec(sabitKonu), adlar: UI.adlar });
   S.olaylar = [];
+  setSkin(false);
   oyunEkrani();
   window.scrollTo(0, 0);
   await konuTanitimi();
@@ -379,6 +375,7 @@ function sonuc(karar) {
   const head = kazanan == null
     ? `<div class="aa-res-head"><small>${k.yon === 'kotu' ? '↓ EN KÖTÜYÜ TOPLAYAN KAZANIR' : 'SONUÇ'}</small><h2>${esc(k.baslik)}</h2><p>Kadrolar hazır. Söz hakemde.</p></div>`
     : `<div class="aa-res-head win p${kazanan}"><small>${karar.hakem ? 'HAKEM KARARI' : 'SİZİN KARARINIZ'}</small><h2>KAZANAN: ${esc(S.oyuncular[kazanan].ad)}</h2><p>${esc(k.baslik)}</p></div>`;
+  setSkin(false);
   app.innerHTML = `
   <header class="aa-top">
     <button type="button" class="aa-back" id="aaHome" aria-label="Menüye dön">‹</button>
@@ -393,7 +390,7 @@ function sonuc(karar) {
       <button type="button" class="aa-ghost" id="aaNew">YENİ KONU</button>
     </div>
   </div>`;
-  document.getElementById('aaHome').addEventListener('click', menu);
+  document.getElementById('aaHome').addEventListener('click', () => menu());
   document.getElementById('aaAgain').addEventListener('click', () => baslat(S.konu));
   document.getElementById('aaNew').addEventListener('click', () => baslat());
   app.querySelectorAll('[data-pick]').forEach((b) => b.addEventListener('click', () => {
