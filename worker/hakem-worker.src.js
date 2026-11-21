@@ -16,6 +16,7 @@
 const KONULAR = /*KONULAR*/;
 const HAKEM_TALIMATI = /*TALIMAT*/;
 const HAKEM_SEMASI = /*SEMA*/;
+const HAKEM_STILLERI = /*STILLER*/;  // kurgusal hakem karakterleri: id → üslup
 const hakemIstegi = /*ISTEK*/;
 
 const FIREBASE_PROJECT = 'neonxi';
@@ -153,8 +154,11 @@ export default {
     if (!kurulan) return json({ hata: 'geçersiz kadro' }, 400, origin);
 
     const istek = hakemIstegi(kurulan.konu, kurulan.taraflar);
+    // Karakter: listeden id ile seçilir (serbest metin yok). Kurgusal bir tiptir, gerçek bir kişi değildir.
+    const stil = HAKEM_STILLERI[body.hakem] || '';
+    const talimat = stil ? `${HAKEM_TALIMATI}\n\nKARAKTER\n- ${stil}\n- Kurgusal bir karaktersin; gerçek bir kişi olduğunu ya da gerçek kişilerin adına konuştuğunu asla söyleme.` : HAKEM_TALIMATI;
     const govde = (dusunme) => JSON.stringify({
-      systemInstruction: { parts: [{ text: HAKEM_TALIMATI }] },
+      systemInstruction: { parts: [{ text: talimat }] },
       contents: [{ role: 'user', parts: [{ text: istek.metin }] }],
       generationConfig: { responseMimeType: 'application/json', responseSchema: HAKEM_SEMASI, temperature: 0.9, ...(dusunme ? { thinkingConfig: dusunme } : {}) },
     });
