@@ -127,7 +127,7 @@ input,select{border-radius:8px!important}`;
           </section>
         </div>
         <section class="nxh-quiz" aria-labelledby="nxh-quiz-title">
-          <div class="nxh-section-head"><h2 id="nxh-quiz-title">YAN OYUNLAR <small>${GAMES.length} OYUN</small></h2><a class="nxh-more" href="./side-games/index.html" aria-label="Tüm yan oyunlar">TÜMÜ${icon("chevron")}</a></div>
+          <div class="nxh-section-head"><h2 id="nxh-quiz-title">OYUNLAR <small>DRAFT XI + ${GAMES.length} YAN OYUN</small></h2><a class="nxh-more" href="./side-games/index.html" aria-label="Tüm yan oyunlar">TÜMÜ${icon("chevron")}</a></div>
           <div class="nxh-grid">${games}</div>
         </section>
         <footer class="nxh-foot">

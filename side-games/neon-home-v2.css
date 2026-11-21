@@ -105,8 +105,7 @@
 .nxh-tile-copy small{color:var(--nxu-info);font:600 11px/1 var(--nxu-display);letter-spacing:.14em}
 .nxh-tile-copy strong{overflow:hidden;font:700 18px/1.05 var(--nxu-display);letter-spacing:.03em;text-overflow:ellipsis;white-space:nowrap}
 .nxh-tile:active{transform:scale(.975)}
-/* odd count: the last game spans the whole row instead of sitting alone */
-@media(max-width:599px){.nxh-grid>.nxh-tile:last-child:nth-child(odd){grid-column:1/-1;aspect-ratio:16/5.6}.nxh-grid>.nxh-tile:last-child:nth-child(odd) img{height:100%;object-position:50% 50%}}
+
 
 /* Entering a mode: a short lime wash, then go. */
 .nxh .is-launching{position:relative}
@@ -170,6 +169,44 @@
   .nxh .nxh-mode{min-height:84px}
   .nxh-mode span{font-size:13px}
   .nxh-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+
+/* ---------- Phone + tablet: Draft XI on the left, side games beside it and below, all side games the same size ----------
+   .nxh-main / .nxh-quiz / .nxh-grid dissolve (display:contents) so the hero and every game tile share one grid.
+   The hero spans three tile rows in the first column; tiles fill the rest. */
+@media(max-width:899px){
+  .nxh-wrap{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--nxu-3);row-gap:var(--nxu-3)}
+  .nxh-wrap>*{grid-column:1/-1}
+  .nxh-main,.nxh-quiz,.nxh-grid{display:contents}
+  .nxh-top{order:0}.nxh-brand{order:1}.nxh-party{order:2;grid-column:1/-1}
+  .nxh-section-head{order:3;grid-column:1/-1;margin:var(--nxu-2) 0 0}
+  .nxh-hero{order:4;grid-column:1;grid-row:span 3;display:flex;flex-direction:column;min-width:0}
+  .nxh-tile{order:5;grid-column:auto}
+  .nxh-foot{order:6;grid-column:1/-1}
+  .nxh-hero-stage{flex:1;min-height:0;padding:12px 12px 10px}
+  .nxh-hero-art{width:100%;object-position:74% 18%}
+  .nxh-hero-stage::before{background:linear-gradient(0deg,var(--nxu-surface-1) 0%,rgba(16,21,26,.82) 34%,rgba(16,21,26,.2) 68%,transparent 85%)}
+  .nxh-hero-copy{max-width:100%;width:100%}
+  .nxh-eyebrow{font-size:10px}
+  .nxh-hero h1{margin:3px 0 8px;font-size:clamp(30px,9.6vw,44px)}
+  .nxh-hero p{display:none}
+  .nxh .nxh-cta{width:100%;justify-content:space-between;min-height:42px;padding:0 10px 0 12px;font-size:15px;letter-spacing:.05em}
+  .nxh-cta svg{width:18px;height:18px}
+  .nxh-modes{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .nxh .nxh-mode{min-height:48px;gap:4px;padding:6px 2px}
+  .nxh-mode+.nxh-mode::before{display:none}
+  .nxh-mode:nth-child(odd){box-shadow:inset -1px 0 0 var(--nxu-line)}
+  .nxh-mode:nth-child(n+3){box-shadow:inset 0 1px 0 var(--nxu-line)}
+  .nxh-mode:nth-child(3){box-shadow:inset 0 1px 0 var(--nxu-line),inset -1px 0 0 var(--nxu-line)}
+  .nxh-mode svg{width:19px;height:19px}
+  .nxh-mode span{font-size:10px;letter-spacing:.06em}
+}
+@media(max-width:359px){.nxh .nxh-cta{font-size:13px;white-space:nowrap;gap:4px;padding:0 8px}.nxh-hero h1{font-size:28px}}
+@media(min-width:600px) and (max-width:899px){
+  .nxh-wrap{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .nxh-hero-stage{min-height:0;padding:14px}
+  .nxh-hero h1{font-size:48px}
+  .nxh-mode span{font-size:11px}
 }
 
 /* ---------- Desktop: game on the left, quiz shelf on the right ---------- */
