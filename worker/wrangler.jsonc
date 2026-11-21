@@ -1,0 +1,11 @@
+// Cloudflare Workers Builds (GitHub bağlantısı) bu dosyayı okur: Cloudflare'da "Path / Root directory" = worker,
+// Deploy command = npx wrangler deploy. Proje adı Cloudflare'daki Worker adıyla aynı olmalı.
+// GEMINI_API_KEY burada YOK: Cloudflare panelinde Secret olarak eklenir (deploy onu silmez).
+{
+  "name": "neonxi-hakem",
+  "main": "hakem-worker.js",
+  "compatibility_date": "2025-09-01",
+  // Paneldeki düz metin değişkenleri (ör. GEMINI_MODEL) her deploy'da korunsun.
+  "keep_vars": true,
+  "workers_dev": true
+}

@@ -11,6 +11,19 @@ Açık Artırma'nın yapay zekâ hakemi bu Worker üzerinden Gemini'ye bağlanı
 
 ## 2. Cloudflare'da Worker
 
+### Yol A — GitHub bağlantısıyla (önerilen: konu listesi değişince kendisi güncellenir)
+
+1. **Workers & Pages** → **Create application** → GitHub ile **Import a repository** → `erenkaynak1/neonx-` deposunu seç.
+2. Ayar ekranında:
+   - **Project name**: `neonxi-hakem` (`worker/wrangler.jsonc` içindeki adla aynı olmalı)
+   - **Path / Root directory**: `worker`
+   - **Build command**: boş bırak
+   - **Deploy command**: `npx wrangler deploy`
+   - **Enable Preview builds**: kapat (her dalda ayrı önizleme kurmasın)
+3. **Deploy**. Bittikten sonra aşağıdaki 5. adımla anahtarı ekle.
+
+### Yol B — Elle yapıştırarak
+
 Tarayıcıdan, panelden yapılır; bilgisayara bir şey kurmak gerekmez.
 
 1. https://dash.cloudflare.com adresine gir (hesabın yoksa ücretsiz aç).
