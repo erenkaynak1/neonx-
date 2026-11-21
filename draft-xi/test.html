@@ -16,6 +16,17 @@ h1{font:800 26px/1.1 system-ui;margin:4px 0 4px;letter-spacing:.02em}h1 span{col
 .card{background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:14px}
 .card h2{font:700 13px/1 system-ui;letter-spacing:.14em;color:var(--mut);margin:0 0 10px}
 label{display:grid;gap:4px;font-size:12px;color:var(--mut);margin-bottom:8px}
+.slots{display:grid;gap:6px;margin:6px 0 10px}
+.slot{display:grid;grid-template-columns:92px minmax(0,1fr);align-items:center;gap:8px}
+.slot b{font:700 11px/1.1 system-ui;color:var(--mut);letter-spacing:.04em}
+.slot select{width:100%;min-height:36px;font-size:13px}
+.slot small{grid-column:2;margin-top:-2px;color:var(--mut);font-size:11px}
+.slot small.warn{color:var(--red)}
+.btns{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 8px}
+.btns button{min-height:36px;padding:0 12px;border-radius:9px;border:1px solid var(--line);background:var(--s2);color:var(--fg);font:700 12px system-ui;cursor:pointer}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
+.seg button{min-height:38px;border-radius:9px;border:1px solid var(--line);background:var(--s2);color:var(--mut);font:700 12px system-ui;cursor:pointer}
+.seg button[aria-pressed="true"]{border-color:var(--a);color:var(--a)}
 select{min-height:40px;border-radius:9px;border:1px solid var(--line);background:var(--s2);color:var(--fg);font:600 14px system-ui;padding:0 10px}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 button.go{width:100%;min-height:52px;border:0;border-radius:12px;background:var(--a);color:#0a0f02;font:800 18px system-ui;letter-spacing:.12em;cursor:pointer;margin:12px 0}
@@ -45,7 +56,7 @@ td:first-child{color:var(--a);font-weight:700}td:last-child{color:var(--b);font-
 <body>
 <main class="wrap">
   <h1>DRAFT XI <span>v2</span> · Motor testi</h1>
-  <p class="note">Yeni maç motorunun ilk sürümü. Ekranlar henüz yok: burada takımları ve taktikleri seçip motorun ürettiği maçı okuyorsun. Oyuncu değerleri test için ilk değerlendirme, henüz incelenmedi.</p>
+  <p class="note">Yeni maç motorunun ilk sürümü. Ekranlar henüz yok: burada takımları ve taktikleri seçip motorun ürettiği maçı okuyorsun. <b>Kendi kadron</b> ile havuzdaki 500'den fazla oyuncudan takım kurabilirsin. Değerler ilk geçiş (eski havuzdan formülle çevrildi); mantıksız görünen oyuncuyu not al.</p>
 
   <div class="grid">
     <section class="card" aria-labelledby="h-a"><h2 id="h-a" style="color:var(--a)">SENİN TAKIMIN</h2><div id="formA"></div></section>
@@ -70,6 +81,9 @@ td:first-child{color:var(--a);font-weight:700}td:last-child{color:var(--b);font-
 <script type="module">
 import { simulateMatch, ENGINE_VERSION } from './engine/match.mjs?v=2';
 import { SQUADS, BY_ID } from './engine/sample-players.mjs?v=2';
+import { HAVUZ, HAVUZ_BY_ID } from './data/havuz.mjs?v=1';
+import { FORMATIONS } from './engine/formations.mjs?v=2';
+const ALL = { ...BY_ID, ...HAVUZ_BY_ID };
 
 const OPT = {
   direction: ['Hücum yönü', [['balanced', 'Dengeli'], ['left', 'Sol'], ['centre', 'Merkez'], ['right', 'Sağ']]],
@@ -83,15 +97,82 @@ const OPT = {
   tackling: ['Müdahale', [['normal', 'Normal'], ['careful', 'Temkinli'], ['hard', 'Sert']]],
 };
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+// Own squad from the pool: per slot, players who can play that position (nearest positions as fallback), strongest first.
+const YAKIN = { LM: ['LM', 'LW', 'CM'], RM: ['RM', 'RW', 'CM'], AM: ['AM', 'CM', 'LW', 'RW', 'ST'], LWB: ['LWB', 'LB'], RWB: ['RWB', 'RB'] };
+const ONEMLI = {
+  GK: [['ref', 'Refleks'], ['gpos', 'Pozisyon'], ['ghd', 'Hava'], ['one', 'Bire bir']],
+  CB: [['tac', 'Top kapma'], ['mar', 'Markaj'], ['hed', 'Hava topu'], ['str', 'Güç']],
+  LB: [['pac', 'Hız'], ['tac', 'Top kapma'], ['cro', 'Orta'], ['sp', 'Pas']], RB: null, LWB: null, RWB: null,
+  DM: [['tac', 'Top kapma'], ['sp', 'Pas'], ['vis', 'Vizyon'], ['mar', 'Markaj']],
+  CM: [['sp', 'Pas'], ['vis', 'Vizyon'], ['ft', 'İlk dokunuş'], ['lp', 'Uzun pas']],
+  AM: [['vis', 'Vizyon'], ['dri', 'Dribling'], ['ft', 'İlk dokunuş'], ['lon', 'Uzaktan şut']],
+  LW: [['pac', 'Hız'], ['dri', 'Dribling'], ['cro', 'Orta'], ['fin', 'Bitiricilik']], RW: null, LM: null, RM: null,
+  ST: [['fin', 'Bitiricilik'], ['posn', 'Pozisyon alma'], ['hed', 'Kafa'], ['pac', 'Hız']],
+};
+for (const k of ['RB', 'LWB', 'RWB']) ONEMLI[k] = ONEMLI.LB;
+for (const k of ['RW', 'LM', 'RM']) ONEMLI[k] = ONEMLI.LW;
+const guc = (p, mevki) => { const w = ONEMLI[mevki] || ONEMLI.CM; return Math.round(w.reduce((n, [k]) => n + (p.attrs[k] || 0), 0) / w.length); };
+function adaylar(mevki) {
+  const sira = YAKIN[mevki] || [mevki];
+  const list = HAVUZ.filter((p) => p.positions.some((q) => sira.includes(q)) && (mevki === 'GK') === p.positions.includes('GK'));
+  const ceza = (p) => Math.min(...p.positions.map((q) => (sira.indexOf(q) < 0 ? 9 : sira.indexOf(q)))) * 4;  // exact position first
+  return list.map((p) => ({ p, puan: guc(p, mevki) - ceza(p) })).sort((a, b) => b.puan - a.puan);
+}
+const ST8 = { A: { mod: 'hazir', formation: '4-3-3', picks: {} }, B: { mod: 'hazir', formation: '4-4-2', picks: {} } };
+
 function form(el, side, def) {
+  const st = ST8[side];
   const squads = Object.entries(SQUADS).map(([k, s]) => `<option value="${k}"${k === def ? ' selected' : ''}>${esc(s.name)} · ${s.formation} · ${esc(BY_ID[Object.values(s.slots).slice(-1)[0]].name)}…</option>`).join('');
-  el.innerHTML = `<label>Kadro<select id="${side}-squad">${squads}</select></label>
+  const kadro = st.mod === 'hazir'
+    ? `<label>Kadro<select id="${side}-squad">${squads}</select></label>`
+    : `<label>Diziliş<select id="${side}-form">${Object.keys(FORMATIONS).map((f) => `<option${f === st.formation ? ' selected' : ''}>${f}</option>`).join('')}</select></label>
+       <div class="btns"><button type="button" data-fill="best">En iyilerle doldur</button><button type="button" data-fill="random">Rastgele doldur</button></div>
+       <div class="slots">${(() => { const used = new Set(); return FORMATIONS[st.formation].map(([slot, label, mevki]) => {
+         const ad = adaylar(mevki);
+         // keep a valid earlier pick; otherwise the strongest player not already in this team
+         const sec = st.picks[slot] && ad.some((x) => x.p.id === st.picks[slot]) && !used.has(st.picks[slot]) ? st.picks[slot] : (ad.find((x) => !used.has(x.p.id)) || ad[0])?.p.id;
+         st.picks[slot] = sec; used.add(sec);
+         return `<div class="slot"><b>${esc(label)}</b><select data-slot="${slot}" aria-label="${esc(label)}">${ad.slice(0, 80).map(({ p }) => `<option value="${p.id}"${p.id === sec ? ' selected' : ''}>${esc(p.name)} · ${esc(p.club || '')} · ${guc(p, mevki)}</option>`).join('')}</select><small data-info="${slot}"></small></div>`;
+       }).join(''); })()}</div>`;
+  el.innerHTML = `<div class="seg" role="group" aria-label="Kadro kaynağı"><button type="button" data-mod="hazir" aria-pressed="${st.mod === 'hazir'}">Hazır deneme takımı</button><button type="button" data-mod="ozel" aria-pressed="${st.mod === 'ozel'}">Kendi kadron (havuz)</button></div>
+  ${kadro}
   <div class="row2">${Object.entries(OPT).map(([k, [lab, opts]]) => `<label>${lab}<select id="${side}-${k}">${opts.map(([v, t]) => `<option value="${v}">${t}</option>`).join('')}</select></label>`).join('')}</div>`;
+  el.querySelectorAll('[data-mod]').forEach((b) => b.addEventListener('click', () => { st.mod = b.dataset.mod; form(el, side, def); }));
+  el.querySelector(`#${side}-form`)?.addEventListener('change', (e) => { st.formation = e.target.value; st.picks = {}; form(el, side, def); });
+  el.querySelectorAll('[data-fill]').forEach((b) => b.addEventListener('click', () => doldur(side, b.dataset.fill, el, def)));
+  el.querySelectorAll('[data-slot]').forEach((sel) => sel.addEventListener('change', () => { st.picks[sel.dataset.slot] = sel.value; bilgi(side, el); }));
+  bilgi(side, el);
+}
+// Fill: strongest available per slot, or random among each slot's top 25; never the same player twice in a team.
+function doldur(side, how, el, def) {
+  const st = ST8[side], used = new Set();
+  for (const [slot, , mevki] of FORMATIONS[st.formation]) {
+    const ad = adaylar(mevki).filter((x) => !used.has(x.p.id));
+    const p = how === 'best' ? ad[0] : ad.slice(0, 25)[Math.floor(Math.random() * Math.min(25, ad.length))];
+    if (p) { st.picks[slot] = p.p.id; used.add(p.p.id); }
+  }
+  form(el, side, def);
+}
+function bilgi(side, el) {
+  const st = ST8[side]; if (st.mod !== 'ozel') return;
+  const say = {}; Object.values(st.picks).forEach((id) => { say[id] = (say[id] || 0) + 1; });
+  for (const [slot, , mevki] of FORMATIONS[st.formation]) {
+    const p = HAVUZ_BY_ID[st.picks[slot]], info = el.querySelector(`[data-info="${slot}"]`);
+    if (!p || !info) continue;
+    info.className = say[p.id] > 1 ? 'warn' : '';
+    info.textContent = say[p.id] > 1 ? 'Bu oyuncu takımda iki kez seçili' : (ONEMLI[mevki] || ONEMLI.CM).map(([k, ad]) => `${ad} ${p.attrs[k]}`).join(' · ') + ` · ${p.positions.join('/')}`;
+  }
 }
 form(document.getElementById('formA'), 'A', 'A'); form(document.getElementById('formB'), 'B', 'B');
-const squad = k => ({ name: SQUADS[k].name, formation: SQUADS[k].formation, players: Object.fromEntries(Object.entries(SQUADS[k].slots).map(([s, id]) => [s, BY_ID[id]])) });
+const squad = (side) => {
+  const st = ST8[side];
+  if (st.mod === 'hazir') { const k = document.getElementById(`${side}-squad`).value; return { name: SQUADS[k].name, formation: SQUADS[k].formation, players: Object.fromEntries(Object.entries(SQUADS[k].slots).map(([s, id]) => [s, BY_ID[id]])) }; }
+  return { name: side === 'A' ? 'Senin takımın' : 'Rakip', formation: st.formation, players: Object.fromEntries(FORMATIONS[st.formation].map(([slot]) => [slot, HAVUZ_BY_ID[st.picks[slot]]])) };
+};
+const ciftKontrol = (side) => { const st = ST8[side]; if (st.mod !== 'ozel') return true; const ids = Object.values(st.picks); return new Set(ids).size === ids.length; };
+const takimAdlari = () => { const a = squad('A').name, b = squad('B').name; return a === b ? [a + ' (1)', b + ' (2)'] : [a, b]; };
 const tactic = side => Object.fromEntries(Object.keys(OPT).map(k => [k, document.getElementById(`${side}-${k}`).value]));
-const nm = id => BY_ID[id]?.name || id;
+const nm = id => ALL[id]?.name || id;
 const minute = t => Math.min(90, Math.floor(t / 600) + 1) + "'";
 
 function line(e, names) {
@@ -133,16 +214,16 @@ function render(r, names) {
 }
 
 document.getElementById('play').addEventListener('click', () => {
-  const kA = document.getElementById('A-squad').value, kB = document.getElementById('B-squad').value;
+  if (!ciftKontrol('A') || !ciftKontrol('B')) { alert('Aynı oyuncu bir takımda iki kez seçili. Kırmızı uyarılı mevkiyi değiştir.'); return; }
   const seed = (Date.now() % 1000000) | 0;
-  const r = simulateMatch({ home: squad(kA), away: squad(kB), seed, tacticHome: tactic('A'), tacticAway: tactic('B') });
-  render(r, [SQUADS[kA].name + (kA === kB ? ' (1)' : ''), SQUADS[kB].name + (kA === kB ? ' (2)' : '')]);
+  const r = simulateMatch({ home: squad('A'), away: squad('B'), seed, tacticHome: tactic('A'), tacticAway: tactic('B') });
+  render(r, takimAdlari());
   document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
 });
 document.getElementById('b100').addEventListener('click', () => {
-  const kA = document.getElementById('A-squad').value, kB = document.getElementById('B-squad').value;
+  if (!ciftKontrol('A') || !ciftKontrol('B')) { alert('Aynı oyuncu bir takımda iki kez seçili. Kırmızı uyarılı mevkiyi değiştir.'); return; }
   let w = 0, d = 0, l = 0, gf = 0, ga = 0; const base = (Date.now() % 100000) | 0;
-  for (let i = 0; i < 100; i++) { const r = simulateMatch({ home: squad(kA), away: squad(kB), seed: base + i, tacticHome: tactic('A'), tacticAway: tactic('B'), log: false }); gf += r.score[0]; ga += r.score[1]; if (r.score[0] > r.score[1]) w++; else if (r.score[0] === r.score[1]) d++; else l++; }
+  for (let i = 0; i < 100; i++) { const r = simulateMatch({ home: squad('A'), away: squad('B'), seed: base + i, tacticHome: tactic('A'), tacticAway: tactic('B'), log: false }); gf += r.score[0]; ga += r.score[1]; if (r.score[0] > r.score[1]) w++; else if (r.score[0] === r.score[1]) d++; else l++; }
   const o = document.getElementById('batchOut'); o.hidden = false; document.getElementById('result').hidden = true;
   o.innerHTML = `<h2>100 MAÇ · aynı kadro ve taktiklerle</h2><p><b style="color:var(--a)">${w} galibiyet</b> · ${d} beraberlik · <b style="color:var(--b)">${l} mağlubiyet</b></p><p>Ortalama skor: ${(gf / 100).toFixed(2)} – ${(ga / 100).toFixed(2)}</p><p class="note">Taktiklerini değiştirip tekrar dene: hangi ayarın sonucu nasıl değiştirdiğini burada görebilirsin.</p>`;
   o.scrollIntoView({ behavior: 'smooth' });
