@@ -13,3 +13,11 @@ Headless match engine for the Draft XI rebuild. The design and every rule it imp
 Run the lab: `node scripts/draft_xi_lab.mjs 400` (add `--meta` for the meta hunter). Fast CI checks: `node scripts/test_draft_xi_engine.mjs`.
 
 Not wired into the site yet; the live Draft XI still runs on `neon-xi-core.html`.
+
+## Oyuncu havuzu (ilk geçiş, 2026-11-21)
+
+- `data/havuz.mjs`: aktif NEON XI havuzundan (475 oyuncu) üretildi. Kaynak kopyası `data/kaynak-havuz.json`, dönüştürücü `scripts/build_draft_xi_pool.mjs` (`--extract` canlı oyundan yeniden çeker).
+- Eski 7 değer (hız, pas, şut, dribling, savunma, kafa, oyun zekâsı) + orta açma → v2'nin 14 özelliği formülle; kaleciler 4 değerden. Ayak, zayıf ayak ve boy **tahmini** (mevki ve kafa değerinden).
+- 236 oyuncunun değerleri dış bir kaynaktan (FMInside FM26) türetilmiş; `kaynak` alanında işaretli, kalıcı havuzda kendi değerlerimizle değiştirilecek.
+- Bilinen eksik: canlı oyundaki Süper Lig güncellemesi açılışta hata verdiği için havuzda yalnızca 9 Süper Lig oyuncusu var.
+- Test: `scripts/test_draft_xi_pool.mjs` (her oyuncu motora uygun; rastgele kadrolarla maçlar hatasız).
