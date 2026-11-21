@@ -12,10 +12,10 @@ Futbol bilgisi = doğru maddeye doğru parayı vermek, rakibi pahalı maddelere 
 
 | Konu | Karar |
 |---|---|
-| Oyuncu sayısı | 2 (online 1v1, aynı telefon); parti modunda 3+ |
+| Oyuncu sayısı | 2: online 1v1 ve aynı telefon. Parti modu (3+) **şimdilik yok**, sonra eklenebilir |
 | Bütçe | 20 **NEON para** |
 | Seçim | Oyuncu başına **5** |
-| Madde sayısı | Seçim sayısının tam iki katı: 2 kişide **10** (partide 5 × oyuncu sayısı) |
+| Madde sayısı | Seçim sayısının tam iki katı: **10** |
 | Konu ve maddeler | **Hazır liste**, bizim kontrolümüzde; her maçta konudan rastgele 10 madde. Yanlış ya da uydurma madde çıkmaz. Gemini sadece hakemlik yapar |
 | Teklif | **Sırayla artırma**: açılış 1 para; sıra gelen +1 / +2 / +3 yapar ya da PAS der; hamle başına **10 sn**, süre biterse pas. Pas diyen o maddeden çekilir, son teklifi veren alır |
 | Açılış sırası | İlk maddeyi kimin açacağı rastgele; sonra her maddede sıra değişir. Açan 1 para ile açar ya da pas der |
@@ -24,10 +24,13 @@ Futbol bilgisi = doğru maddeye doğru parayı vermek, rakibi pahalı maddelere 
 | Kazanan | **Yapay zekâ hakem (Gemini)** |
 | Ters konular | "En kazma kadro" gibi konularda en kötüyü toplayan kazanır; konu başlığında açıkça gösterilir (↓ EN KÖTÜYÜ TOPLAYAN KAZANIR). Hakeme konunun yönü söylenir |
 | Hakem tarzı | **Komik + gerekçeli**: meme / sosyal medya dili, ama her kararın futbol gerekçesi var |
+| Beraberlik | **Yok**: hakem her zaman bir kazanan seçer; çok yakınsa bunu söyler ama yine karar verir |
+| Liderlik | Yalnızca **online 1v1** galibiyetleri profile ve liderlik tablosuna yazılır; aynı telefon maçları sayılmaz |
+| Konu türleri | Tarihi kadrolar, oyuncular, ters konular (en kazma), dünya futbolu |
 
 ## 2. Akış
 
-1. Lobi: mod seçimi (online 1v1, aynı telefon, parti); online'da mevcut lobi ve eşleşme sistemi.
+1. Lobi: mod seçimi (online 1v1, aynı telefon); online'da mevcut lobi ve eşleşme sistemi.
 2. Konu kartı: konu başlığı, yönü (en iyi / en kötü), 10 maddenin listesi (sıralı).
 3. Açık artırma: madde madde; ekranda madde + künye, iki tarafın kalan parası ve dolan seçimleri, teklif tuşları (+1 / +2 / +3 / PAS), 10 sn sayaç.
 4. Hakem bekleme ekranı ("Hakem düşünüyor…").
@@ -59,7 +62,7 @@ Oyun (telefon) ──► Aracı sunucu: Cloudflare Worker (Gemini anahtarı bura
 - **Neden Cloudflare Workers:** ücretsiz katmanı (günde 100.000 istek) yeterli, kart gerekmez. Firebase'in sunucu fonksiyonları ücretli plana bağlı.
 - **Koruma:** Worker yalnızca oyuna giriş yapmış oyunculardan (Firebase kimlik jetonu doğrulanır) gelen istekleri kabul eder; oyuncu başına dakikalık istek sınırı vardır; istek gövdesi boyutu sınırlıdır; Worker sadece hakem çağrısını yapar, serbest metin göndermeye izin vermez (maddeler listeden id ile gelir).
 - **Online maçta:** kararı yalnızca ev sahibi cihaz ister ve sonucu odaya yazar; iki oyuncu aynı kararı görür.
-- **Hata durumu:** Gemini cevap vermezse ya da biçim bozuksa bir kez yeniden denenir; yine olmazsa yedek kural: maçlar berabere sayılır ve kullanıcıya açıkça söylenir (sessizce rastgele karar verilmez).
+- **Hata durumu:** Gemini cevap vermezse ya da biçim bozuksa bir kez yeniden denenir; yine olmazsa maç "hakemsiz" biter: kullanıcıya açıkça söylenir, liderliğe yazılmaz ve aynı kadrolarla kararı yeniden isteme tuşu çıkar (sessizce rastgele karar verilmez).
 
 ### 3.2 Hakeme gönderilen
 
@@ -92,6 +95,5 @@ Gemini'nin yapılandırılmış çıktı özelliğiyle bu şema zorunlu tutulur;
 1. **Hakem talimatı (prompt):** kullanıcı hazırladı, paylaşacak (anahtar olmadan).
 2. **Konu listesi:** başlangıç için kaç konu, hangi konular (en iyi kadrolar, en iyi golcüler, en kazma kadrolar, …), her konuda kaç madde; maddelerin künyeleri.
 3. ~~Görsel tasarım~~ **Karar verildi** (2.1). Lobi ve konu kartı ekranları kodlama sırasında aynı dille çizilecek.
-4. **Parti modu ayrıntıları:** 3+ kişide teklif sırası (sırayla dönen), hakemin sıralama vermesi.
-5. **Puan / liderlik tablosu:** kazanılan maçlar liderliğe yazılsın mı?
-6. **Oyunun adı:** çalışma adı "Açık Artırma".
+4. ~~Parti modu~~ şimdilik yok. ~~Liderlik~~ karar verildi.
+5. **Oyunun adı:** çalışma adı "Açık Artırma".
