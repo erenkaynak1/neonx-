@@ -50,6 +50,8 @@ jobs:
         run: node scripts/test_reverse_name_match.cjs
       - name: Draft XI v2 engine (determinism, event log, sanity)
         run: node scripts/test_draft_xi_engine.mjs
+      - name: Açık Artırma topic list integrity
+        run: node scripts/test_acik_artirma_konular.mjs
       - name: First-login Firebase session and exact artwork contracts
         run: node scripts/test_neon_entry.cjs
       - name: Welcome controller JavaScript syntax

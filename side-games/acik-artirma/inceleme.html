@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Açık Artırma · konu inceleme</title>
+<style>
+  :root { --bg:#0A0E17; --card:#121829; --line:#24304A; --text:#E6EDF7; --muted:#93A1B8; --blue:#38BDF8; --orange:#FB923C; --warn:#FACC15; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 Inter, system-ui, sans-serif; }
+  main { max-width: 920px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { margin: 0 0 4px; font-size: 26px; }
+  .lead { color: var(--muted); margin: 0 0 16px; }
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .filters button { min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); color: var(--text); font: inherit; cursor: pointer; }
+  .filters button[aria-pressed="true"] { border-color: var(--blue); color: var(--blue); }
+  section { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px; margin-bottom: 16px; }
+  section h2 { margin: 0; font-size: 18px; }
+  .meta { color: var(--muted); font-size: 13px; margin: 2px 0 12px; }
+  .ters { color: var(--orange); font-weight: 600; }
+  ol { margin: 0; padding-left: 22px; }
+  li { padding: 4px 0; border-bottom: 1px solid #1A2236; }
+  li:last-child { border-bottom: 0; }
+  .ad { font-weight: 600; }
+  .kunye { color: #B4C0D3; }
+  li.kontrol { background: rgba(250, 204, 21, .08); }
+  .etiket { display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 6px; background: var(--warn); color: #1A1400; font-size: 11px; font-weight: 700; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Açık Artırma · konu listesi</h1>
+  <p class="lead" id="ozet">Yükleniyor…</p>
+  <div class="filters" role="group" aria-label="Filtre" id="filtreler"></div>
+  <div id="liste"></div>
+</main>
+<script type="module">
+  import { KONULAR, TURLER } from './konular.mjs';
+  const liste = document.getElementById('liste');
+  const filtreler = document.getElementById('filtreler');
+  const toplam = KONULAR.reduce((n, k) => n + k.maddeler.length, 0);
+  const kontrol = KONULAR.reduce((n, k) => n + k.maddeler.filter((m) => m.kontrol).length, 0);
+  document.getElementById('ozet').textContent =
+    `${KONULAR.length} konu · ${toplam} madde · sarı işaretli ${kontrol} madde kontrol bekliyor. Her maçta konudan rastgele 10 madde çıkar.`;
+
+  let secili = 'hepsi';
+  const secenekler = [['hepsi', 'Hepsi'], ...Object.entries(TURLER), ['kontrol', 'Sadece kontrol bekleyenler']];
+  for (const [deger, etiket] of secenekler) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = etiket;
+    b.setAttribute('aria-pressed', String(deger === secili));
+    b.addEventListener('click', () => {
+      secili = deger;
+      for (const x of filtreler.children) x.setAttribute('aria-pressed', String(x === b));
+      ciz();
+    });
+    filtreler.append(b);
+  }
+
+  function ciz() {
+    liste.replaceChildren();
+    for (const k of KONULAR) {
+      if (secili !== 'hepsi' && secili !== 'kontrol' && k.tur !== secili) continue;
+      const maddeler = secili === 'kontrol' ? k.maddeler.filter((m) => m.kontrol) : k.maddeler;
+      if (!maddeler.length) continue;
+      const s = document.createElement('section');
+      const h = document.createElement('h2');
+      h.textContent = k.baslik;
+      const meta = document.createElement('p');
+      meta.className = 'meta';
+      meta.textContent = `${TURLER[k.tur]} · ${k.maddeler.length} madde · `;
+      const yon = document.createElement('span');
+      if (k.yon === 'kotu') { yon.className = 'ters'; yon.textContent = '↓ en kötüyü toplayan kazanır'; }
+      else yon.textContent = 'en iyiyi toplayan kazanır';
+      meta.append(yon);
+      const ol = document.createElement('ol');
+      for (const m of maddeler) {
+        const li = document.createElement('li');
+        if (m.kontrol) li.className = 'kontrol';
+        const ad = document.createElement('span'); ad.className = 'ad'; ad.textContent = m.ad;
+        const ku = document.createElement('span'); ku.className = 'kunye'; ku.textContent = ` · ${m.kunye}`;
+        li.append(ad, ku);
+        if (m.kontrol) { const e = document.createElement('span'); e.className = 'etiket'; e.textContent = 'KONTROL'; li.append(e); }
+        ol.append(li);
+      }
+      s.append(h, meta, ol);
+      liste.append(s);
+    }
+  }
+  ciz();
+</script>
+</body>
+</html>
