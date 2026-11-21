@@ -80,6 +80,11 @@ Oyun (telefon) ──► Aracı sunucu: Cloudflare Worker (Gemini anahtarı bura
 - Hakem iki denemede cevap vermezse oyuncular karar verir (aynı telefonda seçim, online'da oylama); sessiz rastgele karar yok.
 - Metinlerdeki "Taraf 1 / Taraf 2" ekranda oyuncu adlarına çevrilir.
 
+### 3.1.2 Hakem karakteri (2026-11-21)
+
+- Varsayılan hakem **İMPARATOR**: kullanıcının sağladığı piksel art görselden yumuşak geçişli animasyon; kullanıcı, temsil edilen gerçek kişiden yazılı izin aldığını belirtti (2026-11-21). Ekranda "Yapay zekâ parodisi · sözler gerçek değildir" notu; Gemini gerçek kişilerin bilinen sözlerini kullanmaz, kimseye söz atfetmez.
+- Kurgusal yedek karakterler: Başkan, Hoca, Yorumcu, Yayıncı (`hakemler.mjs`; `SABIT_HAKEM` kaldırılırsa dönüşümlü).
+
 ### 3.2 Hakeme gönderilen
 
 - Konu başlığı ve yönü (en iyi / en kötü).
