@@ -348,25 +348,6 @@ const RAW = [
     id: 'kotu-yabanci-golculer', tur: 'ters', yon: 'kotu', baslik: 'Süper Lig\'in en kötü yabancı golcüleri', taslak: true,
     maddeler: [],
   },
-  {
-    id: 'dk-hezimetleri', tur: 'ters', yon: 'kotu', baslik: 'Dünya Kupası\'nın en büyük hezimetleri',
-    maddeler: [
-      ['Fransa 2002', 'Son şampiyon · grupta elendi, hiç gol atamadı'],
-      ['Arjantin 2002', 'Grupta elendi'],
-      ['İtalya 2010', 'Son şampiyon · grubu son sırada bitirdi'],
-      ['Güney Afrika 2010', 'Grupta elenen ilk ev sahibi'],
-      ['Brezilya 2014', 'Ev sahibi · yarı finalde Almanya\'ya 7-1'],
-      ['İspanya 2014', 'Son şampiyon · grupta elendi'],
-      ['İngiltere 2014', 'Grupta elendi'],
-      ['İtalya 2014', 'Grupta elendi'],
-      ['Almanya 2018', 'Son şampiyon · grubu son sırada bitirdi'],
-      ['İtalya 2018 elemeleri', 'Turnuvaya katılamadı'],
-      ['Hollanda 2018 elemeleri', 'Turnuvaya katılamadı'],
-      ['Almanya 2022', 'Grupta elendi'],
-      ['Katar 2022', 'Ev sahibi · grubunda üç maçı da kaybetti'],
-      ['İtalya 2022 elemeleri', 'Son Avrupa şampiyonu · turnuvaya katılamadı'],
-    ],
-  },
 
   // ───────── Dünya futbolu ─────────
   {
