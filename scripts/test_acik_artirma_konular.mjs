@@ -62,3 +62,60 @@ import { HAKEM_TALIMATI, HAKEM_SEMASI, hakemIstegi, hakemCevabi } from '../side-
   assert.ok(HAKEM_TALIMATI.includes('ASLA dalga geçme') && HAKEM_SEMASI.required.includes('kazanan'));
   console.log('Açık Artırma hakem isteği ve cevap doğrulaması ✓');
 }
+
+// Oyun kuralları: rastgele hamlelerle binlerce oyun; her oyun 5'e 5 biter, para eksiye düşmez, bütçe korunur.
+import { yeniOyun, hamle, secenekler, oynanabilir, harcanan, maddeyiBaslat, BUTCE, SECIM, MADDE } from '../side-games/acik-artirma/oyun.mjs';
+{
+  let seed = 7;
+  const rnd = () => ((seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648);
+  const konular = oynanabilir(KONULAR);
+  assert.ok(konular.length >= 10 && konular.every((k) => !k.taslak));
+  const nedenler = new Set();
+  for (let g = 0; g < 3000; g++) {
+    const s = yeniOyun({ konu: konular[g % konular.length], rnd });
+    assert.equal(s.maddeler.length, MADDE);
+    assert.equal(new Set(s.maddeler.map((m) => m.id)).size, MADDE, 'aynı madde iki kez çıkmaz');
+    let adim = 0;
+    while (!s.bitti) {
+      const sec = secenekler(s);
+      const agresif = g % 3 === 0;
+      const h = sec.artirimlar.length && (!sec.pas || rnd() < (agresif ? 0.8 : 0.45))
+        ? { tip: 'artir', miktar: sec.artirimlar[Math.floor(rnd() * sec.artirimlar.length)] }
+        : { tip: 'pas' };
+      hamle(s, h);
+      for (const o of s.olaylar) if (o.tip === 'satildi') nedenler.add(o.neden);
+      assert.ok(++adim < 500, 'oyun sonsuza gitmemeli');
+    }
+    for (const p of s.oyuncular) {
+      assert.equal(p.secimler.length, SECIM);
+      assert.ok(p.para >= 0);
+      assert.equal(p.para + harcanan(p), BUTCE);
+    }
+    assert.equal(secenekler(s), null);
+  }
+  for (const n of ['teklif', 'dolu', 'karsilanamaz', 'tek', 'hediye']) assert.ok(nedenler.has(n), `kural hiç denenmedi: ${n}`);
+
+  // Elle senaryo: teklif + pas, geçersiz teklif reddi, açılış sırası değişimi.
+  const s = yeniOyun({ konu: konular[0], rnd: () => 0.1 });
+  assert.equal(s.tur.acan, 0);
+  assert.equal(secenekler(s).pas, false, 'açan pas diyemez');
+  assert.throws(() => hamle(s, { tip: 'pas' }));
+  hamle(s, { tip: 'artir', miktar: 3 });
+  assert.equal(secenekler(s).pas, true);
+  assert.equal(s.tur.sira, 1);
+  assert.throws(() => hamle(s, { tip: 'artir', miktar: 4 }));
+  hamle(s, { tip: 'artir', miktar: 2 });
+  hamle(s, { tip: 'pas' });
+  assert.equal(s.oyuncular[1].para, BUTCE - 5);
+  assert.equal(s.oyuncular[1].secimler[0].fiyat, 5);
+  assert.equal(s.tur.acan, 1, 'ikinci maddeyi diğer oyuncu açar');
+  // İkisinin de parası bitince maddeler sırayla dağıtılır.
+  const z = yeniOyun({ konu: konular[0], rnd: () => 0.1 });
+  z.oyuncular.forEach((p) => { p.para = 0; });
+  z.olaylar = [];
+  maddeyiBaslat(z);
+  assert.ok(z.bitti, 'ikisi de parasızsa kalan maddeler otomatik dağıtılır');
+  assert.deepEqual(z.oyuncular.map((p) => p.secimler.length), [SECIM, SECIM]);
+  assert.deepEqual(z.oyuncular[0].secimler.map((m) => m.id), [0, 2, 4, 6, 8].map((i) => z.maddeler[i].id), 'sırayla: açan oyuncudan başlayarak');
+  console.log('Açık Artırma oyun kuralları (3.000 rastgele oyun) ✓');
+}

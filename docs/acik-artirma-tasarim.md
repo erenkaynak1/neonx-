@@ -18,8 +18,8 @@ Futbol bilgisi = doğru maddeye doğru parayı vermek, rakibi pahalı maddelere 
 | Madde sayısı | Seçim sayısının tam iki katı: **10** |
 | Konu ve maddeler | **Hazır liste**, bizim kontrolümüzde; her maçta konudan rastgele 10 madde. Yanlış ya da uydurma madde çıkmaz. Gemini sadece hakemlik yapar |
 | Teklif | **Sırayla artırma**: açılış 1 para; sıra gelen +1 / +2 / +3 yapar ya da PAS der; hamle başına **10 sn**, süre biterse pas. Pas diyen o maddeden çekilir, son teklifi veren alır |
-| Açılış sırası | İlk maddeyi kimin açacağı rastgele; sonra her maddede sıra değişir. Açan 1 para ile açar ya da pas der |
-| Bütçe kuralı | Para biriktirme zorunluluğu yok. Parası biten teklif veremez; kalan maddelerden rakibin almadıkları **bedavaya** ona gelir. Rakip tek teklifçi olarak 1 paraya alabilir ya da pas diyebilir; pas derse madde parası bitene gider. 5 seçimini dolduran teklif vermez; kalan maddeler diğer oyuncuya gider. Kimsenin seçimi boş kalmaz |
+| Açılış sırası | İlk maddeyi kimin açacağı rastgele; sonra her maddede sıra değişir. Açan, parası varsa **açmak zorunda** (en az 1 NP; açılışta pas yok). Süre biterse 1 NP ile açılmış sayılır |
+| Bütçe kuralı | Para biriktirme zorunluluğu yok. Parası biten teklif veremez; kalan maddelerden rakibin almak istemedikleri **bedavaya** ona gelir. Rakip tek teklifçi olarak 1 paraya alabilir ya da pas diyebilir; pas derse madde parası bitene gider. **İkisinin de parası bittiyse** kalan maddeler sırayla dağıtılır (o maddenin açanından başlayarak). 5 seçimini dolduran teklif vermez; kalan maddeler diğer oyuncuya gider. Kimsenin seçimi boş kalmaz |
 | Bilgi | Teklif sırasında madde adı + **kısa künye** (gerçek bilgi, değerlendirme yok). Örnek: "2007-08 Fenerbahçe · TD Zico · Şampiyonlar Ligi çeyrek final" |
 | Kazanan | **Yapay zekâ hakem (Gemini)** |
 | Ters konular | "En kazma kadro" gibi konularda en kötüyü toplayan kazanır; konu başlığında açıkça gösterilir (↓ EN KÖTÜYÜ TOPLAYAN KAZANIR). Hakeme konunun yönü söylenir |
@@ -44,7 +44,7 @@ Taslaklar: https://claude.ai/artifact/RR3hjYUci5w3thcA17y3C4 (A: kullanıcının
 - **İki yanda 5'er kutu** (A): solda oyuncu (mavi), sağda rakip (turuncu). Dolu kutuda madde ve ödenen para, boş kutu kesik çizgili. Kutular ortadaki sahneye yer açacak kadar ince.
 - **Ortada sahne** (B): madde adı + künye, büyük son teklif rakamı, kimde olduğu, etrafında süre halkası, altında teklif geçmişi ("Rakip 1 → Sen 2 → Rakip 3 → Sen 4").
 - **Üstte** konu başlığı, madde sırası (5 / 10) ve iki tarafın kalan parası.
-- **Sıradakiler şeridi** (B): gelecek maddeler; para planı yapılabilsin.
+- ~~Sıradakiler şeridi~~ kullanıcı kararıyla kaldırıldı (2026-11-21): gelecek maddeler oyun sırasında gösterilmez (konu tanıtımında 10 maddenin listesi görünür).
 - **Altta** PAS / +1 / +2 / +3; tuşlar sonucu gösterir ("+2 → 6") ve yalnızca oyuncunun sırasında yanar.
 - **Karar ekranı** (C): kazanan, hakem özeti, her maddeye tek satır yorum ve ödenen para, "Yılın soygunu" / "En pahalı hata" kartları, Rövanş / Yeni konu.
 - Renkler: mavi ile turuncu (renk körlüğünde de ayırt edilir), koyu NEON zemin.
