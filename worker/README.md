@@ -39,7 +39,7 @@ Tarayıcıdan, panelden yapılır; bilgisayara bir şey kurmak gerekmez.
 
 ## 3. Oyuna bağlama
 
-`side-games/acik-artirma/aa-ui.mjs` içindeki `HAKEM_URL` bu adresle doldurulur. Sonra bir maç oynayıp kararın geldiği kontrol edilir.
+`side-games/acik-artirma/aa-ui.mjs` içindeki `HAKEM_URL` bu adresle doldurulur (bağlandı: `https://neonxi-hakem.erenkynk50.workers.dev`). Worker GitHub'a bağlı: main'e her gönderimde Cloudflare kendisi yeniden kurar.
 
 ## Konu listesi değişince
 
