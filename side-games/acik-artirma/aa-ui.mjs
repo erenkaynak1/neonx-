@@ -1,7 +1,7 @@
 // NEON XI — Açık Artırma: screens and animations. Rules live in oyun.mjs, topics in konular.mjs, the judge in hakem.mjs.
 // Modes: same phone (playable). Online 1v1 comes with the room sync. The AI judge is called through the Worker in
 // HAKEM_URL; until it exists the players pick the winner themselves (never a silent random verdict).
-import { KONULAR, TURLER } from './konular.mjs';
+import { KONULAR } from './konular.mjs';
 import { yeniOyun, hamle, secenekler, oynanabilir, harcanan, BUTCE, SECIM, MADDE } from './oyun.mjs';
 import { hakemIstegi, hakemCevabi } from './hakem.mjs';
 
@@ -19,7 +19,7 @@ const store = {
 };
 const KONU_LISTESI = oynanabilir(KONULAR);
 
-const UI = { tur: store.get('tur', 'hepsi'), adlar: store.get('adlar', ['Oyuncu 1', 'Oyuncu 2']), sonKonu: store.get('sonKonu', null) };
+const UI = { adlar: store.get('adlar', ['Oyuncu 1', 'Oyuncu 2']), sonKonu: store.get('sonKonu', null) };
 let S = null; // oyun durumu
 let busy = false;
 let timer = { id: 0, end: 0 };
@@ -46,15 +46,11 @@ function menu(view = 'modes') {
   setSkin(true);
   let inner;
   if (view === 'local') {
-    const turler = [['hepsi', 'Hepsi'], ...Object.entries(TURLER)];
     inner = `<section class="sgm-panel" aria-label="Tek telefon"><h2 class="sgm-heading">TEK TELEFON<button type="button" class="sgm-back" id="aaMenuBack">← GERİ</button></h2><div class="sgm-sheet">
       <div class="sgm-field"><label for="aaN0">1. OYUNCU</label><input id="aaN0" maxlength="14" placeholder="Oyuncu 1" value="${esc(UI.adlar[0])}" autocomplete="off"></div>
       <div class="sgm-field"><label for="aaN1">2. OYUNCU</label><input id="aaN1" maxlength="14" placeholder="Oyuncu 2" value="${esc(UI.adlar[1])}" autocomplete="off"></div>
-      <div class="sgm-field"><label>KONU TÜRÜ</label><div class="aa-types" role="group" aria-label="Konu türü">
-        ${turler.map(([k, ad]) => `<button type="button" class="aa-type" data-tur="${k}" aria-pressed="${UI.tur === k}">${esc(ad)}</button>`).join('')}
-      </div></div>
       <button type="button" class="sgm-btn primary" id="aaPlay">OYUNU BAŞLAT</button>
-      <p class="sgm-note">Aynı telefonda sırayla teklif verirsiniz. Konu maç başlarken rastgele seçilir.</p></div></section>`;
+      <p class="sgm-note">Aynı telefonda sırayla teklif verirsiniz. Konu her maçta rastgele gelir.</p></div></section>`;
   } else {
     inner = `<section class="sgm-panel" aria-label="Oyun modu seç"><h2 class="sgm-heading">OYUN MODUNU SEÇ</h2><div class="sgm-grid">
       ${sgmMode('local', 'TEK TELEFON', 'Aynı cihazda sırayla teklif verin', 'phone')}
@@ -66,10 +62,6 @@ function menu(view = 'modes') {
   app.innerHTML = sgmFrame(inner);
   app.querySelectorAll('[data-view]').forEach((b) => b.addEventListener('click', () => menu(b.dataset.view)));
   document.getElementById('aaMenuBack')?.addEventListener('click', () => menu());
-  app.querySelectorAll('.aa-type').forEach((b) => b.addEventListener('click', () => {
-    UI.tur = b.dataset.tur; store.set('tur', UI.tur);
-    app.querySelectorAll('.aa-type').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-  }));
   document.getElementById('aaPlay')?.addEventListener('click', () => {
     UI.adlar = [0, 1].map((i) => document.getElementById('aaN' + i).value.trim().slice(0, 14) || `Oyuncu ${i + 1}`);
     store.set('adlar', UI.adlar);
@@ -78,10 +70,9 @@ function menu(view = 'modes') {
   window.scrollTo(0, 0);
 }
 
-function konuSec(sabit) {
-  if (sabit) return sabit;
-  let havuz = KONU_LISTESI.filter((k) => UI.tur === 'hepsi' || k.tur === UI.tur);
-  if (!havuz.length) havuz = KONU_LISTESI;
+// Konu her zaman tüm oynanabilir konulardan rastgele gelir (seçilemez); bir önceki konu tekrar gelmez.
+function konuSec() {
+  let havuz = KONU_LISTESI;
   if (havuz.length > 1) havuz = havuz.filter((k) => k.id !== UI.sonKonu);
   const k = havuz[Math.floor(Math.random() * havuz.length)];
   UI.sonKonu = k.id; store.set('sonKonu', k.id);
@@ -89,8 +80,8 @@ function konuSec(sabit) {
 }
 
 /* ───────────── game ───────────── */
-async function baslat(sabitKonu) {
-  S = yeniOyun({ konu: konuSec(sabitKonu), adlar: UI.adlar });
+async function baslat() {
+  S = yeniOyun({ konu: konuSec(), adlar: UI.adlar });
   S.olaylar = [];
   setSkin(false);
   oyunEkrani();
@@ -386,13 +377,13 @@ function sonuc(karar) {
     ${judgeHTML(karar)}
     <div class="aa-squads">${squad(0)}${squad(1)}</div>
     <div class="aa-end-btns">
-      <button type="button" class="aa-play" id="aaAgain">RÖVANŞ</button>
-      <button type="button" class="aa-ghost" id="aaNew">YENİ KONU</button>
+      <button type="button" class="aa-play" id="aaNew">YENİ OYUN</button>
+      <button type="button" class="aa-ghost" id="aaMenu">MENÜ</button>
     </div>
   </div>`;
   document.getElementById('aaHome').addEventListener('click', () => menu());
-  document.getElementById('aaAgain').addEventListener('click', () => baslat(S.konu));
   document.getElementById('aaNew').addEventListener('click', () => baslat());
+  document.getElementById('aaMenu').addEventListener('click', () => menu());
   app.querySelectorAll('[data-pick]').forEach((b) => b.addEventListener('click', () => {
     const i = Number(b.dataset.pick);
     sonuc({ kazanan: i, hakem: false });
