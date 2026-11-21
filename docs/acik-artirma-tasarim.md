@@ -34,6 +34,18 @@ Futbol bilgisi = doğru maddeye doğru parayı vermek, rakibi pahalı maddelere 
 5. Karar ekranı: kazanan, kısa özet, her maddeye tek satır yorum, yılın soygunu / en pahalı hata, iki tarafın harcaması.
 6. Rövanş / yeni konu.
 
+### 2.1 Maç ekranı (onaylandı, 2026-11-21)
+
+Taslaklar: https://claude.ai/artifact/RR3hjYUci5w3thcA17y3C4 (A: kullanıcının konsepti, B: alternatif, C: hakem kararı). Karar: **A ile B'nin birleşimi**.
+
+- **İki yanda 5'er kutu** (A): solda oyuncu (mavi), sağda rakip (turuncu). Dolu kutuda madde ve ödenen para, boş kutu kesik çizgili. Kutular ortadaki sahneye yer açacak kadar ince.
+- **Ortada sahne** (B): madde adı + künye, büyük son teklif rakamı, kimde olduğu, etrafında süre halkası, altında teklif geçmişi ("Rakip 1 → Sen 2 → Rakip 3 → Sen 4").
+- **Üstte** konu başlığı, madde sırası (5 / 10) ve iki tarafın kalan parası.
+- **Sıradakiler şeridi** (B): gelecek maddeler; para planı yapılabilsin.
+- **Altta** PAS / +1 / +2 / +3; tuşlar sonucu gösterir ("+2 → 6") ve yalnızca oyuncunun sırasında yanar.
+- **Karar ekranı** (C): kazanan, hakem özeti, her maddeye tek satır yorum ve ödenen para, "Yılın soygunu" / "En pahalı hata" kartları, Rövanş / Yeni konu.
+- Renkler: mavi ile turuncu (renk körlüğünde de ayırt edilir), koyu NEON zemin.
+
 ## 3. Yapay zekâ hakem (Gemini)
 
 ### 3.1 Mimari
@@ -79,7 +91,7 @@ Gemini'nin yapılandırılmış çıktı özelliğiyle bu şema zorunlu tutulur;
 
 1. **Hakem talimatı (prompt):** kullanıcı hazırladı, paylaşacak (anahtar olmadan).
 2. **Konu listesi:** başlangıç için kaç konu, hangi konular (en iyi kadrolar, en iyi golcüler, en kazma kadrolar, …), her konuda kaç madde; maddelerin künyeleri.
-3. **Görsel tasarım:** kullanıcı benzer oyunun video ekran görüntülerini paylaşacak; NEON XI tasarım diline uyarlanacak. Birebir kopya yapılmaz.
+3. ~~Görsel tasarım~~ **Karar verildi** (2.1). Lobi ve konu kartı ekranları kodlama sırasında aynı dille çizilecek.
 4. **Parti modu ayrıntıları:** 3+ kişide teklif sırası (sırayla dönen), hakemin sıralama vermesi.
 5. **Puan / liderlik tablosu:** kazanılan maçlar liderliğe yazılsın mı?
 6. **Oyunun adı:** çalışma adı "Açık Artırma".
