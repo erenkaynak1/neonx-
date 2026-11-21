@@ -18,10 +18,14 @@ async function jeton(claims) {
 
 let geminiIstek = null;
 const kararlar = [];
+const modelIstekleri = [];
+let model404 = false;
 globalThis.fetch = async (url, opt) => {
   url = String(url);
   if (url.includes('securetoken@system.gserviceaccount.com')) return new Response(JSON.stringify({ keys: [jwk] }));
   if (url.includes('generativelanguage.googleapis.com')) {
+    modelIstekleri.push(url);
+    if (model404 && url.includes('gemini-2.5-flash')) return new Response(JSON.stringify({ error: { message: 'model not found' } }), { status: 404 });
     geminiIstek = { url, opt, body: JSON.parse(opt.body) };
     return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: JSON.stringify(kararlar.shift()) }] } }] }));
   }
@@ -75,4 +79,23 @@ for (let i = 0; i < 10; i++) { kararlar.push(kararlar[0] || {}); durumlar.push((
 assert.equal(durumlar.filter((s) => s === 429).length, 2, 'hız sınırı');
 
 assert.equal((await worker.fetch(new Request('https://h/', { method: 'POST', headers: { origin: ORIGIN } }), {})).status, 503, 'anahtar yoksa hakem kapalı');
+
+// Durum sayfası: anahtarın varlığını söyler, kendisini asla göstermez.
+const durum = await (await worker.fetch(new Request('https://h/', { method: 'GET' }), env)).json();
+assert.deepEqual(durum, { hakem: 'NEON Hakem', anahtar: true, model: 'gemini-2.5-flash' });
+assert.equal((await (await worker.fetch(new Request('https://h/', { method: 'GET' }), {})).json()).anahtar, false);
+assert.ok(!JSON.stringify(durum).includes('test-key'));
+
+// Model emekliye ayrıldıysa (404) sıradaki model denenir.
+model404 = true; modelIstekleri.length = 0;
+kararlar.push({ kazanan: 'Taraf 1', ozet: 'x', maddeler: [], soygun: { madde: 'a', neden: 'b' }, hata: { madde: 'a', neden: 'b' } });
+const r404 = await istek({ konu: konu.id, taraflar }, { token: await jeton({ sub: 'u5' }) });
+assert.equal(r404.status, 200);
+assert.ok(modelIstekleri[0].includes('gemini-2.5-flash') && modelIstekleri[1].includes('gemini-flash-latest'), 'yedek model');
+
+// Gemini hatası: kod ve kısa açıklama döner (teşhis için).
+globalThis.fetch = async (url) => String(url).includes('securetoken') ? new Response(JSON.stringify({ keys: [jwk] })) : new Response(JSON.stringify({ error: { message: 'API key not valid' } }), { status: 400 });
+const rHata = await istek({ konu: konu.id, taraflar }, { token: await jeton({ sub: 'u6' }) });
+assert.equal(rHata.status, 502);
+assert.deepEqual(await rHata.json(), { hata: 'hakem cevap vermedi', durum: 400, detay: 'API key not valid' });
 console.log('hakem worker ✓');

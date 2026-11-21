@@ -31,6 +31,7 @@ const UI = { adlar: store.get('adlar', ['Oyuncu 1', 'Oyuncu 2']), sonKonu: store
 let S = null; // oyun durumu
 let busy = false;
 let oylama = false; // the AI judge did not answer: the players decide (vote online)
+let hakemHatasi = ''; // short reason shown when the judge fails (status + Worker message), for diagnosis
 let timer = { id: 0, end: 0 };
 
 /* ───────────── online state ───────────── */
@@ -482,7 +483,7 @@ function judgeHTML(karar) {
   }
   if (karar) return '';
   if (HAKEM_URL && !oylama) return `<section class="aa-judge" id="aaJudge"><h3>NEON HAKEM</h3><div class="aa-spin" aria-hidden="true"></div><p>Hakem kadroları inceliyor…</p></section>`;
-  const neden = oylama ? 'Hakem şu an cevap veremedi.' : 'Yapay zekâ hakem çok yakında burada olacak.';
+  const neden = oylama ? `Hakem şu an cevap veremedi${hakemHatasi && (!online() || NET.role === 'host') ? ` <small class="aa-judge-err">(${esc(hakemHatasi)})</small>` : ''}.` : 'Yapay zekâ hakem çok yakında burada olacak.';
   if (online()) {
     const oy = NET.votes[NET.me];
     return `<section class="aa-judge" id="aaJudge"><h3>NEON HAKEM</h3>
@@ -518,16 +519,25 @@ async function kimlikJetonu() {
 async function hakemeSor() {
   const taraflar = S.oyuncular.map((p) => ({ maddeler: p.secimler.map((m) => ({ ad: m.ad, kunye: m.kunye, fiyat: m.fiyat })) }));
   const govde = { konu: S.konu.id, taraflar: S.oyuncular.map((p) => p.secimler.map((m) => ({ id: m.id, fiyat: m.fiyat }))) };
+  hakemHatasi = '';
   for (let deneme = 0; deneme < 2; deneme++) {
     try {
-      const token = await kimlikJetonu();
-      const r = await fetch(HAKEM_URL, { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token }, body: JSON.stringify(govde) });
+      let token;
+      try { token = await kimlikJetonu(); } catch (e) { hakemHatasi = 'giriş yapılamadı'; throw e; }
+      const ctl = new AbortController();
+      const zaman = setTimeout(() => ctl.abort(), 60000); // the model can take a while; one minute per try
+      const r = await fetch(HAKEM_URL, { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token }, body: JSON.stringify(govde), signal: ctl.signal }).finally(() => clearTimeout(zaman));
       if (r.ok) {
         const cevap = await r.json();
         const k = Array.isArray(cevap?.sira) && hakemCevabi(cevap.karar, { sira: cevap.sira }, taraflar);
         if (k) { if (online()) { send({ c: 'karar', k }); rapor(k.kazanan); } sonuc({ ...k, hakem: true }); konfeti(k.kazanan); return; }
-      } else if (r.status === 429) break;
-    } catch (e) { console.warn('NEON Hakem', e); }
+        hakemHatasi = 'cevap biçimi bozuk';
+      } else {
+        let x = {}; try { x = await r.json(); } catch {}
+        hakemHatasi = `kod ${r.status}${x.durum ? '/' + x.durum : ''}${x.hata ? ': ' + x.hata : ''}${x.detay ? ' (' + x.detay + ')' : ''}`;
+        if (r.status === 429 || r.status === 401 || r.status === 503) break;
+      }
+    } catch (e) { console.warn('NEON Hakem', e); if (!hakemHatasi) hakemHatasi = e?.name === 'AbortError' ? 'zaman aşımı' : 'bağlantı kurulamadı'; }
   }
   // No verdict after two tries: never a silent random result — the players decide (online: both vote).
   oylama = true;
