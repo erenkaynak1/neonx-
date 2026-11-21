@@ -10,7 +10,7 @@ import { KONULAR } from './konular.mjs';
 import { yeniOyun, hamle, secenekler, oynanabilir, harcanan, BUTCE, SECIM, MADDE } from './oyun.mjs';
 import { hakemCevabi } from './hakem.mjs';
 
-const HAKEM_URL = ''; // Cloudflare Worker adresi; boşken hakem bağlı değil.
+const HAKEM_URL = 'https://neonxi-hakem.erenkynk50.workers.dev'; // Cloudflare Worker (worker/README.md); boşken hakem bağlı değil.
 const SURE = 10; // saniye / hamle
 
 const app = document.getElementById('app');
