@@ -34,6 +34,11 @@ body.sg-auction .sgm-hero h1 span{display:block}
 .aa-lobby-list li:not(.in) i{animation:aaPulse .8s ease-in-out infinite alternate}
 .aa-lobby-list small{margin-left:auto;color:var(--aa-lime);font:800 10px/1 var(--aa-d);letter-spacing:.2em}
 
+/* NEON para coin next to amounts */
+.aa-np{display:inline-block;width:1.05em;height:1.05em;margin-left:.18em;vertical-align:-.16em;filter:drop-shadow(0 0 4px rgba(186,255,24,.45))}
+.aa-money .aa-np{width:.8em;height:.8em;vertical-align:-.06em}
+.aa-stamp .aa-np{width:.9em;height:.9em;vertical-align:-.1em}
+
 /* ── header ── */
 .aa-top{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;gap:10px;min-height:48px;margin-bottom:10px}
 .aa-back{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(8,12,16,.72);color:var(--aa-ink);font:400 26px/1 var(--aa-b);text-decoration:none}
