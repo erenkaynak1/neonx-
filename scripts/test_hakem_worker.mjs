@@ -23,9 +23,19 @@ let model404 = false;
 globalThis.fetch = async (url, opt) => {
   url = String(url);
   if (url.includes('securetoken@system.gserviceaccount.com')) return new Response(JSON.stringify({ keys: [jwk] }));
+  if (url.includes('generativelanguage.googleapis.com') && url.includes('/models?')) {
+    // ListModels: the Worker picks the newest non-lite, non-preview flash model.
+    return new Response(JSON.stringify({ models: [
+      { name: 'models/gemini-2.0-flash-lite', supportedGenerationMethods: ['generateContent'] },
+      { name: 'models/gemini-3.1-flash-preview', supportedGenerationMethods: ['generateContent'] },
+      { name: 'models/gemini-3-flash', supportedGenerationMethods: ['generateContent', 'countTokens'] },
+      { name: 'models/gemini-3-pro', supportedGenerationMethods: ['generateContent'] },
+      { name: 'models/text-embedding-004', supportedGenerationMethods: ['embedContent'] },
+    ] }));
+  }
   if (url.includes('generativelanguage.googleapis.com')) {
     modelIstekleri.push(url);
-    if (model404 && url.includes('gemini-2.5-flash')) return new Response(JSON.stringify({ error: { message: 'model not found' } }), { status: 404 });
+    if (model404 && url.includes('gemini-3-flash:')) return new Response(JSON.stringify({ error: { message: 'model not found' } }), { status: 404 });
     geminiIstek = { url, opt, body: JSON.parse(opt.body) };
     return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: JSON.stringify(kararlar.shift()) }] } }] }));
   }
@@ -61,7 +71,8 @@ const r = await istek({ konu: konu.id, taraflar }, { token: await jeton({ sub: '
 assert.equal(r.status, 200);
 assert.equal(r.headers.get('access-control-allow-origin'), ORIGIN);
 const cevap = await r.json();
-assert.ok(geminiIstek.url.endsWith('/models/gemini-2.5-flash:generateContent'));
+assert.ok(geminiIstek.url.endsWith('/models/gemini-3-flash:generateContent'), 'en yeni kararlı flash model seçilir');
+assert.deepEqual(geminiIstek.body.generationConfig.thinkingConfig, { thinkingLevel: 'low' }, 'düşünme kısılır (hız)');
 assert.equal(geminiIstek.opt.headers['x-goog-api-key'], 'test-key', 'anahtar başlıkta gider, adreste değil');
 assert.ok(!geminiIstek.url.includes('test-key'));
 assert.equal(geminiIstek.body.generationConfig.responseMimeType, 'application/json');
@@ -82,7 +93,7 @@ assert.equal((await worker.fetch(new Request('https://h/', { method: 'POST', hea
 
 // Durum sayfası: anahtarın varlığını söyler, kendisini asla göstermez.
 const durum = await (await worker.fetch(new Request('https://h/', { method: 'GET' }), env)).json();
-assert.deepEqual(durum, { hakem: 'NEON Hakem', anahtar: true, model: 'gemini-2.5-flash' });
+assert.deepEqual(durum, { hakem: 'NEON Hakem', anahtar: true, model: 'gemini-3-flash', modeller: ['gemini-3-flash', 'gemini-3.1-flash-preview', 'gemini-2.0-flash-lite'] });
 assert.equal((await (await worker.fetch(new Request('https://h/', { method: 'GET' }), {})).json()).anahtar, false);
 assert.ok(!JSON.stringify(durum).includes('test-key'));
 
@@ -91,7 +102,8 @@ model404 = true; modelIstekleri.length = 0;
 kararlar.push({ kazanan: 'Taraf 1', ozet: 'x', maddeler: [], soygun: { madde: 'a', neden: 'b' }, hata: { madde: 'a', neden: 'b' } });
 const r404 = await istek({ konu: konu.id, taraflar }, { token: await jeton({ sub: 'u5' }) });
 assert.equal(r404.status, 200);
-assert.ok(modelIstekleri[0].includes('gemini-2.5-flash') && modelIstekleri[1].includes('gemini-flash-latest'), 'yedek model');
+const uretim = modelIstekleri.filter((u) => u.includes(':generateContent'));
+assert.ok(uretim[0].includes('gemini-3-flash:') && uretim[1].includes('gemini-3.1-flash-preview:'), 'kaldırılan modelden sonra sıradaki denenir');
 
 // Gemini hatası: kod ve kısa açıklama döner (teşhis için).
 globalThis.fetch = async (url) => String(url).includes('securetoken') ? new Response(JSON.stringify({ keys: [jwk] })) : new Response(JSON.stringify({ error: { message: 'API key not valid' } }), { status: 400 });
