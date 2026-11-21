@@ -23,6 +23,9 @@ const store = {
   set(k, v) { try { localStorage.setItem('nxAA:' + k, JSON.stringify(v)); } catch {} },
 };
 const KONU_LISTESI = oynanabilir(KONULAR);
+// NEON para: the coin image next to every amount (alt text keeps it readable for screen readers).
+const NP = '<img class="aa-np" src="./assets/neon-para.webp" alt=" NEON para" width="96" height="96" decoding="async">';
+const np = (n) => `${n}${NP}`;
 
 const UI = { adlar: store.get('adlar', ['Oyuncu 1', 'Oyuncu 2']), sonKonu: store.get('sonKonu', null) };
 let S = null; // oyun durumu
@@ -152,7 +155,7 @@ const adi = (i) => (online() && i === NET.me ? `${S.oyuncular[i].ad} (SEN)` : S.
 function slotHTML(p, k) {
   return Array.from({ length: SECIM }, (_, i) => {
     const m = p.secimler[i];
-    return m ? `<div class="aa-slot full" data-s="${k}-${i}"><b>${esc(m.ad)}</b><em>${m.fiyat ? m.fiyat + ' NP' : 'BEDAVA'}</em></div>`
+    return m ? `<div class="aa-slot full" data-s="${k}-${i}"><b>${esc(m.ad)}</b><em>${m.fiyat ? np(m.fiyat) : 'BEDAVA'}</em></div>`
       : `<div class="aa-slot" data-s="${k}-${i}">${i + 1}</div>`;
   }).join('');
 }
@@ -160,7 +163,7 @@ function slotHTML(p, k) {
 function oyunEkrani() {
   const k = S.konu;
   const side = (i) => `<aside class="aa-side p${i}" aria-label="${esc(S.oyuncular[i].ad)} kadrosu">
-      <div class="aa-who" id="aaWho${i}"><span>${esc(online() && i === NET.me ? 'SEN' : S.oyuncular[i].ad)}</span><div class="aa-money" id="aaMoney${i}">${S.oyuncular[i].para}<small> NP</small></div></div>
+      <div class="aa-who" id="aaWho${i}"><span>${esc(online() && i === NET.me ? 'SEN' : S.oyuncular[i].ad)}</span><div class="aa-money" id="aaMoney${i}">${np(S.oyuncular[i].para)}</div></div>
       ${slotHTML(S.oyuncular[i], i)}</aside>`;
   app.innerHTML = `
   <div class="aa-game">
@@ -357,7 +360,7 @@ async function satildi(o) {
   const free = o.fiyat === 0;
   const stamp = document.createElement('div');
   stamp.className = `aa-stamp ${free ? 'free' : 'p' + o.kim}`;
-  stamp.textContent = free ? 'BEDAVA!' : `SATILDI · ${o.fiyat} NP`;
+  stamp.innerHTML = free ? 'BEDAVA!' : `SATILDI · ${np(o.fiyat)}`;
   card.append(stamp);
   card.classList.add('sold');
   buzz(free ? [10, 30, 10] : 30);
@@ -365,7 +368,7 @@ async function satildi(o) {
   await wait(free ? 900 : 650);
   await ucur(card, o);
   const money = document.getElementById('aaMoney' + o.kim);
-  money.innerHTML = `${S.oyuncular[o.kim].para}<small> NP</small>`;
+  money.innerHTML = np(S.oyuncular[o.kim].para);
   if (!free) { money.classList.remove('bump'); void money.offsetWidth; money.classList.add('bump'); }
 }
 
@@ -374,7 +377,7 @@ async function ucur(card, o) {
   const slot = app.querySelector(`[data-s="${o.kim}-${idx}"]`);
   const fill = () => {
     slot.className = 'aa-slot full land';
-    slot.innerHTML = `<b>${esc(o.madde.ad)}</b><em>${o.fiyat ? o.fiyat + ' NP' : 'BEDAVA'}</em>`;
+    slot.innerHTML = `<b>${esc(o.madde.ad)}</b><em>${o.fiyat ? np(o.fiyat) : 'BEDAVA'}</em>`;
   };
   if (!slot) return;
   if (reduced() || !card.animate) { fill(); return; }
@@ -424,8 +427,8 @@ function sonuc(karar) {
   const squad = (i) => {
     const p = S.oyuncular[i];
     return `<section class="aa-squad p${i}${kazanan === i ? ' winner' : ''}">
-      <h3><span>${esc(p.ad)}</span><span>${harcanan(p)} NP</span></h3>
-      ${p.secimler.map((m, j) => `<div class="aa-pick" style="--i:${j + i * 0.5}"><div><span>${esc(m.ad)}</span><em>${m.fiyat ? m.fiyat + ' NP' : 'BEDAVA'}</em></div>
+      <h3><span>${esc(p.ad)}</span><span>${np(harcanan(p))}</span></h3>
+      ${p.secimler.map((m, j) => `<div class="aa-pick" style="--i:${j + i * 0.5}"><div><span>${esc(m.ad)}</span><em>${m.fiyat ? np(m.fiyat) : 'BEDAVA'}</em></div>
         ${karar?.yorumlar?.[m.ad] ? `<p>${esc(karar.yorumlar[m.ad])}</p>` : ''}</div>`).join('')}
     </section>`;
   };
