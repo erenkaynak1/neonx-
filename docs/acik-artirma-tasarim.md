@@ -12,7 +12,7 @@ Futbol bilgisi = doğru maddeye doğru parayı vermek, rakibi pahalı maddelere 
 
 | Konu | Karar |
 |---|---|
-| Oyuncu sayısı | 2: online 1v1 ve aynı telefon. Parti modu (3+) **şimdilik yok**, sonra eklenebilir |
+| Oyuncu sayısı | 2: aynı telefon ve online 1v1 (arkadaşlarla parti, rakip ara, rastgele oyun, rally). 3+ kişilik parti modu **şimdilik yok** |
 | Bütçe | 20 **NEON para** |
 | Seçim | Oyuncu başına **5** |
 | Madde sayısı | Seçim sayısının tam iki katı: **10** |
@@ -49,6 +49,15 @@ Taslaklar: https://claude.ai/artifact/RR3hjYUci5w3thcA17y3C4 (A: kullanıcının
 - **Karar ekranı** (C): kazanan, hakem özeti, her maddeye tek satır yorum ve ödenen para, "Yılın soygunu" / "En pahalı hata" kartları, Yeni oyun / Menü.
 - Renkler: mavi ile turuncu (renk körlüğünde de ayırt edilir), koyu NEON zemin.
 
+## 2.2 Online (2026-11-21)
+
+- Menü: standart yan oyun menüsü; ARKADAŞLARINLA OYNA ve RAKİP ARA NEON XI lobisini açar (`NEON_SOCIAL.chooseMode('auction', …)`). Lobide oyun seçilebilir, rastgele oyun kuyruğunda ve rally'de (XOX → Kariyer İkizi → Açık Artırma → Draft) yer alır.
+- Bağlantı: ortak Firebase oda katmanı (`career-twin/firebase-peer-shim-v1.js`, `rooms/AA-<kod>`, oyun türü `auction`).
+- Yetki: maçı kuran cihaz kuralları yönetir. Misafir istediği hamleyi gönderir; kurucu sıranın misafirde ve hamlenin geçerli olduğunu kontrol edip uygular ve her hamleyi misafire gönderir. İki ekran aynı başlangıç durumundan aynı hamle listesini oynatır. Süre dolmalarına yalnızca kurucu karar verir.
+- Konu tanıtımı online'da tuşsuz, iki ekranda birlikte kapanır.
+- Sonuç: yapay zekâ hakem bağlanana kadar iki oyuncu da kazananı oylar; aynı kişiyi seçerlerse sonuç o, farklıysa berabere. Sonuç liderliğe ve rally'ye `neon-match-result` ile yazılır. Hakem bağlanınca kararı kurucu ister ve iki ekrana gönderir.
+- Bağlantı koparsa "Bağlantı kesildi / Rakibin ayrıldı" ekranı ve lobiye dönüş; terk etme ekranı ortak `match-forfeit` modülünden gelir.
+
 ## 3. Yapay zekâ hakem (Gemini)
 
 ### 3.1 Mimari
@@ -61,7 +70,7 @@ Oyun (telefon) ──► Aracı sunucu: Cloudflare Worker (Gemini anahtarı bura
 - **API anahtarı oyunun koduna asla girmez** (site herkese açık; anahtar sızar). Anahtar Cloudflare paneline gizli değişken (secret) olarak girilir; ne oyuncular ne de depo görür. Anahtar sohbete de yapıştırılmaz.
 - **Neden Cloudflare Workers:** ücretsiz katmanı (günde 100.000 istek) yeterli, kart gerekmez. Firebase'in sunucu fonksiyonları ücretli plana bağlı.
 - **Koruma:** Worker yalnızca oyuna giriş yapmış oyunculardan (Firebase kimlik jetonu doğrulanır) gelen istekleri kabul eder; oyuncu başına dakikalık istek sınırı vardır; istek gövdesi boyutu sınırlıdır; Worker sadece hakem çağrısını yapar, serbest metin göndermeye izin vermez (maddeler listeden id ile gelir).
-- **Online maçta:** kararı yalnızca ev sahibi cihaz ister ve sonucu odaya yazar; iki oyuncu aynı kararı görür.
+- **Online maçta:** kararı yalnızca maçı kuran cihaz ister ve sonucu rakibe gönderir; iki oyuncu aynı kararı görür.
 - **Hata durumu:** Gemini cevap vermezse ya da biçim bozuksa bir kez yeniden denenir; yine olmazsa maç "hakemsiz" biter: kullanıcıya açıkça söylenir, liderliğe yazılmaz ve aynı kadrolarla kararı yeniden isteme tuşu çıkar (sessizce rastgele karar verilmez).
 
 ### 3.2 Hakeme gönderilen

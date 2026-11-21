@@ -1,4 +1,4 @@
-// NEON XI — Rally mode for two-player parties: XOX → Kariyer İkizi → NEON XI Draft, played back to back.
+// NEON XI — Rally mode for two-player parties: XOX → Kariyer İkizi → Açık Artırma → NEON XI Draft, played back to back.
 // Each game is started through the existing party broker (window.NEON_PARTY_BROKER.start), each player
 // records their own result from the game's `neon-match-result` event, and the party leader scores the
 // game (win 3 / draw 1) and starts the next one. Ties are broken by the last game (Draft).
@@ -6,8 +6,8 @@ import {getApp,getApps} from 'https://www.gstatic.com/firebasejs/12.16.0/firebas
 import {getAuth,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js';
 import {getDatabase,onValue,ref,runTransaction,set} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js';
 
-const GAMES=['xox','twin','draft'];
-const LABELS={xox:'Futbol XOX',twin:'Kariyer İkizi',draft:'NEON XI Draft'};
+const GAMES=['xox','twin','auction','draft'];
+const LABELS={xox:'Futbol XOX',twin:'Kariyer İkizi',auction:'Açık Artırma',draft:'NEON XI Draft'};
 const POINTS={wins:3,draws:1,losses:0};
 const NEXT_DELAY_MS=6000;
 const q=new URLSearchParams(location.search);

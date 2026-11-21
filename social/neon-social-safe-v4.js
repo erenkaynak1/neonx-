@@ -10,14 +10,15 @@ const MODES={
   wordle:{label:'Football Wordle',path:'side-games/football-wordle/online.html',players:2},
   reverse:{label:'RE:VERSE',path:'side-games/reverse-xi/index.html',players:2},
   en11:{label:'EN 11',path:'side-games/en11/index.html',players:2},
-  fethet:{label:'Saha Fethi',path:'side-games/fethet/index.html',players:2}
+  fethet:{label:'Saha Fethi',path:'side-games/fethet/index.html',players:2},
+  auction:{label:'Açık Artırma',path:'side-games/acik-artirma/index.html',players:2}
 };
 // Two-player games share social/matchQueues/{mode} with neon-social.js, so a player searching from the home
 // screen and one searching from a game page land in the same queue.
-const LEGACY_MATCH_MODES=new Set(['draft','xox','twin','reverse','en11','fethet']);
+const LEGACY_MATCH_MODES=new Set(['draft','xox','twin','reverse','en11','fethet','auction']);
 // Random game shares one queue with neon-social.js (queuePath('random') = social/universalQueuesV2/random);
 // the pair completer picks the game for both.
-const RANDOM_GAMES=['draft','xox','twin','en11','fethet'];
+const RANDOM_GAMES=['draft','xox','twin','en11','fethet','auction'];
 const base=new URL('../',import.meta.url);
 const state={
   auth:null,db:null,user:null,
@@ -91,8 +92,8 @@ function bindNotifications(user){
   });
 }
 // Internal transport id for the match room; players never see or type it. Each game validates its own
-// format (XOX, Career Twin, EN 11 and Saha Fethi take four digits), so the id must be made for the game that will open.
-const NUMERIC_ROOM_GAMES=new Set(['xox','twin','en11','fethet']);
+// format (XOX, Career Twin, EN 11, Saha Fethi and Açık Artırma take four digits), so the id must be made for the game that will open.
+const NUMERIC_ROOM_GAMES=new Set(['xox','twin','en11','fethet','auction']);
 function code(game){return NUMERIC_ROOM_GAMES.has(game)?String(Math.floor(1000+Math.random()*9000)):[...Array(6)].map(()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*32)]).join('')}
 function targetUrl(mode,data,me){
   const c=MODES[mode];if(!c)return null;

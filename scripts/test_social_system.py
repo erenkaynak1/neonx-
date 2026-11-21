@@ -50,9 +50,9 @@ class SocialSystemTests(unittest.TestCase):
         base_social = (ROOT / "social/neon-social.js").read_text(encoding="utf-8")
         safe_social = (ROOT / "social/neon-social-safe-v4.js").read_text(encoding="utf-8")
         # Every two-player game shares social/matchQueues/{mode} with neon-social.js.
-        self.assertIn("const LEGACY_MATCH_MODES=new Set(['draft','xox','twin','reverse','en11','fethet'])", safe_social)
+        self.assertIn("const LEGACY_MATCH_MODES=new Set(['draft','xox','twin','reverse','en11','fethet','auction'])", safe_social)
         # Room ids are internal transport only: made in the format the opened game validates, never typed.
-        self.assertIn("const NUMERIC_ROOM_GAMES=new Set(['xox','twin','en11','fethet'])", safe_social)
+        self.assertIn("const NUMERIC_ROOM_GAMES=new Set(['xox','twin','en11','fethet','auction'])", safe_social)
         self.assertNotIn("openRoomsV2", safe_social)
         self.assertIn("`social/matchQueues/${mode}`", base_social)
         self.assertIn("`social/matchQueues/${mode}`", safe_social)

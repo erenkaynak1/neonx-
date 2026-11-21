@@ -10,7 +10,8 @@ const MODES={
   imposter:{label:'Futbol Imposter',path:'side-games/futbol-imposter.html',code:'alpha5',min:3,max:12,roomPath:code=>`rooms/IMP-${code}`},
   reverse:{label:'RE:VERSE',path:'side-games/reverse-xi/index.html',code:'alpha6',min:2,max:2,roomPath:code=>`reverseXI/rooms/${code}`},
   en11:{label:'EN 11',path:'side-games/en11/index.html',code:'numeric4',min:2,max:2,roomPath:code=>`rooms/E11-${code}`},
-  fethet:{label:'Saha Fethi',path:'side-games/fethet/index.html',code:'numeric4',min:2,max:4,roomPath:code=>`rooms/FX-${code}`}
+  fethet:{label:'Saha Fethi',path:'side-games/fethet/index.html',code:'numeric4',min:2,max:4,roomPath:code=>`rooms/FX-${code}`},
+  auction:{label:'Açık Artırma',path:'side-games/acik-artirma/index.html',code:'numeric4',min:2,max:2,roomPath:code=>`rooms/AA-${code}`}
 };
 const app=getApps().length?getApp():initializeApp(CONFIG),auth=getAuth(app),db=getDatabase(app),base=new URL('../',import.meta.url);
 const q=new URLSearchParams(location.search);
@@ -158,6 +159,7 @@ function roomReady(mode,room,user,code){
   if(mode==='twin')return room.gameType==='career-twin'&&room.status!=='closed'&&room.hostUid===user.uid;
   if(mode==='en11')return room.gameType==='en11'&&room.status!=='closed'&&room.hostUid===user.uid;
   if(mode==='fethet')return room.gameType==='fethet'&&room.status!=='closed'&&room.hostUid===user.uid;
+  if(mode==='auction')return room.gameType==='auction'&&room.status!=='closed'&&room.hostUid===user.uid;
   if(mode==='imposter')return room.game_type==='futbol-imposter'&&room.status!=='closed'&&String(room.room_code||'')===String(code);
   if(mode==='xox')return room.game_type==='football-xox'&&room.status!=='closed'&&String(room.room_code||'')===String(code);
   if(mode==='reverse')return room.game_type==='reverse-xi'&&room.status!=='closed'&&room.hostUid===user.uid&&String(room.room_code||'')===String(code);

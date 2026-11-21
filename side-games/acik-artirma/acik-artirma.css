@@ -25,6 +25,15 @@ body.sg-skin .aa-app{width:100%;padding:0}
 body.sg-auction .sgm-hero h1{white-space:normal!important}
 body.sg-auction .sgm-hero h1 span{display:block}
 
+/* online room (shown inside the shared .sgm menu) */
+.aa-lobby-list{display:grid;gap:8px;margin:0 0 4px;padding:0;list-style:none}
+.aa-lobby-list li{display:flex;align-items:center;gap:10px;min-height:48px;padding:0 12px;border:1px solid var(--aa-line);border-radius:12px;background:rgba(0,0,0,.25);color:var(--aa-faint);font:800 16px/1 var(--aa-d);letter-spacing:.04em}
+.aa-lobby-list li i{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.18)}
+.aa-lobby-list li.in{border-color:color-mix(in srgb,var(--pc) 55%,transparent);color:var(--aa-ink)}
+.aa-lobby-list li.in i{background:var(--pc);box-shadow:0 0 10px var(--pc)}
+.aa-lobby-list li:not(.in) i{animation:aaPulse .8s ease-in-out infinite alternate}
+.aa-lobby-list small{margin-left:auto;color:var(--aa-lime);font:800 10px/1 var(--aa-d);letter-spacing:.2em}
+
 /* ── header ── */
 .aa-top{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;gap:10px;min-height:48px;margin-bottom:10px}
 .aa-back{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(8,12,16,.72);color:var(--aa-ink);font:400 26px/1 var(--aa-b);text-decoration:none}

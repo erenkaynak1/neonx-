@@ -17,7 +17,7 @@ import {onDisconnect,onValue,ref,remove,serverTimestamp,set,update} from 'https:
 
 const GRACE_MS = 45000;
 const STORE = 'nxActiveMatch';
-const FORFEIT_MODES = new Set(['draft', 'xox', 'twin', 'en11', 'fethet']);
+const FORFEIT_MODES = new Set(['draft', 'xox', 'twin', 'en11', 'fethet', 'auction']);
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const readStore = uid => { try { return JSON.parse(localStorage.getItem(`${STORE}:${uid}`) || 'null'); } catch { return null; } };
