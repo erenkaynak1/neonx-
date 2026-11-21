@@ -79,14 +79,15 @@ td:first-child{color:var(--a);font-weight:700}td:last-child{color:var(--b);font-
 </main>
 
 <script type="module">
-import { simulateMatch, ENGINE_VERSION } from './engine/match.mjs?v=2';
+import { simulateMatch, ENGINE_VERSION } from './engine/match.mjs?v=3';
 import { SQUADS, BY_ID } from './engine/sample-players.mjs?v=2';
 import { HAVUZ, HAVUZ_BY_ID } from './data/havuz.mjs?v=1';
 import { FORMATIONS } from './engine/formations.mjs?v=2';
 const ALL = { ...BY_ID, ...HAVUZ_BY_ID };
 
 const OPT = {
-  direction: ['Hücum yönü', [['balanced', 'Dengeli'], ['left', 'Sol'], ['centre', 'Merkez'], ['right', 'Sağ']]],
+  direction: ['Hücum yönü', [['balanced', 'Dengeli'], ['left', 'Sol'], ['centre', 'Merkez'], ['right', 'Sağ'], ['wings', 'Kanatlar (ikisi)']]],
+  creativity: ['Yaratıcılık', [['balanced', 'Dengeli'], ['low', 'Disiplinli'], ['high', 'Serbest']]],
   passing: ['Pas tarzı', [['mixed', 'Karışık'], ['short', 'Kısa'], ['long', 'Uzun']]],
   finishing: ['Bitiriş', [['mixed', 'Karışık'], ['cross', 'Orta'], ['through', 'Ara pası'], ['long', 'Uzaktan şut'], ['dribble', 'Çalım']]],
   tempo: ['Tempo', [['balanced', 'Dengeli'], ['patient', 'Sabırlı'], ['fast', 'Hızlı']]],
