@@ -239,6 +239,25 @@ const RAW = [
     ],
   },
 
+  {
+    id: 'fb-gs-oynayanlar', tur: 'oyuncu', yon: 'iyi', baslik: 'Fenerbahçe ve Galatasaray\'da oynamış en iyi futbolcular',
+    maddeler: [
+      ['Emre Belözoğlu', 'Galatasaray, Inter, Newcastle, Fenerbahçe · 2000 UEFA Kupası'],
+      ['Burak Yılmaz', 'Fenerbahçe, Galatasaray, Beşiktaş, Lille · Millî Takım'],
+      ['Caner Erkin', 'Galatasaray, Fenerbahçe, Beşiktaş · Millî Takım'],
+      ['Michy Batshuayi', 'Beşiktaş, Fenerbahçe, Galatasaray · Belçika'],
+      ['Kerem Aktürkoğlu', 'Galatasaray, Benfica, Fenerbahçe · Millî Takım'],
+      ['Sinan Gümüş', 'Galatasaray, Genoa, Fenerbahçe'],
+      ['Emre Mor', 'Dortmund, Celta Vigo, Galatasaray, Fenerbahçe · Millî Takım'],
+      ['Sergen Yalçın', 'Beşiktaş, Fenerbahçe, Galatasaray · Millî Takım'],
+      ['Tolga Ciğerci', 'Galatasaray, Fenerbahçe · Orta saha'],
+      ['Garry Rodrigues', 'Galatasaray, Fenerbahçe · Yeşil Burun Adaları'],
+      ['Serdar Aziz', 'Bursaspor, Galatasaray, Fenerbahçe · Millî Takım'],
+      ['Şener Özbayraklı', 'Bursaspor, Fenerbahçe, Galatasaray · Millî Takım'],
+      ['Colin Kazım-Richards', 'Fenerbahçe, Galatasaray · Millî Takım'],
+    ],
+  },
+
   // ───────── Ters konular (en kötüyü toplayan kazanır) ─────────
   {
     id: 'kazma-futbolcular', tur: 'ters', yon: 'kotu', baslik: 'Tarihin en kazma futbolcuları',
