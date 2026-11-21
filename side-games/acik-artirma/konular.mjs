@@ -239,6 +239,47 @@ const RAW = [
     ],
   },
 
+  {
+    id: 'fb-gs-oynayanlar', tur: 'oyuncu', yon: 'iyi', baslik: 'Fenerbahçe ve Galatasaray\'da oynamış en iyi futbolcular',
+    maddeler: [
+      ['Emre Belözoğlu', 'Galatasaray, Inter, Newcastle, Fenerbahçe · 2000 UEFA Kupası'],
+      ['Burak Yılmaz', 'Fenerbahçe, Galatasaray, Beşiktaş, Lille · Millî Takım'],
+      ['Caner Erkin', 'Galatasaray, Fenerbahçe, Beşiktaş · Millî Takım'],
+      ['Michy Batshuayi', 'Beşiktaş, Fenerbahçe, Galatasaray · Belçika'],
+      ['Kerem Aktürkoğlu', 'Galatasaray, Benfica, Fenerbahçe · Millî Takım'],
+      ['Sinan Gümüş', 'Galatasaray, Genoa, Fenerbahçe'],
+      ['Emre Mor', 'Dortmund, Celta Vigo, Galatasaray, Fenerbahçe · Millî Takım'],
+      ['Sergen Yalçın', 'Beşiktaş, Fenerbahçe, Galatasaray · Millî Takım'],
+      ['Tolga Ciğerci', 'Galatasaray, Fenerbahçe · Orta saha'],
+      ['Garry Rodrigues', 'Galatasaray, Fenerbahçe · Yeşil Burun Adaları'],
+      ['Serdar Aziz', 'Bursaspor, Galatasaray, Fenerbahçe · Millî Takım'],
+      ['Şener Özbayraklı', 'Bursaspor, Fenerbahçe, Galatasaray · Millî Takım'],
+      ['Colin Kazım-Richards', 'Fenerbahçe, Galatasaray · Millî Takım'],
+    ],
+  },
+
+  {
+    id: 'fb-bjk-oynayanlar', tur: 'oyuncu', yon: 'iyi', baslik: 'Fenerbahçe ve Beşiktaş\'ta oynamış en iyi futbolcular',
+    maddeler: [
+      ['Rüştü Reçber', 'Fenerbahçe, Barcelona, Beşiktaş · 2002 Dünya Kupası üçüncülüğü'],
+      ['Mehmet Aurélio', 'Fenerbahçe, Real Betis, Beşiktaş · Millî Takım'],
+      ['Gökhan Gönül', 'Fenerbahçe, Beşiktaş · Millî Takım'],
+      ['Tümer Metin', 'Beşiktaş, Fenerbahçe · Millî Takım'],
+      ['Josef de Souza', 'Fenerbahçe, Beşiktaş · Brezilya'],
+      ['Mert Günok', 'Fenerbahçe, Başakşehir, Beşiktaş · Millî Takım'],
+      ['Cenk Tosun', 'Beşiktaş, Everton, Fenerbahçe · Millî Takım'],
+      ['Anderson Talisca', 'Beşiktaş, Al-Nassr, Fenerbahçe · Brezilya'],
+      ['Mert Nobre', 'Fenerbahçe, Beşiktaş · Brezilya'],
+      ['Burak Yılmaz', 'Fenerbahçe, Galatasaray, Beşiktaş, Lille · Millî Takım'],
+      ['Caner Erkin', 'Galatasaray, Fenerbahçe, Beşiktaş · Millî Takım'],
+      ['Michy Batshuayi', 'Beşiktaş, Fenerbahçe, Galatasaray · Belçika'],
+      ['Sergen Yalçın', 'Beşiktaş, Fenerbahçe, Galatasaray · Millî Takım'],
+      ['İsmail Köybaşı', 'Beşiktaş, Fenerbahçe · Millî Takım'],
+      ['Jeremain Lens', 'Fenerbahçe, Beşiktaş · Hollanda'],
+      ['Salih Uçan', 'Fenerbahçe, Roma, Beşiktaş · Millî Takım'],
+    ],
+  },
+
   // ───────── Ters konular (en kötüyü toplayan kazanır) ─────────
   {
     id: 'kazma-futbolcular', tur: 'ters', yon: 'kotu', baslik: 'Tarihin en kazma futbolcuları',
