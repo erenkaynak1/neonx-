@@ -523,12 +523,14 @@ async function kimlikJetonu() {
 function beklemeHTML() {
   const h = S.hakem;
   return `<section class="aa-judge aa-wait" id="aaJudge" aria-live="polite">
-    <div class="aa-wait-stage">
+    ${h.gorsel ? `<img class="aa-wait-gif" src="${h.gorsel}" width="264" height="234" alt="${esc(h.ad)} düşünüyor">`
+      : `<div class="aa-wait-stage">
       <div class="aa-bubble" aria-hidden="true"><i></i><i></i><i></i></div>
       <div class="aa-wait-px">${pikselSVG(h, 0, 132, 'aa-px f0')}${pikselSVG(h, 1, 132, 'aa-px f1')}</div>
-    </div>
+    </div>`}
     <h3>${esc(h.ad)} DÜŞÜNÜYOR…</h3>
     <p id="aaWaitLine">${esc(h.satirlar[0])}</p>
+    ${h.gorsel ? '<small class="aa-parodi">Yapay zekâ parodisi · sözler gerçek değildir</small>' : ''}
   </section>`;
 }
 function beklemeSatirlari() {
