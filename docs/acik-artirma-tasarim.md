@@ -31,7 +31,7 @@ Futbol bilgisi = doğru maddeye doğru parayı vermek, rakibi pahalı maddelere 
 ## 2. Akış
 
 1. Lobi: mod seçimi (online 1v1, aynı telefon); online'da mevcut lobi ve eşleşme sistemi.
-2. Konu kartı: konu başlığı, yönü (en iyi / en kötü), 10 maddenin listesi (sıralı).
+2. Konu kartı: konu başlığı ve yönü (en iyi / en kötü). Maddeler önceden gösterilmez; her madde yalnızca açık artırmaya çıktığında görünür (kullanıcı kararı, 2026-11-21).
 3. Açık artırma: madde madde; ekranda madde + künye, iki tarafın kalan parası ve dolan seçimleri, teklif tuşları (+1 / +2 / +3 / PAS), 10 sn sayaç.
 4. Hakem bekleme ekranı ("Hakem düşünüyor…").
 5. Karar ekranı: kazanan, kısa özet, her maddeye tek satır yorum, yılın soygunu / en pahalı hata, iki tarafın harcaması.
@@ -44,7 +44,7 @@ Taslaklar: https://claude.ai/artifact/RR3hjYUci5w3thcA17y3C4 (A: kullanıcının
 - **İki yanda 5'er kutu** (A): solda oyuncu (mavi), sağda rakip (turuncu). Dolu kutuda madde ve ödenen para, boş kutu kesik çizgili. Kutular ortadaki sahneye yer açacak kadar ince.
 - **Ortada sahne** (B): madde adı + künye, büyük son teklif rakamı, kimde olduğu, etrafında süre halkası, altında teklif geçmişi ("Rakip 1 → Sen 2 → Rakip 3 → Sen 4").
 - **Üstte** konu başlığı, madde sırası (5 / 10) ve iki tarafın kalan parası.
-- ~~Sıradakiler şeridi~~ kullanıcı kararıyla kaldırıldı (2026-11-21): gelecek maddeler oyun sırasında gösterilmez (konu tanıtımında 10 maddenin listesi görünür).
+- ~~Sıradakiler şeridi~~ kullanıcı kararıyla kaldırıldı (2026-11-21): gelecek maddeler hiçbir yerde önceden gösterilmez.
 - **Altta** PAS / +1 / +2 / +3; tuşlar sonucu gösterir ("+2 → 6") ve yalnızca oyuncunun sırasında yanar.
 - **Karar ekranı** (C): kazanan, hakem özeti, her maddeye tek satır yorum ve ödenen para, "Yılın soygunu" / "En pahalı hata" kartları, Yeni oyun / Menü.
 - Renkler: mavi ile turuncu (renk körlüğünde de ayırt edilir), koyu NEON zemin.

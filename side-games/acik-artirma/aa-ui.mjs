@@ -57,7 +57,7 @@ const SGM_ICONS = {
 const sgmIcon = (n) => `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${SGM_ICONS[n]}</svg>`;
 const sgmMode = (view, label, detail, icon, disabled) => `<button type="button" class="sgm-mode"${disabled ? ' disabled' : ` data-view="${view}"`} aria-label="${esc(label + '. ' + detail)}"><span class="sgm-mode-icon">${sgmIcon(icon)}</span><span class="sgm-mode-copy"><strong>${esc(label)}</strong><small>${esc(detail)}</small></span>${disabled ? '<span class="sgm-soon">YAKINDA</span>' : `<span class="sgm-mode-arrow">${sgmIcon('arrow')}</span>`}</button>`;
 const sgmFrame = (inner) => `<div class="sgm"><a class="sgm-logo" href="../index.html" aria-label="Yan oyunlara dön"><img src="../../assets/ui/logo-neon-xi.svg" alt="NEON XI"><span>YAN OYUNLAR</span></a>
-  <div class="sgm-hero"><h1>AÇIK <span>ARTIRMA</span></h1><p>${BUTCE} NEON parayla en iyi seti topla, rakibini açık artırmada geç.</p></div>
+  <div class="sgm-hero"><h1>AÇIK <span>ARTIRMA</span></h1></div>
   <img class="sgm-emblem" src="../assets/auction-emblem-v1.svg" alt="" aria-hidden="true" decoding="async" draggable="false">${inner}</div>`;
 
 function setSkin(on) { document.body.classList.toggle('sg-skin', on); document.body.classList.toggle('sg-auction', on); }
@@ -136,16 +136,15 @@ function konuTanitimi() {
     el.setAttribute('aria-label', 'Konu');
     el.innerHTML = `<small>KONU</small><h2>${esc(k.baslik)}</h2>
       <span class="aa-dir ${k.yon}">${k.yon === 'kotu' ? '↓ EN KÖTÜYÜ TOPLAYAN KAZANIR' : '↑ EN İYİYİ TOPLAYAN KAZANIR'}</span>
-      <ol>${S.maddeler.map((m, i) => `<li style="--i:${i}">${esc(m.ad)}</li>`).join('')}</ol>
       <p class="aa-who-first p${acan}">İlk maddeyi <b>${esc(adi(acan))}</b> açıyor</p>
       ${online() ? '<p class="aa-who-first">Açık artırma birazdan başlıyor…</p>' : '<button type="button" class="aa-play">HADİ BAŞLAYALIM</button>'}`;
     document.body.append(el);
     const kapat = () => { if (!el.isConnected) return; el.classList.add('out'); setTimeout(() => { el.remove(); resolve(); }, 330); };
     // Online both screens close the intro on a timer, so neither player's clock starts while the other still reads.
-    if (online()) setTimeout(kapat, reduced() ? 600 : 4600);
+    if (online()) setTimeout(kapat, reduced() ? 600 : 3400);
     else {
       el.querySelector('button').addEventListener('click', kapat, { once: true });
-      setTimeout(() => el.querySelector('button')?.focus(), 1900);
+      setTimeout(() => el.querySelector('button')?.focus(), 1100);
     }
   });
 }
