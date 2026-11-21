@@ -33,3 +33,32 @@ for (const tur of Object.keys(TURLER)) {
   assert.ok(KONULAR.some((k) => k.tur === tur), `türde konu yok: ${tur}`);
 }
 console.log(`Açık Artırma konuları: ${KONULAR.length} konu, ${toplam} madde, ${kontrol} madde kontrol bekliyor ✓`);
+
+// Hakem: istek metni takma adlı ve sıralı, cevap doğru oyuncuya eşleniyor, bozuk cevap reddediliyor.
+import { HAKEM_TALIMATI, HAKEM_SEMASI, hakemIstegi, hakemCevabi } from '../side-games/acik-artirma/hakem.mjs';
+{
+  const konu = KONULAR.find((k) => k.id === 'fb-kadrolar');
+  const al = (i, fiyat) => ({ ad: konu.maddeler[i].ad, kunye: konu.maddeler[i].kunye, fiyat });
+  const taraflar = [
+    { maddeler: [al(0, 5), al(1, 2), al(2, 3), al(3, 4), al(4, 6)] },
+    { maddeler: [al(5, 1), al(6, 7), al(7, 4), al(8, 5), al(9, 1)] },
+  ];
+  const ters = hakemIstegi(konu, taraflar, () => 0.9);
+  assert.deepEqual(ters.sira, [1, 0]);
+  assert.ok(ters.metin.startsWith(`KONU: ${konu.baslik}\nYÖN: EN İYİ`));
+  assert.ok(ters.metin.indexOf(taraflar[1].maddeler[0].ad) < ters.metin.indexOf(taraflar[0].maddeler[0].ad), 'rastgele sıra uygulanmalı');
+  assert.ok(ters.metin.includes('Taraf 1 (harcadığı: 18 NP)'));
+  const cevap = {
+    kazanan: 'Taraf 1', ozet: 'Bu iş bitti.',
+    maddeler: [...taraflar[0].maddeler, ...taraflar[1].maddeler].map((m) => ({ madde: m.ad, taraf: 'Taraf 1', yorum: 'iyi' })),
+    soygun: { madde: taraflar[1].maddeler[0].ad, neden: '1 paraya' }, hata: { madde: taraflar[1].maddeler[1].ad, neden: '7 para' },
+  };
+  const sonuc = hakemCevabi(cevap, ters, taraflar);
+  assert.equal(sonuc.kazanan, 1, '"Taraf 1" bu sırada oyun içindeki 2. oyuncu');
+  assert.equal(Object.keys(sonuc.yorumlar).length, 10);
+  assert.equal(hakemCevabi({ ...cevap, kazanan: 'Berabere' }, ters, taraflar), null);
+  assert.equal(hakemCevabi({ ...cevap, soygun: { madde: 'Uydurma madde', neden: 'x' } }, ters, taraflar), null);
+  assert.equal(hakemIstegi(KONULAR.find((k) => k.yon === 'kotu'), taraflar, () => 0.1).metin.split('\n')[1], 'YÖN: EN KÖTÜ (ters konu: en kötüyü toplayan kazanır)');
+  assert.ok(HAKEM_TALIMATI.includes('ASLA dalga geçme') && HAKEM_SEMASI.required.includes('kazanan'));
+  console.log('Açık Artırma hakem isteği ve cevap doğrulaması ✓');
+}
