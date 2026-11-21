@@ -196,12 +196,18 @@ const RAW = [
 
   // ───────── Ters konular (en kötüyü toplayan kazanır) ─────────
   {
-    id: 'kazma-futbolcular', tur: 'ters', yon: 'kotu', baslik: 'Tarihin en kazma futbolcuları', taslak: true,
+    id: 'kazma-futbolcular', tur: 'ters', yon: 'kotu', baslik: 'Tarihin en kazma futbolcuları',
     maddeler: [
       ['Daniel Güiza', 'Fenerbahçe · Mallorca ile 2007-08 La Liga gol kralı'],
       ['Sabri Sarıoğlu', 'Galatasaray · Millî Takım'],
       ['Loris Karius', 'Liverpool · 2018 Şampiyonlar Ligi finalinde iki gole yol açan hata'],
       ['Harry Maguire', 'Manchester United · 2019\'da rekor bonservisli savunmacı'],
+      ['Timo Werner', 'RB Leipzig, Chelsea · Almanya'],
+      ['Kerem Aktürkoğlu', 'Galatasaray, Benfica · Millî Takım'],
+      ['Barış Alper Yılmaz', 'Galatasaray · Millî Takım'],
+      ['Darwin Núñez', 'Benfica, Liverpool · Uruguay'],
+      ['André Onana', 'Inter, Manchester United · Kamerun'],
+      ['İsmail Çipe', 'Kaleci · Galatasaray', 1],
     ],
   },
   {
