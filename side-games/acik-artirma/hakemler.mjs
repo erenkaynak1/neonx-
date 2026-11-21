@@ -34,6 +34,13 @@ function kareler(ustuneYaz = {}) {
 
 export const HAKEMLER = [
   {
+    // Kullanıcının çizdirdiği görselden; gerçek kişinin izniyle kullanılır (bkz. docs/acik-artirma-tasarim.md).
+    id: 'imparator', ad: 'İMPARATOR', unvan: 'Yapay zekâ parodisi', karari: 'İMPARATOR\'UN KARARI',
+    gorsel: './assets/imparator.webp', kucuk: './assets/imparator-kare.webp',
+    satirlar: ['Kadroları süzüyor…', 'Kararını tartıyor…', 'Taktik tahtasına bakıyor…', 'Son sözü söylemeye hazırlanıyor…'],
+    stil: 'Efsanevi, otoriter bir teknik direktör gibi konuş: kendinden emin, kısa ve kesin cümleler, karizmatik ve iddialı; gerçek kişilerin bilinen sözlerini birebir kullanma, kimseye söz atfetme.',
+  },
+  {
     id: 'baskan', ad: 'BAŞKAN', unvan: 'Kulüp Başkanı', karari: 'BAŞKAN\'IN KARARI',
     renk: { h: '#9aa3ab', k: '#e0ac84', e: '#14181c', m: '#7a3b2e', c: '#1d2b44', a: '#d6283b', w: '#f3f6f8' },
     kareler: kareler({ 10: '......wwa.......', 11: '......waa.......', 12: '.......a........', 13: '.......a........' }),
@@ -66,7 +73,11 @@ export const HAKEMLER = [
 export const hakemBul = (id) => HAKEMLER.find((h) => h.id === id) || HAKEMLER[0];
 
 // Maçın hakemi: maddelerden türetilir, böylece online'da iki ekran ayrı mesaj olmadan aynı hakemi görür.
+// Şu an her maçın hakemi İMPARATOR. Diğer karakterler listede durur; dönüşüme geçmek için bu satırı kaldırmak yeterli.
+export const SABIT_HAKEM = 'imparator';
+
 export function hakemSec(maddeler) {
+  if (SABIT_HAKEM) return hakemBul(SABIT_HAKEM);
   let x = 0;
   for (const m of maddeler) for (const ch of String(m.id || m)) x = (x * 31 + ch.charCodeAt(0)) >>> 0;
   return HAKEMLER[x % HAKEMLER.length];
@@ -74,6 +85,7 @@ export function hakemSec(maddeler) {
 
 // Kareyi SVG olarak çizer (her piksel bir <rect>); yazı rengi değil, karakterin paleti kullanılır.
 export function pikselSVG(hakem, kare, boyut = 128, sinif = '') {
+  if (hakem.gorsel) return `<img class="${sinif}" src="${kare === 'buyuk' ? hakem.gorsel : hakem.kucuk}" width="${boyut}" height="${boyut}" alt="" decoding="async">`;
   const rects = [];
   hakem.kareler[kare].forEach((satir, y) => [...satir].forEach((ch, x) => {
     if (ch !== '.' && hakem.renk[ch]) rects.push(`<rect x="${x}" y="${y}" width="1.02" height="1.02" fill="${hakem.renk[ch]}"/>`);
