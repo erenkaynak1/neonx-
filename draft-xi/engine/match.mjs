@@ -6,7 +6,7 @@
 import { makeRng, prob, bForBase, combineTactics, weighted, hash, pickWeighted } from './core.mjs';
 import { FORMATIONS, zonePoint, PITCH_W, PITCH_L, COL_W, ROW_L } from './formations.mjs';
 
-export const ENGINE_VERSION = '0.2.0';
+export const ENGINE_VERSION = '0.3.0';
 
 // k: milli-logit per attribute point (14.1)
 const K = { duel: 85, air: 110, short: 54, long: 43, shot: 85, cross: 43 };
@@ -25,7 +25,13 @@ const REF = {
 };
 
 const DEFAULT_TACTIC = { direction: 'balanced', passing: 'mixed', finishing: 'mixed', tempo: 'balanced', onWin: 'settled',
-  line: 'mid', press: 'mid', closed: 'balanced', tackling: 'normal' };
+  line: 'mid', press: 'mid', closed: 'balanced', tackling: 'normal', creativity: 'balanced' };
+
+// Attack direction: left (-1) / right (+1) / both wings ('wings') / balanced or centre (0). `onDirSide(T, xFromCentre)`
+// tells whether a lateral position lies in the chosen corridor(s).
+const CRE_PASS_B = 400, CRE_SAFE_B = 250, CRE_SHAPE_B = 350; // creativity: pass difficulty / defensive shape (milli-logit)
+const dirOf = (T) => (T.direction === 'left' ? -1 : T.direction === 'right' ? 1 : T.direction === 'wings' ? 'wings' : T.direction === 'centre' ? 'centre' : 0);
+const onDirSide = (dir, dx) => (dir === 'wings' ? dx !== 0 : dir === 'centre' ? false : !!dir && Math.sign(dx) === dir);
 
 const W = {
   carrier: { dri: 60, pac: 30, str: 10 },
@@ -133,7 +139,7 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
       const s = team.side, has = st.poss === s, T = team.tactic;
       const ballRel = rel(s, st.ball);
       const wingBall = ballRel.x < COL_W || ballRel.x > PITCH_W - COL_W;
-      const dirSide = T.direction === 'left' ? -1 : T.direction === 'right' ? 1 : 0;
+      const dirSide = dirOf(T);
       for (const p of team.players) {
         if (p.off) continue;
         const base = { ...(has ? p.homePoss : p.homeDef) };
@@ -141,7 +147,8 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
           if (has) {
             if (ballRel.y < PITCH_L / 2) { base.y -= ROW_L; if (p.mevki === 'ST') base.y = Math.max(base.y, 4 * ROW_L); }
             else if (ballRel.y > 4 * ROW_L && ['CM', 'DM', 'AM', 'LB', 'RB', 'LWB', 'RWB'].includes(p.mevki)) base.y += ROW_L >> 1;
-            if (dirSide && Math.sign(base.x - PITCH_W / 2) === dirSide && ['LB', 'RB', 'LWB', 'RWB', 'CM', 'LM', 'RM'].includes(p.mevki)) base.y += ROW_L >> 1;
+            if (dirSide && onDirSide(dirSide, Math.sign(base.x - PITCH_W / 2)) && ['LB', 'RB', 'LWB', 'RWB', 'CM', 'LM', 'RM'].includes(p.mevki)) base.y += ROW_L >> 1;
+            if (dirSide === 'centre' && ['CM', 'AM'].includes(p.mevki)) base.y += ROW_L >> 1;  // centre: midfielders step up into the middle
             if (T.tempo === 'fast' && ['ST', 'LW', 'RW'].includes(p.mevki)) base.y = Math.max(base.y, 5 * ROW_L + 40);
           } else {
             if (T.line === 'low') base.y -= ROW_L; else if (T.line === 'high') base.y += ROW_L;
@@ -199,7 +206,15 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
   function advance(dt) { st.lastDt = dt; t += dt; stats[st.poss].possession += dt; }
 
   function setPoss(side, holder, pt, how) {
-    if (side !== st.poss) { st.counter = tac(side).onWin === 'counter' ? 3 : 0; st.chain = 0; stats[side].attacks++; }
+    if (side !== st.poss) {
+      st.counter = tac(side).onWin === 'counter' ? 3 : 0;
+      // creativity cost / benefit on the turnover: a free-playing team is caught out of shape more often (a counter even
+      // for a settled opponent, 1 in 2); a disciplined team is already back in shape (opponent's counter is shorter)
+      const loser = st.poss >= 0 ? tac(st.poss).creativity : 'balanced';
+      if (loser === 'high' && st.counter === 0 && rng.int(2) === 0) st.counter = 3;
+      if (loser === 'low' && st.counter > 0) st.counter = 1;
+      st.chain = 0; stats[side].attacks++;
+    }
     st.poss = side; st.holder = holder; if (pt) st.ball = { ...pt }; st.beaten = null;
     if (how) log('possession', side, holder, { how });
   }
@@ -462,12 +477,15 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     const mult = { short: T.passing === 'short' ? 2 : 1, long: T.passing === 'long' ? 2 : 1, cross: T.finishing === 'cross' ? 2 : 1,
       through: T.finishing === 'through' ? 2 : 1, shotOut: T.finishing === 'long' ? 2 : 1, dribble: T.finishing === 'dribble' ? 2 : 1, carry: 1, shotIn: 1 };
     if (T.tempo === 'fast') { mult.through *= 2; mult.carry *= 2; }
+    // creativity: free play tries the risky, surprising options more; disciplined play keeps the ball simple
+    if (T.creativity === 'high') { mult.through *= 1.6; mult.dribble *= 1.6; mult.shotOut *= 1.4; mult.short *= 0.85; }
+    else if (T.creativity === 'low') { mult.through *= 0.6; mult.dribble *= 0.6; mult.shotOut *= 0.7; mult.short *= 1.25; }
     if (st.counter > 0) { mult.through *= 2; mult.long *= 2; mult.carry *= 2; }
     const abil = { short: h.a.sp, long: h.a.lp, cross: h.a.cro, through: h.a.vis, shotOut: h.a.lon, shotIn: h.a.fin, dribble: h.a.dri, carry: h.a.pac };
     // inverted winger: cuts inside to shoot (2.5)
     const inverted = (h.player.foot === 'L' && rel(side, h.cur).x > PITCH_W / 2) || (h.player.foot === 'R' && rel(side, h.cur).x < PITCH_W / 2);
     const weights = opts.map(([n, w]) => {
-      let v = Math.trunc((w * 100 * mult[n] * 70) / 100) + Math.trunc((w * abil[n] * 100 * 30) / (70 * 100));
+      let v = Math.trunc((w * Math.round(100 * mult[n]) * 70) / 100) + Math.trunc((w * abil[n] * 100 * 30) / (70 * 100));
       if (wing && inverted && (n === 'shotOut' || n === 'shotIn' || n === 'through')) v = Math.trunc(v * 13 / 10);
       if (wing && inverted && n === 'cross') v = Math.trunc(v * 8 / 10);
       if (wing && !inverted && n === 'cross') v = Math.trunc(v * 12 / 10);
@@ -478,7 +496,8 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
 
   function passTargets(side, h, kind) {
     const T = tac(side); const hr = rel(side, h.cur);
-    const dirSide = T.direction === 'left' ? -1 : T.direction === 'right' ? 1 : 0;
+    const dirSide = dirOf(T);
+    const cre = T.creativity === 'high' ? 1 : T.creativity === 'low' ? -1 : 0;
     const out = [];
     for (const m of active(side)) {
       if (m === h) continue;
@@ -489,8 +508,12 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
       const [, od] = nearest(opp(side), m.cur);
       const open = clamp(od, 0, 100);
       let fwd = mr.y - hr.y; fwd = T.tempo === 'patient' ? Math.trunc(fwd / 2) : T.tempo === 'fast' ? fwd * 2 : fwd;
-      let w = 100 + open * 3 + clamp(fwd, -150, 300);
-      if (dirSide && Math.sign(mr.x - PITCH_W / 2) === dirSide && Math.abs(mr.x - PITCH_W / 2) > COL_W / 2) w *= 2;
+      // creativity: free play values forward runs over free space (riskier passes), disciplined play the opposite
+      const openW = cre > 0 ? 2 : cre < 0 ? 4 : 3;
+      const fwdW = cre > 0 ? Math.trunc(fwd * 3 / 2) : cre < 0 ? Math.trunc(fwd / 2) : fwd;
+      let w = 100 + open * openW + clamp(fwdW, -150, 300);
+      if (dirSide && onDirSide(dirSide, Math.sign(mr.x - PITCH_W / 2)) && Math.abs(mr.x - PITCH_W / 2) > COL_W / 2) w *= 2;
+      if (dirSide === 'centre' && Math.abs(mr.x - PITCH_W / 2) <= COL_W) w *= 2;  // centre: the middle corridor
       // vision: better passers favour open, forward options (4.2)
       w = Math.trunc((w * (50 + h.a.vis)) / 100) + (open > 40 ? Math.trunc(h.a.vis) : 0);
       out.push([m, Math.max(5, w)]);
@@ -503,7 +526,9 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     const cands = active(ds).filter(p => p.mevki !== 'GK').map(p => ({ p, d: segDist(p.cur, from, to) })).filter(o => o.d < 100).sort((a, b) => a.d - b.d).slice(0, 2);
     for (const { p, d } of cands) {
       const pts = defPoints(ds, p.cur, 'intercept');
-      const pI = Math.trunc((prob(weighted(p.a, W.intercept), S, K.duel, REF.interceptB - pts * PT) * (100 - d)) / 100);
+      // a disciplined team keeps its shape without the ball: passing lanes are better covered
+      const shape = tac(ds).creativity === 'low' ? CRE_SHAPE_B : 0;
+      const pI = Math.trunc((prob(weighted(p.a, W.intercept), S, K.duel, REF.interceptB - pts * PT - shape) * (100 - d)) / 100);
       if (rng.roll() < pI) { duel(p, passer, pI); log('intercept', ds, p, { from: passer.player.id, kind: kindName }); return p; }
     }
     return null;
@@ -530,7 +555,9 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     // crowded receiving zone: each opponent within 8 m of the target makes the pass harder (situation → B, not D)
     const crowd = active(opp(side)).filter(o => o.mevki !== 'GK' && dist(o.cur, m.cur) < 80).length;
     const B = (kind === 'long' ? REF.longB + Math.max(0, d - 300) * 2 : REF.shortB + Math.max(0, d - 100) * 3) + crowd * 260;
-    const pOk = prob(S, kind === 'long' ? REF.longFixed : REF.shortFixed, kind === 'long' ? K.long : K.short, B);
+    // creativity: free play forces the ball into tighter windows (harder passes); disciplined play picks the safe one
+    const creB = tac(side).creativity === 'high' ? CRE_PASS_B : tac(side).creativity === 'low' ? -CRE_SAFE_B : 0;
+    const pOk = prob(S, kind === 'long' ? REF.longFixed : REF.shortFixed, kind === 'long' ? K.long : K.short, B + creB);
     stats[side].passes++; if (kind === 'long') stats[side].longPasses++;
     advance(kind === 'long' ? durOf(30, 50, Math.trunc((d - 250) / 3), side) : durOf(20, 40, Math.trunc((d - 40) / 2.4), side));
     const from = { ...h.cur };

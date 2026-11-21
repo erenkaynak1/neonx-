@@ -47,4 +47,16 @@ let goals = 0, shots = 0; const N = 24; const pairs = [['A', 'B'], ['C', 'D'], [
 for (let i = 0; i < N; i++) { const [h, w] = pairs[i % 4]; const r = simulateMatch({ home: squad(h), away: squad(w), seed: 300 + i, log: false }); goals += r.score[0] + r.score[1]; shots += r.stats[0].shots + r.stats[1].shots; }
 assert.ok(goals / N > 1 && goals / N < 7, `goals per match in a broad band: ${(goals / N).toFixed(2)}`);
 assert.ok(shots / N > 10 && shots / N < 45, `shots per match in a broad band: ${(shots / N).toFixed(1)}`);
+// Tactics v0.3: creativity and attack direction have measurable, sensible effects.
+{
+  const avg = (tactic, f, n = 120) => { let x = 0; for (let i = 0; i < n; i++) x += f(simulateMatch({ home: squad('A'), away: squad('B'), seed: 3000 + i, tacticHome: tactic, log: false }).stats[0]); return x / n; };
+  const thr = (s) => s.throughs + s.dribbles;
+  assert.ok(avg({ creativity: 'high' }, thr) > avg({ creativity: 'balanced' }, thr) * 1.15, 'free play: more through balls / dribbles');
+  assert.ok(avg({ creativity: 'low' }, thr) < avg({ creativity: 'balanced' }, thr) * 0.9, 'disciplined: fewer risky actions');
+  const acc = (s) => s.passesOk / s.passes;
+  assert.ok(avg({ creativity: 'low' }, acc) > avg({ creativity: 'high' }, acc), 'disciplined passes are safer');
+  const wide = (s) => s.rightCorridorAttacks + s.leftCorridorAttacks;
+  assert.ok(avg({ direction: 'wings' }, wide) > avg({}, wide) * 1.1, 'wings: more attacks down both flanks');
+  assert.ok(avg({ direction: 'centre' }, wide) !== avg({}, wide), 'centre differs from balanced');
+}
 console.log(`draft xi engine ok · v${ENGINE_VERSION} · ${(goals / N).toFixed(2)} goals, ${(shots / N).toFixed(1)} shots per match`);

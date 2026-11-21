@@ -549,12 +549,23 @@ Her ayarın **sahada net bir karşılığı** ve **kendine özgü bir riski** va
 
 ### 6.1 Hücum
 
-**H1 — Hücum yönü:** Sol / Merkez / Sağ / Dengeli
+**H1 — Hücum yönü:** Sol / Merkez / Sağ / Kanatlar (ikisi) / Dengeli
+
+> Revizyon 10 (2026-11-21, kullanıcı isteği): **Kanatlar** eklendi: iki taraftaki bek ve kanat orta sahaları yarım satır ileri çıkar, geniş koridorlara pas ağırlığı ×2; merkez boşalır. **Merkez** artık gerçekten orta koridoru tercih eder (CM/AM yarım satır ileri, orta koridora pas ×2; önceki prototipte dengeli ile aynıydı).
 
 | Etki | Risk / counter |
 |---|---|
 | Seçilen koridora doğru pas ve taşıma seçeneklerinin ağırlığı artar | Rakip "Kapatılan alan" ile o koridoru kapatırsa mücadele sayısı ve zorluğu artar |
 | Topa sahipken o koridora fazladan oyuncu kayar (sayısal üstünlük) | Karşı koridor boşalır, top kaybında rakip kontrası o taraftan gelir |
+
+**H8 — Yaratıcılık:** Disiplinli / Dengeli / Serbest (revizyon 10, kullanıcı isteği)
+
+| Etki | Risk / counter |
+|---|---|
+| Serbest: ara pası ×1,6, çalım ×1,6, uzaktan şut ×1,4, kısa pas ×0,85; paslar ileriye ve dar alana daha çok gider | Paslar zorlaşır (B +400), top kaybında rakip yerleşik oynasa bile 2'de 1 kontra yakalar |
+| Disiplinli: ara pası ×0,6, çalım ×0,6, uzaktan şut ×0,7, kısa pas ×1,25; boştaki adam tercih edilir | Daha az fırsat; karşılığında paslar daha güvenli (B −250), top yokken pas yolları daha iyi kapanır (pas arası B −350), rakip kontrası kısalır |
+
+Laboratuvar (aynı kadro iki tarafta, 300 maç): Serbest–Disiplinli 1,55 puan/maç, Disiplinli–Dengeli 1,43, Serbest–Dengeli 1,34 → taş-kâğıt-makas, meta yok. Vizyonu ve driblingi yüksek oyuncular serbest oyundan en çok yararlanır.
 
 **H2 — Pas tarzı:** Kısa / Karışık / Uzun
 
