@@ -293,6 +293,7 @@ const RAW = [
       ['Ryan Babel', 'Liverpool, Beşiktaş, Galatasaray · Hollanda'],
       ['Milot Rashica', 'Werder Bremen, Galatasaray, Beşiktaş · Kosova'],
       ['Gedson Fernandes', 'Benfica, Galatasaray, Beşiktaş · Portekiz'],
+      ['Mehmet Topal', 'Galatasaray, Valencia, Fenerbahçe, Beşiktaş · Millî Takım'],
       ['Günay Güvenç', 'Kaleci · Beşiktaş, Göztepe, Galatasaray'],
       ['Cenk Gönen', 'Kaleci · Beşiktaş, Galatasaray, Málaga'],
     ],
