@@ -74,7 +74,8 @@ export const HAKEM_SEMASI = {
 
 /**
  * Hakem cevabını doğrular ve oyun sırasına çevirir. Bozuksa null döner (oyun bir kez yeniden dener).
- * @returns {null | {kazanan:number, ozet:string, yorumlar:Record<string,string>, soygun:{madde:string,neden:string}, hata:{madde:string,neden:string}}}
+ * @returns {null | {kazanan:number, ozet:string, yorumlar:Record<string,string>, soygun:{madde:string,neden:string}, hata:{madde:string,neden:string}, sira:number[]}}
+ * sira[i]: "Taraf i+1" olarak yazılan oyuncu (metinlerdeki takma adları oyuncu adına çevirmek için).
  */
 export function hakemCevabi(cevap, istek, taraflar) {
   if (!cevap || typeof cevap !== 'object') return null;
@@ -93,5 +94,5 @@ export function hakemCevabi(cevap, istek, taraflar) {
   const soygun = kart(cevap.soygun);
   const hata = kart(cevap.hata);
   if (!soygun || !hata) return null;
-  return { kazanan: istek.sira[tarafNo[cevap.kazanan]], ozet, yorumlar, soygun, hata };
+  return { kazanan: istek.sira[tarafNo[cevap.kazanan]], ozet, yorumlar, soygun, hata, sira: istek.sira.slice() };
 }
