@@ -21,7 +21,6 @@ button:disabled{cursor:default}
 
 /* menu: the shared .sgm menu fills the width (sidegame-skin-v2.css) */
 body.sg-skin .aa-app{width:100%;padding:0}
-body.sg-skin .sgm-sheet .aa-types{margin-top:2px}
 /* two-word title: one word per line so it clears the emblem */
 body.sg-auction .sgm-hero h1{white-space:normal!important}
 body.sg-auction .sgm-hero h1 span{display:block}
@@ -34,10 +33,6 @@ body.sg-auction .sgm-hero h1 span{display:block}
 .aa-brand h1{margin:3px 0 0;font:italic 900 28px/1 var(--aa-d);text-transform:uppercase;text-shadow:0 0 14px rgba(255,255,255,.18)}
 .aa-brand h1 i{color:var(--aa-lime);font-style:italic;text-shadow:0 0 12px rgba(186,255,24,.7)}
 
-/* ── topic type chips (menu sheet) ── */
-.aa-types{display:flex;flex-wrap:wrap;gap:6px}
-.aa-type{min-height:38px;padding:0 12px;border-radius:999px;border:1px solid var(--aa-line);background:rgba(255,255,255,.03);color:var(--aa-mute);font:800 13px/1 var(--aa-d);letter-spacing:.08em}
-.aa-type[aria-pressed="true"]{border-color:var(--aa-lime);color:var(--aa-lime);background:rgba(186,255,24,.08)}
 .aa-play{min-height:56px;border:0;border-radius:14px;background:var(--aa-lime);color:#0b1005;font:900 20px/1 var(--aa-d);letter-spacing:.16em;box-shadow:0 0 26px rgba(186,255,24,.4);transition:transform .15s}
 .aa-play:active{transform:scale(.97)}
 .aa-ghost{min-height:46px;padding:0 18px;border-radius:12px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.04);font:800 14px/1 var(--aa-d);letter-spacing:.14em}

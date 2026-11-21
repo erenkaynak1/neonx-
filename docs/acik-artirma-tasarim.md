@@ -35,7 +35,7 @@ Futbol bilgisi = doğru maddeye doğru parayı vermek, rakibi pahalı maddelere 
 3. Açık artırma: madde madde; ekranda madde + künye, iki tarafın kalan parası ve dolan seçimleri, teklif tuşları (+1 / +2 / +3 / PAS), 10 sn sayaç.
 4. Hakem bekleme ekranı ("Hakem düşünüyor…").
 5. Karar ekranı: kazanan, kısa özet, her maddeye tek satır yorum, yılın soygunu / en pahalı hata, iki tarafın harcaması.
-6. Rövanş / yeni konu.
+6. Yeni oyun (yeni rastgele konu) / menü. Rövanş yok; konu seçilemez, her maçta tüm konulardan rastgele gelir (kullanıcı kararı, 2026-11-21).
 
 ### 2.1 Maç ekranı (onaylandı, 2026-11-21)
 
@@ -46,7 +46,7 @@ Taslaklar: https://claude.ai/artifact/RR3hjYUci5w3thcA17y3C4 (A: kullanıcının
 - **Üstte** konu başlığı, madde sırası (5 / 10) ve iki tarafın kalan parası.
 - ~~Sıradakiler şeridi~~ kullanıcı kararıyla kaldırıldı (2026-11-21): gelecek maddeler oyun sırasında gösterilmez (konu tanıtımında 10 maddenin listesi görünür).
 - **Altta** PAS / +1 / +2 / +3; tuşlar sonucu gösterir ("+2 → 6") ve yalnızca oyuncunun sırasında yanar.
-- **Karar ekranı** (C): kazanan, hakem özeti, her maddeye tek satır yorum ve ödenen para, "Yılın soygunu" / "En pahalı hata" kartları, Rövanş / Yeni konu.
+- **Karar ekranı** (C): kazanan, hakem özeti, her maddeye tek satır yorum ve ödenen para, "Yılın soygunu" / "En pahalı hata" kartları, Yeni oyun / Menü.
 - Renkler: mavi ile turuncu (renk körlüğünde de ayırt edilir), koyu NEON zemin.
 
 ## 3. Yapay zekâ hakem (Gemini)
