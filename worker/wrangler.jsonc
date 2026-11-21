@@ -7,5 +7,7 @@
   "compatibility_date": "2025-09-01",
   // Paneldeki düz metin değişkenleri (ör. GEMINI_MODEL) her deploy'da korunsun.
   "keep_vars": true,
-  "workers_dev": true
+  "workers_dev": true,
+  // Panelde açılan Workers Logs: dosyada da açık olmalı, yoksa her kurulum kapatır.
+  "observability": { "enabled": true, "logs": { "enabled": true, "invocation_logs": true } }
 }
