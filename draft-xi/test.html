@@ -27,6 +27,7 @@ label{display:grid;gap:4px;font-size:12px;color:var(--mut);margin-bottom:8px}
 .seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
 .seg button{min-height:38px;border-radius:9px;border:1px solid var(--line);background:var(--s2);color:var(--mut);font:700 12px system-ui;cursor:pointer}
 .seg button[aria-pressed="true"]{border-color:var(--a);color:var(--a)}
+.seg.plans{grid-template-columns:repeat(3,minmax(0,1fr));margin:10px 0 4px}
 select{min-height:40px;border-radius:9px;border:1px solid var(--line);background:var(--s2);color:var(--fg);font:600 14px system-ui;padding:0 10px}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 button.go{width:100%;min-height:52px;border:0;border-radius:12px;background:var(--a);color:#0a0f02;font:800 18px system-ui;letter-spacing:.12em;cursor:pointer;margin:12px 0}
@@ -97,6 +98,16 @@ const OPT = {
   closed: ['Kapatılan alan', [['balanced', 'Dengeli'], ['wings', 'Kanatlar'], ['centre', 'Merkez']]],
   tackling: ['Müdahale', [['normal', 'Normal'], ['careful', 'Temkinli'], ['hard', 'Sert']]],
 };
+// One-tap plans (same six as the tactics screen mockup). Picking one fills every option below; the user can still fine-tune.
+const PLANS = [
+  ['dengeli', 'Dengeli', {}],
+  ['tikitaka', 'Tiki-taka', { passing: 'short', tempo: 'patient', line: 'high', press: 'high', finishing: 'through', direction: 'centre', creativity: 'high' }],
+  ['kontra', 'Kontra atak', { line: 'low', press: 'low', onWin: 'counter', passing: 'long', tempo: 'fast', finishing: 'through' }],
+  ['kanat', 'Kanat oyunu', { direction: 'wings', finishing: 'cross' }],
+  ['pres', 'Yüksek pres', { press: 'high', line: 'high', tackling: 'hard', tempo: 'fast' }],
+  ['otobus', 'Otobüs çek', { line: 'low', press: 'low', closed: 'centre', creativity: 'low', onWin: 'counter', tempo: 'patient' }],
+];
+const planTactic = (id) => ({ ...Object.fromEntries(Object.entries(OPT).map(([k, [, o]]) => [k, o[0][0]])), ...PLANS.find((x) => x[0] === id)[2] });
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 // Own squad from the pool: per slot, players who can play that position (nearest positions as fallback), strongest first.
 const YAKIN = { LM: ['LM', 'LW', 'CM'], RM: ['RM', 'RW', 'CM'], AM: ['AM', 'CM', 'LW', 'RW', 'ST'], LWB: ['LWB', 'LB'], RWB: ['RWB', 'RB'] };
@@ -137,7 +148,11 @@ function form(el, side, def) {
        }).join(''); })()}</div>`;
   el.innerHTML = `<div class="seg" role="group" aria-label="Kadro kaynağı"><button type="button" data-mod="hazir" aria-pressed="${st.mod === 'hazir'}">Hazır deneme takımı</button><button type="button" data-mod="ozel" aria-pressed="${st.mod === 'ozel'}">Kendi kadron (havuz)</button></div>
   ${kadro}
+  <div class="seg plans" role="group" aria-label="Hazır plan">${PLANS.map(([id, ad]) => `<button type="button" data-plan="${id}" aria-pressed="${(st.plan || 'dengeli') === id}">${ad}</button>`).join('')}</div>
   <div class="row2">${Object.entries(OPT).map(([k, [lab, opts]]) => `<label>${lab}<select id="${side}-${k}">${opts.map(([v, t]) => `<option value="${v}">${t}</option>`).join('')}</select></label>`).join('')}</div>`;
+  const planUygula = () => { const t = planTactic(st.plan || 'dengeli'); for (const k of Object.keys(OPT)) el.querySelector(`#${side}-${k}`).value = t[k]; };
+  planUygula();
+  el.querySelectorAll('[data-plan]').forEach((b) => b.addEventListener('click', () => { st.plan = b.dataset.plan; el.querySelectorAll('[data-plan]').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); planUygula(); }));
   el.querySelectorAll('[data-mod]').forEach((b) => b.addEventListener('click', () => { st.mod = b.dataset.mod; form(el, side, def); }));
   el.querySelector(`#${side}-form`)?.addEventListener('change', (e) => { st.formation = e.target.value; st.picks = {}; form(el, side, def); });
   el.querySelectorAll('[data-fill]').forEach((b) => b.addEventListener('click', () => doldur(side, b.dataset.fill, el, def)));
