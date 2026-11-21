@@ -203,7 +203,7 @@
     },
 
     "rooms": {
-      // Game rooms by code (Draft, XOX-, CT-, E11-, IMP-, FX-). Any signed-in player (anonymous auth included) may
+      // Game rooms by code (Draft, XOX-, CT-, E11-, IMP-, FX-, AA-). Any signed-in player (anonymous auth included) may
       // create, join and message a room. Rooms hold no scores: results are written by each player under social/ with
       // the caps above.
       "$room": { ".read": "auth != null", ".write": "auth != null" }

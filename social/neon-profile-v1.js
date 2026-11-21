@@ -7,7 +7,7 @@ import {getApp,getApps} from 'https://www.gstatic.com/firebasejs/12.16.0/firebas
 import {getAuth,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js';
 import {getDatabase,get,onValue,ref,update} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js';
 
-const MODE_LABEL={draft:'NEON XI Draft',xox:'Futbol XOX',twin:'Kariyer İkizi',imposter:'Futbol Imposter',reverse:'RE:VERSE',wordle:'Football Wordle',en11:'EN 11',fethet:'Saha Fethi'};
+const MODE_LABEL={draft:'NEON XI Draft',xox:'Futbol XOX',twin:'Kariyer İkizi',imposter:'Futbol Imposter',reverse:'RE:VERSE',wordle:'Football Wordle',en11:'EN 11',fethet:'Saha Fethi',auction:'Açık Artırma'};
 const state={uid:'',isAdmin:false,allowed:new Set(),avatar:'',pickerOpen:false,stats:null,statsAt:0,statsUid:'',loading:false,avatars:new Map(),pending:new Map()};
 // Personal avatars: each restricted avatar belongs to one account, identified by the SHA-256 of its lower-cased,
 // verified Google e-mail (the addresses themselves are not stored in the repo).

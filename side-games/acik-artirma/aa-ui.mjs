@@ -1,6 +1,11 @@
 // NEON XI — Açık Artırma: screens and animations. Rules live in oyun.mjs, topics in konular.mjs, the judge in hakem.mjs.
-// Modes: same phone (playable). Online 1v1 comes with the room sync. The AI judge is called through the Worker in
-// HAKEM_URL; until it exists the players pick the winner themselves (never a silent random verdict).
+// Modes: same phone, and online 1v1 through the NEON XI lobby (party launch, random match, rally) on the shared
+// Firebase room transport (career-twin/firebase-peer-shim-v1.js, rooms/AA-<code>).
+// Online: the host's device runs the rules (oyun.mjs). The guest sends the move it wants ({c:'try'}); the host checks it
+// is the guest's turn and a legal move, then sends every applied move ({c:'mv'}) to the guest, so both screens replay the
+// same move list on the same starting state. Timeouts are decided by the host only.
+// The AI judge is called through the Worker in HAKEM_URL. Until it exists the players pick the winner themselves
+// (same phone: one tap; online: both vote, a disagreement is a draw) — never a silent random verdict.
 import { KONULAR } from './konular.mjs';
 import { yeniOyun, hamle, secenekler, oynanabilir, harcanan, BUTCE, SECIM, MADDE } from './oyun.mjs';
 import { hakemIstegi, hakemCevabi } from './hakem.mjs';
@@ -23,6 +28,19 @@ const UI = { adlar: store.get('adlar', ['Oyuncu 1', 'Oyuncu 2']), sonKonu: store
 let S = null; // oyun durumu
 let busy = false;
 let timer = { id: 0, end: 0 };
+
+/* ───────────── online state ───────────── */
+const Q = new URLSearchParams(location.search);
+const AUTO = Q.get('nxAuto') === '1' && /^\d{4}$/.test(Q.get('nxCode') || '') ? {
+  role: Q.get('nxRole') === 'host' ? 'host' : 'guest', code: Q.get('nxCode'), uid: String(Q.get('nxUid') || '').slice(0, 64),
+  name: String(Q.get('nxName') || 'NEON Oyuncu').replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, 14) || 'NEON Oyuncu', match: Q.get('nxMatch') || '',
+} : null;
+const PREFIX = 'neonxi-auction-';
+const NET = { role: 'off', peer: null, conn: null, me: 0, uids: ['', ''], started: false, queue: Promise.resolve(), votes: [null, null], final: undefined, reported: false };
+const online = () => NET.role !== 'off';
+const cleanName = (v) => String(v ?? '').replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, 14) || 'Rakip';
+const send = (m) => { try { NET.conn?.send(m); } catch (e) { console.warn('Açık Artırma', e); } };
+const enqueue = (fn) => { NET.queue = NET.queue.then(fn).catch((e) => console.warn('Açık Artırma', e)); return NET.queue; };
 
 /* ───────────── menu ───────────── */
 // Menu: the shared NEON XI side-game menu (sidegame-skin-v2.css .sgm), the same as EN 11 / XOX / Imposter / Re:Verse.
@@ -54,13 +72,16 @@ function menu(view = 'modes') {
   } else {
     inner = `<section class="sgm-panel" aria-label="Oyun modu seç"><h2 class="sgm-heading">OYUN MODUNU SEÇ</h2><div class="sgm-grid">
       ${sgmMode('local', 'TEK TELEFON', 'Aynı cihazda sırayla teklif verin', 'phone')}
-      ${sgmMode('friends', 'ARKADAŞLARINLA OYNA', 'Partini kur, arkadaşını davet et', 'friends', true)}
-      ${sgmMode('match', 'RAKİP ARA', 'Çevrimiçi bir rakiple eşleş', 'search', true)}
+      ${sgmMode('friends', 'ARKADAŞLARINLA OYNA', 'Partini kur, arkadaşını davet et', 'friends')}
+      ${sgmMode('match', 'RAKİP ARA', 'Çevrimiçi bir rakiple eşleş', 'search')}
       </div></section>
       <section class="sgm-how" aria-label="Nasıl oynanır"><div class="sgm-how-badge" aria-hidden="true">?</div><div><h3>NASIL OYNANIR?</h3><p>Konudan ${MADDE} madde sırayla açık artırmaya çıkar. Açan en az 1 NP ile açar; sıra gelen +1/+2/+3 der ya da pas geçer. ${SECIM} seçimini topla; en iyi seti hakem seçer. ↓ işaretli ters konularda en kötüyü toplayan kazanır.</p></div></section>`;
   }
   app.innerHTML = sgmFrame(inner);
-  app.querySelectorAll('[data-view]').forEach((b) => b.addEventListener('click', () => menu(b.dataset.view)));
+  app.querySelectorAll('[data-view]').forEach((b) => b.addEventListener('click', () => {
+    const v = b.dataset.view;
+    if (v === 'friends' || v === 'match') social(v); else menu(v);
+  }));
   document.getElementById('aaMenuBack')?.addEventListener('click', () => menu());
   document.getElementById('aaPlay')?.addEventListener('click', () => {
     UI.adlar = [0, 1].map((i) => document.getElementById('aaN' + i).value.trim().slice(0, 14) || `Oyuncu ${i + 1}`);
@@ -68,6 +89,12 @@ function menu(view = 'modes') {
     baslat();
   });
   window.scrollTo(0, 0);
+}
+
+// Online modes go through the NEON XI lobby (party + broker, or the matchmaking queue), like every other side game.
+function social(choice) {
+  if (window.NEON_SOCIAL?.chooseMode) window.NEON_SOCIAL.chooseMode('auction', choice).catch((e) => console.warn(e));
+  else window.NEON_SOCIAL?.open?.('play');
 }
 
 // Konu her zaman tüm oynanabilir konulardan rastgele gelir (seçilemez); bir önceki konu tekrar gelmez.
@@ -82,7 +109,12 @@ function konuSec() {
 /* ───────────── game ───────────── */
 async function baslat() {
   S = yeniOyun({ konu: konuSec(), adlar: UI.adlar });
+  await oyunAkisi();
+}
+
+async function oyunAkisi() {
   S.olaylar = [];
+  busy = true;
   setSkin(false);
   oyunEkrani();
   window.scrollTo(0, 0);
@@ -102,16 +134,20 @@ function konuTanitimi() {
     el.innerHTML = `<small>KONU</small><h2>${esc(k.baslik)}</h2>
       <span class="aa-dir ${k.yon}">${k.yon === 'kotu' ? '↓ EN KÖTÜYÜ TOPLAYAN KAZANIR' : '↑ EN İYİYİ TOPLAYAN KAZANIR'}</span>
       <ol>${S.maddeler.map((m, i) => `<li style="--i:${i}">${esc(m.ad)}</li>`).join('')}</ol>
-      <p class="aa-who-first p${acan}">İlk maddeyi <b>${esc(S.oyuncular[acan].ad)}</b> açıyor</p>
-      <button type="button" class="aa-play">HADİ BAŞLAYALIM</button>`;
+      <p class="aa-who-first p${acan}">İlk maddeyi <b>${esc(adi(acan))}</b> açıyor</p>
+      ${online() ? '<p class="aa-who-first">Açık artırma birazdan başlıyor…</p>' : '<button type="button" class="aa-play">HADİ BAŞLAYALIM</button>'}`;
     document.body.append(el);
-    el.querySelector('button').addEventListener('click', () => {
-      el.classList.add('out');
-      setTimeout(() => { el.remove(); resolve(); }, 330);
-    }, { once: true });
-    setTimeout(() => el.querySelector('button')?.focus(), 1900);
+    const kapat = () => { if (!el.isConnected) return; el.classList.add('out'); setTimeout(() => { el.remove(); resolve(); }, 330); };
+    // Online both screens close the intro on a timer, so neither player's clock starts while the other still reads.
+    if (online()) setTimeout(kapat, reduced() ? 600 : 4600);
+    else {
+      el.querySelector('button').addEventListener('click', kapat, { once: true });
+      setTimeout(() => el.querySelector('button')?.focus(), 1900);
+    }
   });
 }
+
+const adi = (i) => (online() && i === NET.me ? `${S.oyuncular[i].ad} (SEN)` : S.oyuncular[i].ad);
 
 function slotHTML(p, k) {
   return Array.from({ length: SECIM }, (_, i) => {
@@ -124,7 +160,7 @@ function slotHTML(p, k) {
 function oyunEkrani() {
   const k = S.konu;
   const side = (i) => `<aside class="aa-side p${i}" aria-label="${esc(S.oyuncular[i].ad)} kadrosu">
-      <div class="aa-who" id="aaWho${i}"><span>${esc(S.oyuncular[i].ad)}</span><div class="aa-money" id="aaMoney${i}">${S.oyuncular[i].para}<small> NP</small></div></div>
+      <div class="aa-who" id="aaWho${i}"><span>${esc(online() && i === NET.me ? 'SEN' : S.oyuncular[i].ad)}</span><div class="aa-money" id="aaMoney${i}">${S.oyuncular[i].para}<small> NP</small></div></div>
       ${slotHTML(S.oyuncular[i], i)}</aside>`;
   app.innerHTML = `
   <div class="aa-game">
@@ -154,7 +190,7 @@ function oyunEkrani() {
     </div>
   </div>`;
   document.getElementById('aaQuit').addEventListener('click', () => {
-    if (S.bitti || confirm('Oyundan çıkılsın mı? Bu açık artırma kaybolur.')) menu();
+    if (S.bitti || confirm(online() ? 'Maçtan çıkılsın mı? Rakibin maçı kazanır.' : 'Oyundan çıkılsın mı? Bu açık artırma kaybolur.')) { leaveOnline(); menu(); }
   });
   app.querySelectorAll('.aa-btn').forEach((b) => b.addEventListener('click', () => oyna(b.dataset.h)));
 }
@@ -205,15 +241,17 @@ function siraCiz() {
   if (!sec) return;
   actions.className = `aa-actions p${sec.kim}`;
   const t = S.tur;
-  document.getElementById('aaTurn').textContent = `SIRA: ${S.oyuncular[sec.kim].ad}${sec.tek ? ' · AL YA DA HEDİYE ET' : !sec.pas ? ' · AÇILIŞ' : ''}`;
+  const benim = !online() || sec.kim === NET.me;
+  const kimde = online() ? (benim ? 'SEN' : S.oyuncular[sec.kim].ad) : S.oyuncular[sec.kim].ad;
+  document.getElementById('aaTurn').textContent = `SIRA: ${kimde}${sec.tek ? ' · AL YA DA HEDİYE ET' : !sec.pas ? ' · AÇILIŞ' : ''}`;
   actions.querySelectorAll('.aa-btn.raise').forEach((b) => {
     const x = Number(b.dataset.h);
-    const ok = !busy && sec.artirimlar.includes(x);
+    const ok = !busy && benim && sec.artirimlar.includes(x);
     b.disabled = !ok;
     b.querySelector('small').textContent = sec.tek ? (x === 1 ? 'al: 1' : '') : `→ ${t.teklif + x}`;
   });
   const pas = actions.querySelector('.aa-btn.pass');
-  pas.disabled = busy || !sec.pas;
+  pas.disabled = busy || !benim || !sec.pas;
   pas.title = sec.pas ? '' : 'Açılışta pas yok: en az 1 NP ile aç';
 }
 
@@ -232,19 +270,47 @@ function sirayiBaslat() {
     ring.setAttribute('stroke-dashoffset', String(364.4 * (1 - left / (SURE * 1000))));
     time.textContent = Math.ceil(left / 1000) + ' sn';
     bid.classList.toggle('hurry', left < 3000);
-    if (left <= 0) { stopTimer(); const sec = secenekler(S); oyna(sec && !sec.pas ? String(sec.artirimlar[0]) : 'pas', true); return; }
+    if (left <= 0) {
+      stopTimer();
+      if (NET.role === 'guest') return;  // the host decides timeouts online
+      const sec = secenekler(S);
+      oyna(sec && !sec.pas ? String(sec.artirimlar[0]) : 'pas', true);
+      return;
+    }
     timer.id = requestAnimationFrame(tick);
   };
   timer.id = requestAnimationFrame(tick);
 }
 function stopTimer() { cancelAnimationFrame(timer.id); timer.id = 0; }
 
-async function oyna(h, sureDoldu) {
+const gecerli = (sec, h) => !!sec && (h === 'pas' ? sec.pas : sec.artirimlar.includes(Number(h)));
+
+// A move from this screen (button or timer). Online it is routed through the host.
+function oyna(h, sureDoldu) {
   if (busy || !S || S.bitti) return;
   const sec = secenekler(S);
+  if (!gecerli(sec, h)) return;
+  if (!online()) { uygula(h, sureDoldu); return; }
+  if (NET.role === 'host') {
+    if (sec.kim !== 0 && !sureDoldu) return;
+    busy = true;
+    send({ c: 'mv', h, s: !!sureDoldu, n: S.i });
+    enqueue(() => uygula(h, sureDoldu));
+    return;
+  }
+  if (sec.kim !== NET.me || sureDoldu) return;
+  busy = true;
+  stopTimer();
+  siraCiz();
+  send({ c: 'try', h });
+}
+
+// Applies one move to the rules state and plays its animations; ends by starting the next turn.
+async function uygula(h, sureDoldu) {
+  if (!S || S.bitti) return;
+  const sec = secenekler(S);
+  if (!gecerli(sec, h)) return;
   const miktar = Number(h);
-  if (h !== 'pas' && !sec.artirimlar.includes(miktar)) return;
-  if (h === 'pas' && !sec.pas) return;
   busy = true;
   stopTimer();
   siraCiz();
@@ -252,11 +318,11 @@ async function oyna(h, sureDoldu) {
   buzz(h === 'pas' ? 8 : 14);
   for (const o of S.olaylar) {
     if (o.tip === 'teklif') {
-      chip(o.kim, sureDoldu ? `süre doldu · ${o.teklif}` : `${S.oyuncular[o.kim].ad} ${o.teklif}`);
+      chip(o.kim, sureDoldu ? `süre doldu · ${o.teklif}` : `${adi(o.kim)} ${o.teklif}`);
       teklifGoster(o.kim, o.teklif);
       await wait(260);
     } else if (o.tip === 'pas') {
-      chip(o.kim, sureDoldu ? 'süre doldu · pas' : `${S.oyuncular[o.kim].ad} pas`, true);
+      chip(o.kim, sureDoldu ? 'süre doldu · pas' : `${adi(o.kim)} pas`, true);
       await wait(200);
     } else if (o.tip === 'satildi') {
       await satildi(o);
@@ -365,7 +431,9 @@ function sonuc(karar) {
   };
   const head = kazanan == null
     ? `<div class="aa-res-head"><small>${k.yon === 'kotu' ? '↓ EN KÖTÜYÜ TOPLAYAN KAZANIR' : 'SONUÇ'}</small><h2>${esc(k.baslik)}</h2><p>Kadrolar hazır. Söz hakemde.</p></div>`
-    : `<div class="aa-res-head win p${kazanan}"><small>${karar.hakem ? 'HAKEM KARARI' : 'SİZİN KARARINIZ'}</small><h2>KAZANAN: ${esc(S.oyuncular[kazanan].ad)}</h2><p>${esc(k.baslik)}</p></div>`;
+    : kazanan === 'berabere'
+      ? `<div class="aa-res-head"><small>OYLAR FARKLI</small><h2>BERABERE</h2><p>İkiniz farklı kazanan seçtiniz; maç berabere yazıldı.</p></div>`
+      : `<div class="aa-res-head win p${kazanan}"><small>${karar.hakem ? 'HAKEM KARARI' : 'SİZİN KARARINIZ'}</small><h2>KAZANAN: ${esc(adi(kazanan))}</h2><p>${esc(k.baslik)}</p></div>`;
   setSkin(false);
   app.innerHTML = `
   <header class="aa-top">
@@ -377,19 +445,21 @@ function sonuc(karar) {
     ${judgeHTML(karar)}
     <div class="aa-squads">${squad(0)}${squad(1)}</div>
     <div class="aa-end-btns">
-      <button type="button" class="aa-play" id="aaNew">YENİ OYUN</button>
+      ${online() ? '<button type="button" class="aa-play" id="aaLobby">LOBİYE DÖN</button>' : '<button type="button" class="aa-play" id="aaNew">YENİ OYUN</button>'}
       <button type="button" class="aa-ghost" id="aaMenu">MENÜ</button>
     </div>
   </div>`;
-  document.getElementById('aaHome').addEventListener('click', () => menu());
-  document.getElementById('aaNew').addEventListener('click', () => baslat());
-  document.getElementById('aaMenu').addEventListener('click', () => menu());
+  document.getElementById('aaHome').addEventListener('click', () => { leaveOnline(); menu(); });
+  document.getElementById('aaNew')?.addEventListener('click', () => baslat());
+  document.getElementById('aaLobby')?.addEventListener('click', () => { leaveOnline(); menu(); window.NEON_SOCIAL?.open?.('party'); });
+  document.getElementById('aaMenu').addEventListener('click', () => { leaveOnline(); menu(); });
   app.querySelectorAll('[data-pick]').forEach((b) => b.addEventListener('click', () => {
     const i = Number(b.dataset.pick);
+    if (online()) { oyVer(i); return; }
     sonuc({ kazanan: i, hakem: false });
     konfeti(i);
   }));
-  if (!karar && HAKEM_URL) hakemeSor();
+  if (!karar && HAKEM_URL && (!online() || NET.role === 'host')) hakemeSor();
   window.scrollTo({ top: 0, behavior: reduced() ? 'auto' : 'smooth' });
 }
 
@@ -401,6 +471,13 @@ function judgeHTML(karar) {
   }
   if (karar) return '';
   if (HAKEM_URL) return `<section class="aa-judge" id="aaJudge"><h3>NEON HAKEM</h3><div class="aa-spin" aria-hidden="true"></div><p>Hakem kadroları inceliyor…</p></section>`;
+  if (online()) {
+    const oy = NET.votes[NET.me];
+    return `<section class="aa-judge" id="aaJudge"><h3>NEON HAKEM</h3>
+    <p>Yapay zekâ hakem çok yakında burada olacak. Şimdilik ikiniz de kazananı seçin: aynı kişiyi seçerseniz sonuç o olur, farklı seçerseniz maç berabere yazılır.</p>
+    ${oy == null ? `<div class="aa-judge-btns">${[0, 1].map((i) => `<button type="button" class="p${i}" data-pick="${i}">${esc(adi(i))}</button>`).join('')}</div>`
+      : `<p><b>${esc(adi(oy))}</b> dedin. Rakibinin oyu bekleniyor…</p><div class="aa-spin" aria-hidden="true"></div>`}</section>`;
+  }
   return `<section class="aa-judge"><h3>NEON HAKEM</h3>
     <p>Yapay zekâ hakem çok yakında burada olacak. Şimdilik kadroları karşılaştırın, kazananı siz seçin:</p>
     <div class="aa-judge-btns">${[0, 1].map((i) => `<button type="button" class="p${i}" data-pick="${i}">${esc(S.oyuncular[i].ad)}</button>`).join('')}</div></section>`;
@@ -414,7 +491,7 @@ async function hakemeSor() {
       const r = await fetch(HAKEM_URL, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ konu: S.konu.id, metin: istek.metin }) });
       if (r.ok) {
         const k = hakemCevabi(await r.json(), istek, taraflar);
-        if (k) { sonuc({ ...k, hakem: true }); konfeti(k.kazanan); return; }
+        if (k) { if (online()) { send({ c: 'karar', k }); rapor(k.kazanan); } sonuc({ ...k, hakem: true }); konfeti(k.kazanan); return; }
       }
     } catch {}
   }
@@ -435,4 +512,157 @@ function konfeti(kim) {
   setTimeout(() => el.remove(), 3800);
 }
 
-menu();
+/* ───────────── online ───────────── */
+function lobiEkrani(msg, hata) {
+  setSkin(true);
+  const me = { name: AUTO.name };
+  const list = NET.role === 'host' ? [me, NET.conn ? { name: NET.rakip || 'Rakip' } : null] : [{ name: NET.rakip || 'Maçı kuran' }, me];
+  app.innerHTML = sgmFrame(`<section class="sgm-panel aa-lobby" aria-label="Maç odası"><h2 class="sgm-heading">${hata ? 'BAĞLANTI SORUNU' : 'MAÇ ODASI'}</h2><div class="sgm-sheet">
+    <ul class="aa-lobby-list">${list.map((p, i) => `<li class="p${i}${p ? ' in' : ''}"><i></i><b>${p ? esc(p.name) : 'bekleniyor…'}</b>${i === 0 ? '<small>KURUCU</small>' : ''}</li>`).join('')}</ul>
+    <p class="sgm-note">${esc(msg)}</p>
+    ${hata ? '<button type="button" class="sgm-btn primary" id="aaBack">MENÜYE DÖN</button>' : ''}
+  </div></section>`);
+  document.getElementById('aaBack')?.addEventListener('click', () => { leaveOnline(); menu(); });
+}
+
+function hostOnline() {
+  NET.role = 'host'; NET.me = 0; NET.uids = [AUTO.uid, ''];
+  lobiEkrani('Rakibin bekleniyor…');
+  if (!window.Peer) { lobiEkrani('Bağlantı modülü yüklenemedi.', true); return; }
+  const peer = NET.peer = new window.Peer(PREFIX + AUTO.code, { debug: 0 });
+  peer.on('error', (e) => { console.warn('Açık Artırma oda', e); if (!NET.started) lobiEkrani('Oda kurulamadı. Lobiden yeniden başlatabilirsin.', true); });
+  peer.on('connection', (conn) => {
+    conn.on('data', (m) => hostVeri(conn, m));
+    conn.on('close', () => { if (conn === NET.conn) rakipGitti(); });
+  });
+  setTimeout(() => { if (NET.role === 'host' && !NET.started) lobiEkrani('Rakip odaya gelmedi.', true); }, 60000);
+}
+
+function hostVeri(conn, m) {
+  if (!m || typeof m !== 'object') return;
+  if (m.c === 'hello') {
+    if (NET.started) { if (conn !== NET.conn) { try { conn.send({ c: 'full' }); } catch {} } return; }
+    NET.conn = conn; NET.rakip = cleanName(m.name); NET.uids[1] = String(m.uid || '').slice(0, 64);
+    NET.started = true;
+    const konu = konuSec();
+    S = yeniOyun({ konu, adlar: [AUTO.name, NET.rakip] });
+    send({ c: 'start', konu: konu.id, maddeler: S.maddeler.map((x) => x.id), ilkAcan: S.ilkAcan, adlar: [AUTO.name, NET.rakip], uids: NET.uids });
+    enqueue(() => oyunAkisi());
+    return;
+  }
+  if (conn !== NET.conn) return;
+  if (m.c === 'try') {
+    // Checked when it is applied, in order: it must be the guest's turn and a legal move at that point.
+    enqueue(() => {
+      if (!S || S.bitti) return;
+      const sec = secenekler(S);
+      const h = m.h === 'pas' ? 'pas' : String(Number(m.h));
+      if (!sec || sec.kim !== 1 || !gecerli(sec, h)) { send({ c: 'nope' }); return; }
+      stopTimer();
+      send({ c: 'mv', h, s: false, n: S.i });
+      return uygula(h, false);
+    });
+    return;
+  }
+  if (m.c === 'vote') oyGeldi(1, m.v);
+}
+
+function guestOnline() {
+  NET.role = 'guest'; NET.me = 1;
+  lobiEkrani('Maç odasına bağlanılıyor…');
+  if (!window.Peer) { lobiEkrani('Bağlantı modülü yüklenemedi.', true); return; }
+  const peer = NET.peer = new window.Peer(undefined, { debug: 0 });
+  let tries = 0;
+  const fail = () => { if (!NET.started) lobiEkrani('Maç odasına bağlanılamadı. Lobiden yeniden dene.', true); };
+  peer.on('error', () => { if (!NET.started) fail(); else hostGitti(); });
+  peer.on('open', () => {
+    const conn = NET.conn = peer.connect(PREFIX + AUTO.code, { reliable: true });
+    conn.on('open', () => {
+      const hello = () => { if (NET.conn !== conn || NET.started) return; if (++tries > 15) { fail(); return; } send({ c: 'hello', uid: AUTO.uid, name: AUTO.name }); setTimeout(hello, 4000); };
+      hello();
+    });
+    conn.on('data', (m) => misafirVeri(m));
+    conn.on('close', () => hostGitti());
+  });
+}
+
+function misafirVeri(m) {
+  if (!m || typeof m !== 'object') return;
+  if (m.c === 'full') { lobiEkrani('Bu maç dolu.', true); return; }
+  if (m.c === 'start' && !NET.started) {
+    const konu = KONULAR.find((k) => k.id === m.konu);
+    const maddeler = Array.isArray(m.maddeler) ? m.maddeler.map((id) => konu?.maddeler.find((x) => x.id === id)) : [];
+    if (!konu || maddeler.length !== MADDE || maddeler.some((x) => !x)) { lobiEkrani('Oyun verisi uyuşmuyor. Sayfayı yenileyip tekrar dene.', true); return; }
+    NET.started = true;
+    NET.rakip = cleanName(m.adlar?.[0]);
+    NET.uids = Array.isArray(m.uids) ? m.uids.map((u) => String(u || '').slice(0, 64)) : ['', AUTO.uid];
+    S = yeniOyun({ konu, maddeler, adlar: [NET.rakip, AUTO.name], rnd: () => (m.ilkAcan === 1 ? 0.9 : 0.1) });
+    enqueue(() => oyunAkisi());
+    return;
+  }
+  if (!NET.started) return;
+  if (m.c === 'mv') { const h = m.h === 'pas' ? 'pas' : String(Number(m.h)); enqueue(() => { stopTimer(); return uygula(h, !!m.s); }); return; }
+  if (m.c === 'nope') { busy = false; siraCiz(); return; }
+  if (m.c === 'final') { enqueue(() => sonOy(m.v)); return; }
+  if (m.c === 'karar' && m.k) { enqueue(() => { rapor(m.k.kazanan); sonuc({ ...m.k, hakem: true }); konfeti(m.k.kazanan); }); }
+}
+
+// Interim verdict until the AI judge is connected: both players vote; the host settles it.
+function oyVer(v) {
+  if (NET.votes[NET.me] != null || NET.final !== undefined) return;
+  NET.votes[NET.me] = v;
+  if (NET.role === 'host') oyGeldi(0, v); else send({ c: 'vote', v });
+  sonuc();
+}
+function oyGeldi(pid, v) {
+  if (NET.role !== 'host' || NET.final !== undefined || (v !== 0 && v !== 1)) return;
+  NET.votes[pid] = v;
+  if (NET.votes[0] == null || NET.votes[1] == null) return;
+  const final = NET.votes[0] === NET.votes[1] ? NET.votes[0] : null;
+  send({ c: 'final', v: final });
+  enqueue(() => sonOy(final));
+}
+function sonOy(v) {
+  if (NET.final !== undefined) return;
+  NET.final = v;
+  rapor(v);
+  if (v === 0 || v === 1) { sonuc({ kazanan: v, hakem: false }); konfeti(v); } else sonuc({ kazanan: 'berabere', hakem: false });
+}
+
+// Online result → leaderboards and rally (neon-social.js / party-rally-v1.js listen).
+function rapor(kazanan) {
+  if (NET.reported || !AUTO?.match || document.querySelector('.nxff-end')) return;
+  NET.reported = true;
+  const result = kazanan === NET.me ? 'wins' : (kazanan === 0 || kazanan === 1) ? 'losses' : 'draws';
+  document.dispatchEvent(new CustomEvent('neon-match-result', { detail: { matchId: AUTO.match, mode: 'auction', result, opponentUid: NET.uids[1 - NET.me] || '' } }));
+}
+
+function baglantiKoptu(baslik) {
+  if (!S || NET.final !== undefined || document.querySelector('.nxff-end')) return;
+  stopTimer(); busy = true;
+  const el = document.createElement('div');
+  el.className = 'aa-intro';
+  el.innerHTML = `<small>BAĞLANTI</small><h2>${esc(baslik)}</h2><button type="button" class="aa-play" id="aaLost">LOBİYE DÖN</button>`;
+  document.body.append(el);
+  el.querySelector('#aaLost').addEventListener('click', () => { el.remove(); leaveOnline(); menu(); window.NEON_SOCIAL?.open?.('party'); });
+}
+function hostGitti() { if (NET.role === 'guest' && NET.started) baglantiKoptu('Maçı kuran oyuncuyla bağlantı kesildi'); }
+function rakipGitti() {
+  if (NET.role !== 'host') return;
+  if (!NET.started) { NET.conn = null; lobiEkrani('Rakibin bekleniyor…'); return; }
+  baglantiKoptu('Rakibin maçtan ayrıldı');
+}
+
+function leaveOnline() {
+  if (!online()) return;
+  stopTimer();
+  try { NET.conn?.close(); } catch {} try { NET.peer?.destroy(); } catch {}
+  Object.assign(NET, { role: 'off', peer: null, conn: null, me: 0, started: false, queue: Promise.resolve(), votes: [null, null], final: undefined });
+  document.querySelectorAll('.aa-intro').forEach((x) => x.remove());
+}
+
+// A forfeit screen (social/match-forfeit-v1.js) ends the match: stop the clock.
+new MutationObserver(() => { if (online() && document.querySelector('.nxff-end')) { stopTimer(); busy = true; } }).observe(document.body, { childList: true });
+window.addEventListener('beforeunload', () => { try { NET.conn?.close(); } catch {} try { NET.peer?.destroy(); } catch {} });
+
+if (AUTO) { if (AUTO.role === 'host') hostOnline(); else guestOnline(); } else menu();

@@ -52,6 +52,8 @@ jobs:
         run: node scripts/test_draft_xi_engine.mjs
       - name: Açık Artırma topic list integrity
         run: node scripts/test_acik_artirma_konular.mjs
+      - name: Açık Artırma online contract
+        run: node scripts/test_auction_online.cjs
       - name: First-login Firebase session and exact artwork contracts
         run: node scripts/test_neon_entry.cjs
       - name: Welcome controller JavaScript syntax
