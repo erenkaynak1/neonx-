@@ -2,6 +2,7 @@
 // Her madde: [ad, künye, kontrol]. Künye yalnızca gerçek bilgi verir, değerlendirme yapmaz.
 // kontrol = 1: bilgi doğrulanmadı, oyuna çıkmadan önce kontrol edilecek (inceleme sayfasında sarı görünür).
 // Her maçta konudan rastgele 10 madde çekilir; bu yüzden her konuda en az 10 madde olmalı.
+// taslak: true olan konu henüz doldurulmadı; oyunda çıkmaz, 10 madde kuralı ona uygulanmaz.
 
 export const TURLER = {
   kadro: 'Tarihi kadrolar',
@@ -195,25 +196,12 @@ const RAW = [
 
   // ───────── Ters konular (en kötüyü toplayan kazanır) ─────────
   {
-    id: 'kazma-futbolcular', tur: 'ters', yon: 'kotu', baslik: 'Tarihin en kazma futbolcuları',
+    id: 'kazma-futbolcular', tur: 'ters', yon: 'kotu', baslik: 'Tarihin en kazma futbolcuları', taslak: true,
     maddeler: [
       ['Daniel Güiza', 'Fenerbahçe · Mallorca ile 2007-08 La Liga gol kralı'],
       ['Sabri Sarıoğlu', 'Galatasaray · Millî Takım'],
-      ['Bilica', 'Fenerbahçe · Brezilya', 1],
       ['Loris Karius', 'Liverpool · 2018 Şampiyonlar Ligi finalinde iki gole yol açan hata'],
       ['Harry Maguire', 'Manchester United · 2019\'da rekor bonservisli savunmacı'],
-      ['Emile Heskey', 'İngiltere · 62 maçta 7 gol'],
-      ['Ronny Rosenthal', 'Liverpool · 1992\'de Aston Villa karşısında boş kaleyi kaçırdı'],
-      ['Massimo Taibi', 'Manchester United · 1999\'da Southampton maçındaki kalecilik hatası'],
-      ['Peter Enckelman', 'Aston Villa · 2002 Birmingham derbisinde taç atışından kendi kalesine gol'],
-      ['Djimi Traoré', 'Liverpool · 2005 FA Cup\'ta Burnley\'e kendi kalesine gol'],
-      ['Scott Carson', 'İngiltere · 2007\'de Hırvatistan maçındaki kalecilik hatası'],
-      ['Robert Green', 'İngiltere · 2010 Dünya Kupası\'nda ABD maçındaki kalecilik hatası'],
-      ['Yakubu Aiyegbeni', 'Nijerya · 2010 Dünya Kupası\'nda Güney Kore karşısında boş kaleyi kaçırdı'],
-      ['Fernando Torres', 'Chelsea · 2011\'de Manchester United karşısında boş kaleyi kaçırdı'],
-      ['Ali Dia', 'Southampton · 1996\'da tek maçlık "Weah\'ın kuzeni" transferi'],
-      ['Bebé', 'Manchester United · 2010\'da izlenmeden transfer edildi'],
-      ['Nicklas Bendtner', 'Arsenal · Danimarka'],
     ],
   },
   {
