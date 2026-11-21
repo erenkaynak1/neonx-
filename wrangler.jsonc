@@ -1,0 +1,10 @@
+// Cloudflare Workers Builds, Path (root directory) boşken bu dosyayı okur ve yalnızca hakem Worker'ını kurar
+// (oyun dosyaları yüklenmez; site GitHub Pages'te kalır). Ayrıntı: worker/README.md, worker/wrangler.jsonc.
+// GEMINI_API_KEY burada YOK: Cloudflare panelinde Secret olarak eklenir (deploy onu silmez).
+{
+  "name": "neonxi-hakem",
+  "main": "worker/hakem-worker.js",
+  "compatibility_date": "2025-09-01",
+  "keep_vars": true,
+  "workers_dev": true
+}
