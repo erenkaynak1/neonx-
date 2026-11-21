@@ -4,7 +4,9 @@
 //
 // Gizli değişkenler (Cloudflare → Worker → Settings → Variables and Secrets):
 //   GEMINI_API_KEY  (Secret, zorunlu)  Google AI Studio API anahtarı. Koda ya da sohbete asla yazılmaz.
-//   GEMINI_MODEL    (Text, isteğe bağlı) Varsayılan: gemini-2.5-flash
+//   GEMINI_MODEL    (Text, isteğe bağlı) Varsayılan: gemini-2.5-flash; bulunamazsa gemini-flash-latest denenir.
+//
+// Durum: adresi tarayıcıda açmak (GET) anahtarın tanımlı olup olmadığını ve modeli gösterir; anahtarın kendisini asla göstermez.
 //
 // Güvenlik: yalnızca NEON XI sitesinden ve giriş yapmış (Firebase, misafir dahil) oyunculardan istek kabul eder;
 // oyuncu başına dakikalık sınır vardır; serbest metin kabul etmez: istek konu ve madde kimlikleriyle gelir, metni
@@ -31,6 +33,7 @@ const FIREBASE_PROJECT = 'neonxi';
 const ORIGINS = ['https://erenkaynak1.github.io'];
 const LIMIT = { pencereMs: 10 * 60 * 1000, istek: 8 };
 const BUTCE = 20, SECIM = 5;
+const MODELLER = ['gemini-2.5-flash', 'gemini-flash-latest'];
 const sayac = new Map(); // uid → [zaman damgaları] (her Worker örneğinde ayrı; kaba bir sınır)
 
 const izinli = (origin) => ORIGINS.includes(origin) || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin || '');
@@ -105,6 +108,7 @@ export default {
   async fetch(request, env) {
     const origin = request.headers.get('origin') || '';
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors(origin) });
+    if (request.method === 'GET') return json({ hakem: 'NEON Hakem', anahtar: !!env.GEMINI_API_KEY, model: env.GEMINI_MODEL || MODELLER[0] }, 200, origin);
     if (request.method !== 'POST') return json({ hata: 'yalnızca POST' }, 405, origin);
     if (!izinli(origin)) return json({ hata: 'izin yok' }, 403, origin);
     if (!env.GEMINI_API_KEY) return json({ hata: 'hakem ayarlanmadı' }, 503, origin);
@@ -112,7 +116,7 @@ export default {
     const token = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
     let uid = null;
     try { uid = await jetonDogrula(token); } catch { uid = null; }
-    if (!uid) return json({ hata: 'giriş gerekli' }, 401, origin);
+    if (!uid) { console.log('NEON Hakem: jeton doğrulanamadı'); return json({ hata: 'giriş gerekli' }, 401, origin); }
     if (sinirda(uid)) return json({ hata: 'çok sık istek' }, 429, origin);
 
     const ham = await request.text();
@@ -123,21 +127,32 @@ export default {
     if (!kurulan) return json({ hata: 'geçersiz kadro' }, 400, origin);
 
     const istek = hakemIstegi(kurulan.konu, kurulan.taraflar);
-    const model = env.GEMINI_MODEL || 'gemini-2.5-flash';
-    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: HAKEM_TALIMATI }] },
-        contents: [{ role: 'user', parts: [{ text: istek.metin }] }],
-        generationConfig: { responseMimeType: 'application/json', responseSchema: HAKEM_SEMASI, temperature: 0.9 },
-      }),
+    const govde = JSON.stringify({
+      systemInstruction: { parts: [{ text: HAKEM_TALIMATI }] },
+      contents: [{ role: 'user', parts: [{ text: istek.metin }] }],
+      generationConfig: { responseMimeType: 'application/json', responseSchema: HAKEM_SEMASI, temperature: 0.9 },
     });
-    if (!r.ok) return json({ hata: 'hakem cevap vermedi', durum: r.status }, 502, origin);
+    // Model adı Google tarafında emekliye ayrılırsa (404) sıradaki model denenir.
+    const modeller = env.GEMINI_MODEL ? [env.GEMINI_MODEL, ...MODELLER] : MODELLER;
+    let r = null;
+    for (const model of [...new Set(modeller)]) {
+      r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+        method: 'POST', headers: { 'content-type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY }, body: govde,
+      });
+      if (r.status !== 404) break;
+      console.log('NEON Hakem: model bulunamadı', model);
+    }
+    if (!r.ok) {
+      // Google'ın hata mesajı anahtarı içermez; teşhis için kısaltılmış haliyle döner.
+      let detay = '';
+      try { detay = String((await r.json())?.error?.message || '').slice(0, 240); } catch {}
+      console.log('NEON Hakem: Gemini hatası', r.status, detay);
+      return json({ hata: 'hakem cevap vermedi', durum: r.status, detay }, 502, origin);
+    }
     const veri = await r.json();
     const metin = veri?.candidates?.[0]?.content?.parts?.map((p) => p.text || '').join('') || '';
     let karar;
-    try { karar = JSON.parse(metin); } catch { return json({ hata: 'hakem cevabı bozuk' }, 502, origin); }
+    try { karar = JSON.parse(metin); } catch { console.log('NEON Hakem: bozuk cevap', metin.slice(0, 200)); return json({ hata: 'hakem cevabı bozuk', detay: veri?.candidates?.[0]?.finishReason || '' }, 502, origin); }
     return json({ sira: istek.sira, karar }, 200, origin);
   },
 };
