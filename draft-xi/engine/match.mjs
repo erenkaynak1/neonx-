@@ -111,10 +111,13 @@ function buildTeam(side, squad, tactic) {
 const toAbs = (side, p) => (side === 0 ? { x: p.x, y: p.y } : { x: PITCH_W - p.x, y: PITCH_L - p.y });
 const toRel = toAbs; // the mirror is its own inverse
 
-export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, log: wantLog = true }) {
+export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, log: wantLog = true, frames: wantFrames = false }) {
   const rng = makeRng(seed);
   const teams = [buildTeam(0, home, tacticHome), buildTeam(1, away, tacticAway)];
   const events = [];
+  // optional playback frames for the 2D pitch: every logged event also stores where the ball and all players are.
+  // Frames never touch the random stream or the event log, so results and digests stay identical.
+  const frames = [];
   const stats = teams.map(() => ({ goals: 0, shots: 0, onTarget: 0, xg: 0, passes: 0, passesOk: 0, longPasses: 0, longOk: 0, crosses: 0, crossesOk: 0,
     dribbles: 0, dribblesOk: 0, throughs: 0, throughsOk: 0, offsides: 0, fouls: 0, yellows: 0, reds: 0, corners: 0, possession: 0, headerGoals: 0,
     aerials: 0, aerialsWon: 0, presses: 0, pressWins: 0, freeKickGoals: 0, penalties: 0, attacks: 0, rightCorridorAttacks: 0, leftCorridorAttacks: 0 }));
@@ -127,7 +130,11 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
   let half = 1;
   const st = { poss: 0, holder: null, ball: { x: PITCH_W >> 1, y: PITCH_L >> 1 }, lastDt: 30, counter: 0, chain: 0, beaten: null };
 
-  const log = (type, team, pl, extra = {}) => { if (wantLog) events.push({ ...extra, t, type, team, p: pl ? pl.player.id : null }); }; // core fields cannot be overwritten
+  const log = (type, team, pl, extra = {}) => {
+    if (!wantLog) return;
+    events.push({ ...extra, t, type, team, p: pl ? pl.player.id : null }); // core fields cannot be overwritten
+    if (wantFrames) frames.push({ t, b: [st.ball.x, st.ball.y], p: teams.map(tm => tm.players.map(q => (q.off || !q.cur ? null : [q.cur.x, q.cur.y]))) });
+  };
   const active = side => teams[side].players.filter(p => !p.off);
   const tac = side => teams[side].tactic;
   const opp = side => 1 - side;
@@ -721,5 +728,7 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
   log('ratings', null, null, { motm: motm.id });
   const digest = hash(JSON.stringify(events));
   return { engine: ENGINE_VERSION, seed, score: [stats[0].goals, stats[1].goals], stats, events, digest, ratings, motm,
-    teams: teams.map(tm => ({ name: tm.name, formation: tm.formation, tactic: tm.tactic, chemistry: tm.players.map(p => [p.player.id, p.chem]) })) };
+    teams: teams.map(tm => ({ name: tm.name, formation: tm.formation, tactic: tm.tactic, chemistry: tm.players.map(p => [p.player.id, p.chem]),
+      lineup: tm.players.map(p => ({ id: p.player.id, slot: p.slot, mevki: p.mevki })) })),
+    ...(wantFrames ? { frames, pitch: { w: PITCH_W, l: PITCH_L } } : {}) };
 }
