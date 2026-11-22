@@ -28,6 +28,7 @@ const clubOpts = bigClubs.map((c) => `<option>${esc(c)}</option>`).join('');
 const planOpts = PLANS.map(([id, ad]) => `<option value="${id}">${ad}</option>`).join('');
 $('kA').innerHTML = clubOpts; $('kB').innerHTML = clubOpts; $('pA').innerHTML = planOpts; $('pB').innerHTML = planOpts;
 $('kA').value = bigClubs.includes('Galatasaray') ? 'Galatasaray' : bigClubs[0];
+{ const q = new URLSearchParams(location.search); if (q.get('pA')) setTimeout(() => { $('pA').value = q.get('pA'); }, 0); if (q.get('pB')) setTimeout(() => { $('pB').value = q.get('pB'); }, 0); } // test aid
 $('kB').value = bigClubs.includes('Fenerbahçe') ? 'Fenerbahçe' : bigClubs[1];
 try { $('komik').checked = localStorage.getItem('nxDraftKomik') !== '0'; } catch { /* default on */ }
 
@@ -102,36 +103,104 @@ function start() {
   $('kur').hidden = true; $('son').hidden = true; $('mac').hidden = false;
   $('oynat').textContent = '❚❚'; $('hiz').textContent = '1x';
   M.plan = buildPlan(r); M.si = 0; M.u = 0;
+  window.__draftMac = M; // inspection aid for tests
   initMotion(); beginStep(); renderStats(); requestAnimationFrame(loop);
 }
 
-// ── visual director: the engine's positions plus what a viewer expects to see ──
-// holder glued to the ball (so receivers run onto passes), the two nearest opponents pressing the holder.
-// Visual only: the result comes from the engine and never changes.
+// ── tactical visual director ─────────────────────────────────────────────────────────────────────────
+// Starts from the engine's positions (which already carry line height, closed area, attack direction, tempo and
+// marking) and adds what makes team shape readable, the way the old Draft XI did: the defending side keeps a
+// flat back line, squeezes towards the ball according to its closed area and presses with 1–3 players by press
+// intensity while the rest mark; the side in possession gives the ball holder two support angles, stretches or
+// narrows by attack direction (full-backs overlap on "wings"), and the striker runs in behind on through-ball or
+// counter plans. Minimum spacing keeps players apart. Visual only: the result comes from the engine.
 const ENDS_WITH = { possession: 'p', pass: 'to', through: 'to', carry: 'p', dribble: 'p', tackle: 'p', intercept: 'p', press_win: 'p',
   aerial: 'p', second_ball: 'p', loose_ball: 'p', keeper_rush: 'p', save: 'p', clear: null, goal: null, miss: null, shot: null };
+const BACK = new Set(['CB', 'LB', 'RB', 'LWB', 'RWB']), WIDE = new Set(['LB', 'RB', 'LWB', 'RWB', 'LM', 'RM', 'LW', 'RW']);
+const lerp2 = (q, x, y, t) => [q[0] + (x - q[0]) * t, q[1] + (y - q[1]) * t];
 function directFrames(r) {
   const where = {};
   r.teams.forEach((tm, side) => tm.lineup.forEach((pl, i) => { where[pl.id] = [side, i]; }));
-  let holder = null;
+  const mev = r.teams.map((tm) => tm.lineup.map((pl) => pl.mevki));
+  const tac = r.teams.map((tm) => tm.tactic || {});
+  let holder = null, poss = 0;
   return r.frames.map((f, k) => {
     const ev = r.events[k];
     const pos = f.p.map((team) => team.map((q) => (q ? [q[0], q[1]] : null)));
     if (ev.type in ENDS_WITH) holder = ENDS_WITH[ev.type] ? ev[ENDS_WITH[ev.type]] : holder;
     if (['goal', 'miss', 'half_time', 'full_time'].includes(ev.type)) holder = null;
     const h = holder && where[holder];
-    if (h && pos[h[0]][h[1]]) {
-      const own = h[0] === 0 ? -1 : 1; // stand just behind the ball, towards the own goal
-      pos[h[0]][h[1]] = [f.b[0], f.b[1] + own * 14];
-      const opp = 1 - h[0];
-      const near = pos[opp].map((q, i) => (q ? [Math.hypot(q[0] - f.b[0], q[1] - f.b[1]), i] : [1e9, i]))
-        .filter(([d, i]) => d < 260 && r.teams[opp].lineup[i].mevki !== 'GK').sort((a, b) => a[0] - b[0]).slice(0, 2);
-      near.forEach(([d, i], n) => {
-        const q = pos[opp][i], keep = n === 0 ? 30 : 70; // first presser to ~3 m, second to ~7 m
-        const t = Math.max(0, (d - keep) / d) * (n === 0 ? 0.8 : 0.45);
-        pos[opp][i] = [q[0] + (f.b[0] - q[0]) * t, q[1] + (f.b[1] - q[1]) * t];
+    poss = h ? h[0] : (ev.team ?? poss);
+    const att = poss, def = 1 - poss, bx = f.b[0], by = f.b[1];
+    const dirA = att === 0 ? 1 : -1;                   // the side in possession attacks towards +y (home) or −y
+    const Ta = tac[att], Td = tac[def];
+    const live = !['half_time', 'full_time'].includes(ev.type) && !(ev.type === 'possession' && ev.how === 'kickoff');
+    if (live) {
+      // ── defending side ──
+      const D = pos[def];
+      const back = D.map((q, i) => (q && BACK.has(mev[def][i]) ? i : -1)).filter((i) => i >= 0);
+      if (back.length) {
+        const lineY = back.reduce((t, i) => t + D[i][1], 0) / back.length;
+        back.forEach((i) => { D[i] = [D[i][0], D[i][1] + (lineY - D[i][1]) * 0.75]; }); // flat back line
+      }
+      const squeeze = Td.closed === 'centre' ? 0.16 : Td.closed === 'wings' ? 0.3 : 0.23;
+      D.forEach((q, i) => {
+        if (!q || mev[def][i] === 'GK') return;
+        D[i] = [q[0] + (bx - q[0]) * squeeze, q[1] + (by - q[1]) * (BACK.has(mev[def][i]) ? 0.05 : 0.12)]; // compact block
       });
+      const nPress = Td.press === 'high' ? 3 : Td.press === 'low' ? 1 : 2;
+      const near = D.map((q, i) => (q && mev[def][i] !== 'GK' ? [Math.hypot(q[0] - bx, q[1] - by), i] : [1e9, i]))
+        .sort((x, y) => x[0] - y[0]).slice(0, nPress).filter(([d]) => d < (Td.press === 'high' ? 520 : 400));
+      const pressed = new Set(near.map(([, i]) => i));
+      near.forEach(([d, i], n) => {
+        const hi = Td.press === 'high';
+        const keep = n === 0 ? 28 : (hi ? 45 : 60) + n * 20;            // high press: the second and third close in too
+        const t = Math.max(0, (d - keep) / Math.max(d, 1)) * (n === 0 ? 0.85 : hi ? 0.75 : 0.5);
+        D[i] = lerp2(D[i], bx, by, t);
+      });
+      // the others mark the nearest attacker (goal side)
+      const A0 = pos[att];
+      D.forEach((q, i) => {
+        if (!q || pressed.has(i) || mev[def][i] === 'GK') return;
+        let best = null, bd = 160;
+        A0.forEach((a2) => { if (a2) { const d2 = Math.hypot(a2[0] - q[0], a2[1] - q[1]); if (d2 < bd) { bd = d2; best = a2; } } });
+        if (best) D[i] = lerp2(q, best[0], best[1] - dirA * 22, 0.22);
+      });
+      // ── side in possession ──
+      const A = pos[att];
+      if (h && A[h[1]]) A[h[1]] = [bx, by - dirA * 14];  // holder just behind the ball
+      const side = bx < W / 2 ? -1 : 1;
+      const sup = A.map((q, i) => (q && i !== h?.[1] && mev[att][i] !== 'GK' ? [Math.hypot(q[0] - bx, q[1] - by), i] : [1e9, i]))
+        .sort((x, y) => x[0] - y[0]).slice(0, 2);
+      if (sup[0]?.[0] < 500) A[sup[0][1]] = lerp2(A[sup[0][1]], bx - side * 85, by - dirA * 45, 0.6);   // safe angle behind
+      if (sup[1]?.[0] < 600) A[sup[1][1]] = lerp2(A[sup[1][1]], bx + side * 70, by + dirA * 65, 0.55);  // forward option
+      const dir = Ta.direction || 'balanced';
+      A.forEach((q, i) => {
+        if (!q || i === h?.[1]) return;
+        const m = mev[att][i];
+        if (WIDE.has(m) && (dir === 'wings' || (dir === 'left' && q[0] < W / 2) || (dir === 'right' && q[0] > W / 2))) {
+          A[i] = [q[0] + (q[0] < W / 2 ? -1 : 1) * 40, q[1] + (['LB', 'RB', 'LWB', 'RWB'].includes(m) ? dirA * 70 : dirA * 25)]; // stretch, full-backs overlap
+        } else if (dir === 'centre' && m !== 'GK') A[i] = [q[0] + (W / 2 - q[0]) * 0.15, q[1]];
+      });
+      const runBehind = Ta.finishing === 'through' || Ta.onWin === 'counter';
+      const mid = (att === 0 ? by : L - by) > L * 0.3 && (att === 0 ? by : L - by) < L * 0.7;
+      if (runBehind && mid && back.length) {
+        const lineY = back.reduce((t, i) => t + pos[def][i][1], 0) / back.length;
+        A.forEach((q, i) => { if (q && mev[att][i] === 'ST') A[i] = lerp2(q, q[0], lineY + dirA * 25, 0.6); });
+      }
+    } else if (h && pos[h[0]][h[1]]) pos[h[0]][h[1]] = [bx, by];
+    // minimum spacing (≈3.5 m team-mates, 2.5 m opponents); the holder does not move
+    const all = [];
+    pos.forEach((team, sd) => team.forEach((q, i) => { if (q) all.push({ q, sd, fixed: h && h[0] === sd && h[1] === i }); }));
+    for (let pass = 0; pass < 4; pass++) for (let x = 0; x < all.length; x++) for (let y = x + 1; y < all.length; y++) {
+      const P = all[x], Q = all[y], min = P.sd === Q.sd ? 35 : 25;
+      const dx = Q.q[0] - P.q[0], dy = Q.q[1] - P.q[1], d = Math.hypot(dx, dy) || 0.01;
+      if (d >= min) continue;
+      const push = (min - d) / 2, nx = dx / d, ny = dy / d;
+      if (!P.fixed) { P.q[0] -= nx * push * (Q.fixed ? 2 : 1); P.q[1] -= ny * push * (Q.fixed ? 2 : 1); }
+      if (!Q.fixed) { Q.q[0] += nx * push * (P.fixed ? 2 : 1); Q.q[1] += ny * push * (P.fixed ? 2 : 1); }
     }
+    pos.forEach((team) => team.forEach((q) => { if (q) { q[0] = Math.max(12, Math.min(W - 12, q[0])); q[1] = Math.max(12, Math.min(L - 12, q[1])); } }));
     return pos;
   });
 }
@@ -167,9 +236,9 @@ function stepDur(st) {
 }
 
 // ── motion: continuous, individual, physical ─────────────────────────────────────────────────────────
-// Each event gives a target position. The target slides linearly between events (no stop at every event);
-// every player follows his target like a critically damped spring with his own response (faster players react
-// quicker), a top speed, and his own slow off-ball drift. Result: smooth, individual movement, no block shifting.
+// Each event gives a tactical target (director above). The target slides linearly between events (no stop at
+// every event); every player follows it like a critically damped spring with a top speed. Lines respond together
+// (back line, midfield, attack), pace adds a little: the team moves as a team, not as eleven runners.
 const VMAX = 1150;   // pitch units (dm) per real second at 1x — playback compresses match time
 function initMotion() {
   const byId = Object.fromEntries(HAVUZ.map((p) => [p.id, p]));
@@ -177,8 +246,8 @@ function initMotion() {
     const p0 = M.display[0][side][i] || [W / 2, L / 2];
     const pac = byId[pl.id]?.attrs?.pac ?? 70;
     const rnd = (n) => { const x = Math.sin((i + 1) * 12.9898 + (side + 1) * 78.233 + n * 37.719) * 43758.5453; return x - Math.floor(x); };
-    return { x: p0[0], y: p0[1], vx: 0, vy: 0, w: (3.6 + pac / 20) * (0.85 + rnd(6) * 0.3), f1: 0.11 + rnd(1) * 0.18, f2: 0.09 + rnd(2) * 0.16,
-      ph1: rnd(3) * 6.28, ph2: rnd(4) * 6.28, amp: 9 + rnd(5) * 10 };
+    const m = pl.mevki, line = m === 'GK' ? 4.6 : BACK.has(m) ? 5.6 : ['DM', 'CM', 'AM'].includes(m) ? 6.0 : 6.4;
+    return { x: p0[0], y: p0[1], vx: 0, vy: 0, w: line * (0.95 + (pac - 70) / 600), seed: rnd(1) }; // lines move together; pace adds a little
   }));
 }
 
@@ -193,24 +262,17 @@ function placeBetween(A, B, a, b, u, dt, passing) {
   const eb = passing ? 1 - (1 - u) * (1 - u) : u;
   const bx = a.b[0] + (b.b[0] - a.b[0]) * eb, by = a.b[1] + (b.b[1] - a.b[1]) * eb;
   M.layers.ball.setAttribute('cx', sx(bx)); M.layers.ball.setAttribute('cy', sy(by));
-  const now = performance.now() / 1000;
   const step = Math.min(dt || 0.016, 0.05);
   for (let side = 0; side < 2; side++) M.discs[side].forEach((d, i) => {
     const p = A[side][i], q = B[side][i] || p;
     if (!p) { d.g.style.display = 'none'; return; }
     d.g.style.display = '';
     const m = M.motion[side][i];
-    let tx = p[0] + (q[0] - p[0]) * u, ty = p[1] + (q[1] - p[1]) * u;
+    const tx = p[0] + (q[0] - p[0]) * u, ty = p[1] + (q[1] - p[1]) * u;
     const nearBall = Math.hypot(tx - bx, ty - by) < 40;
-    if (!nearBall) { // own slow wandering, different for every player
-      tx += Math.sin(now * m.f1 * 6.28 + m.ph1) * m.amp;
-      ty += Math.sin(now * m.f2 * 6.28 + m.ph2) * m.amp * 0.8;
-    }
     if (reduced()) { m.x = tx; m.y = ty; m.vx = m.vy = 0; }
     else {
-      // the man on the ball stays with it; others react the slower the farther they are from the ball
-      const dBall = Math.hypot(m.x - bx, m.y - by);
-      const w = nearBall ? 14 : m.w * (1.25 - Math.min(0.7, dBall / 1100));
+      const w = nearBall ? 14 : m.w; // the man on the ball stays with it; lines respond together
       for (let t = 0; t < step; t += 0.01) { // small sub-steps keep the spring stable
         const h = Math.min(0.01, step - t);
         m.vx += (w * w * (tx - m.x) - 2 * w * m.vx) * h;
