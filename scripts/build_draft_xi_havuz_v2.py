@@ -14,7 +14,6 @@ dcaribou/transfermarkt-datasets'ten gelir. Yetenek değerleri:
   * yeni oyuncular, mevcut havuzdan öğrenilen bir formülle (mevki grubuna göre ridge regresyon:
     piyasa değeri, en yüksek piyasa değeri, yaş, dakika payı, gol/asist, boy, millî maç) hesaplanır
     ve ratingSource = "NEON XI formül" olarak işaretlenir.
-Savunma ve kafa için küçük düzeltmeler StatsBomb açık verisinden gelir (draft-xi/data/statsbomb-duzeltme.json).
 Hiçbir dış oyunun (FM, EA FC) değeri kullanılmaz.
 
   python3 scripts/build_draft_xi_havuz_v2.py [--database .tmp-transfermarkt.duckdb]
@@ -37,9 +36,6 @@ ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / 'draft-xi/data/kaynak-havuz.json'          # output (read by scripts/build_draft_xi_pool.mjs)
 OLD = ROOT / 'draft-xi/data/kaynak-havuz-v1.json'       # frozen first pool: our own values are taught from here
 CLUB_NAMES = json.loads((ROOT / 'draft-xi/data/kulup-adlari.json').read_text())['adlar']
-_SB = ROOT / 'draft-xi/data/statsbomb-duzeltme.json'
-# defending/heading nudges from StatsBomb Open Data match events (scripts/build_draft_xi_statsbomb.py); optional
-SB_ADJ = json.loads(_SB.read_text())['duzeltmeler'] if _SB.exists() else {}
 _YAZ = json.loads((ROOT / 'draft-xi/data/yaz-2026-transferleri.json').read_text())
 SUMMER, ARRIVALS = _YAZ['transferler'], _YAZ.get('gelenler', [])
 COUNTRY_TR = json.loads((ROOT / 'side-games/data/master/country-tr.json').read_text())
@@ -148,7 +144,7 @@ def main() -> None:
                 where player_club_id = ? and date between ? and ? group by 1""", [int(rows[0]['club_id']), *SEASON]).fetchall())
             for r in rows:
                 r['club_mins'] = int(club_mins.get(r['tm_id'], 0))
-            rows.sort(key=lambda r: (-r['club_mins'], -(r['mv'] or 0)))
+            rows.sort(key=lambda r: (-r['club_mins'], -(r['mv'] or 0), r['tm_id']))  # tm_id: same result every run
             pick = rows[:18]
             gks = [r for r in rows if r['sub'] == 'Goalkeeper']
             while sum(r['sub'] == 'Goalkeeper' for r in pick) < 2 and len(gks) >= 2:
@@ -205,7 +201,7 @@ def main() -> None:
         best = {}
         for name, d in lst:
             best[name] = max(best.get(name, ''), d)
-        career[pid] = [k for k, _ in sorted(best.items(), key=lambda kv: kv[1], reverse=True)]
+        career[pid] = [k for k, _ in sorted(best.items(), key=lambda kv: (kv[1], kv[0]), reverse=True)]
 
     # positions from starting line-ups, last two seasons: the most frequent one first, plus every position that
     # holds ≥15 % of the starts and at least 4 starts (user decision: secondary positions from match data)
@@ -223,7 +219,7 @@ def main() -> None:
         total = sum(st.values())
         if total < 8:
             return None
-        ordered = sorted(st.items(), key=lambda kv: -kv[1])
+        ordered = sorted(st.items(), key=lambda kv: (-kv[1], kv[0]))
         return [k for i, (k, n) in enumerate(ordered) if i == 0 or (n >= 4 and n / total >= 0.15)]
 
     # --- match the existing pool (values are kept) ---
@@ -388,7 +384,7 @@ def main() -> None:
     # matches stay near real football goal totals (checked with best XIs of every club, see the PR notes)
     BALANCE = {'GK': 2.0, 'DEF': 1.5}
     for g in ('GK', 'DEF', 'MID', 'ATT'):
-        xs = sorted((x for x in players if x['_g'] == g), key=lambda x: x['_q'])
+        xs = sorted((x for x in players if x['_g'] == g), key=lambda x: (x['_q'], x['tm_id']))
         scale = np.sort(np.array(first[g]))
         for i, x in enumerate(xs):
             pct = i / max(1, len(xs) - 1)
@@ -490,10 +486,6 @@ def main() -> None:
             x['ratingSource'] = 'NEON XI formül'
             new += 1
     for x in players:
-        adj = SB_ADJ.get(str(x['tm_id']))
-        if adj and x['main']:
-            x['main'][4] = int(max(1, min(99, x['main'][4] + adj[0])))  # defending (tackling/marking)
-            x['main'][5] = int(max(1, min(99, x['main'][5] + adj[1])))  # heading
         for k in ('_f', '_g', '_r', '_q', '_lvl'):
             x.pop(k, None)
 
@@ -522,7 +514,7 @@ def main() -> None:
                 seen.add(k); former.append(k)
         x['former'] = former[:10]
 
-    players.sort(key=lambda x: (x['league'], x['club'], x['name']))
+    players.sort(key=lambda x: (x['league'], x['club'], x['name'], x['tm_id']))
     out = {'extractedAt': datetime.now(timezone.utc).strftime('%Y-%m-%d'), 'count': len(players),
            'source': 'dcaribou/transfermarkt-datasets (2025-26 sonu); değerler: mevcut havuz + NEON XI formül',
            'players': players}
