@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Draft XI · Draft</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="./ui/draft.css?v=3">
+</head>
+<body>
+<main>
+  <section id="kur" class="kur" aria-labelledby="kurBaslik">
+    <h1 id="kurBaslik">DRAFT XI · <span>DRAFT</span></h1>
+    <p class="note">Havuzdan sırayla 11 oyuncu seç (yılan sırası: 1-2, 2-1, …). Her oyuncu yalnızca oynayabildiği bir mevkiye konur. Yakın mevkideki oyuncular aynı ülke, kulüp, lig ya da eski takımdansa kimya artar.</p>
+    <div class="secim" role="radiogroup" aria-label="Oyun türü">
+      <button type="button" class="tur" data-mod="bot" aria-pressed="true"><b>BOTA KARŞI</b><span>Sırayla sen ve bot seçersiniz</span></button>
+      <button type="button" class="tur" data-mod="iki" aria-pressed="false"><b>AYNI TELEFONDA 2 KİŞİ</b><span>Telefonu sırayla elden ele verin</span></button>
+    </div>
+    <div class="satir" id="zorlukSatiri">
+      <span>Bot zorluğu</span>
+      <div class="seg" role="radiogroup" aria-label="Bot zorluğu">
+        <button type="button" data-zor="kolay" aria-pressed="false">Kolay</button>
+        <button type="button" data-zor="orta" aria-pressed="true">Orta</button>
+        <button type="button" data-zor="zor" aria-pressed="false">Zor</button>
+      </div>
+    </div>
+    <label class="satir"><span>Dizilişin</span><select id="dizilis" aria-label="Diziliş"></select></label>
+    <button id="basla" class="go" type="button">DRAFT'A BAŞLA</button>
+  </section>
+
+  <section id="draft" class="draft" hidden aria-label="Draft">
+    <header class="ust">
+      <div class="sira" id="sira" aria-live="polite"></div>
+      <div class="tur-no" id="turNo"></div>
+      <button id="otomatik" type="button" class="kucuk">OTOMATİK SEÇ</button>
+    </header>
+    <nav class="sekmeler" aria-label="Görünüm">
+      <button type="button" data-sekme="A" aria-pressed="true">Takım 1</button>
+      <button type="button" data-sekme="havuz" aria-pressed="false">Havuz</button>
+      <button type="button" data-sekme="B" aria-pressed="false">Takım 2</button>
+    </nav>
+    <div class="alan">
+      <div class="panel takim-panel" id="panelA"></div>
+      <div class="panel havuz-panel" id="panelHavuz">
+        <div class="filtre">
+          <input id="ara" type="search" placeholder="Oyuncu ya da kulüp ara" aria-label="Oyuncu ara">
+          <div class="cipler" id="cipler" role="group" aria-label="Mevki filtresi"></div>
+        </div>
+        <ol class="liste" id="liste"></ol>
+      </div>
+      <div class="panel takim-panel" id="panelB"></div>
+    </div>
+  </section>
+
+  <section id="son" class="son" hidden aria-labelledby="sonBaslik">
+    <h2 id="sonBaslik">DRAFT TAMAM</h2>
+    <p class="note">Her takım için bir plan seç ve maça çık.</p>
+    <div class="son-grid" id="sonGrid"></div>
+    <button id="macaCik" class="go" type="button">MAÇA ÇIK</button>
+  </section>
+</main>
+<script type="module" src="./ui/draft.mjs?v=3"></script>
+</body>
+</html>
