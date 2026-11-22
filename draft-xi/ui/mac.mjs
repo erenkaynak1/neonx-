@@ -73,7 +73,6 @@ const sx = (x) => x, sy = (y) => L - y;
 // ── playback ───────────────────────────────────────────────────────────────────────────────────────
 let M = null;          // { r, names, layers, discs, frames, events, k, u, speed, playing, ... }
 const FAST = new URLSearchParams(location.search).has('hizli') ? 25 : 1; // test aid: ?hizli plays 25× faster
-const RATE = { 1: 22 * FAST, 2: 44 * FAST }; // match seconds per real second
 
 function start() {
   const home = bestXI($('kA').value), away = bestXI($('kB').value);
@@ -102,7 +101,8 @@ function start() {
   $('sA').textContent = '0'; $('sB').textContent = '0'; $('dk').textContent = "1'"; $('spiker').innerHTML = '';
   $('kur').hidden = true; $('son').hidden = true; $('mac').hidden = false;
   $('oynat').textContent = '❚❚'; $('hiz').textContent = '1x';
-  initMotion(); enterFrame(0); renderStats(); requestAnimationFrame(loop);
+  M.plan = buildPlan(r); M.si = 0; M.u = 0;
+  initMotion(); beginStep(); renderStats(); requestAnimationFrame(loop);
 }
 
 // ── visual director: the engine's positions plus what a viewer expects to see ──
@@ -136,11 +136,35 @@ function directFrames(r) {
   });
 }
 
-const frameDur = (k) => {
-  const f = M.r.frames, a = f[k], b = f[k + 1];
-  if (!b) return Infinity;
-  return Math.min(2.2, Math.max(0.14 / FAST, (b.t - a.t) / 10 / RATE[M.speed]));
-};
+// ── playback plan: key moments slow and complete, ordinary passing fast-forwarded ──────────────────────
+// The engine logs ~1,200 events a match; shown one by one in 3–4 minutes nothing could look smooth. A scene is a
+// key moment (shot and its outcome, corner, through ball, offside, card, keeper rush, kick-off, half/full time)
+// with the 3 moves before it and 1 after; scenes play slowly. Between scenes the clock runs fast and players
+// glide once to where the next scene starts; stats and commentary still process every skipped event.
+const KEY = new Set(['shot', 'goal', 'save', 'miss', 'post', 'block', 'corner', 'through', 'offside', 'keeper_rush', 'half_time', 'full_time', 'reshape']);
+function buildPlan(r) {
+  const E = r.events, n = E.length;
+  const key = E.map((e) => KEY.has(e.type) || (e.type === 'foul' && e.card) || (e.type === 'possession' && e.how === 'kickoff'));
+  const inScene = new Array(n).fill(false);
+  key.forEach((k, i) => { if (k) for (let j = Math.max(0, i - 3); j <= Math.min(n - 1, i + 1); j++) inScene[j] = true; });
+  inScene[0] = true; inScene[n - 1] = true;
+  const ranges = [];
+  for (let i = 0; i < n; i++) if (inScene[i]) { if (ranges.length && ranges[ranges.length - 1][1] === i - 1) ranges[ranges.length - 1][1] = i; else ranges.push([i, i]); }
+  const steps = [];
+  ranges.forEach(([s0, e0], ri) => {
+    for (let k = s0; k < e0; k++) steps.push({ t: 'play', k });
+    if (ri < ranges.length - 1) steps.push({ t: 'jump', a: e0, b: ranges[ri + 1][0] });
+    else steps.push({ t: 'end', k: e0 });
+  });
+  return steps;
+}
+const PLAY_RATE = 10; // match seconds per real second inside a scene
+function stepDur(st) {
+  const f = M.r.frames, sp = M.speed === 2 ? 0.55 : 1;
+  if (st.t === 'play') return Math.min(1.4, Math.max(0.55, 0.35 + (f[st.k + 1].t - f[st.k].t) / 10 / PLAY_RATE)) * sp / FAST;
+  if (st.t === 'jump') return Math.min(1.6, 0.9 + (f[st.b].t - f[st.a].t) / 10 / 400) * sp / FAST;
+  return 0;
+}
 
 // ── motion: continuous, individual, physical ─────────────────────────────────────────────────────────
 // Each event gives a target position. The target slides linearly between events (no stop at every event);
@@ -159,11 +183,13 @@ function initMotion() {
 }
 
 function place(k, u, dt) {
-  const f = M.r.frames, last = f.length - 1, a = f[k], b = f[Math.min(k + 1, last)];
-  const A = M.display[k], B = M.display[Math.min(k + 1, last)];
-  const ev = M.r.events[k];
+  const f = M.r.frames, last = f.length - 1, k2 = Math.min(k + 1, last);
+  const passing = ['pass', 'through', 'cross', 'pass_bad', 'clear'].includes(M.r.events[k].type);
+  placeBetween(M.display[k], M.display[k2], f[k], f[k2], u, dt, passing);
+}
+
+function placeBetween(A, B, a, b, u, dt, passing) {
   // ball: straight for passes with a slight slow-down at the end, plain glide otherwise
-  const passing = ['pass', 'through', 'cross', 'pass_bad', 'clear'].includes(ev.type);
   const eb = passing ? 1 - (1 - u) * (1 - u) : u;
   const bx = a.b[0] + (b.b[0] - a.b[0]) * eb, by = a.b[1] + (b.b[1] - a.b[1]) * eb;
   M.layers.ball.setAttribute('cx', sx(bx)); M.layers.ball.setAttribute('cy', sy(by));
@@ -209,8 +235,8 @@ function passLine(k) {
   setTimeout(() => ln.remove(), 950);
 }
 
-function enterFrame(k) {
-  M.k = k; M.u = 0;
+function enterFrame(k, silent = false) {
+  M.k = k;
   const ev = M.r.events[k];
   // live stats from events
   const L2 = M.live, tm = ev.team;
@@ -233,6 +259,7 @@ function enterFrame(k) {
   // holder label
   const holder = ev.type === 'possession' || ev.type === 'pass' ? (ev.type === 'pass' ? ev.to : ev.p) : ev.p;
   M.layers.label.textContent = holder ? M.short(holder) : '';
+  if (silent) { for (const line of M.spiker(ev, k).reverse()) if (line.kind !== 'build') addLine(ev, line); return; }
   passLine(k);
   // duel highlight: both players glow for a moment
   const rival = ev.past || ev.on || ev.vs || ev.by;
@@ -295,23 +322,44 @@ async function goal(k, ev) {
   M.busy = false; M.last = performance.now();
 }
 
+function beginStep() {
+  const st = M.plan[M.si];
+  if (!st) return;
+  if (st.t === 'play') enterFrame(st.k);
+  else if (st.t === 'jump') { enterFrame(st.a); for (let j = st.a + 1; j < st.b; j++) enterFrame(j, true); }
+  else if (st.t === 'end') enterFrame(st.k);
+}
+
 function loop(now) {
   if (!M || $('mac').hidden) return;
+  const dt = Math.min(0.1, (now - M.last) / 1000);
+  M.last = now;
   if (M.playing && !M.busy) {
-    const dt = (now - M.last) / 1000;
-    M.u += dt / frameDur(M.k);
-    while (M.u >= 1 && M.k < M.r.frames.length - 1 && !M.busy) {
-      const carry = (M.u - 1) * frameDur(M.k);            // leftover real time, carried over in full (no hitch)
-      enterFrame(M.k + 1);
-      M.u = M.busy ? 0 : carry / frameDur(M.k);
+    let st = M.plan[M.si];
+    M.u += dt / Math.max(0.001, stepDur(st));
+    while (M.u >= 1 && !M.busy) {
+      const carry = (M.u - 1) * stepDur(st);              // leftover real time carried in full
+      M.si++; st = M.plan[M.si];
+      if (!st || st.t === 'end') { if (st) beginStep(); return finish(); }
+      beginStep();
+      M.u = M.busy ? 0 : carry / Math.max(0.001, stepDur(st));
     }
-    if (M.k >= M.r.frames.length - 1) return finish();
-    if (!M.busy) place(M.k, Math.min(1, M.u), dt);
+    if (!M.busy && st) {
+      const f = M.r.frames;
+      if (st.t === 'play') place(st.k, Math.min(1, M.u), dt);
+      else if (st.t === 'jump') {
+        const u = Math.min(1, M.u), e = u * u * (3 - 2 * u); // one smooth glide to the next scene
+        placeBetween(M.display[st.a], M.display[st.b], f[st.a], f[st.b], e, dt, false);
+        $('dk').textContent = dakika(f[st.a].t + (f[st.b].t - f[st.a].t) * u);
+      }
+    }
+  } else if (!M.busy) {
+    const st = M.plan[M.si];
+    if (st?.t === 'play') place(st.k, Math.min(1, M.u), dt); // players settle while paused
   }
   // holder label follows the ball
   M.layers.label.setAttribute('x', M.layers.ball.getAttribute('cx'));
   M.layers.label.setAttribute('y', Number(M.layers.ball.getAttribute('cy')) + 44);
-  M.last = now;
   requestAnimationFrame(loop);
 }
 
