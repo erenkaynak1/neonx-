@@ -34,6 +34,7 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / 'draft-xi/data/kaynak-havuz.json'          # output (read by scripts/build_draft_xi_pool.mjs)
+WEIGHTS = ROOT / 'draft-xi/data/formul-agirliklari.json'  # learned rule (scripts/train_draft_xi_formul.py); optional
 OLD = ROOT / 'draft-xi/data/kaynak-havuz-v1.json'       # frozen first pool: our own values are taught from here
 CLUB_NAMES = json.loads((ROOT / 'draft-xi/data/kulup-adlari.json').read_text())['adlar']
 _YAZ = json.loads((ROOT / 'draft-xi/data/yaz-2026-transferleri.json').read_text())
@@ -117,6 +118,7 @@ def age_of(dob) -> int | None:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument('--database', type=Path, default=ROOT / '.tmp-transfermarkt.duckdb')
+    ap.add_argument('--features-out', type=Path, help='write every player\'s fact card (for scripts/train_draft_xi_formul.py)')
     args = ap.parse_args()
     c = duckdb.connect(str(args.database), read_only=True)
 
@@ -370,6 +372,50 @@ def main() -> None:
         weak = min(left, right) / (left + right)
         return 2 if weak < 0.08 else 3 if weak < 0.18 else 4 if weak < 0.30 else 5
 
+    # ── Fact card: the only inputs of the learned rule (all from open data) ─────────────────────────────
+    WIDE_L, WIDE_R = {'LW', 'LB', 'LM', 'LWB'}, {'RW', 'RB', 'RM', 'RWB'}
+
+    def fact_card(x):
+        r = x['_r']
+        e = ev.get(x['tm_id'], {})
+        m = max(e.get('mins', 0), 1)
+        per90 = lambda k, prior: (e.get(k, 0) * 90 + prior * 10) / (m + 900)  # shrunk per-90 rate
+        left, right = e.get('left', 0), e.get('right', 0)
+        weak = min(left, right) if x['foot'] in (None, 'B') else (left if x['foot'] == 'R' else right)
+        st = starts.get(x['tm_id'], {})
+        tot = max(1, sum(st.values()))
+        opp = sum(n for k, n in st.items() if (k in WIDE_L and x['foot'] == 'R') or (k in WIDE_R and x['foot'] == 'L')) / tot
+        age = age_of(r['dob']) or 26
+        card = {
+            'mv': math.log10((r['mv'] or 3e5) + 2e5), 'peak': math.log10((r['hmv'] or r['mv'] or 3e5) + 2e5),
+            'share': r['club_mins'] / club_max[r['club']] if r['club'] in club_max and not r.get('_arrival') else 0.5,
+            'caps': math.log10((r['caps'] or 0) + 1), 'age': min(max(age, 18), 36), 'age2': (min(max(age, 18), 36) - 27) ** 2,
+            'top5': 1.0 if r['lg'] in ('GB1', 'ES1', 'IT1', 'L1', 'FR1') else 0.0, 'tr': 1.0 if r['lg'] == 'TR1' else 0.0,
+            'height': (r['height'] or 182) / 10, 'npg': per90('npg', 0.15), 'head': per90('head', 0.03), 'long': per90('long', 0.01),
+            'apass': per90('a_pass', 0.06), 'across': per90('a_cross', 0.03), 'aall': per90('a_all', 0.1),
+            'weakshare': (weak + 0.8) / (left + right + 6), 'footgoals': math.log10(left + right + 1),
+            'both': 1.0 if x['foot'] == 'B' else 0.0, 'left': 1.0 if x['foot'] == 'L' else 0.0, 'opp': opp,
+        }
+        for k in ('CB', 'FB', 'DM', 'CM', 'AM', 'W', 'ST', 'GK'):
+            card['k_' + k] = 0.0
+        kind = {'LB': 'FB', 'RB': 'FB', 'LWB': 'FB', 'RWB': 'FB', 'LM': 'W', 'RM': 'W', 'LW': 'W', 'RW': 'W'}.get(x['pos'], x['pos'])
+        card['k_' + (kind if 'k_' + kind in card else 'CM')] = 1.0
+        return card
+
+    for x in players:
+        x['_card'] = fact_card(x)
+    if args.features_out:
+        args.features_out.write_text(json.dumps({str(x['tm_id']): {'name': x['name'], 'birth': x['birth'], 'pos': x['pos'],
+                                                                    'card': x['_card']} for x in players}, ensure_ascii=False))
+        print(f'özellik kartları → {args.features_out}')
+    learned = json.loads(WEIGHTS.read_text()) if WEIGHTS.exists() else None
+
+    def predict(x, target):
+        t = learned['targets'][target]
+        names = learned['features']
+        v = np.array([x['_card'][n] for n in names], float)
+        return float(t['b'] + np.dot((v - np.array(learned['mu'])) / np.array(learned['sd']), np.array(t['w'])))
+
     # ── Value model ─────────────────────────────────────────────────────────────────────────────────────
     # LEVEL (one number per player) comes from an explicit rule on objective facts, not from old values:
     #   current market value (main weight), peak market value, share of the club's minutes, caps, league;
@@ -394,7 +440,7 @@ def main() -> None:
         return 0.62 * mv + 0.18 * peak + 0.22 * share + 0.10 * caps + league + youth + veteran
 
     for x in players:
-        x['_q'] = quality_raw(x)
+        x['_q'] = predict(x, 'ovr') if learned else quality_raw(x)  # learned rule when available
     # map to the game scale per group. The ORDER comes from the rule above; the NUMBERS keep the scale our match
     # engine was tuned on: the top 70 % of the new pool follows the distribution of our first pool in that group
     # (quantile mapping), and the weaker 30 % (bench players the first pool did not have) reaches up to 8 points
@@ -476,8 +522,44 @@ def main() -> None:
             vec[7] += weight * float(np.clip(z['a_cross'] * 2.5, -5, 5))             # crossing ← crosses, corners, free kicks
         return vec
 
+    # learned rule: personal deviations (from the player's own facts) around the position profile of our scale
+    OUT_T = ['pace', 'passing', 'shooting', 'dribbling', 'defending', 'heading', 'iq', 'crossing']
+    GK_T = ['g_ref', 'g_pos', 'g_hand', 'g_div']
+    kind_key = lambda x: next(k for k, v in x['_card'].items() if k.startswith('k_') and v == 1.0)
+    if learned:
+        for x in players:
+            x['_rel'] = np.array([predict(x, t) for t in (GK_T if x['_g'] == 'GK' else OUT_T)])
+        kind_mean = {}
+        for x in players:
+            kind_mean.setdefault(kind_key(x), []).append(x['_rel'])
+        kind_mean = {k: np.mean(v, axis=0) for k, v in kind_mean.items()}
+
+        # weak foot: players ordered by the learned rule, then given out in the shares the reference shows
+        # (rounding alone would make nearly everyone a 3)
+        outfield = sorted((x for x in players if x['_g'] != 'GK'), key=lambda x: (predict(x, 'weakfoot'), x['tm_id']))
+        shares = learned['weakfoot_payi']
+        cuts = np.cumsum([shares[str(k)] for k in range(1, 6)])
+        for i, x in enumerate(outfield):
+            q = (i + 0.5) / len(outfield)
+            x['weakFoot'] = int(1 + np.searchsorted(cuts, q))
+        for x in players:
+            if x['_g'] == 'GK':
+                x['weakFoot'] = 3 if x['foot'] != 'B' else 4
+
     new = 0
-    for x in players:
+    for x in players if learned else []:
+        g, lvl = x['_g'], x['_lvl']
+        dev = x['_rel'] - kind_mean[kind_key(x)]
+        if g == 'GK':
+            vec = lvl + shape_for(x) + dev
+            x['gk'], x['main'], x['crossing'] = [int(max(1, min(99, round(t)))) for t in vec[:4]], None, None
+        else:
+            vec = np.nan_to_num(lvl + shape_for(x), nan=lvl - 10) + dev
+            x['main'], x['crossing'] = [int(max(1, min(99, round(t)))) for t in vec[:7]], int(max(1, min(99, round(vec[7]))))
+            x['gk'] = None
+        x['ratingSource'] = 'NEON XI formül'
+        new += 1
+    for x in [] if learned else players:
         wf = weak_foot(x)
         if wf:
             x['weakFoot'] = wf
@@ -513,7 +595,7 @@ def main() -> None:
             x['ratingSource'] = 'NEON XI formül'
             new += 1
     for x in players:
-        for k in ('_f', '_g', '_r', '_q', '_lvl'):
+        for k in ('_f', '_g', '_r', '_q', '_lvl', '_card', '_rel'):
             x.pop(k, None)
 
     # summer 2026 transfers (Wikidata list the user reviewed); the league follows the new club when we know it
