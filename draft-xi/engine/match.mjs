@@ -6,7 +6,7 @@
 import { makeRng, prob, bForBase, combineTactics, weighted, hash, pickWeighted } from './core.mjs';
 import { FORMATIONS, zonePoint, PITCH_W, PITCH_L, COL_W, ROW_L } from './formations.mjs';
 
-export const ENGINE_VERSION = '0.3.0';
+export const ENGINE_VERSION = '0.3.1';
 
 // k: milli-logit per attribute point (14.1)
 const K = { duel: 85, air: 110, short: 54, long: 43, shot: 85, cross: 43 };
@@ -321,8 +321,10 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     const r2 = rng.roll();
     if (r2 < pG) {
       stats[side].goals++; if (type === 'head') stats[side].headerGoals++;
-      rate(shooter, 100); if (st.lastPasser && st.lastPasser !== shooter) rate(st.lastPasser, 60); duel(shooter, gk, pG);
-      log('goal', side, shooter, { shotType: type, pOn, pG, assist: st.lastPasser?.player.id ?? null });
+      // the assist only counts for a team-mate (the last passer may still be an opponent after a turnover)
+      const assister = st.lastPasser && st.lastPasser !== shooter && teams[side].players.includes(st.lastPasser) ? st.lastPasser : null;
+      rate(shooter, 100); if (assister) rate(assister, 60); duel(shooter, gk, pG);
+      log('goal', side, shooter, { shotType: type, pOn, pG, assist: assister?.player.id ?? null });
       return kickoff(ds);
     }
     const margin = r2 - pG;

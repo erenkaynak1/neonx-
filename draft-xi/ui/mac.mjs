@@ -2,8 +2,8 @@
 // goal replay + celebration. The engine computes the whole match first; this screen only plays it back.
 import { HAVUZ } from '../data/havuz.mjs?v=3';
 import { FORMATIONS } from '../engine/formations.mjs?v=2';
-import { simulateMatch } from '../engine/match.mjs?v=4';
-import { spikerLine, dakika } from './spiker.mjs?v=1';
+import { simulateMatch } from '../engine/match.mjs?v=5';
+import { createSpiker, dakika } from './spiker.mjs?v=3';
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -29,6 +29,7 @@ const planOpts = PLANS.map(([id, ad]) => `<option value="${id}">${ad}</option>`)
 $('kA').innerHTML = clubOpts; $('kB').innerHTML = clubOpts; $('pA').innerHTML = planOpts; $('pB').innerHTML = planOpts;
 $('kA').value = bigClubs.includes('Galatasaray') ? 'Galatasaray' : bigClubs[0];
 $('kB').value = bigClubs.includes('Fenerbahçe') ? 'Fenerbahçe' : bigClubs[1];
+try { $('komik').checked = localStorage.getItem('nxDraftKomik') !== '0'; } catch { /* default on */ }
 
 const lv = (p) => (p.positions.includes('GK') ? p.attrs.ref + p.attrs.gpos + p.attrs.ghd + p.attrs.one
   : p.attrs.fin + p.attrs.dri + p.attrs.sp + p.attrs.vis + p.attrs.tac + p.attrs.mar + p.attrs.pac + p.attrs.str);
@@ -88,9 +89,12 @@ function start() {
     el('circle', { r: 19, fill: '#070b0a', stroke: c, 'stroke-width': 4, style: `filter:drop-shadow(0 0 6px ${c})` }, g);
     const t = el('text', { 'text-anchor': 'middle', y: 8, fill: c, 'font-size': 21, 'font-weight': 800 }, g);
     t.textContent = NUM[pl.slot] ?? '';
-    return { g, id: pl.id };
+    return { g, id: pl.id, ring: g.firstChild };
   }));
-  M = { r, names: r.teams.map((t) => t.name), short, layers, discs, k: 0, u: 0, speed: 1, playing: true, score: [0, 0],
+  const display = directFrames(r);
+  const komik = $('komik').checked;
+  try { localStorage.setItem('nxDraftKomik', komik ? '1' : '0'); } catch { /* ignore */ }
+  M = { r, display, spiker: createSpiker(r, short, r.teams.map((t) => t.name), { jokes: komik, seed }), names: r.teams.map((t) => t.name), short, layers, discs, k: 0, u: 0, speed: 1, playing: true, score: [0, 0],
     live: { poss: [0, 0], shots: [0, 0], on: [0, 0], pass: [0, 0], passOk: [0, 0], corners: [0, 0], fouls: [0, 0], cards: [0, 0] },
     recent: [], last: performance.now(), busy: false };
   $('adA').textContent = M.names[0]; $('adB').textContent = M.names[1];
@@ -98,6 +102,37 @@ function start() {
   $('kur').hidden = true; $('son').hidden = true; $('mac').hidden = false;
   $('oynat').textContent = '❚❚'; $('hiz').textContent = '1x';
   enterFrame(0); renderStats(); requestAnimationFrame(loop);
+}
+
+// ── visual director: the engine's positions plus what a viewer expects to see ──
+// holder glued to the ball (so receivers run onto passes), the two nearest opponents pressing the holder.
+// Visual only: the result comes from the engine and never changes.
+const ENDS_WITH = { possession: 'p', pass: 'to', through: 'to', carry: 'p', dribble: 'p', tackle: 'p', intercept: 'p', press_win: 'p',
+  aerial: 'p', second_ball: 'p', loose_ball: 'p', keeper_rush: 'p', save: 'p', clear: null, goal: null, miss: null, shot: null };
+function directFrames(r) {
+  const where = {};
+  r.teams.forEach((tm, side) => tm.lineup.forEach((pl, i) => { where[pl.id] = [side, i]; }));
+  let holder = null;
+  return r.frames.map((f, k) => {
+    const ev = r.events[k];
+    const pos = f.p.map((team) => team.map((q) => (q ? [q[0], q[1]] : null)));
+    if (ev.type in ENDS_WITH) holder = ENDS_WITH[ev.type] ? ev[ENDS_WITH[ev.type]] : holder;
+    if (['goal', 'miss', 'half_time', 'full_time'].includes(ev.type)) holder = null;
+    const h = holder && where[holder];
+    if (h && pos[h[0]][h[1]]) {
+      const own = h[0] === 0 ? -1 : 1; // stand just behind the ball, towards the own goal
+      pos[h[0]][h[1]] = [f.b[0], f.b[1] + own * 14];
+      const opp = 1 - h[0];
+      const near = pos[opp].map((q, i) => (q ? [Math.hypot(q[0] - f.b[0], q[1] - f.b[1]), i] : [1e9, i]))
+        .filter(([d, i]) => d < 260 && r.teams[opp].lineup[i].mevki !== 'GK').sort((a, b) => a[0] - b[0]).slice(0, 2);
+      near.forEach(([d, i], n) => {
+        const q = pos[opp][i], keep = n === 0 ? 30 : 70; // first presser to ~3 m, second to ~7 m
+        const t = Math.max(0, (d - keep) / d) * (n === 0 ? 0.8 : 0.45);
+        pos[opp][i] = [q[0] + (f.b[0] - q[0]) * t, q[1] + (f.b[1] - q[1]) * t];
+      });
+    }
+    return pos;
+  });
 }
 
 const frameDur = (k) => {
@@ -109,13 +144,21 @@ const ease = (u) => u * u * (3 - 2 * u);
 
 function place(k, u) {
   const f = M.r.frames, a = f[k], b = f[Math.min(k + 1, f.length - 1)];
-  const e = reduced() ? 1 : ease(u);
+  const A = M.display[k], B = M.display[Math.min(k + 1, f.length - 1)];
+  const now = performance.now() / 1000;
   for (let side = 0; side < 2; side++) M.discs[side].forEach((d, i) => {
-    const p = a.p[side][i], q = b.p[side][i] || p;
+    const p = A[side][i], q = B[side][i] || p;
     if (!p) { d.g.style.display = 'none'; return; }
     d.g.style.display = '';
-    d.g.setAttribute('transform', `translate(${sx(p[0] + (q[0] - p[0]) * e)},${sy(p[1] + (q[1] - p[1]) * e)})`);
+    // players near the ball react first, far ones a little later: no block movement
+    const dist = Math.hypot(p[0] - a.b[0], p[1] - a.b[1]);
+    const delay = reduced() ? 0 : Math.min(0.35, dist / 1800);
+    const ui = reduced() ? 1 : ease(Math.max(0, Math.min(1, (u - delay) / (1 - delay))));
+    // gentle idle sway (not for the ball holder, who is glued to the ball)
+    const sway = reduced() || dist < 20 ? [0, 0] : [Math.sin(now * 0.9 + i * 1.7 + side) * 7, Math.cos(now * 0.7 + i * 2.3 + side * 2) * 5];
+    d.g.setAttribute('transform', `translate(${sx(p[0] + (q[0] - p[0]) * ui + sway[0])},${sy(p[1] + (q[1] - p[1]) * ui + sway[1])})`);
   });
+  const e = reduced() ? 1 : ease(u);
   const bx = a.b[0] + (b.b[0] - a.b[0]) * e, by = a.b[1] + (b.b[1] - a.b[1]) * e;
   M.layers.ball.setAttribute('cx', sx(bx)); M.layers.ball.setAttribute('cy', sy(by));
 }
@@ -127,6 +170,7 @@ function passLine(k) {
   const ln = el('line', { x1: sx(a.b[0]), y1: sy(a.b[1]), x2: sx(b.b[0]), y2: sy(b.b[1]), stroke: ev.team === 0 ? '#baff18' : '#2fe0ff',
     'stroke-width': ev.type === 'through' ? 5 : 3, 'stroke-dasharray': ev.type === 'pass_bad' ? '10 8' : '', opacity: 0.85, 'stroke-linecap': 'round' }, M.layers.lines);
   ln.animate?.([{ opacity: 0.85 }, { opacity: 0 }], { duration: 900, fill: 'forwards' });
+  while (M.layers.lines.childElementCount > 3) M.layers.lines.firstElementChild.remove(); // only the latest passes
   setTimeout(() => ln.remove(), 950);
 }
 
@@ -155,10 +199,29 @@ function enterFrame(k) {
   const holder = ev.type === 'possession' || ev.type === 'pass' ? (ev.type === 'pass' ? ev.to : ev.p) : ev.p;
   M.layers.label.textContent = holder ? M.short(holder) : '';
   passLine(k);
-  const line = spikerLine(ev, M.short, M.names);
-  if (line) addLine(ev, line);
+  // duel highlight: both players glow for a moment
+  const rival = ev.past || ev.on || ev.vs || ev.by;
+  if (['dribble', 'tackle', 'aerial', 'press_win', 'foul'].includes(ev.type) && ev.p && rival) flash([ev.p, rival]);
+  // key moments written on the pitch
+  if (ev.type === 'save') toast('KURTARIŞ!');
+  if (ev.type === 'post') toast('DİREK!');
+  if (ev.type === 'foul' && ev.card === 'red') toast('KIRMIZI KART', 'red');
+  if (ev.type === 'foul' && ev.card === 'yellow') toast('SARI KART', 'yel');
+  for (const line of M.spiker(ev, k).reverse()) addLine(ev, line); // newest on top, but a goal stays above its reasons
   if (ev.type === 'goal') goal(k, ev);
   if (k % 8 === 0) renderStats();
+}
+
+function flash(ids) {
+  for (const side of M.discs) for (const d of side) if (ids.includes(d.id)) {
+    d.ring.animate?.([{ strokeWidth: 4, r: 19 }, { strokeWidth: 8, r: 24 }, { strokeWidth: 4, r: 19 }], { duration: 650 });
+  }
+}
+function toast(text, tone = '') {
+  if (reduced()) return;
+  const t = $('anlik');
+  t.textContent = text; t.className = 'anlik ' + tone; t.hidden = false;
+  clearTimeout(toast.h); toast.h = setTimeout(() => { t.hidden = true; }, 1300);
 }
 
 function addLine(ev, { kind, text }) {
