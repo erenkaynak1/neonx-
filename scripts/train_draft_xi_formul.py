@@ -8,10 +8,15 @@ listesindeki hiçbir oyuncu değeri repoya yazılmaz: çıktı yalnızca kuralı
 hesaplanır. Kopyalama değil öğrenme olduğunu göstermek için 5 katlı çapraz doğrulama yapılır: kural, görmediği
 oyuncularda ne kadar tutuyor?
 
-  python3 scripts/train_draft_xi_formul.py <kartlar.json> <başvuru-listesi.json>
+  python3 scripts/train_draft_xi_formul.py <kartlar.json> <başvuru-listesi.json> [ikinci-öğretmen.csv ...]
+
+İkinci öğretmen (isteğe bağlı): ad + yetenek metni olan CSV'ler (kullanıcının sağladığı FM listesi). Bunlar da
+yalnızca kuralı öğretir; hiçbir oyuncu değeri saklanmaz ve dosyalar repoya girmez. Her hedef için ikinci öğretmen,
+yalnızca görmediği oyunculardaki başarıyı artırıyorsa kullanılır.
 """
 from __future__ import annotations
 
+import csv
 import json
 import re
 import sys
@@ -40,6 +45,29 @@ def ridge(X, y, lam=LAMBDA):
     reg[0, 0] = 0
     w = np.linalg.solve(A.T @ A + reg, A.T @ y)
     return float(w[0]), w[1:]
+
+
+FM_MAP = {  # second teacher's attributes → our targets
+    'pace': lambda a: (a['Acceleration'] + a['Pace']) / 2, 'passing': lambda a: a['Passing'], 'shooting': lambda a: a['Finishing'],
+    'dribbling': lambda a: a['Dribbling'], 'defending': lambda a: (a['Tackling'] + a['Marking']) / 2, 'heading': lambda a: a['Heading'],
+    'iq': lambda a: a['Vision'], 'crossing': lambda a: a['Crossing'],
+}
+
+
+def read_teacher(paths):
+    out = {}
+    for path in paths:
+        for row in csv.DictReader(open(path, encoding='utf-8')):
+            lines = [l.strip() for l in (row.get('skills') or '').split('\n') if l.strip()]
+            attrs = {}
+            for i in range(0, len(lines) - 1, 2):
+                try:
+                    attrs[re.sub(r'\s*\(.*\)', '', lines[i])] = float(lines[i + 1])
+                except ValueError:
+                    pass
+            if all(k in attrs for k in ('Acceleration', 'Pace', 'Passing', 'Finishing', 'Dribbling', 'Tackling', 'Marking', 'Heading', 'Vision', 'Crossing')):
+                out[' '.join(toks(row['name']))] = attrs
+    return out
 
 
 def main():
@@ -84,6 +112,18 @@ def main():
     rng = np.random.default_rng(7)
     fold = rng.integers(0, 5, len(rows))
     print(f'eşleşen oyuncu: {len(rows)} (kaleci {int(is_gk.sum())})')
+    # second teacher: matched to fact cards by name (unique), outfield only
+    teacher = read_teacher(sys.argv[3:])
+    by_name = {}
+    for tm, c in cards.items():
+        by_name.setdefault(' '.join(toks(c['name'])), []).append(tm)
+    t_rows = [(by_name[n][0], a) for n, a in teacher.items() if len(by_name.get(n, [])) == 1 and cards[by_name[n][0]]['pos'] != 'GK']
+    tm_by_id = {id(c): tm for tm, c in cards.items()}
+    row_tm = [tm_by_id[id(c)] for c, _ in rows]
+    Zt = np.array([[(cards[tm]['card'][n] - mu[i]) / sd[i] for i, n in enumerate(names)] for tm, _ in t_rows], float) if t_rows else None
+    if teacher:
+        print(f'ikinci öğretmen: {len(teacher)} oyuncu, kartla eşleşen {len(t_rows)}')
+    out['ogretmen'] = {}
     for t, (grp, f) in TARGETS.items():
         mask = np.ones(len(rows), bool) if grp is None else (is_gk if grp == 'gk' else ~is_gk)
         y = np.array([f(r) for _, r in rows], float)
@@ -94,9 +134,30 @@ def main():
             pred[te] = b + Z[te] @ w
         cv = spear(pred[mask], y[mask])
         b, w = ridge(Z[mask], y[mask])
-        out['targets'][t] = {'b': round(b, 5), 'w': w.round(5).tolist()}
+        used = 'EA'
+        if t in FM_MAP and t_rows:
+            # both teachers on a common scale (z within each), test only on reference players the rule never saw
+            m_e, s_e = y[mask].mean(), y[mask].std() + 1e-9
+            yt = np.array([FM_MAP[t](a) - np.mean([FM_MAP[k](a) for k in FM_MAP]) for _, a in t_rows])
+            zt = (yt - yt.mean()) / (yt.std() + 1e-9)
+            ze = (y - m_e) / s_e
+            pred2 = np.zeros(len(rows))
+            for k in range(5):
+                tr, te = mask & (fold != k), mask & (fold == k)
+                held = {row_tm[i] for i in np.where(te)[0]}
+                keep = np.array([tm not in held for tm, _ in t_rows])
+                bb, ww = ridge(np.vstack([Z[tr], Zt[keep]]), np.concatenate([ze[tr], zt[keep]]))
+                pred2[te] = m_e + s_e * (bb + Z[te] @ ww)
+            cv2 = spear(pred2[mask], y[mask])
+            print(f'{t:10} görmediği oyuncularda sıra uyumu {cv:.2f} → iki öğretmenle {cv2:.2f}')
+            if cv2 > cv + 0.005:
+                bb, ww = ridge(np.vstack([Z[mask], Zt]), np.concatenate([ze[mask], zt]))
+                b, w, cv, used = float(m_e + s_e * bb), s_e * ww, cv2, 'EA+FM'
+        else:
+            print(f'{t:10} görmediği oyuncularda sıra uyumu {cv:.2f}')
+        out['targets'][t] = {'b': round(b, 5), 'w': np.asarray(w).round(5).tolist()}
         out['dogrulama'][t] = round(cv, 3)
-        print(f'{t:10} görmediği oyuncularda sıra uyumu {cv:.2f}')
+        out['ogretmen'][t] = used
     wfs = np.array([r['weakFootAbility'] for c, r in rows if c['pos'] != 'GK'])
     out['weakfoot_payi'] = {str(k): round(float((wfs == k).mean()), 4) for k in range(1, 6)}  # aggregate shares only
     OUT.write_text(json.dumps(out, ensure_ascii=False, indent=0) + '\n')
