@@ -1,6 +1,6 @@
 {
 "extractedAt": "2026-11-22",
-"count": 1094,
+"count": 1098,
 "source": "dcaribou/transfermarkt-datasets (2025-26 sonu); değerler: mevcut havuz + NEON XI formül",
 "players": [
 {
@@ -35,15 +35,15 @@
 "assists": 3,
 "main": [
 66,
-60,
+59,
 76,
 71,
-33,
+32,
 79,
 71
 ],
 "gk": null,
-"crossing": 53,
+"crossing": 52,
 "ratingSource": "NEON XI formül",
 "weakFoot": 4,
 "transfer": "2026-07-11"
@@ -112,15 +112,15 @@
 "assists": 4,
 "main": [
 65,
-83,
+82,
 73,
-81,
+80,
 74,
 56,
 83
 ],
 "gk": null,
-"crossing": 72,
+"crossing": 71,
 "ratingSource": "NEON XI formül",
 "weakFoot": 5,
 "transfer": "2026-08-14"
@@ -151,7 +151,7 @@
 "assists": 0,
 "main": [
 70,
-92,
+91,
 87,
 90,
 67,
@@ -234,7 +234,7 @@
 79,
 82,
 59,
-68,
+67,
 81
 ],
 "gk": null,
@@ -270,16 +270,16 @@
 "goals": 3,
 "assists": 5,
 "main": [
-73,
+71,
+82,
+74,
 83,
-75,
-84,
-61,
-55,
-84
+60,
+53,
+83
 ],
 "gk": null,
-"crossing": 77,
+"crossing": 76,
 "ratingSource": "NEON XI formül",
 "transfer": "2026-07-29"
 },
@@ -844,16 +844,16 @@
 "goals": 6,
 "assists": 3,
 "main": [
+79,
+81,
+59,
 80,
-81,
-60,
-81,
-72,
-62,
+71,
+61,
 83
 ],
 "gk": null,
-"crossing": 84,
+"crossing": 83,
 "ratingSource": "NEON XI",
 "weakFoot": 3
 },
@@ -899,6 +899,41 @@
 "weakFoot": 5
 },
 {
+"id": "tm58358",
+"tm_id": 58358,
+"name": "Thomas Müller",
+"pos": "ST",
+"positions": [
+"ST"
+],
+"age": 37,
+"birth": "1989-09-13",
+"foot": "R",
+"height": 185,
+"nation": "Almanya",
+"club": "Bayern Münih",
+"league": "bundesliga",
+"former": [
+"Vancouver Whitecaps"
+],
+"mins": 10,
+"goals": 0,
+"assists": 0,
+"main": [
+65,
+72,
+84,
+80,
+41,
+81,
+82
+],
+"gk": null,
+"crossing": 64,
+"ratingSource": "NEON XI formül",
+"weakFoot": 5
+},
+{
 "id": "v119-cm-05",
 "tm_id": 822959,
 "name": "Tom Bischof",
@@ -921,16 +956,16 @@
 "goals": 3,
 "assists": 3,
 "main": [
+75,
+90,
 76,
-91,
-76,
-87,
-70,
+86,
+69,
 63,
-92
+91
 ],
 "gk": null,
-"crossing": 83,
+"crossing": 82,
 "ratingSource": "NEON XI",
 "weakFoot": 3
 },
@@ -996,7 +1031,7 @@
 78,
 87,
 64,
-65,
+64,
 86
 ],
 "gk": null,
@@ -1065,13 +1100,13 @@
 "goals": 3,
 "assists": 0,
 "main": [
-61,
-64,
+60,
+63,
 40,
 62,
-79,
+78,
 77,
-76
+75
 ],
 "gk": null,
 "crossing": 54,
@@ -1141,7 +1176,7 @@
 "main": [
 75,
 87,
-74,
+75,
 84,
 84,
 83,
@@ -1184,7 +1219,7 @@
 85,
 80,
 42,
-80,
+81,
 81
 ],
 "gk": null,
@@ -1218,10 +1253,10 @@
 "main": [
 79,
 86,
-81,
+80,
 87,
 65,
-59,
+58,
 87
 ],
 "gk": null,
@@ -1333,7 +1368,7 @@
 88
 ],
 "gk": null,
-"crossing": 82,
+"crossing": 81,
 "ratingSource": "NEON XI formül",
 "transfer": "2026-08-18",
 "weakFoot": 4
@@ -1440,7 +1475,7 @@
 "main": [
 86,
 73,
-88,
+89,
 83,
 45,
 84,
@@ -1516,15 +1551,15 @@
 "assists": 3,
 "main": [
 72,
-75,
-50,
+74,
+49,
 71,
 88,
 89,
 86
 ],
 "gk": null,
-"crossing": 68,
+"crossing": 67,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -1631,11 +1666,11 @@
 "goals": 3,
 "assists": 3,
 "main": [
-87,
+88,
 75,
 56,
-81,
-72,
+82,
+73,
 64,
 78
 ],
@@ -1674,10 +1709,10 @@
 86,
 49,
 57,
-81
+82
 ],
 "gk": null,
-"crossing": 80,
+"crossing": 81,
 "ratingSource": "NEON XI formül",
 "weakFoot": 3
 },
@@ -1743,15 +1778,15 @@
 "assists": 0,
 "main": [
 72,
+65,
+41,
 66,
-42,
-66,
-83,
-88,
-80
+82,
+87,
+79
 ],
 "gk": null,
-"crossing": 59,
+"crossing": 58,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -1776,12 +1811,12 @@
 "goals": 10,
 "assists": 7,
 "main": [
-82,
+81,
 89,
 83,
 89,
 66,
-68,
+67,
 89
 ],
 "gk": null,
@@ -1813,12 +1848,12 @@
 "goals": 4,
 "assists": 10,
 "main": [
-79,
+78,
 86,
 78,
 87,
 64,
-62,
+61,
 87
 ],
 "gk": null,
@@ -1852,7 +1887,7 @@
 80,
 84,
 75,
-85,
+84,
 78,
 73,
 86
@@ -1861,40 +1896,6 @@
 "crossing": 75,
 "ratingSource": "NEON XI formül",
 "weakFoot": 3
-},
-{
-"id": "tm40034",
-"tm_id": 40034,
-"name": "Jens Grahl",
-"pos": "GK",
-"positions": [
-"GK"
-],
-"age": 38,
-"birth": "1988-09-22",
-"foot": "R",
-"height": 192,
-"nation": "Almanya",
-"club": "Eintracht Frankfurt",
-"league": "bundesliga",
-"former": [
-"Stuttgart",
-"Hoffenheim",
-"Paderborn",
-"Greuther Fürth"
-],
-"mins": 90,
-"goals": 0,
-"assists": 0,
-"main": null,
-"gk": [
-83,
-82,
-77,
-73
-],
-"crossing": null,
-"ratingSource": "NEON XI formül"
 },
 {
 "id": "tm333647",
@@ -1953,8 +1954,8 @@
 "main": null,
 "gk": [
 89,
-87,
-82,
+88,
+83,
 79
 ],
 "crossing": null,
@@ -2024,17 +2025,51 @@
 "assists": 2,
 "main": [
 64,
-83,
-76,
+82,
+75,
 84,
-62,
-54,
-84
+61,
+53,
+83
 ],
 "gk": null,
 "crossing": 76,
 "ratingSource": "NEON XI formül",
 "weakFoot": 2
+},
+{
+"id": "tm196813",
+"tm_id": 196813,
+"name": "Michael Zetterer",
+"pos": "GK",
+"positions": [
+"GK"
+],
+"age": 31,
+"birth": "1995-07-12",
+"foot": "B",
+"height": 187,
+"nation": "Almanya",
+"club": "Eintracht Frankfurt",
+"league": "bundesliga",
+"former": [
+"Werder Bremen",
+"PEC Zwolle",
+"Austria Klagenfurt",
+"Unterhaching"
+],
+"mins": 2635,
+"goals": 0,
+"assists": 0,
+"main": null,
+"gk": [
+88,
+87,
+82,
+78
+],
+"crossing": null,
+"ratingSource": "NEON XI formül"
 },
 {
 "id": "tm691892",
@@ -2102,7 +2137,7 @@
 84
 ],
 "gk": null,
-"crossing": 63,
+"crossing": 62,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -2137,8 +2172,8 @@
 61,
 79,
 76,
-71,
-79
+70,
+78
 ],
 "gk": null,
 "crossing": 77,
@@ -2243,14 +2278,14 @@
 "main": [
 69,
 62,
-38,
+37,
 62,
 79,
 79,
 76
 ],
 "gk": null,
-"crossing": 61,
+"crossing": 60,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -2307,16 +2342,16 @@
 "goals": 7,
 "assists": 2,
 "main": [
-79,
+78,
 68,
 69,
 77,
-40,
-52,
-72
+39,
+51,
+71
 ],
 "gk": null,
-"crossing": 72,
+"crossing": 71,
 "ratingSource": "NEON XI formül",
 "weakFoot": 4
 },
@@ -2345,7 +2380,7 @@
 "main": null,
 "gk": [
 86,
-84,
+85,
 79,
 76
 ],
@@ -2385,7 +2420,7 @@
 82
 ],
 "gk": null,
-"crossing": 63,
+"crossing": 64,
 "ratingSource": "NEON XI formül",
 "weakFoot": 5
 },
@@ -2421,7 +2456,7 @@
 88
 ],
 "gk": null,
-"crossing": 80,
+"crossing": 79,
 "ratingSource": "NEON XI formül",
 "weakFoot": 3
 },
@@ -2446,12 +2481,12 @@
 "assists": 2,
 "main": [
 73,
-63,
-46,
+62,
+45,
 67,
-65,
-59,
-67
+64,
+58,
+66
 ],
 "gk": null,
 "crossing": 66,
@@ -2480,12 +2515,12 @@
 "goals": 5,
 "assists": 3,
 "main": [
-65,
+64,
 58,
 73,
 69,
 31,
-68,
+69,
 69
 ],
 "gk": null,
@@ -2520,9 +2555,9 @@
 60,
 48,
 65,
-63,
-55,
-65
+62,
+54,
+64
 ],
 "gk": null,
 "crossing": 65,
@@ -2587,10 +2622,10 @@
 "goals": 6,
 "assists": 1,
 "main": [
-67,
+68,
 80,
 67,
-79,
+78,
 78,
 69,
 83
@@ -2632,7 +2667,7 @@
 71,
 80,
 43,
-46,
+47,
 76
 ],
 "gk": null,
@@ -2692,16 +2727,16 @@
 "goals": 2,
 "assists": 0,
 "main": [
-67,
+66,
 77,
 64,
 76,
-76,
+75,
 70,
-80
+79
 ],
 "gk": null,
-"crossing": 70,
+"crossing": 69,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -2729,7 +2764,7 @@
 72,
 70,
 47,
-71,
+70,
 87,
 90,
 83
@@ -2764,13 +2799,13 @@
 87,
 77,
 74,
-85,
-48,
+86,
+49,
 51,
 80
 ],
 "gk": null,
-"crossing": 79,
+"crossing": 80,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -2807,7 +2842,7 @@
 75
 ],
 "gk": null,
-"crossing": 80,
+"crossing": 81,
 "ratingSource": "NEON XI formül",
 "weakFoot": 4
 },
@@ -2946,7 +2981,7 @@
 "goals": 15,
 "assists": 8,
 "main": [
-63,
+62,
 84,
 78,
 85,
@@ -2958,42 +2993,6 @@
 "crossing": 79,
 "ratingSource": "NEON XI formül",
 "weakFoot": 5
-},
-{
-"id": "tm875332",
-"tm_id": 875332,
-"name": "Arthur Chaves",
-"pos": "CB",
-"positions": [
-"CB"
-],
-"age": 25,
-"birth": "2001-01-29",
-"foot": "R",
-"height": 188,
-"nation": "Brezilya",
-"club": "Hoffenheim",
-"league": "bundesliga",
-"former": [
-"Augsburg",
-"Académico Viseu",
-"Avaí"
-],
-"mins": 1070,
-"goals": 2,
-"assists": 0,
-"main": [
-63,
-58,
-36,
-58,
-75,
-77,
-71
-],
-"gk": null,
-"crossing": 50,
-"ratingSource": "NEON XI formül"
 },
 {
 "id": "tm1067904",
@@ -3059,16 +3058,16 @@
 "goals": 0,
 "assists": 0,
 "main": [
-71,
+70,
 63,
 47,
 68,
-66,
+65,
 57,
 67
 ],
 "gk": null,
-"crossing": 66,
+"crossing": 65,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -3144,6 +3143,42 @@
 "weakFoot": 2
 },
 {
+"id": "tm237164",
+"tm_id": 237164,
+"name": "Ihlas Bebou",
+"pos": "ST",
+"positions": [
+"ST"
+],
+"age": 32,
+"birth": "1994-04-23",
+"foot": "R",
+"height": 185,
+"nation": "Togo",
+"club": "Hoffenheim",
+"league": "bundesliga",
+"former": [
+"Hannover",
+"Fortuna Düsseldorf"
+],
+"mins": 219,
+"goals": 0,
+"assists": 0,
+"main": [
+64,
+58,
+73,
+68,
+30,
+69,
+69
+],
+"gk": null,
+"crossing": 50,
+"ratingSource": "NEON XI formül",
+"weakFoot": 4
+},
+{
 "id": "tm667457",
 "tm_id": 667457,
 "name": "Leon Avdullahu",
@@ -3200,7 +3235,7 @@
 "main": null,
 "gk": [
 84,
-82,
+83,
 77,
 74
 ],
@@ -3229,8 +3264,8 @@
 "main": [
 73,
 57,
-73,
-69,
+72,
+68,
 30,
 76,
 68
@@ -3266,7 +3301,7 @@
 73,
 66,
 76,
-53,
+54,
 52,
 75
 ],
@@ -3367,16 +3402,16 @@
 "goals": 1,
 "assists": 0,
 "main": [
-74,
+73,
 69,
 46,
-70,
-87,
-89,
+69,
+86,
+88,
 85
 ],
 "gk": null,
-"crossing": 62,
+"crossing": 61,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -3443,7 +3478,7 @@
 "assists": 10,
 "main": [
 72,
-74,
+73,
 56,
 77,
 74,
@@ -3451,7 +3486,7 @@
 78
 ],
 "gk": null,
-"crossing": 80,
+"crossing": 79,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -3558,7 +3593,7 @@
 79,
 88,
 51,
-61,
+62,
 84
 ],
 "gk": null,
@@ -3589,12 +3624,12 @@
 "assists": 4,
 "main": [
 74,
-80,
-71,
 79,
-72,
 70,
-81
+78,
+72,
+69,
+80
 ],
 "gk": null,
 "crossing": 69,
@@ -3627,7 +3662,7 @@
 90,
 81,
 78,
-87,
+88,
 50,
 57,
 83
@@ -3695,7 +3730,7 @@
 "main": [
 79,
 89,
-84,
+83,
 90,
 68,
 68,
@@ -3809,12 +3844,12 @@
 77,
 68,
 77,
+70,
 71,
-72,
 79
 ],
 "gk": null,
-"crossing": 68,
+"crossing": 67,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -3853,6 +3888,39 @@
 "weakFoot": 3
 },
 {
+"id": "tm160971",
+"tm_id": 160971,
+"name": "Leopold Zingerle",
+"pos": "GK",
+"positions": [
+"GK"
+],
+"age": 32,
+"birth": "1994-04-10",
+"foot": "R",
+"height": 182,
+"nation": "Almanya",
+"club": "Leipzig",
+"league": "bundesliga",
+"former": [
+"Paderborn",
+"1. Magdeburg",
+"Greuther Fürth"
+],
+"mins": 0,
+"goals": 0,
+"assists": 0,
+"main": null,
+"gk": [
+84,
+82,
+77,
+74
+],
+"crossing": null,
+"ratingSource": "NEON XI formül"
+},
+{
 "id": "tm486046",
 "tm_id": 486046,
 "name": "Maarten Vandevoordt",
@@ -3875,10 +3943,10 @@
 "assists": 0,
 "main": null,
 "gk": [
-89,
+90,
 88,
 83,
-79
+80
 ],
 "crossing": null,
 "ratingSource": "NEON XI formül"
@@ -3948,13 +4016,13 @@
 77,
 83,
 74,
-84,
+83,
 77,
-72,
+71,
 85
 ],
 "gk": null,
-"crossing": 75,
+"crossing": 74,
 "ratingSource": "NEON XI formül",
 "transfer": "2026-09-01"
 },
@@ -4024,7 +4092,7 @@
 62,
 80,
 77,
-60,
+59,
 80
 ],
 "gk": null,
@@ -4126,7 +4194,7 @@
 "goals": 3,
 "assists": 2,
 "main": [
-73,
+74,
 83,
 72,
 83,
@@ -4137,44 +4205,6 @@
 "gk": null,
 "crossing": 73,
 "ratingSource": "NEON XI formül"
-},
-{
-"id": "ext-cm-05",
-"tm_id": 566931,
-"name": "Xavi Simons",
-"pos": "AM",
-"positions": [
-"AM",
-"LW"
-],
-"age": 23,
-"birth": "2003-04-21",
-"foot": "R",
-"height": 179,
-"nation": "Hollanda",
-"club": "Leipzig",
-"league": "bundesliga",
-"former": [
-"Tottenham",
-"PSG",
-"PSV"
-],
-"mins": 2749,
-"goals": 6,
-"assists": 7,
-"main": [
-79,
-92,
-77,
-89,
-72,
-65,
-93
-],
-"gk": null,
-"crossing": 84,
-"ratingSource": "NEON XI",
-"weakFoot": 2
 },
 {
 "id": "tm73517",
@@ -4206,8 +4236,8 @@
 "assists": 0,
 "main": null,
 "gk": [
+87,
 86,
-85,
 80,
 77
 ],
@@ -4277,8 +4307,8 @@
 "goals": 2,
 "assists": 3,
 "main": [
-80,
-69,
+79,
+68,
 66,
 77,
 40,
@@ -4394,6 +4424,43 @@
 "ratingSource": "NEON XI formül"
 },
 {
+"id": "tm718303",
+"tm_id": 718303,
+"name": "Ernest Poku",
+"pos": "RW",
+"positions": [
+"RW",
+"LM",
+"LW"
+],
+"age": 22,
+"birth": "2004-01-28",
+"foot": "R",
+"height": 176,
+"nation": "Hollanda",
+"club": "Leverkusen",
+"league": "bundesliga",
+"former": [
+"AZ Alkmaar"
+],
+"mins": 2820,
+"goals": 6,
+"assists": 10,
+"main": [
+91,
+82,
+78,
+88,
+51,
+55,
+84
+],
+"gk": null,
+"crossing": 82,
+"ratingSource": "NEON XI formül",
+"weakFoot": 5
+},
+{
 "id": "tm711980",
 "tm_id": 711980,
 "name": "Guéla Doué",
@@ -4496,7 +4563,7 @@
 "gk": [
 86,
 85,
-79,
+80,
 76
 ],
 "crossing": null,
@@ -4566,7 +4633,7 @@
 70,
 77,
 55,
-49,
+48,
 78
 ],
 "gk": null,
@@ -4603,13 +4670,13 @@
 76,
 72,
 48,
-72,
+71,
 88,
 90,
 85
 ],
 "gk": null,
-"crossing": 64,
+"crossing": 63,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -4638,8 +4705,8 @@
 "assists": 2,
 "main": [
 80,
-89,
-84,
+88,
+83,
 89,
 67,
 70,
@@ -4684,45 +4751,6 @@
 ],
 "crossing": null,
 "ratingSource": "NEON XI formül"
-},
-{
-"id": "fmi26-442891",
-"tm_id": 442891,
-"name": "Martin Terrier",
-"pos": "AM",
-"positions": [
-"AM",
-"ST"
-],
-"age": 29,
-"birth": "1997-03-04",
-"foot": "R",
-"height": 184,
-"nation": "Fransa",
-"club": "Leverkusen",
-"league": "bundesliga",
-"former": [
-"Rennes",
-"Lyon",
-"Strasbourg",
-"Lille"
-],
-"mins": 1007,
-"goals": 5,
-"assists": 1,
-"main": [
-69,
-80,
-75,
-81,
-59,
-62,
-81
-],
-"gk": null,
-"crossing": 73,
-"ratingSource": "NEON XI formül",
-"weakFoot": 5
 },
 {
 "id": "tm395516",
@@ -4787,13 +4815,13 @@
 "goals": 1,
 "assists": 6,
 "main": [
-73,
+72,
+82,
+75,
 83,
-76,
-84,
-61,
-54,
-84
+60,
+53,
+83
 ],
 "gk": null,
 "crossing": 75,
@@ -4832,7 +4860,7 @@
 93,
 82,
 43,
-86,
+87,
 83
 ],
 "gk": null,
@@ -4870,7 +4898,7 @@
 73,
 51,
 71,
-88,
+87,
 87,
 85
 ],
@@ -4902,12 +4930,12 @@
 "assists": 1,
 "main": [
 63,
-56,
+55,
 33,
 56,
 73,
 73,
-70
+69
 ],
 "gk": null,
 "crossing": 48,
@@ -4940,8 +4968,8 @@
 75,
 68,
 77,
-55,
-55,
+54,
+54,
 76
 ],
 "gk": null,
@@ -4990,6 +5018,42 @@
 "weakFoot": 4
 },
 {
+"id": "fmi26-504215",
+"tm_id": 504215,
+"name": "Giovanni Reyna",
+"pos": "AM",
+"positions": [
+"AM"
+],
+"age": 24,
+"birth": "2002-11-13",
+"foot": "R",
+"height": 187,
+"nation": "ABD",
+"club": "Mönchengladbach",
+"league": "bundesliga",
+"former": [
+"Dortmund",
+"Nottingham Forest"
+],
+"mins": 662,
+"goals": 2,
+"assists": 1,
+"main": [
+70,
+78,
+71,
+79,
+57,
+57,
+79
+],
+"gk": null,
+"crossing": 73,
+"ratingSource": "NEON XI formül",
+"weakFoot": 3
+},
+{
 "id": "tm613192",
 "tm_id": 613192,
 "name": "Jens Castrop",
@@ -5014,7 +5078,7 @@
 "assists": 1,
 "main": [
 82,
-70,
+71,
 69,
 79,
 42,
@@ -5022,7 +5086,7 @@
 74
 ],
 "gk": null,
-"crossing": 72,
+"crossing": 73,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -5052,7 +5116,7 @@
 73,
 57,
 77,
-75,
+74,
 63,
 77
 ],
@@ -5089,11 +5153,11 @@
 "goals": 5,
 "assists": 0,
 "main": [
-63,
+62,
 64,
 37,
 61,
-78,
+77,
 76,
 76
 ],
@@ -5130,50 +5194,14 @@
 "main": [
 58,
 75,
-68,
+67,
 76,
 54,
-45,
+44,
 76
 ],
 "gk": null,
 "crossing": 72,
-"ratingSource": "NEON XI formül"
-},
-{
-"id": "tm524285",
-"tm_id": 524285,
-"name": "Luca Netz",
-"pos": "LB",
-"positions": [
-"LB",
-"LM"
-],
-"age": 23,
-"birth": "2003-05-15",
-"foot": "L",
-"height": 184,
-"nation": "Almanya",
-"club": "Mönchengladbach",
-"league": "bundesliga",
-"former": [
-"Nottingham Forest",
-"Hertha Berlin"
-],
-"mins": 1390,
-"goals": 0,
-"assists": 2,
-"main": [
-78,
-68,
-51,
-71,
-69,
-57,
-72
-],
-"gk": null,
-"crossing": 74,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -5199,14 +5227,14 @@
 "main": [
 76,
 64,
-48,
-69,
+47,
+68,
 66,
 51,
 68
 ],
 "gk": null,
-"crossing": 68,
+"crossing": 67,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -5267,11 +5295,11 @@
 "goals": 2,
 "assists": 3,
 "main": [
-74,
+73,
 72,
 49,
 72,
-89,
+88,
 91,
 85
 ],
@@ -5308,9 +5336,9 @@
 57,
 35,
 58,
-75,
+74,
 73,
-71
+70
 ],
 "gk": null,
 "crossing": 50,
@@ -5344,7 +5372,7 @@
 73,
 83,
 76,
-63,
+62,
 84
 ],
 "gk": null,
@@ -5378,7 +5406,7 @@
 "assists": 1,
 "main": [
 70,
-59,
+58,
 75,
 70,
 31,
@@ -5444,7 +5472,7 @@
 68,
 77,
 55,
-49,
+48,
 76
 ],
 "gk": null,
@@ -5550,7 +5578,7 @@
 62,
 74,
 74,
-72,
+71,
 79
 ],
 "gk": null,
@@ -5580,7 +5608,7 @@
 "goals": 9,
 "assists": 7,
 "main": [
-82,
+81,
 88,
 80,
 89,
@@ -5733,7 +5761,7 @@
 "assists": 0,
 "main": null,
 "gk": [
-84,
+85,
 83,
 78,
 75
@@ -5773,6 +5801,35 @@
 ],
 "gk": null,
 "crossing": 64,
+"ratingSource": "NEON XI formül"
+},
+{
+"id": "tm1009438",
+"tm_id": 1009438,
+"name": "Florian Hellstern",
+"pos": "GK",
+"positions": [
+"GK"
+],
+"age": 19,
+"birth": "2007-10-18",
+"foot": "R",
+"height": 188,
+"nation": "Almanya",
+"club": "Stuttgart",
+"league": "bundesliga",
+"former": [],
+"mins": 0,
+"goals": 0,
+"assists": 0,
+"main": null,
+"gk": [
+86,
+85,
+80,
+76
+],
+"crossing": null,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -5879,7 +5936,7 @@
 53,
 72,
 69,
-66,
+65,
 73
 ],
 "gk": null,
@@ -5915,7 +5972,7 @@
 66,
 75,
 38,
-54,
+53,
 70
 ],
 "gk": null,
@@ -5950,15 +6007,15 @@
 "assists": 3,
 "main": [
 75,
-67,
+66,
 51,
 70,
-68,
+67,
 55,
-71
+70
 ],
 "gk": null,
-"crossing": 72,
+"crossing": 71,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -5988,8 +6045,8 @@
 43,
 63,
 80,
-85,
-77
+84,
+76
 ],
 "gk": null,
 "crossing": 55,
@@ -6131,14 +6188,50 @@
 "main": [
 74,
 62,
-48,
+47,
 67,
 64,
-50,
+49,
 66
 ],
 "gk": null,
-"crossing": 67,
+"crossing": 66,
+"ratingSource": "NEON XI formül"
+},
+{
+"id": "tm881297",
+"tm_id": 881297,
+"name": "Adam Daghim",
+"pos": "RW",
+"positions": [
+"RW",
+"ST"
+],
+"age": 21,
+"birth": "2005-09-28",
+"foot": "L",
+"height": 189,
+"nation": "Danimarka",
+"club": "Wolfsburg",
+"league": "bundesliga",
+"former": [
+"Red Bull Salzburg",
+"Aarhus GF"
+],
+"mins": 1483,
+"goals": 2,
+"assists": 3,
+"main": [
+79,
+69,
+66,
+76,
+38,
+53,
+71
+],
+"gk": null,
+"crossing": 72,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -6174,7 +6267,7 @@
 72,
 83,
 76,
-67,
+66,
 86
 ],
 "gk": null,
@@ -6209,13 +6302,13 @@
 62,
 61,
 42,
-61,
+60,
 77,
 80,
-75
+74
 ],
 "gk": null,
-"crossing": 53,
+"crossing": 52,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -6253,6 +6346,73 @@
 "ratingSource": "NEON XI formül"
 },
 {
+"id": "tm1068257",
+"tm_id": 1068257,
+"name": "Jakub Zielinski",
+"pos": "GK",
+"positions": [
+"GK"
+],
+"age": 18,
+"birth": "2008-02-21",
+"foot": "R",
+"height": 194,
+"nation": "Polonya",
+"club": "Wolfsburg",
+"league": "bundesliga",
+"former": [
+"Legia Warszawa"
+],
+"mins": 0,
+"goals": 0,
+"assists": 0,
+"main": null,
+"gk": [
+83,
+82,
+76,
+73
+],
+"crossing": null,
+"ratingSource": "NEON XI formül"
+},
+{
+"id": "fmi26-919515",
+"tm_id": 919515,
+"name": "Jeanuël Belocian",
+"pos": "CB",
+"positions": [
+"CB",
+"LB"
+],
+"age": 21,
+"birth": "2005-02-17",
+"foot": "L",
+"height": 186,
+"nation": "Fransa",
+"club": "Wolfsburg",
+"league": "bundesliga",
+"former": [
+"Leverkusen",
+"Rennes"
+],
+"mins": 1737,
+"goals": 0,
+"assists": 1,
+"main": [
+70,
+64,
+38,
+63,
+80,
+78,
+76
+],
+"gk": null,
+"crossing": 55,
+"ratingSource": "NEON XI formül"
+},
+{
 "id": "tm369674",
 "tm_id": 369674,
 "name": "Joakim Maehle",
@@ -6279,85 +6439,14 @@
 "main": [
 80,
 74,
-58,
-77,
+57,
+76,
 74,
-66,
+65,
 77
 ],
 "gk": null,
-"crossing": 76,
-"ratingSource": "NEON XI formül"
-},
-{
-"id": "tm391004",
-"tm_id": 391004,
-"name": "Jonas Wind",
-"pos": "ST",
-"positions": [
-"ST"
-],
-"age": 27,
-"birth": "1999-02-07",
-"foot": "R",
-"height": 190,
-"nation": "Danimarka",
-"club": "Wolfsburg",
-"league": "bundesliga",
-"former": [
-"Kopenhag",
-"Rosenhöj BK"
-],
-"mins": 480,
-"goals": 1,
-"assists": 0,
-"main": [
-71,
-61,
-75,
-71,
-32,
-75,
-71
-],
-"gk": null,
-"crossing": 52,
-"ratingSource": "NEON XI formül",
-"weakFoot": 4
-},
-{
-"id": "tm435796",
-"tm_id": 435796,
-"name": "Kilian Fischer",
-"pos": "RB",
-"positions": [
-"RB"
-],
-"age": 26,
-"birth": "2000-10-12",
-"foot": "B",
-"height": 182,
-"nation": "Almanya",
-"club": "Wolfsburg",
-"league": "bundesliga",
-"former": [
-"Nürnberg",
-"Türkgücü Münch"
-],
-"mins": 894,
-"goals": 0,
-"assists": 1,
-"main": [
-72,
-63,
-46,
-67,
-64,
-51,
-67
-],
-"gk": null,
-"crossing": 65,
+"crossing": 75,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -6421,50 +6510,12 @@
 "main": null,
 "gk": [
 85,
-83,
+84,
 78,
 75
 ],
 "crossing": null,
 "ratingSource": "NEON XI formül"
-},
-{
-"id": "tm342405",
-"tm_id": 342405,
-"name": "Mattias Svanberg",
-"pos": "DM",
-"positions": [
-"DM",
-"CM",
-"AM"
-],
-"age": 27,
-"birth": "1999-01-05",
-"foot": "R",
-"height": 186,
-"nation": "İsveç",
-"club": "Wolfsburg",
-"league": "bundesliga",
-"former": [
-"Bologna",
-"Malmö Fotbollförening"
-],
-"mins": 891,
-"goals": 6,
-"assists": 2,
-"main": [
-66,
-79,
-67,
-76,
-76,
-73,
-81
-],
-"gk": null,
-"crossing": 70,
-"ratingSource": "NEON XI formül",
-"weakFoot": 3
 },
 {
 "id": "tm117674",
@@ -6492,7 +6543,7 @@
 62,
 72,
 72,
-64,
+63,
 77
 ],
 "gk": null,
@@ -6525,12 +6576,12 @@
 "goals": 2,
 "assists": 0,
 "main": [
-63,
+62,
 59,
 36,
 59,
-76,
-79,
+75,
+78,
 72
 ],
 "gk": null,
@@ -6566,17 +6617,53 @@
 "assists": 6,
 "main": [
 76,
+84,
+77,
 85,
-78,
-86,
-64,
-60,
-86
+63,
+59,
+85
 ],
 "gk": null,
-"crossing": 81,
+"crossing": 80,
 "ratingSource": "NEON XI formül",
 "weakFoot": 4
+},
+{
+"id": "tm951579",
+"tm_id": 951579,
+"name": "Saël Kumbedi",
+"pos": "RB",
+"positions": [
+"RB",
+"RM"
+],
+"age": 21,
+"birth": "2005-03-26",
+"foot": "R",
+"height": 175,
+"nation": "Fransa",
+"club": "Wolfsburg",
+"league": "bundesliga",
+"former": [
+"Lyon",
+"Le Havre"
+],
+"mins": 1963,
+"goals": 0,
+"assists": 5,
+"main": [
+80,
+70,
+50,
+72,
+69,
+51,
+72
+],
+"gk": null,
+"crossing": 71,
+"ratingSource": "NEON XI formül"
 },
 {
 "id": "tm663581",
@@ -6679,7 +6766,7 @@
 "main": [
 52,
 63,
-39,
+38,
 62,
 79,
 72,
@@ -6717,9 +6804,9 @@
 88,
 81,
 88,
-66,
 65,
-89
+65,
+88
 ],
 "gk": null,
 "crossing": 83,
@@ -6743,8 +6830,8 @@
 "club": "Ajax",
 "league": "eredivisie",
 "former": [
-"Barcelona",
 "Girona",
+"Barcelona",
 "Mönchengladbach"
 ],
 "mins": 270,
@@ -6752,10 +6839,10 @@
 "assists": 0,
 "main": null,
 "gk": [
+86,
 85,
-84,
-82,
-89
+83,
+90
 ],
 "crossing": null,
 "ratingSource": "NEON XI",
@@ -6857,7 +6944,7 @@
 "assists": 0,
 "main": [
 71,
-61,
+60,
 44,
 65,
 62,
@@ -6890,10 +6977,10 @@
 "main": [
 67,
 63,
-41,
+40,
 63,
-80,
-80,
+79,
+79,
 76
 ],
 "gk": null,
@@ -6922,15 +7009,15 @@
 "assists": 1,
 "main": [
 67,
-71,
+70,
 62,
 72,
-66,
+65,
 64,
 73
 ],
 "gk": null,
-"crossing": 65,
+"crossing": 64,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -6960,11 +7047,11 @@
 "assists": 2,
 "main": [
 68,
-62,
+61,
 44,
-66,
+65,
 63,
-45,
+44,
 65
 ],
 "gk": null,
@@ -7032,7 +7119,7 @@
 73,
 50,
 73,
-90,
+89,
 86,
 86
 ],
@@ -7070,12 +7157,12 @@
 60,
 76,
 71,
-33,
+32,
 74,
 71
 ],
 "gk": null,
-"crossing": 55,
+"crossing": 54,
 "ratingSource": "NEON XI formül",
 "weakFoot": 4
 },
@@ -7143,7 +7230,7 @@
 57,
 71,
 62,
-73,
+72,
 66,
 51,
 74
@@ -7176,9 +7263,9 @@
 "assists": 1,
 "main": [
 73,
-66,
+65,
 47,
-69,
+68,
 66,
 53,
 69
@@ -7211,7 +7298,7 @@
 84,
 75,
 85,
-79,
+78,
 65,
 86
 ],
@@ -7272,7 +7359,7 @@
 "goals": 6,
 "assists": 1,
 "main": [
-79,
+78,
 87,
 81,
 89,
@@ -7316,10 +7403,10 @@
 77,
 40,
 46,
-72
+71
 ],
 "gk": null,
-"crossing": 72,
+"crossing": 71,
 "ratingSource": "NEON XI formül",
 "weakFoot": 4
 },
@@ -7383,8 +7470,8 @@
 63,
 46,
 66,
-64,
-51,
+63,
+50,
 66
 ],
 "gk": null,
@@ -7418,11 +7505,11 @@
 "main": [
 74,
 68,
-67,
+66,
 76,
 39,
 44,
-72
+71
 ],
 "gk": null,
 "crossing": 73,
@@ -7452,13 +7539,54 @@
 "assists": 0,
 "main": null,
 "gk": [
-86,
+87,
 85,
 80,
-76
+77
 ],
 "crossing": null,
 "ratingSource": "NEON XI formül"
+},
+{
+"id": "lw11",
+"tm_id": 406040,
+"name": "Ademola Lookman",
+"pos": "ST",
+"positions": [
+"ST",
+"LW"
+],
+"age": 29,
+"birth": "1997-10-20",
+"foot": "R",
+"height": 174,
+"nation": "Nijerya",
+"club": "Atlético Madrid",
+"league": "laliga",
+"former": [
+"Atalanta",
+"Leipzig",
+"Leicester",
+"Fulham",
+"Everton",
+"Charlton"
+],
+"mins": 3138,
+"goals": 15,
+"assists": 10,
+"main": [
+90,
+81,
+86,
+89,
+44,
+70,
+86
+],
+"gk": null,
+"crossing": 86,
+"ratingSource": "NEON XI",
+"weakFoot": 4
 },
 {
 "id": "lb9",
@@ -7753,10 +7881,10 @@
 73,
 83,
 70,
-82,
+81,
 81,
 77,
-86
+85
 ],
 "gk": null,
 "crossing": 74,
@@ -7825,10 +7953,10 @@
 "assists": 0,
 "main": null,
 "gk": [
-88,
+89,
 87,
 82,
-78
+79
 ],
 "crossing": null,
 "ratingSource": "NEON XI formül"
@@ -7934,11 +8062,11 @@
 "main": [
 67,
 84,
-74,
+73,
 84,
-78,
-64,
-86
+77,
+63,
+85
 ],
 "gk": null,
 "crossing": 75,
@@ -8017,6 +8145,45 @@
 "crossing": 85,
 "ratingSource": "NEON XI formül",
 "weakFoot": 2
+},
+{
+"id": "tm486031",
+"tm_id": 486031,
+"name": "Nico González",
+"pos": "LW",
+"positions": [
+"LW",
+"RW"
+],
+"age": 28,
+"birth": "1998-04-06",
+"foot": "L",
+"height": 180,
+"nation": "Arjantin",
+"club": "Atlético Madrid",
+"league": "laliga",
+"former": [
+"Juventus",
+"Fiorentina",
+"Stuttgart",
+"Asociación Atlética Argentinos Juniors"
+],
+"mins": 2022,
+"goals": 5,
+"assists": 1,
+"main": [
+88,
+81,
+81,
+89,
+52,
+65,
+84
+],
+"gk": null,
+"crossing": 82,
+"ratingSource": "NEON XI formül",
+"weakFoot": 5
 },
 {
 "id": "tm775605",
@@ -8256,7 +8423,7 @@
 "assists": 11,
 "main": [
 82,
-91,
+90,
 88,
 92,
 62,
@@ -8284,9 +8451,9 @@
 "club": "Barcelona",
 "league": "laliga",
 "former": [
-"Girona",
-"Fenerbahçe",
 "Dinamo Zagreb",
+"Fenerbahçe",
+"Girona",
 "NK Zagreb"
 ],
 "mins": 660,
@@ -8330,7 +8497,7 @@
 "main": [
 74,
 81,
-51,
+50,
 76,
 88,
 88,
@@ -8442,7 +8609,7 @@
 87
 ],
 "gk": null,
-"crossing": 77,
+"crossing": 76,
 "ratingSource": "NEON XI"
 },
 {
@@ -8540,16 +8707,16 @@
 "goals": 2,
 "assists": 6,
 "main": [
-81,
+80,
 79,
-63,
+62,
 81,
-79,
-66,
-84
+78,
+65,
+83
 ],
 "gk": null,
-"crossing": 87,
+"crossing": 86,
 "ratingSource": "NEON XI formül",
 "transfer": "2026-08-20"
 },
@@ -8613,8 +8780,8 @@
 "goals": 10,
 "assists": 8,
 "main": [
-85,
-73,
+86,
+74,
 88,
 83,
 45,
@@ -8836,7 +9003,7 @@
 87
 ],
 "gk": null,
-"crossing": 78,
+"crossing": 77,
 "ratingSource": "NEON XI",
 "weakFoot": 5,
 "transfer": "2026-08-01"
@@ -8900,49 +9067,14 @@
 "assists": 0,
 "main": null,
 "gk": [
+89,
 88,
-87,
 82,
-78
+79
 ],
 "crossing": null,
 "ratingSource": "NEON XI formül",
 "transfer": "2026-08-07"
-},
-{
-"id": "v119-dm-01",
-"tm_id": 636695,
-"name": "Marc Casadó",
-"pos": "DM",
-"positions": [
-"DM"
-],
-"age": 23,
-"birth": "2003-09-14",
-"foot": "R",
-"height": 172,
-"nation": "İspanya",
-"club": "Deportivo La Coruña",
-"league": "laliga",
-"former": [
-"Barcelona"
-],
-"mins": 1397,
-"goals": 0,
-"assists": 1,
-"main": [
-69,
-85,
-64,
-79,
-79,
-70,
-88
-],
-"gk": null,
-"crossing": 76,
-"ratingSource": "NEON XI",
-"transfer": "2026-09-01"
 },
 {
 "id": "tm58864",
@@ -9014,12 +9146,12 @@
 "goals": 3,
 "assists": 2,
 "main": [
-65,
+64,
 76,
-69,
+68,
 78,
 55,
-45,
+44,
 77
 ],
 "gk": null,
@@ -9057,12 +9189,12 @@
 "assists": 0,
 "main": [
 54,
-63,
+62,
 41,
 62,
 79,
 79,
-76
+75
 ],
 "gk": null,
 "crossing": 56,
@@ -9093,9 +9225,9 @@
 "assists": 2,
 "main": [
 63,
-59,
-33,
 58,
+33,
+57,
 74,
 69,
 71
@@ -9129,7 +9261,7 @@
 60,
 79,
 76,
-67,
+66,
 79
 ],
 "gk": null,
@@ -9173,6 +9305,42 @@
 ],
 "gk": null,
 "crossing": 76,
+"ratingSource": "NEON XI formül"
+},
+{
+"id": "tm994536",
+"tm_id": 994536,
+"name": "Claudio Echeverri",
+"pos": "ST",
+"positions": [
+"ST"
+],
+"age": 20,
+"birth": "2006-01-02",
+"foot": "R",
+"height": 170,
+"nation": "Arjantin",
+"club": "Girona",
+"league": "laliga",
+"former": [
+"Manchester City",
+"Leverkusen",
+"River Plate"
+],
+"mins": 888,
+"goals": 1,
+"assists": 2,
+"main": [
+74,
+59,
+75,
+70,
+32,
+58,
+70
+],
+"gk": null,
+"crossing": 52,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -9376,7 +9544,7 @@
 "goals": 1,
 "assists": 1,
 "main": [
-79,
+78,
 72,
 48,
 71,
@@ -9411,7 +9579,7 @@
 "gk": [
 83,
 82,
-76,
+77,
 73
 ],
 "crossing": null,
@@ -9440,55 +9608,18 @@
 "goals": 13,
 "assists": 4,
 "main": [
-82,
+83,
 70,
-85,
+86,
 80,
 42,
-77,
+78,
 81
 ],
 "gk": null,
 "crossing": 62,
 "ratingSource": "NEON XI formül",
 "weakFoot": 5
-},
-{
-"id": "tm857818",
-"tm_id": 857818,
-"name": "Yáser Asprilla",
-"pos": "RW",
-"positions": [
-"RW",
-"AM"
-],
-"age": 23,
-"birth": "2003-11-19",
-"foot": "L",
-"height": 176,
-"nation": "Kolombiya",
-"club": "Girona",
-"league": "laliga",
-"former": [
-"Galatasaray",
-"Watford",
-"Envigado"
-],
-"mins": 925,
-"goals": 1,
-"assists": 1,
-"main": [
-84,
-72,
-71,
-81,
-44,
-49,
-76
-],
-"gk": null,
-"crossing": 77,
-"ratingSource": "NEON XI formül"
 },
 {
 "id": "tm193098",
@@ -9518,16 +9649,16 @@
 "goals": 0,
 "assists": 3,
 "main": [
-67,
-67,
+66,
+66,
 49,
-70,
+69,
 67,
 53,
 70
 ],
 "gk": null,
-"crossing": 68,
+"crossing": 67,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -9557,7 +9688,7 @@
 "assists": 0,
 "main": [
 53,
-61,
+60,
 37,
 61,
 78,
@@ -9599,54 +9730,13 @@
 46,
 66,
 63,
-47,
+46,
 66
 ],
 "gk": null,
 "crossing": 64,
 "ratingSource": "NEON XI formül",
 "transfer": "2026-08-24"
-},
-{
-"id": "tm285323",
-"tm_id": 285323,
-"name": "Baptiste Santamaria",
-"pos": "DM",
-"positions": [
-"DM",
-"CM"
-],
-"age": 31,
-"birth": "1995-03-09",
-"foot": "R",
-"height": 183,
-"nation": "Fransa",
-"club": "PAOK",
-"league": "laliga",
-"former": [
-"Valencia",
-"Rennes",
-"Nice",
-"Freiburg",
-"Angers",
-"Tours"
-],
-"mins": 1015,
-"goals": 1,
-"assists": 2,
-"main": [
-58,
-72,
-57,
-70,
-70,
-62,
-74
-],
-"gk": null,
-"crossing": 64,
-"ratingSource": "NEON XI formül",
-"transfer": "2026-07-13"
 },
 {
 "id": "tm593482",
@@ -9677,15 +9767,15 @@
 "assists": 5,
 "main": [
 74,
-81,
+80,
 72,
 81,
 74,
 65,
-83
+82
 ],
 "gk": null,
-"crossing": 74,
+"crossing": 73,
 "ratingSource": "NEON XI formül",
 "transfer": "2026-09-02"
 },
@@ -9752,13 +9842,13 @@
 "goals": 5,
 "assists": 4,
 "main": [
-70,
+69,
 64,
 49,
-67,
+66,
 64,
-48,
-68
+47,
+67
 ],
 "gk": null,
 "crossing": 66,
@@ -9866,12 +9956,12 @@
 "goals": 0,
 "assists": 0,
 "main": [
-69,
-80,
 68,
+79,
+67,
 78,
-72,
-60,
+71,
+59,
 80
 ],
 "gk": null,
@@ -9906,16 +9996,16 @@
 "goals": 2,
 "assists": 0,
 "main": [
-58,
+57,
 62,
-39,
-62,
+38,
+61,
 78,
 77,
-75
+74
 ],
 "gk": null,
-"crossing": 54,
+"crossing": 53,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -9946,7 +10036,7 @@
 52,
 75,
 67,
-57,
+56,
 72
 ],
 "gk": null,
@@ -10018,12 +10108,12 @@
 "goals": 2,
 "assists": 3,
 "main": [
-71,
-66,
+70,
+65,
 48,
 68,
-66,
-50,
+65,
+49,
 68
 ],
 "gk": null,
@@ -10058,8 +10148,8 @@
 59,
 37,
 59,
-76,
 75,
+74,
 72
 ],
 "gk": null,
@@ -10127,7 +10217,7 @@
 "assists": 1,
 "main": [
 77,
-73,
+72,
 49,
 72,
 89,
@@ -10135,7 +10225,7 @@
 86
 ],
 "gk": null,
-"crossing": 65,
+"crossing": 64,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -10168,12 +10258,12 @@
 73,
 66,
 74,
-68,
+67,
 61,
 75
 ],
 "gk": null,
-"crossing": 65,
+"crossing": 64,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -10206,8 +10296,8 @@
 81,
 73,
 81,
-75,
-63,
+74,
+62,
 83
 ],
 "gk": null,
@@ -10243,9 +10333,9 @@
 "assists": 0,
 "main": null,
 "gk": [
+88,
 87,
-86,
-81,
+82,
 78
 ],
 "crossing": null,
@@ -10278,54 +10368,16 @@
 "assists": 1,
 "main": [
 66,
-67,
-50,
+66,
+49,
 71,
-69,
-56,
-71
-],
-"gk": null,
-"crossing": 70,
-"ratingSource": "NEON XI formül"
-},
-{
-"id": "tm461617",
-"tm_id": 461617,
-"name": "Rodrigo Riquelme",
-"pos": "LW",
-"positions": [
-"LW"
-],
-"age": 26,
-"birth": "2000-04-02",
-"foot": "R",
-"height": 174,
-"nation": "İspanya",
-"club": "Real Betis",
-"league": "laliga",
-"former": [
-"Atlético Madrid",
-"Girona",
-"Mirandés",
-"Bournemouth"
-],
-"mins": 1432,
-"goals": 7,
-"assists": 1,
-"main": [
-77,
 68,
-67,
-76,
-39,
-42,
-71
+55,
+70
 ],
 "gk": null,
-"crossing": 73,
-"ratingSource": "NEON XI formül",
-"weakFoot": 4
+"crossing": 69,
+"ratingSource": "NEON XI formül"
 },
 {
 "id": "tm466801",
@@ -10354,14 +10406,54 @@
 "main": [
 75,
 81,
-72,
-82,
-75,
+71,
+81,
+74,
 70,
 82
 ],
 "gk": null,
-"crossing": 72,
+"crossing": 71,
+"ratingSource": "NEON XI formül"
+},
+{
+"id": "tm287579",
+"tm_id": 287579,
+"name": "Sofyan Amrabat",
+"pos": "DM",
+"positions": [
+"DM"
+],
+"age": 30,
+"birth": "1996-08-21",
+"foot": "R",
+"height": 185,
+"nation": "Fas",
+"club": "Real Betis",
+"league": "laliga",
+"former": [
+"Fenerbahçe",
+"Fiorentina",
+"Manchester United",
+"Verona",
+"Club Brugge",
+"Feyenoord",
+"Utrecht"
+],
+"mins": 2307,
+"goals": 2,
+"assists": 0,
+"main": [
+68,
+81,
+67,
+80,
+79,
+72,
+83
+],
+"gk": null,
+"crossing": 73,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -10393,7 +10485,7 @@
 "assists": 11,
 "main": [
 84,
-71,
+72,
 88,
 82,
 44,
@@ -10433,9 +10525,9 @@
 70,
 47,
 71,
-88,
+87,
 83,
-84
+83
 ],
 "gk": null,
 "crossing": 63,
@@ -10574,7 +10666,7 @@
 89,
 72,
 66,
-94
+93
 ],
 "gk": null,
 "crossing": 87,
@@ -10644,7 +10736,7 @@
 "assists": 5,
 "main": [
 68,
-89,
+88,
 83,
 95,
 77,
@@ -10805,43 +10897,6 @@
 "ratingSource": "NEON XI"
 },
 {
-"id": "v119-st-02",
-"tm_id": 971570,
-"name": "Endrick",
-"pos": "ST",
-"positions": [
-"ST",
-"RW"
-],
-"age": 20,
-"birth": "2006-07-21",
-"foot": "L",
-"height": 172,
-"nation": "Brezilya",
-"club": "Real Madrid",
-"league": "laliga",
-"former": [
-"Lyon",
-"Palmeiras"
-],
-"mins": 1514,
-"goals": 6,
-"assists": 7,
-"main": [
-83,
-68,
-92,
-81,
-42,
-82,
-82
-],
-"gk": null,
-"crossing": 62,
-"ratingSource": "NEON XI",
-"weakFoot": 4
-},
-{
 "id": "cm2",
 "tm_id": 369081,
 "name": "Federico Valverde",
@@ -10940,7 +10995,7 @@
 "assists": 6,
 "main": [
 79,
-83,
+82,
 86,
 89,
 77,
@@ -11049,13 +11104,13 @@
 "goals": 2,
 "assists": 1,
 "main": [
-73,
+72,
 70,
 42,
-69,
+68,
 96,
-93,
-88
+92,
+87
 ],
 "gk": null,
 "crossing": 62,
@@ -11233,7 +11288,7 @@
 86
 ],
 "gk": null,
-"crossing": 84,
+"crossing": 85,
 "ratingSource": "NEON XI formül",
 "weakFoot": 5,
 "transfer": "2026-08-06"
@@ -11410,7 +11465,7 @@
 76,
 67,
 77,
-71,
+70,
 60,
 78
 ],
@@ -11442,10 +11497,10 @@
 "assists": 2,
 "main": [
 70,
-81,
-75,
+80,
+74,
 82,
-60,
+59,
 61,
 82
 ],
@@ -11483,9 +11538,9 @@
 81,
 72,
 81,
-75,
+74,
 65,
-83
+82
 ],
 "gk": null,
 "crossing": 72,
@@ -11526,7 +11581,7 @@
 81,
 44,
 51,
-76
+77
 ],
 "gk": null,
 "crossing": 77,
@@ -11557,15 +11612,15 @@
 "assists": 2,
 "main": [
 74,
-67,
+66,
 49,
 68,
 67,
-59,
-70
+58,
+69
 ],
 "gk": null,
-"crossing": 70,
+"crossing": 69,
 "ratingSource": "NEON XI",
 "transfer": "2026-08-01"
 },
@@ -11592,13 +11647,13 @@
 66,
 64,
 39,
-64,
+63,
 80,
 74,
 77
 ],
 "gk": null,
-"crossing": 56,
+"crossing": 55,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -11625,7 +11680,7 @@
 "assists": 0,
 "main": [
 87,
-77,
+76,
 60,
 81,
 78,
@@ -11728,9 +11783,9 @@
 "assists": 3,
 "main": [
 73,
-78,
+77,
 70,
-79,
+78,
 72,
 65,
 80
@@ -11837,7 +11892,7 @@
 78,
 56,
 50,
-78
+77
 ],
 "gk": null,
 "crossing": 69,
@@ -12009,7 +12064,7 @@
 "assists": 6,
 "main": [
 82,
-69,
+70,
 85,
 81,
 42,
@@ -12020,6 +12075,35 @@
 "crossing": 64,
 "ratingSource": "NEON XI formül",
 "weakFoot": 5
+},
+{
+"id": "tm766552",
+"tm_id": 766552,
+"name": "Alberto Flores",
+"pos": "GK",
+"positions": [
+"GK"
+],
+"age": 23,
+"birth": "2003-11-10",
+"foot": "L",
+"height": 187,
+"nation": "İspanya",
+"club": "Sevilla",
+"league": "laliga",
+"former": [],
+"mins": 0,
+"goals": 0,
+"assists": 0,
+"main": null,
+"gk": [
+83,
+82,
+77,
+73
+],
+"crossing": null,
+"ratingSource": "NEON XI formül"
 },
 {
 "id": "tm719999",
@@ -12045,12 +12129,12 @@
 "assists": 0,
 "main": [
 65,
+58,
+35,
 59,
-36,
-59,
-76,
-76,
-72
+75,
+75,
+71
 ],
 "gk": null,
 "crossing": 51,
@@ -12083,12 +12167,12 @@
 "assists": 0,
 "main": [
 65,
-75,
+74,
 61,
 74,
 74,
 71,
-78
+77
 ],
 "gk": null,
 "crossing": 67,
@@ -12125,7 +12209,7 @@
 60,
 36,
 60,
-77,
+76,
 68,
 74
 ],
@@ -12158,15 +12242,15 @@
 "assists": 2,
 "main": [
 75,
-69,
-51,
-72,
+68,
+50,
+71,
 69,
 53,
 72
 ],
 "gk": null,
-"crossing": 73,
+"crossing": 72,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -12200,7 +12284,7 @@
 74,
 62,
 73,
-67,
+66,
 54,
 75
 ],
@@ -12234,14 +12318,14 @@
 "main": [
 71,
 59,
-75,
+74,
 70,
 32,
 69,
-71
+70
 ],
 "gk": null,
-"crossing": 54,
+"crossing": 53,
 "ratingSource": "NEON XI formül",
 "weakFoot": 5
 },
@@ -12348,7 +12432,7 @@
 81,
 81,
 73,
-86
+85
 ],
 "gk": null,
 "crossing": 75,
@@ -12501,40 +12585,6 @@
 "transfer": "2026-09-01"
 },
 {
-"id": "tm375382",
-"tm_id": 375382,
-"name": "André Almeida",
-"pos": "AM",
-"positions": [
-"AM"
-],
-"age": 26,
-"birth": "2000-05-30",
-"foot": "R",
-"height": 176,
-"nation": "Portekiz",
-"club": "Valencia",
-"league": "laliga",
-"former": [
-"Vitória Guimarães"
-],
-"mins": 1188,
-"goals": 0,
-"assists": 3,
-"main": [
-70,
-78,
-71,
-80,
-58,
-49,
-80
-],
-"gk": null,
-"crossing": 74,
-"ratingSource": "NEON XI formül"
-},
-{
 "id": "tm355861",
 "tm_id": 355861,
 "name": "Arnaut Danjuma",
@@ -12563,16 +12613,16 @@
 "goals": 4,
 "assists": 3,
 "main": [
-76,
+75,
 68,
 68,
 77,
-40,
+39,
 46,
 71
 ],
 "gk": null,
-"crossing": 72,
+"crossing": 71,
 "ratingSource": "NEON XI formül",
 "weakFoot": 4
 },
@@ -12600,13 +12650,13 @@
 "goals": 0,
 "assists": 0,
 "main": [
-76,
+75,
 70,
 47,
 70,
 87,
 92,
-84
+83
 ],
 "gk": null,
 "crossing": 62,
@@ -12685,6 +12735,43 @@
 "ratingSource": "NEON XI formül"
 },
 {
+"id": "tm394236",
+"tm_id": 394236,
+"name": "Filip Ugrinic",
+"pos": "CM",
+"positions": [
+"CM",
+"AM"
+],
+"age": 27,
+"birth": "1999-01-05",
+"foot": "R",
+"height": 184,
+"nation": "İsviçre",
+"club": "Valencia",
+"league": "laliga",
+"former": [
+"Young Boys",
+"Luzern",
+"Emmen"
+],
+"mins": 1699,
+"goals": 0,
+"assists": 3,
+"main": [
+66,
+74,
+65,
+74,
+67,
+59,
+76
+],
+"gk": null,
+"crossing": 71,
+"ratingSource": "NEON XI formül"
+},
+{
 "id": "fmi26-565822",
 "tm_id": 565822,
 "name": "Harvey Elliott",
@@ -12700,8 +12787,8 @@
 "club": "Valencia",
 "league": "laliga",
 "former": [
-"Liverpool",
 "Aston Villa",
+"Liverpool",
 "Blackburn"
 ],
 "mins": 284,
@@ -12755,7 +12842,7 @@
 80,
 75,
 37,
-70,
+71,
 75
 ],
 "gk": null,
@@ -12787,7 +12874,7 @@
 84,
 75,
 84,
-78,
+77,
 72,
 85
 ],
@@ -12818,14 +12905,14 @@
 "main": [
 74,
 62,
-47,
+46,
 67,
-65,
-52,
+64,
+51,
 66
 ],
 "gk": null,
-"crossing": 65,
+"crossing": 64,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -12855,14 +12942,14 @@
 "main": [
 62,
 58,
-35,
+34,
 58,
 75,
 77,
-72
+71
 ],
 "gk": null,
-"crossing": 51,
+"crossing": 50,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -12885,7 +12972,7 @@
 "goals": 1,
 "assists": 2,
 "main": [
-80,
+79,
 73,
 57,
 77,
@@ -12923,10 +13010,85 @@
 89,
 88,
 83,
-79
+80
 ],
 "crossing": null,
 "ratingSource": "NEON XI formül"
+},
+{
+"id": "tm518644",
+"tm_id": 518644,
+"name": "Largie Ramazani",
+"pos": "LW",
+"positions": [
+"LW"
+],
+"age": 25,
+"birth": "2001-02-27",
+"foot": "R",
+"height": 168,
+"nation": "Belçika",
+"club": "Valencia",
+"league": "laliga",
+"former": [
+"Leeds",
+"Almería",
+"Manchester United",
+"Charlton Athleti"
+],
+"mins": 1465,
+"goals": 6,
+"assists": 2,
+"main": [
+80,
+71,
+69,
+79,
+41,
+42,
+74
+],
+"gk": null,
+"crossing": 73,
+"ratingSource": "NEON XI formül"
+},
+{
+"id": "tm628366",
+"tm_id": 628366,
+"name": "Lucas Beltrán",
+"pos": "ST",
+"positions": [
+"ST",
+"AM"
+],
+"age": 25,
+"birth": "2001-03-29",
+"foot": "R",
+"height": 176,
+"nation": "Arjantin",
+"club": "Valencia",
+"league": "laliga",
+"former": [
+"Fiorentina",
+"River Plate",
+"Colon"
+],
+"mins": 1604,
+"goals": 3,
+"assists": 2,
+"main": [
+75,
+63,
+77,
+73,
+35,
+67,
+74
+],
+"gk": null,
+"crossing": 56,
+"ratingSource": "NEON XI formül",
+"weakFoot": 4
 },
 {
 "id": "tm278837",
@@ -13061,59 +13223,16 @@
 "goals": 0,
 "assists": 2,
 "main": [
-72,
+71,
 63,
 45,
 67,
 64,
-47,
+46,
 66
 ],
 "gk": null,
 "crossing": 65,
-"ratingSource": "NEON XI formül"
-},
-{
-"id": "tm337715",
-"tm_id": 337715,
-"name": "Umar Sadiq",
-"pos": "ST",
-"positions": [
-"ST"
-],
-"age": 29,
-"birth": "1997-02-02",
-"foot": "R",
-"height": 191,
-"nation": "Nijerya",
-"club": "Valencia",
-"league": "laliga",
-"former": [
-"Real Sociedad",
-"Almería",
-"Partizan",
-"Roma",
-"Perugia",
-"Rangers",
-"NAC Breda",
-"Torino",
-"Bologna",
-"Spezia"
-],
-"mins": 1301,
-"goals": 7,
-"assists": 5,
-"main": [
-70,
-59,
-76,
-70,
-32,
-78,
-71
-],
-"gk": null,
-"crossing": 54,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -13179,13 +13298,13 @@
 69,
 64,
 46,
-67,
+66,
 64,
-53,
+52,
 68
 ],
 "gk": null,
-"crossing": 68,
+"crossing": 67,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -13212,8 +13331,8 @@
 "main": null,
 "gk": [
 87,
-85,
-80,
+86,
+81,
 77
 ],
 "crossing": null,
@@ -13250,7 +13369,7 @@
 74,
 36,
 69,
-74
+75
 ],
 "gk": null,
 "crossing": 56,
@@ -13287,7 +13406,7 @@
 62,
 73,
 66,
-57,
+56,
 74
 ],
 "gk": null,
@@ -13325,7 +13444,7 @@
 83,
 45,
 76,
-84
+85
 ],
 "gk": null,
 "crossing": 69,
@@ -13427,8 +13546,8 @@
 73,
 67,
 74,
-68,
-57,
+67,
+56,
 75
 ],
 "gk": null,
@@ -13466,7 +13585,7 @@
 "assists": 11,
 "main": [
 85,
-80,
+81,
 78,
 87,
 50,
@@ -13546,7 +13665,7 @@
 76
 ],
 "gk": null,
-"crossing": 75,
+"crossing": 74,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -13724,7 +13843,7 @@
 "assists": 2,
 "main": [
 87,
-77,
+76,
 59,
 81,
 78,
@@ -13760,14 +13879,14 @@
 "main": [
 76,
 68,
-51,
+50,
 71,
-69,
+68,
 59,
 72
 ],
 "gk": null,
-"crossing": 74,
+"crossing": 73,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -13806,7 +13925,7 @@
 81
 ],
 "gk": null,
-"crossing": 80,
+"crossing": 81,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -13835,7 +13954,7 @@
 "goals": 7,
 "assists": 2,
 "main": [
-74,
+73,
 62,
 79,
 72,
@@ -13847,46 +13966,6 @@
 "crossing": 61,
 "ratingSource": "NEON XI formül",
 "weakFoot": 4
-},
-{
-"id": "tm182904",
-"tm_id": 182904,
-"name": "Clément Lenglet",
-"pos": "CB",
-"positions": [
-"CB"
-],
-"age": 31,
-"birth": "1995-06-17",
-"foot": "L",
-"height": 186,
-"nation": "Fransa",
-"club": "Benfica",
-"league": "liga-portugal",
-"former": [
-"Atlético Madrid",
-"Barcelona",
-"Aston Villa",
-"Tottenham",
-"Sevilla",
-"AS Nancy-Lorraine"
-],
-"mins": 1694,
-"goals": 0,
-"assists": 1,
-"main": [
-65,
-65,
-40,
-63,
-80,
-79,
-77
-],
-"gk": null,
-"crossing": 57,
-"ratingSource": "NEON XI formül",
-"transfer": "2026-07-01"
 },
 {
 "id": "fmi26-257455",
@@ -13923,11 +14002,11 @@
 73,
 83,
 83,
-83,
+82,
 87
 ],
 "gk": null,
-"crossing": 77,
+"crossing": 76,
 "ratingSource": "NEON XI formül",
 "weakFoot": 4,
 "transfer": "2026-08-01"
@@ -13987,7 +14066,7 @@
 "assists": 1,
 "main": [
 86,
-71,
+72,
 88,
 83,
 44,
@@ -14131,11 +14210,11 @@
 "goals": 3,
 "assists": 4,
 "main": [
-75,
+74,
 80,
 64,
-79,
-94,
+78,
+93,
 83,
 89
 ],
@@ -14173,10 +14252,10 @@
 "assists": 4,
 "main": [
 54,
-64,
-37,
+63,
+36,
 60,
-77,
+76,
 73,
 75
 ],
@@ -14335,7 +14414,7 @@
 87,
 64,
 62,
-87
+86
 ],
 "gk": null,
 "crossing": 81,
@@ -14448,7 +14527,7 @@
 57,
 74,
 68,
-71
+70
 ],
 "gk": null,
 "crossing": 51,
@@ -14555,7 +14634,7 @@
 79,
 41,
 51,
-74
+73
 ],
 "gk": null,
 "crossing": 75,
@@ -14589,7 +14668,7 @@
 57,
 74,
 77,
-70
+69
 ],
 "gk": null,
 "crossing": 49,
@@ -14623,14 +14702,14 @@
 "main": [
 80,
 69,
-84,
+85,
 80,
-41,
+42,
 82,
 80
 ],
 "gk": null,
-"crossing": 61,
+"crossing": 62,
 "ratingSource": "NEON XI formül",
 "weakFoot": 5
 },
@@ -14731,7 +14810,7 @@
 76,
 39,
 42,
-71
+70
 ],
 "gk": null,
 "crossing": 72,
@@ -14804,7 +14883,7 @@
 76
 ],
 "gk": null,
-"crossing": 76,
+"crossing": 77,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -14833,12 +14912,12 @@
 "assists": 2,
 "main": [
 69,
-60,
+59,
 76,
 71,
 32,
 60,
-71
+70
 ],
 "gk": null,
 "crossing": 52,
@@ -14869,10 +14948,10 @@
 "assists": 0,
 "main": null,
 "gk": [
-85,
+86,
 84,
 79,
-75
+76
 ],
 "crossing": null,
 "ratingSource": "NEON XI formül"
@@ -14982,7 +15061,7 @@
 90,
 89,
 84,
-80
+81
 ],
 "crossing": null,
 "ratingSource": "NEON XI formül"
@@ -15014,11 +15093,11 @@
 "goals": 0,
 "assists": 2,
 "main": [
-69,
+68,
 62,
 46,
 65,
-63,
+62,
 44,
 65
 ],
@@ -15164,11 +15243,11 @@
 "assists": 2,
 "main": [
 63,
-78,
+77,
 63,
 75,
 75,
-71,
+70,
 80
 ],
 "gk": null,
@@ -15239,7 +15318,7 @@
 67,
 79,
 79,
-73,
+72,
 83
 ],
 "gk": null,
@@ -15278,7 +15357,7 @@
 50,
 60,
 76,
-71,
+70,
 32,
 80,
 71
@@ -15313,7 +15392,7 @@
 "main": [
 79,
 70,
-69,
+68,
 78,
 41,
 41,
@@ -15350,13 +15429,13 @@
 "goals": 3,
 "assists": 5,
 "main": [
-76,
-70,
-56,
-73,
-70,
-52,
-73
+75,
+69,
+55,
+72,
+69,
+51,
+72
 ],
 "gk": null,
 "crossing": 72,
@@ -15390,13 +15469,13 @@
 77,
 67,
 50,
-71,
+70,
 68,
-50,
+49,
 71
 ],
 "gk": null,
-"crossing": 71,
+"crossing": 70,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -15427,13 +15506,48 @@
 82,
 72,
 57,
-77,
+76,
 74,
 60,
 76
 ],
 "gk": null,
 "crossing": 76,
+"ratingSource": "NEON XI formül"
+},
+{
+"id": "tm652061",
+"tm_id": 652061,
+"name": "Adam Karabec",
+"pos": "RW",
+"positions": [
+"RW"
+],
+"age": 23,
+"birth": "2003-07-02",
+"foot": "L",
+"height": 187,
+"nation": "Çekya",
+"club": "Lyon",
+"league": "ligue-1",
+"former": [
+"Sparta Prague",
+"Hamburg"
+],
+"mins": 1399,
+"goals": 3,
+"assists": 3,
+"main": [
+80,
+69,
+67,
+77,
+40,
+54,
+73
+],
+"gk": null,
+"crossing": 77,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -15534,16 +15648,16 @@
 "goals": 0,
 "assists": 1,
 "main": [
-60,
-66,
-41,
-66,
-82,
-76,
-80
+58,
+64,
+39,
+64,
+81,
+74,
+79
 ],
 "gk": null,
-"crossing": 64,
+"crossing": 62,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -15570,11 +15684,11 @@
 "assists": 4,
 "main": [
 71,
-84,
+83,
 77,
 84,
-78,
-73,
+77,
+72,
 86
 ],
 "gk": null,
@@ -15607,12 +15721,49 @@
 "main": null,
 "gk": [
 90,
-88,
+89,
 83,
 80
 ],
 "crossing": null,
 "ratingSource": "NEON XI formül"
+},
+{
+"id": "v119-st-02",
+"tm_id": 971570,
+"name": "Endrick",
+"pos": "ST",
+"positions": [
+"ST",
+"RW"
+],
+"age": 20,
+"birth": "2006-07-21",
+"foot": "L",
+"height": 172,
+"nation": "Brezilya",
+"club": "Lyon",
+"league": "ligue-1",
+"former": [
+"Real Madrid",
+"Palmeiras"
+],
+"mins": 1514,
+"goals": 6,
+"assists": 7,
+"main": [
+83,
+68,
+92,
+81,
+42,
+82,
+82
+],
+"gk": null,
+"crossing": 62,
+"ratingSource": "NEON XI",
+"weakFoot": 4
 },
 {
 "id": "tm405397",
@@ -15749,7 +15900,7 @@
 "main": [
 63,
 70,
-55,
+56,
 69,
 69,
 60,
@@ -15834,78 +15985,44 @@
 "ratingSource": "NEON XI formül"
 },
 {
-"id": "tm802515",
-"tm_id": 802515,
-"name": "Noah Nartey",
-"pos": "CM",
+"id": "tm500053",
+"tm_id": 500053,
+"name": "Pavel Sulc",
+"pos": "AM",
 "positions": [
-"CM",
-"AM"
+"AM",
+"ST"
 ],
-"age": 21,
-"birth": "2005-10-05",
+"age": 25,
+"birth": "2000-12-29",
 "foot": "R",
-"height": 180,
-"nation": "Danimarka",
+"height": 177,
+"nation": "Çekya",
 "club": "Lyon",
 "league": "ligue-1",
 "former": [
-"Bröndby IF"
+"Viktoria Plzen",
+"Jablonec",
+"Dynamo Ceske Budejovice",
+"Opava",
+"Jihlava"
 ],
-"mins": 2445,
-"goals": 9,
-"assists": 3,
+"mins": 2415,
+"goals": 12,
+"assists": 6,
 "main": [
-70,
-75,
-67,
-75,
-68,
-57,
-76
-],
-"gk": null,
-"crossing": 66,
-"ratingSource": "NEON XI formül",
-"weakFoot": 5
-},
-{
-"id": "tm289592",
-"tm_id": 289592,
-"name": "Orel Mangala",
-"pos": "DM",
-"positions": [
-"DM",
-"CM"
-],
-"age": 28,
-"birth": "1998-03-18",
-"foot": "R",
-"height": 178,
-"nation": "Belçika",
-"club": "Lyon",
-"league": "ligue-1",
-"former": [
-"Everton",
-"Nottingham Forest",
-"Stuttgart",
-"Hamburg"
-],
-"mins": 489,
-"goals": 0,
-"assists": 0,
-"main": [
+78,
+89,
+82,
+88,
 65,
-76,
-64,
-75,
-75,
-62,
-79
+63,
+89
 ],
 "gk": null,
-"crossing": 68,
-"ratingSource": "NEON XI formül"
+"crossing": 80,
+"ratingSource": "NEON XI formül",
+"weakFoot": 3
 },
 {
 "id": "tm578421",
@@ -15933,12 +16050,12 @@
 "assists": 2,
 "main": [
 65,
-63,
+62,
 38,
 60,
 77,
 79,
-75
+74
 ],
 "gk": null,
 "crossing": 52,
@@ -15981,38 +16098,6 @@
 "ratingSource": "NEON XI formül"
 },
 {
-"id": "tm1119391",
-"tm_id": 1119391,
-"name": "Steeve Kango",
-"pos": "RB",
-"positions": [
-"RB"
-],
-"age": 19,
-"birth": "2006-12-09",
-"foot": "R",
-"height": 181,
-"nation": "Fransa",
-"club": "Lyon",
-"league": "ligue-1",
-"former": [],
-"mins": 252,
-"goals": 0,
-"assists": 0,
-"main": [
-72,
-59,
-43,
-64,
-62,
-48,
-63
-],
-"gk": null,
-"crossing": 62,
-"ratingSource": "NEON XI formül"
-},
-{
 "id": "tm670096",
 "tm_id": 670096,
 "name": "Tanner Tessmann",
@@ -16037,16 +16122,16 @@
 "goals": 2,
 "assists": 0,
 "main": [
-70,
-79,
+69,
+78,
 66,
-78,
-78,
-73,
-82
+77,
+77,
+72,
+81
 ],
 "gk": null,
-"crossing": 71,
+"crossing": 70,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -16124,83 +16209,6 @@
 "weakFoot": 2
 },
 {
-"id": "tm354482",
-"tm_id": 354482,
-"name": "Amir Murillo",
-"pos": "RB",
-"positions": [
-"RB",
-"CB"
-],
-"age": 30,
-"birth": "1996-02-11",
-"foot": "R",
-"height": 185,
-"nation": "Panama",
-"club": "Marsilya",
-"league": "ligue-1",
-"former": [
-"Beşiktaş",
-"Anderlecht",
-"Red Bull New York",
-"San Francisco"
-],
-"mins": 2616,
-"goals": 3,
-"assists": 3,
-"main": [
-78,
-72,
-58,
-75,
-72,
-65,
-75
-],
-"gk": null,
-"crossing": 75,
-"ratingSource": "NEON XI formül",
-"weakFoot": 5
-},
-{
-"id": "tm392770",
-"tm_id": 392770,
-"name": "Angel Gomes",
-"pos": "AM",
-"positions": [
-"AM",
-"CM"
-],
-"age": 26,
-"birth": "2000-08-31",
-"foot": "R",
-"height": 168,
-"nation": "İngiltere",
-"club": "Marsilya",
-"league": "ligue-1",
-"former": [
-"Wolverhampton",
-"Lille",
-"Boavista",
-"Manchester United"
-],
-"mins": 1482,
-"goals": 3,
-"assists": 0,
-"main": [
-72,
-80,
-73,
-82,
-59,
-47,
-81
-],
-"gk": null,
-"crossing": 74,
-"ratingSource": "NEON XI formül"
-},
-{
 "id": "tm926694",
 "tm_id": 926694,
 "name": "Arthur Vermeeren",
@@ -16230,7 +16238,7 @@
 66,
 79,
 79,
-68,
+67,
 84
 ],
 "gk": null,
@@ -16273,6 +16281,41 @@
 "gk": null,
 "crossing": 66,
 "ratingSource": "NEON XI"
+},
+{
+"id": "tm581669",
+"tm_id": 581669,
+"name": "CJ Egan-Riley",
+"pos": "CB",
+"positions": [
+"CB"
+],
+"age": 23,
+"birth": "2003-01-02",
+"foot": "R",
+"height": 183,
+"nation": "İngiltere",
+"club": "Marsilya",
+"league": "ligue-1",
+"former": [
+"Burnley",
+"Hibernian"
+],
+"mins": 761,
+"goals": 0,
+"assists": 0,
+"main": [
+68,
+61,
+37,
+62,
+79,
+74,
+75
+],
+"gk": null,
+"crossing": 54,
+"ratingSource": "NEON XI formül"
 },
 {
 "id": "tm181778",
@@ -16347,8 +16390,88 @@
 87
 ],
 "gk": null,
-"crossing": 66,
+"crossing": 65,
 "ratingSource": "NEON XI formül"
+},
+{
+"id": "tm127189",
+"tm_id": 127189,
+"name": "Geoffrey Kondogbia",
+"pos": "DM",
+"positions": [
+"DM",
+"CB"
+],
+"age": 33,
+"birth": "1993-02-15",
+"foot": "L",
+"height": 188,
+"nation": "Orta Afrika Cumhuriyeti",
+"club": "Marsilya",
+"league": "ligue-1",
+"former": [
+"Atlético Madrid",
+"Valencia",
+"İnter",
+"Monaco",
+"Sevilla",
+"Lens"
+],
+"mins": 906,
+"goals": 0,
+"assists": 0,
+"main": [
+57,
+75,
+61,
+74,
+74,
+68,
+78
+],
+"gk": null,
+"crossing": 67,
+"ratingSource": "NEON XI formül"
+},
+{
+"id": "tm391065",
+"tm_id": 391065,
+"name": "Hamed Traoré",
+"pos": "LW",
+"positions": [
+"LW",
+"AM"
+],
+"age": 26,
+"birth": "2000-02-16",
+"foot": "R",
+"height": 177,
+"nation": "Fildişi Sahili",
+"club": "Marsilya",
+"league": "ligue-1",
+"former": [
+"Bournemouth",
+"Auxerre",
+"Napoli",
+"Sassuolo",
+"Empoli"
+],
+"mins": 772,
+"goals": 2,
+"assists": 2,
+"main": [
+85,
+77,
+76,
+85,
+48,
+55,
+80
+],
+"gk": null,
+"crossing": 81,
+"ratingSource": "NEON XI formül",
+"weakFoot": 4
 },
 {
 "id": "tm653610",
@@ -16374,7 +16497,7 @@
 "goals": 10,
 "assists": 7,
 "main": [
-90,
+89,
 82,
 82,
 89,
@@ -16411,52 +16534,13 @@
 "assists": 0,
 "main": null,
 "gk": [
-86,
+87,
 85,
 80,
-76
+77
 ],
 "crossing": null,
 "ratingSource": "NEON XI formül"
-},
-{
-"id": "tm406634",
-"tm_id": 406634,
-"name": "Matt O'Riley",
-"pos": "AM",
-"positions": [
-"AM",
-"CM"
-],
-"age": 26,
-"birth": "2000-11-21",
-"foot": "L",
-"height": 189,
-"nation": "Danimarka",
-"club": "Marsilya",
-"league": "ligue-1",
-"former": [
-"Brighton",
-"Celtic",
-"MK Dons",
-"Fulham"
-],
-"mins": 1307,
-"goals": 2,
-"assists": 3,
-"main": [
-76,
-86,
-78,
-87,
-64,
-67,
-87
-],
-"gk": null,
-"crossing": 83,
-"ratingSource": "NEON XI formül",
-"weakFoot": 5
 },
 {
 "id": "tm361914",
@@ -16524,14 +16608,47 @@
 "main": [
 71,
 87,
-72,
+73,
 83,
 83,
 77,
 88
 ],
 "gk": null,
-"crossing": 78,
+"crossing": 77,
+"ratingSource": "NEON XI formül"
+},
+{
+"id": "tm620912",
+"tm_id": 620912,
+"name": "Théo Vermot",
+"pos": "GK",
+"positions": [
+"GK"
+],
+"age": 29,
+"birth": "1997-01-27",
+"foot": "R",
+"height": 190,
+"nation": "Fransa",
+"club": "Marsilya",
+"league": "ligue-1",
+"former": [
+"Fréjus-St-Raph",
+"US Orléans",
+"Saint-Étienne"
+],
+"mins": 0,
+"goals": 0,
+"assists": 0,
+"main": null,
+"gk": [
+83,
+82,
+76,
+73
+],
+"crossing": null,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -16706,16 +16823,16 @@
 "goals": 0,
 "assists": 0,
 "main": [
-73,
-66,
-43,
-66,
-83,
-80,
-79
+72,
+64,
+41,
+65,
+81,
+79,
+78
 ],
 "gk": null,
-"crossing": 58,
+"crossing": 57,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -16825,7 +16942,7 @@
 61,
 80,
 78,
-68,
+67,
 81
 ],
 "gk": null,
@@ -16856,11 +16973,11 @@
 "goals": 0,
 "assists": 3,
 "main": [
-82,
+81,
 71,
 67,
 79,
-42,
+41,
 53,
 73
 ],
@@ -16934,7 +17051,7 @@
 "gk": [
 89,
 88,
-82,
+83,
 79
 ],
 "crossing": null,
@@ -16961,13 +17078,13 @@
 "goals": 3,
 "assists": 4,
 "main": [
-70,
-80,
+69,
+79,
 65,
 76,
 76,
 64,
-82
+81
 ],
 "gk": null,
 "crossing": 69,
@@ -16998,15 +17115,15 @@
 "assists": 0,
 "main": [
 73,
-71,
-47,
 70,
+46,
+69,
 86,
-89,
-83
+88,
+82
 ],
 "gk": null,
-"crossing": 62,
+"crossing": 61,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -17034,10 +17151,10 @@
 "assists": 0,
 "main": null,
 "gk": [
-87,
+88,
 86,
 81,
-77
+78
 ],
 "crossing": null,
 "ratingSource": "NEON XI formül"
@@ -17068,13 +17185,13 @@
 "goals": 4,
 "assists": 3,
 "main": [
-74,
+73,
 86,
 79,
-87,
+86,
 64,
-55,
-87
+54,
+86
 ],
 "gk": null,
 "crossing": 78,
@@ -17142,11 +17259,11 @@
 "goals": 0,
 "assists": 0,
 "main": [
-73,
-71,
-47,
+72,
 70,
-87,
+46,
+69,
+86,
 87,
 83
 ],
@@ -17216,16 +17333,16 @@
 "goals": 1,
 "assists": 1,
 "main": [
-74,
+73,
+66,
+43,
 67,
-44,
-67,
-84,
 83,
-81
+82,
+80
 ],
 "gk": null,
-"crossing": 60,
+"crossing": 59,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -17259,7 +17376,7 @@
 "main": [
 49,
 75,
-61,
+62,
 74,
 74,
 68,
@@ -17269,6 +17386,42 @@
 "crossing": 67,
 "ratingSource": "NEON XI formül",
 "transfer": "2026-08-01"
+},
+{
+"id": "tm569845",
+"tm_id": 569845,
+"name": "Charles Vanhoutte",
+"pos": "DM",
+"positions": [
+"DM"
+],
+"age": 28,
+"birth": "1998-09-16",
+"foot": "R",
+"height": 182,
+"nation": "Belçika",
+"club": "Nice",
+"league": "ligue-1",
+"former": [
+"Union Saint-Gilloise",
+"Cercle Brugge",
+"Tubize"
+],
+"mins": 2769,
+"goals": 1,
+"assists": 4,
+"main": [
+62,
+75,
+60,
+72,
+72,
+62,
+77
+],
+"gk": null,
+"crossing": 69,
+"ratingSource": "NEON XI formül"
 },
 {
 "id": "tm16136",
@@ -17298,55 +17451,17 @@
 "goals": 0,
 "assists": 1,
 "main": [
-33,
+32,
 58,
-33,
-57,
+32,
+56,
 73,
-74,
+73,
 70
 ],
 "gk": null,
-"crossing": 49,
+"crossing": 48,
 "ratingSource": "NEON XI formül"
-},
-{
-"id": "tm659542",
-"tm_id": 659542,
-"name": "Elye Wahi",
-"pos": "ST",
-"positions": [
-"ST"
-],
-"age": 23,
-"birth": "2003-01-02",
-"foot": "R",
-"height": 181,
-"nation": "Fildişi Sahili",
-"club": "Nice",
-"league": "ligue-1",
-"former": [
-"Eintracht Frankfurt",
-"Marsilya",
-"Lens",
-"Montpellier"
-],
-"mins": 1408,
-"goals": 6,
-"assists": 4,
-"main": [
-83,
-70,
-85,
-80,
-42,
-78,
-81
-],
-"gk": null,
-"crossing": 63,
-"ratingSource": "NEON XI formül",
-"weakFoot": 4
 },
 {
 "id": "tm560593",
@@ -17372,15 +17487,15 @@
 "assists": 3,
 "main": [
 74,
-82,
-72,
+81,
+71,
 82,
 75,
 60,
 83
 ],
 "gk": null,
-"crossing": 73,
+"crossing": 72,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -17407,12 +17522,12 @@
 "goals": 1,
 "assists": 0,
 "main": [
-77,
+76,
 68,
 68,
 75,
 38,
-42,
+41,
 71
 ],
 "gk": null,
@@ -17453,7 +17568,7 @@
 75,
 77,
 74,
-84,
+85,
 47,
 54,
 81
@@ -17488,16 +17603,52 @@
 "goals": 0,
 "assists": 0,
 "main": [
-69,
+68,
 61,
 37,
-62,
-79,
+61,
+78,
 84,
 74
 ],
 "gk": null,
-"crossing": 54,
+"crossing": 53,
+"ratingSource": "NEON XI formül"
+},
+{
+"id": "tm718201",
+"tm_id": 718201,
+"name": "Kevin Carlos",
+"pos": "ST",
+"positions": [
+"ST"
+],
+"age": 25,
+"birth": "2001-04-10",
+"foot": "R",
+"height": 186,
+"nation": "İspanya",
+"club": "Nice",
+"league": "ligue-1",
+"former": [
+"Basel",
+"Yverdon Sport",
+"Huesca"
+],
+"mins": 1446,
+"goals": 2,
+"assists": 1,
+"main": [
+70,
+57,
+74,
+69,
+30,
+72,
+68
+],
+"gk": null,
+"crossing": 50,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -17523,8 +17674,8 @@
 "goals": 1,
 "assists": 0,
 "main": [
-75,
-68,
+74,
+67,
 44,
 68,
 85,
@@ -17675,9 +17826,9 @@
 75,
 67,
 76,
-70,
-59,
-78
+69,
+58,
+77
 ],
 "gk": null,
 "crossing": 69,
@@ -17713,8 +17864,8 @@
 59,
 72,
 72,
-60,
-76
+59,
+75
 ],
 "gk": null,
 "crossing": 65,
@@ -17745,7 +17896,7 @@
 "goals": 8,
 "assists": 2,
 "main": [
-87,
+86,
 78,
 77,
 86,
@@ -17757,43 +17908,6 @@
 "crossing": 81,
 "ratingSource": "NEON XI formül",
 "weakFoot": 3
-},
-{
-"id": "tm479638",
-"tm_id": 479638,
-"name": "Tiago Gouveia",
-"pos": "RW",
-"positions": [
-"RW"
-],
-"age": 25,
-"birth": "2001-06-18",
-"foot": "R",
-"height": 176,
-"nation": "Portekiz",
-"club": "Nice",
-"league": "ligue-1",
-"former": [
-"Benfica",
-"Estoril",
-"Tires Fo"
-],
-"mins": 922,
-"goals": 2,
-"assists": 0,
-"main": [
-76,
-67,
-65,
-74,
-37,
-44,
-70
-],
-"gk": null,
-"crossing": 70,
-"ratingSource": "NEON XI formül",
-"weakFoot": 5
 },
 {
 "id": "tm448632",
@@ -17857,11 +17971,11 @@
 65,
 75,
 68,
-56,
+55,
 76
 ],
 "gk": null,
-"crossing": 68,
+"crossing": 67,
 "ratingSource": "NEON XI formül",
 "transfer": "2026-08-03"
 },
@@ -18187,7 +18301,7 @@
 77,
 60,
 80,
-78,
+77,
 62,
 81
 ],
@@ -18367,7 +18481,7 @@
 83
 ],
 "gk": null,
-"crossing": 82,
+"crossing": 83,
 "ratingSource": "NEON XI formül",
 "transfer": "2026-08-15",
 "weakFoot": 3
@@ -18441,7 +18555,7 @@
 89
 ],
 "gk": null,
-"crossing": 88,
+"crossing": 89,
 "ratingSource": "NEON XI",
 "weakFoot": 5
 },
@@ -18467,15 +18581,15 @@
 "assists": 4,
 "main": [
 79,
-84,
+83,
 76,
 83,
 76,
 69,
-85
+84
 ],
 "gk": null,
-"crossing": 75,
+"crossing": 74,
 "ratingSource": "NEON XI formül",
 "weakFoot": 4
 },
@@ -18608,7 +18722,7 @@
 "goals": 2,
 "assists": 1,
 "main": [
-68,
+67,
 62,
 39,
 60,
@@ -18617,7 +18731,7 @@
 74
 ],
 "gk": null,
-"crossing": 53,
+"crossing": 52,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -18643,16 +18757,16 @@
 "goals": 0,
 "assists": 1,
 "main": [
-66,
-63,
-37,
+65,
 62,
+37,
+61,
 78,
-68,
-75
+67,
+74
 ],
 "gk": null,
-"crossing": 54,
+"crossing": 53,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -18678,16 +18792,16 @@
 "goals": 1,
 "assists": 0,
 "main": [
-71,
-67,
-43,
+70,
 66,
-83,
+42,
+65,
 82,
-80
+81,
+78
 ],
 "gk": null,
-"crossing": 58,
+"crossing": 57,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -18720,7 +18834,7 @@
 71,
 62,
 77,
-73,
+72,
 34,
 68,
 73
@@ -18828,7 +18942,7 @@
 89,
 83,
 45,
-81,
+82,
 83
 ],
 "gk": null,
@@ -18892,13 +19006,13 @@
 "goals": 0,
 "assists": 1,
 "main": [
-76,
-63,
+75,
+62,
 48,
 67,
-65,
+64,
 47,
-67
+66
 ],
 "gk": null,
 "crossing": 67,
@@ -18929,15 +19043,15 @@
 "assists": 2,
 "main": [
 72,
+79,
+71,
 80,
-72,
-80,
-74,
-62,
-82
+73,
+61,
+81
 ],
 "gk": null,
-"crossing": 72,
+"crossing": 71,
 "ratingSource": "NEON XI formül",
 "weakFoot": 3
 },
@@ -19154,13 +19268,13 @@
 68,
 78,
 68,
-79,
-72,
+78,
+71,
 55,
-80
+79
 ],
 "gk": null,
-"crossing": 69,
+"crossing": 68,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -19184,10 +19298,10 @@
 "goals": 2,
 "assists": 1,
 "main": [
-80,
-67,
-55,
-72,
+79,
+66,
+54,
+71,
 69,
 58,
 71
@@ -19220,12 +19334,12 @@
 "assists": 0,
 "main": [
 68,
-63,
+62,
 40,
 63,
-80,
-80,
-76
+79,
+79,
+75
 ],
 "gk": null,
 "crossing": 55,
@@ -19260,11 +19374,11 @@
 80,
 75,
 36,
-75,
+76,
 76
 ],
 "gk": null,
-"crossing": 56,
+"crossing": 57,
 "ratingSource": "NEON XI formül",
 "weakFoot": 5,
 "transfer": "2026-09-01"
@@ -19303,7 +19417,7 @@
 80
 ],
 "gk": null,
-"crossing": 71,
+"crossing": 70,
 "ratingSource": "NEON XI formül",
 "transfer": "2026-09-01"
 },
@@ -19367,7 +19481,7 @@
 "goals": 1,
 "assists": 2,
 "main": [
-78,
+77,
 72,
 48,
 72,
@@ -19376,7 +19490,7 @@
 85
 ],
 "gk": null,
-"crossing": 66,
+"crossing": 65,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -19409,50 +19523,13 @@
 88,
 83,
 45,
-88,
+89,
 83
 ],
 "gk": null,
 "crossing": 65,
 "ratingSource": "NEON XI formül",
 "weakFoot": 4
-},
-{
-"id": "tm1011200",
-"tm_id": 1011200,
-"name": "Junior Mwanga",
-"pos": "DM",
-"positions": [
-"DM",
-"CM"
-],
-"age": 23,
-"birth": "2003-05-11",
-"foot": "B",
-"height": 184,
-"nation": "Fransa",
-"club": "Strasbourg",
-"league": "ligue-1",
-"former": [
-"Nantes",
-"Le Havre",
-"Bordeaux"
-],
-"mins": 1822,
-"goals": 1,
-"assists": 1,
-"main": [
-64,
-73,
-60,
-71,
-71,
-63,
-76
-],
-"gk": null,
-"crossing": 67,
-"ratingSource": "NEON XI formül"
 },
 {
 "id": "tm1084638",
@@ -19517,12 +19594,46 @@
 "assists": 0,
 "main": null,
 "gk": [
-84,
+85,
 83,
 78,
-74
+75
 ],
 "crossing": null,
+"ratingSource": "NEON XI formül"
+},
+{
+"id": "tm926978",
+"tm_id": 926978,
+"name": "Lucas Høgsberg",
+"pos": "CB",
+"positions": [
+"CB"
+],
+"age": 20,
+"birth": "2006-06-23",
+"foot": "R",
+"height": 187,
+"nation": "Danimarka",
+"club": "Strasbourg",
+"league": "ligue-1",
+"former": [
+"Nordsjaelland"
+],
+"mins": 2158,
+"goals": 0,
+"assists": 0,
+"main": [
+75,
+68,
+44,
+68,
+85,
+84,
+81
+],
+"gk": null,
+"crossing": 64,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -19589,7 +19700,7 @@
 "gk": [
 91,
 90,
-85,
+84,
 81
 ],
 "crossing": null,
@@ -19620,14 +19731,14 @@
 "main": [
 78,
 67,
-52,
+51,
 71,
 68,
 56,
 71
 ],
 "gk": null,
-"crossing": 73,
+"crossing": 72,
 "ratingSource": "NEON XI formül",
 "transfer": "2026-08-01"
 },
@@ -19688,7 +19799,7 @@
 72,
 83,
 76,
-71,
+70,
 84
 ],
 "gk": null,
@@ -19717,9 +19828,9 @@
 "goals": 2,
 "assists": 2,
 "main": [
-79,
+78,
 67,
-66,
+65,
 75,
 38,
 41,
@@ -19795,12 +19906,47 @@
 85,
 75,
 85,
-79,
+78,
 61,
 87
 ],
 "gk": null,
 "crossing": 76,
+"ratingSource": "NEON XI formül"
+},
+{
+"id": "tm658533",
+"tm_id": 658533,
+"name": "Abu Francis",
+"pos": "CM",
+"positions": [
+"CM"
+],
+"age": 25,
+"birth": "2001-04-27",
+"foot": "R",
+"height": 182,
+"nation": "Gana",
+"club": "Toulouse",
+"league": "ligue-1",
+"former": [
+"Cercle Brugge",
+"Nordsjaelland"
+],
+"mins": 532,
+"goals": 0,
+"assists": 0,
+"main": [
+64,
+71,
+60,
+71,
+64,
+55,
+72
+],
+"gk": null,
+"crossing": 61,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -19826,15 +19972,15 @@
 "assists": 1,
 "main": [
 69,
-72,
+71,
 63,
 73,
-67,
-57,
+66,
+56,
 74
 ],
 "gk": null,
-"crossing": 67,
+"crossing": 66,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -19867,7 +20013,7 @@
 69,
 67,
 78,
-41,
+40,
 47,
 73
 ],
@@ -19933,16 +20079,16 @@
 "goals": 2,
 "assists": 4,
 "main": [
-74,
-81,
-71,
+73,
+80,
+70,
 81,
 74,
 60,
 82
 ],
 "gk": null,
-"crossing": 72,
+"crossing": 71,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -19977,6 +20123,41 @@
 ],
 "gk": null,
 "crossing": 73,
+"ratingSource": "NEON XI formül"
+},
+{
+"id": "tm743599",
+"tm_id": 743599,
+"name": "Emersonn",
+"pos": "ST",
+"positions": [
+"ST"
+],
+"age": 22,
+"birth": "2004-07-16",
+"foot": "R",
+"height": 193,
+"nation": "Brezilya",
+"club": "Toulouse",
+"league": "ligue-1",
+"former": [
+"Göztepe",
+"Athletico Paranaense"
+],
+"mins": 1628,
+"goals": 7,
+"assists": 2,
+"main": [
+75,
+60,
+76,
+71,
+33,
+77,
+71
+],
+"gk": null,
+"crossing": 53,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -20045,42 +20226,6 @@
 "ratingSource": "NEON XI formül"
 },
 {
-"id": "tm683625",
-"tm_id": 683625,
-"name": "Jacen Russell-Rowe",
-"pos": "ST",
-"positions": [
-"ST"
-],
-"age": 24,
-"birth": "2002-09-13",
-"foot": "R",
-"height": 183,
-"nation": "Kanada",
-"club": "Toulouse",
-"league": "ligue-1",
-"former": [
-"Columbus Crew",
-"Columbus 2",
-"Maryland"
-],
-"mins": 469,
-"goals": 1,
-"assists": 0,
-"main": [
-71,
-57,
-74,
-68,
-30,
-68,
-68
-],
-"gk": null,
-"crossing": 50,
-"ratingSource": "NEON XI formül"
-},
-{
 "id": "tm328770",
 "tm_id": 328770,
 "name": "Kjetil Haug",
@@ -20112,7 +20257,7 @@
 83,
 82,
 77,
-73
+74
 ],
 "crossing": null,
 "ratingSource": "NEON XI formül"
@@ -20177,13 +20322,13 @@
 "goals": 0,
 "assists": 2,
 "main": [
-71,
-69,
-44,
-67,
-84,
+70,
+68,
+43,
+66,
 83,
-81
+82,
+80
 ],
 "gk": null,
 "crossing": 59,
@@ -20216,45 +20361,13 @@
 70,
 75,
 65,
-76,
+75,
 69,
-60,
+59,
 77
 ],
 "gk": null,
 "crossing": 66,
-"ratingSource": "NEON XI formül"
-},
-{
-"id": "tm883865",
-"tm_id": 883865,
-"name": "Rafik Messali",
-"pos": "RM",
-"positions": [
-"RM"
-],
-"age": 23,
-"birth": "2003-04-28",
-"foot": "R",
-"height": 177,
-"nation": "Cezayir",
-"club": "Toulouse",
-"league": "ligue-1",
-"former": [],
-"mins": 501,
-"goals": 0,
-"assists": 0,
-"main": [
-76,
-65,
-62,
-74,
-37,
-42,
-68
-],
-"gk": null,
-"crossing": 67,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -20281,15 +20394,15 @@
 "assists": 0,
 "main": [
 62,
-61,
-36,
 60,
+36,
+59,
 76,
 80,
 73
 ],
 "gk": null,
-"crossing": 52,
+"crossing": 51,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -20315,10 +20428,10 @@
 "assists": 6,
 "main": [
 79,
-69,
+68,
 66,
-76,
-39,
+75,
+38,
 45,
 71
 ],
@@ -20352,7 +20465,7 @@
 "main": [
 67,
 73,
-61,
+62,
 71,
 64,
 57,
@@ -20464,7 +20577,7 @@
 "assists": 5,
 "main": [
 81,
-71,
+72,
 87,
 82,
 43,
@@ -20472,7 +20585,7 @@
 82
 ],
 "gk": null,
-"crossing": 63,
+"crossing": 64,
 "ratingSource": "NEON XI formül",
 "weakFoot": 2,
 "transfer": "2026-08-01"
@@ -20548,8 +20661,8 @@
 74,
 83,
 83,
-81,
-88
+80,
+87
 ],
 "gk": null,
 "crossing": 76,
@@ -20626,7 +20739,7 @@
 65,
 82,
 72,
-34,
+33,
 68,
 75
 ],
@@ -20723,41 +20836,6 @@
 "transfer": "2026-08-11"
 },
 {
-"id": "tm58358",
-"tm_id": 58358,
-"name": "Thomas Müller",
-"pos": "ST",
-"positions": [
-"ST"
-],
-"age": 37,
-"birth": "1989-09-13",
-"foot": "R",
-"height": 185,
-"nation": "Almanya",
-"club": "Vancouver Whitecaps",
-"league": "major-league-soccer",
-"former": [
-"Bayern Münih"
-],
-"mins": 10,
-"goals": 0,
-"assists": 0,
-"main": [
-67,
-74,
-87,
-82,
-43,
-83,
-84
-],
-"gk": null,
-"crossing": 66,
-"ratingSource": "NEON XI formül",
-"weakFoot": 5
-},
-{
 "id": "cm9",
 "tm_id": 520624,
 "name": "Bruno Guimarães",
@@ -20791,7 +20869,7 @@
 89
 ],
 "gk": null,
-"crossing": 81,
+"crossing": 80,
 "ratingSource": "NEON XI",
 "weakFoot": 3,
 "transfer": "2026-08-08"
@@ -20892,9 +20970,9 @@
 "main": null,
 "gk": [
 90,
-88,
-88,
-86
+89,
+89,
+87
 ],
 "crossing": null,
 "ratingSource": "NEON XI"
@@ -20960,8 +21038,8 @@
 "assists": 6,
 "main": [
 79,
-90,
-84,
+89,
+83,
 90,
 68,
 62,
@@ -20997,7 +21075,7 @@
 "assists": 1,
 "main": [
 76,
-74,
+73,
 51,
 74,
 91,
@@ -21144,7 +21222,7 @@
 89,
 84,
 46,
-90,
+91,
 85
 ],
 "gk": null,
@@ -21293,7 +21371,7 @@
 86,
 77,
 85,
-79,
+78,
 79,
 87
 ],
@@ -21327,7 +21405,7 @@
 "main": [
 95,
 81,
-82,
+83,
 94,
 50,
 59,
@@ -21514,16 +21592,16 @@
 "goals": 0,
 "assists": 3,
 "main": [
-85,
+84,
 78,
 59,
-81,
+80,
 78,
 66,
-81
+80
 ],
 "gk": null,
-"crossing": 79,
+"crossing": 78,
 "ratingSource": "NEON XI formül",
 "transfer": "2026-08-21"
 },
@@ -21625,11 +21703,11 @@
 "main": [
 74,
 85,
-70,
+71,
 83,
 83,
 75,
-88
+87
 ],
 "gk": null,
 "crossing": 76,
@@ -21664,13 +21742,13 @@
 85,
 79,
 78,
-86,
+87,
 49,
 54,
 81
 ],
 "gk": null,
-"crossing": 79,
+"crossing": 80,
 "ratingSource": "NEON XI formül",
 "weakFoot": 4
 },
@@ -21926,7 +22004,7 @@
 "main": null,
 "gk": [
 87,
-85,
+86,
 80,
 77
 ],
@@ -21963,7 +22041,7 @@
 60,
 81,
 78,
-69,
+70,
 82
 ],
 "gk": null,
@@ -22000,7 +22078,7 @@
 81,
 79,
 68,
-82
+81
 ],
 "gk": null,
 "crossing": 82,
@@ -22106,16 +22184,16 @@
 "goals": 1,
 "assists": 1,
 "main": [
-59,
+58,
 63,
 39,
 62,
 79,
 86,
-77
+76
 ],
 "gk": null,
-"crossing": 55,
+"crossing": 54,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -22142,12 +22220,12 @@
 "goals": 0,
 "assists": 1,
 "main": [
-69,
+68,
 71,
 46,
 70,
-87,
 86,
+85,
 83
 ],
 "gk": null,
@@ -22179,7 +22257,7 @@
 "assists": 0,
 "main": null,
 "gk": [
-92,
+91,
 90,
 85,
 82
@@ -22219,10 +22297,10 @@
 79,
 76,
 66,
-80
+79
 ],
 "gk": null,
-"crossing": 81,
+"crossing": 80,
 "ratingSource": "NEON XI formül",
 "transfer": "2026-08-01"
 },
@@ -22325,7 +22403,7 @@
 94,
 93,
 88,
-84
+85
 ],
 "crossing": null,
 "ratingSource": "NEON XI formül"
@@ -22359,7 +22437,7 @@
 78,
 78,
 80,
-84
+83
 ],
 "gk": null,
 "crossing": 71,
@@ -22392,12 +22470,12 @@
 "assists": 1,
 "main": [
 79,
-84,
+83,
 79,
 85,
 78,
-70,
-86
+69,
+85
 ],
 "gk": null,
 "crossing": 75,
@@ -22473,7 +22551,7 @@
 83
 ],
 "gk": null,
-"crossing": 64,
+"crossing": 65,
 "ratingSource": "NEON XI formül",
 "weakFoot": 5
 },
@@ -22501,55 +22579,15 @@
 "assists": 4,
 "main": [
 79,
-83,
+82,
 75,
 83,
 76,
-71,
+70,
 84
 ],
 "gk": null,
 "crossing": 73,
-"ratingSource": "NEON XI formül"
-},
-{
-"id": "tm3333",
-"tm_id": 3333,
-"name": "James Milner",
-"pos": "CM",
-"positions": [
-"CM",
-"DM"
-],
-"age": 40,
-"birth": "1986-01-04",
-"foot": "R",
-"height": 175,
-"nation": "İngiltere",
-"club": "Brighton",
-"league": "premier-league",
-"former": [
-"Liverpool",
-"Manchester City",
-"Aston Villa",
-"Newcastle",
-"Leeds",
-"Swindon Town"
-],
-"mins": 946,
-"goals": 1,
-"assists": 1,
-"main": [
-42,
-70,
-60,
-71,
-65,
-50,
-73
-],
-"gk": null,
-"crossing": 66,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -22617,7 +22655,7 @@
 "gk": [
 85,
 84,
-78,
+79,
 75
 ],
 "crossing": null,
@@ -22651,7 +22689,7 @@
 68,
 65,
 54,
-68
+67
 ],
 "gk": null,
 "crossing": 66,
@@ -22721,7 +22759,7 @@
 69,
 46,
 69,
-86,
+85,
 91,
 82
 ],
@@ -22745,8 +22783,8 @@
 "club": "Brighton",
 "league": "premier-league",
 "former": [
-"Tottenham",
 "Hamburg",
+"Tottenham",
 "HNK Hajduk Split",
 "KVC Westerlo",
 "Radomiak Radom"
@@ -22877,6 +22915,44 @@
 "ratingSource": "NEON XI formül"
 },
 {
+"id": "tm82873",
+"tm_id": 82873,
+"name": "Pascal Groß",
+"pos": "CM",
+"positions": [
+"CM",
+"DM"
+],
+"age": 35,
+"birth": "1991-06-15",
+"foot": "R",
+"height": 181,
+"nation": "Almanya",
+"club": "Brighton",
+"league": "premier-league",
+"former": [
+"Dortmund",
+"Ingolstadt 04",
+"Karlsruher"
+],
+"mins": 2701,
+"goals": 1,
+"assists": 5,
+"main": [
+56,
+76,
+66,
+75,
+68,
+58,
+78
+],
+"gk": null,
+"crossing": 72,
+"ratingSource": "NEON XI formül",
+"weakFoot": 4
+},
+{
 "id": "tm1012534",
 "tm_id": 1012534,
 "name": "Yankuba Minteh",
@@ -22941,9 +23017,9 @@
 76,
 85,
 74,
-84,
 83,
-66,
+83,
+65,
 88
 ],
 "gk": null,
@@ -22980,7 +23056,7 @@
 85,
 77,
 85,
-79,
+78,
 71,
 86
 ],
@@ -23058,7 +23134,7 @@
 74,
 36,
 76,
-74
+75
 ],
 "gk": null,
 "crossing": 56,
@@ -23175,6 +23251,39 @@
 "ratingSource": "NEON XI formül"
 },
 {
+"id": "tm656316",
+"tm_id": 656316,
+"name": "Gabriel Slonina",
+"pos": "GK",
+"positions": [
+"GK"
+],
+"age": 22,
+"birth": "2004-05-15",
+"foot": "R",
+"height": 193,
+"nation": "ABD",
+"club": "Chelsea",
+"league": "premier-league",
+"former": [
+"Barnsley",
+"KAS Eupen",
+"Chicago Fire Soccer Club"
+],
+"mins": 0,
+"goals": 0,
+"assists": 0,
+"main": null,
+"gk": [
+87,
+85,
+80,
+77
+],
+"crossing": null,
+"ratingSource": "NEON XI formül"
+},
+{
 "id": "tm1138758",
 "tm_id": 1138758,
 "name": "Geovany Quenda",
@@ -23243,8 +23352,8 @@
 76,
 60,
 73,
-73,
-64,
+72,
+63,
 78
 ],
 "gk": null,
@@ -23422,7 +23531,7 @@
 78,
 74,
 51,
-74,
+73,
 90,
 94,
 87
@@ -23546,7 +23655,7 @@
 85
 ],
 "gk": null,
-"crossing": 85,
+"crossing": 86,
 "ratingSource": "NEON XI",
 "weakFoot": 4
 },
@@ -23611,15 +23720,15 @@
 "assists": 1,
 "main": [
 77,
-74,
+73,
 51,
 73,
 90,
 95,
-87
+86
 ],
 "gk": null,
-"crossing": 66,
+"crossing": 65,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -23755,16 +23864,16 @@
 "goals": 1,
 "assists": 0,
 "main": [
-74,
-67,
-44,
-67,
-84,
+73,
+66,
+43,
+66,
+83,
 82,
 80
 ],
 "gk": null,
-"crossing": 59,
+"crossing": 58,
 "ratingSource": "NEON XI formül",
 "transfer": "2026-09-01"
 },
@@ -23831,11 +23940,11 @@
 "assists": 4,
 "main": [
 77,
-85,
+84,
 75,
 84,
-78,
-64,
+77,
+63,
 86
 ],
 "gk": null,
@@ -23868,7 +23977,7 @@
 "goals": 2,
 "assists": 6,
 "main": [
-88,
+87,
 83,
 80,
 90,
@@ -23915,7 +24024,7 @@
 79
 ],
 "gk": null,
-"crossing": 78,
+"crossing": 79,
 "ratingSource": "NEON XI formül",
 "weakFoot": 3,
 "transfer": "2026-08-01"
@@ -23983,9 +24092,9 @@
 "assists": 8,
 "main": [
 81,
-89,
+88,
 80,
-89,
+88,
 66,
 57,
 89
@@ -24021,7 +24130,7 @@
 "assists": 4,
 "main": [
 90,
-78,
+79,
 76,
 86,
 49,
@@ -24277,8 +24386,8 @@
 60,
 81,
 78,
-65,
-83
+64,
+82
 ],
 "gk": null,
 "crossing": 81,
@@ -24350,7 +24459,7 @@
 78,
 87,
 50,
-53,
+54,
 82
 ],
 "gk": null,
@@ -24562,7 +24671,7 @@
 "assists": 2,
 "main": [
 73,
-73,
+72,
 46,
 71,
 88,
@@ -24713,7 +24822,7 @@
 76,
 88,
 80,
-74,
+73,
 87
 ],
 "gk": null,
@@ -24818,9 +24927,9 @@
 83,
 76,
 75,
-80,
+81,
 43,
-46,
+47,
 78
 ],
 "gk": null,
@@ -24858,13 +24967,13 @@
 92,
 83,
 84,
-91,
+92,
 54,
 67,
 86
 ],
 "gk": null,
-"crossing": 85,
+"crossing": 86,
 "ratingSource": "NEON XI formül",
 "weakFoot": 5
 },
@@ -24891,9 +25000,9 @@
 "assists": 1,
 "main": [
 80,
-84,
+83,
 73,
-85,
+84,
 78,
 71,
 85
@@ -25234,7 +25343,7 @@
 84,
 81,
 69,
-86
+85
 ],
 "gk": null,
 "crossing": 85,
@@ -25294,7 +25403,7 @@
 "assists": 7,
 "main": [
 81,
-91,
+90,
 86,
 91,
 69,
@@ -25374,7 +25483,7 @@
 89
 ],
 "gk": null,
-"crossing": 89,
+"crossing": 90,
 "ratingSource": "NEON XI formül",
 "weakFoot": 5
 },
@@ -25881,7 +25990,7 @@
 89,
 67,
 62,
-89
+88
 ],
 "gk": null,
 "crossing": 82,
@@ -25925,7 +26034,7 @@
 87
 ],
 "gk": null,
-"crossing": 69,
+"crossing": 70,
 "ratingSource": "NEON XI formül",
 "weakFoot": 3
 },
@@ -25958,7 +26067,7 @@
 68,
 73,
 88,
-93,
+92,
 84
 ],
 "gk": null,
@@ -25993,11 +26102,43 @@
 78,
 89,
 52,
-66,
+65,
 83
 ],
 "gk": null,
 "crossing": 83,
+"ratingSource": "NEON XI formül"
+},
+{
+"id": "tm503883",
+"tm_id": 503883,
+"name": "Senne Lammens",
+"pos": "GK",
+"positions": [
+"GK"
+],
+"age": 24,
+"birth": "2002-07-07",
+"foot": "R",
+"height": 193,
+"nation": "Belçika",
+"club": "Manchester United",
+"league": "premier-league",
+"former": [
+"Antwerp",
+"Club Brugge"
+],
+"mins": 3330,
+"goals": 0,
+"assists": 0,
+"main": null,
+"gk": [
+93,
+91,
+86,
+83
+],
+"crossing": null,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -26033,7 +26174,7 @@
 "gk": [
 84,
 83,
-77,
+78,
 74
 ],
 "crossing": null,
@@ -26141,11 +26282,11 @@
 "main": [
 70,
 79,
-63,
+62,
 76,
 76,
 65,
-81
+80
 ],
 "gk": null,
 "crossing": 69,
@@ -26260,14 +26401,14 @@
 "main": [
 62,
 70,
-46,
+45,
 68,
 85,
 93,
 82
 ],
 "gk": null,
-"crossing": 62,
+"crossing": 61,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -26305,7 +26446,7 @@
 83
 ],
 "gk": null,
-"crossing": 79,
+"crossing": 80,
 "ratingSource": "NEON XI",
 "weakFoot": 4
 },
@@ -26339,8 +26480,8 @@
 "goals": 4,
 "assists": 5,
 "main": [
-82,
-78,
+83,
+79,
 76,
 85,
 48,
@@ -26380,7 +26521,7 @@
 87,
 76,
 85,
-79,
+78,
 68,
 87
 ],
@@ -26452,12 +26593,12 @@
 "goals": 0,
 "assists": 4,
 "main": [
-62,
+61,
 67,
 50,
-71,
+70,
 68,
-50,
+49,
 72
 ],
 "gk": null,
@@ -26933,7 +27074,7 @@
 "main": [
 77,
 88,
-72,
+73,
 85,
 85,
 72,
@@ -26967,12 +27108,12 @@
 "assists": 4,
 "main": [
 72,
-86,
+85,
 72,
 83,
 83,
 83,
-88
+87
 ],
 "gk": null,
 "crossing": 76,
@@ -27007,48 +27148,13 @@
 87,
 82,
 44,
-80,
+81,
 82
 ],
 "gk": null,
 "crossing": 66,
 "ratingSource": "NEON XI formül",
 "weakFoot": 4
-},
-{
-"id": "tm432914",
-"tm_id": 432914,
-"name": "John Victor",
-"pos": "GK",
-"positions": [
-"GK"
-],
-"age": 30,
-"birth": "1996-02-13",
-"foot": "R",
-"height": 197,
-"nation": "Brezilya",
-"club": "Nottingham Forest",
-"league": "premier-league",
-"former": [
-"Botafogo",
-"Santos",
-"Valladolid",
-"Internacional",
-"Portuguesa-SP"
-],
-"mins": 798,
-"goals": 0,
-"assists": 0,
-"main": null,
-"gk": [
-87,
-86,
-80,
-77
-],
-"crossing": null,
-"ratingSource": "NEON XI formül"
 },
 {
 "id": "ext-st-18",
@@ -27152,13 +27258,13 @@
 73,
 68,
 45,
-69,
+68,
 85,
-90,
-82
+89,
+81
 ],
 "gk": null,
-"crossing": 61,
+"crossing": 60,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -27258,14 +27364,14 @@
 "main": [
 88,
 78,
-61,
+62,
 82,
 79,
 67,
 82
 ],
 "gk": null,
-"crossing": 82,
+"crossing": 81,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -27293,15 +27399,15 @@
 "assists": 1,
 "main": [
 69,
-82,
+81,
 68,
-80,
-80,
-71,
+79,
+79,
+70,
 84
 ],
 "gk": null,
-"crossing": 73,
+"crossing": 72,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -27326,11 +27432,11 @@
 "goals": 2,
 "assists": 2,
 "main": [
-84,
-73,
+83,
+72,
 57,
-77,
-74,
+76,
+73,
 71,
 76
 ],
@@ -27474,16 +27580,49 @@
 "goals": 2,
 "assists": 4,
 "main": [
-61,
+60,
 73,
 60,
-72,
-72,
 71,
-77
+71,
+71,
+76
 ],
 "gk": null,
 "crossing": 67,
+"ratingSource": "NEON XI formül"
+},
+{
+"id": "fmi26-85941",
+"tm_id": 85941,
+"name": "Stefan Ortega",
+"pos": "GK",
+"positions": [
+"GK"
+],
+"age": 34,
+"birth": "1992-11-06",
+"foot": "R",
+"height": 185,
+"nation": "Almanya",
+"club": "Nottingham Forest",
+"league": "premier-league",
+"former": [
+"Manchester City",
+"Arminia Bielefeld",
+"1860 Munich"
+],
+"mins": 930,
+"goals": 0,
+"assists": 0,
+"main": null,
+"gk": [
+89,
+87,
+82,
+79
+],
+"crossing": null,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -27514,7 +27653,7 @@
 "main": [
 75,
 72,
-48,
+49,
 72,
 89,
 92,
@@ -27557,7 +27696,7 @@
 82
 ],
 "gk": null,
-"crossing": 83,
+"crossing": 84,
 "ratingSource": "NEON XI formül",
 "weakFoot": 5,
 "transfer": "2026-09-01"
@@ -27590,15 +27729,15 @@
 "assists": 4,
 "main": [
 64,
-68,
+67,
 51,
 71,
-69,
+68,
 62,
-72
+71
 ],
 "gk": null,
-"crossing": 72,
+"crossing": 71,
 "ratingSource": "NEON XI formül",
 "transfer": "2026-07-01"
 },
@@ -27670,6 +27809,38 @@
 ],
 "gk": null,
 "crossing": 67,
+"ratingSource": "NEON XI formül"
+},
+{
+"id": "tm428016",
+"tm_id": 428016,
+"name": "Brandon Austin",
+"pos": "GK",
+"positions": [
+"GK"
+],
+"age": 27,
+"birth": "1999-01-08",
+"foot": "R",
+"height": 188,
+"nation": "İngiltere",
+"club": "Tottenham",
+"league": "premier-league",
+"former": [
+"Orlando City Soccer Club",
+"Viborg FF"
+],
+"mins": 0,
+"goals": 0,
+"assists": 0,
+"main": null,
+"gk": [
+83,
+82,
+77,
+73
+],
+"crossing": null,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -27747,41 +27918,6 @@
 "weakFoot": 4
 },
 {
-"id": "fmi26-866246",
-"tm_id": 866246,
-"name": "Lucas Bergvall",
-"pos": "CM",
-"positions": [
-"CM"
-],
-"age": 20,
-"birth": "2006-02-02",
-"foot": "R",
-"height": 187,
-"nation": "İsveç",
-"club": "Tottenham",
-"league": "premier-league",
-"former": [
-"Djurgårdens Idrottsförening",
-"Idrottsföreningen Brommapojkarna"
-],
-"mins": 1577,
-"goals": 1,
-"assists": 6,
-"main": [
-79,
-83,
-72,
-83,
-76,
-72,
-85
-],
-"gk": null,
-"crossing": 73,
-"ratingSource": "NEON XI formül"
-},
-{
 "id": "tm469781",
 "tm_id": 469781,
 "name": "Marcos Senesi",
@@ -27807,7 +27943,7 @@
 "main": [
 75,
 76,
-49,
+50,
 72,
 89,
 88,
@@ -27886,7 +28022,7 @@
 79,
 87,
 50,
-63,
+62,
 82
 ],
 "gk": null,
@@ -28002,7 +28138,7 @@
 84
 ],
 "gk": null,
-"crossing": 85,
+"crossing": 86,
 "ratingSource": "NEON XI formül",
 "transfer": "2026-09-01",
 "weakFoot": 5
@@ -28268,8 +28404,8 @@
 "assists": 0,
 "main": [
 72,
-70,
-52,
+69,
+51,
 70,
 87,
 97,
@@ -28307,7 +28443,7 @@
 86,
 74,
 73,
-82,
+83,
 45,
 55,
 77
@@ -28316,6 +28452,44 @@
 "crossing": 77,
 "ratingSource": "NEON XI formül",
 "weakFoot": 5
+},
+{
+"id": "ext-cm-05",
+"tm_id": 566931,
+"name": "Xavi Simons",
+"pos": "AM",
+"positions": [
+"AM",
+"LW"
+],
+"age": 23,
+"birth": "2003-04-21",
+"foot": "R",
+"height": 179,
+"nation": "Hollanda",
+"club": "Tottenham",
+"league": "premier-league",
+"former": [
+"Leipzig",
+"PSG",
+"PSV"
+],
+"mins": 2749,
+"goals": 6,
+"assists": 7,
+"main": [
+79,
+92,
+76,
+89,
+72,
+65,
+93
+],
+"gk": null,
+"crossing": 83,
+"ratingSource": "NEON XI",
+"weakFoot": 2
 },
 {
 "id": "ext-rw-02",
@@ -28420,7 +28594,7 @@
 67,
 71,
 47,
-71,
+70,
 87,
 89,
 84
@@ -28459,7 +28633,7 @@
 59,
 61,
 40,
-61,
+60,
 77,
 76,
 74
@@ -28495,11 +28669,11 @@
 "assists": 0,
 "main": [
 82,
-72,
-87,
+73,
+88,
 82,
 43,
-83,
+84,
 83
 ],
 "gk": null,
@@ -28570,16 +28744,16 @@
 "goals": 1,
 "assists": 1,
 "main": [
-63,
+65,
+73,
+53,
 72,
-52,
-71,
-88,
 89,
-86
+90,
+87
 ],
 "gk": null,
-"crossing": 67,
+"crossing": 69,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -28606,8 +28780,8 @@
 "goals": 0,
 "assists": 0,
 "main": [
-62,
-70,
+63,
+71,
 89,
 79,
 41,
@@ -28645,7 +28819,7 @@
 "assists": 5,
 "main": [
 82,
-73,
+74,
 89,
 83,
 45,
@@ -28683,13 +28857,13 @@
 "goals": 0,
 "assists": 0,
 "main": [
-72,
+73,
 86,
 78,
 83,
 76,
-79,
-86
+80,
+87
 ],
 "gk": null,
 "crossing": 78,
@@ -28895,47 +29069,6 @@
 "transfer": "2026-07-22"
 },
 {
-"id": "lw11",
-"tm_id": 406040,
-"name": "Ademola Lookman",
-"pos": "ST",
-"positions": [
-"ST",
-"LW"
-],
-"age": 29,
-"birth": "1997-10-20",
-"foot": "R",
-"height": 174,
-"nation": "Nijerya",
-"club": "Atalanta",
-"league": "serie-a",
-"former": [
-"Atlético Madrid",
-"Leipzig",
-"Leicester",
-"Fulham",
-"Everton",
-"Charlton"
-],
-"mins": 3138,
-"goals": 15,
-"assists": 10,
-"main": [
-90,
-80,
-86,
-89,
-44,
-69,
-86
-],
-"gk": null,
-"crossing": 86,
-"ratingSource": "NEON XI",
-"weakFoot": 4
-},
-{
 "id": "tm435772",
 "tm_id": 435772,
 "name": "Charles De Ketelaere",
@@ -29046,8 +29179,8 @@
 76,
 83,
 76,
-73,
-87
+72,
+86
 ],
 "gk": null,
 "crossing": 75,
@@ -29164,81 +29297,6 @@
 "ratingSource": "NEON XI formül"
 },
 {
-"id": "tm672381",
-"tm_id": 672381,
-"name": "Jonathan Rowe",
-"pos": "LW",
-"positions": [
-"LW"
-],
-"age": 23,
-"birth": "2003-04-30",
-"foot": "R",
-"height": 173,
-"nation": "İngiltere",
-"club": "Atalanta",
-"league": "serie-a",
-"former": [
-"Marsilya",
-"Bologna",
-"Norwich"
-],
-"mins": 2519,
-"goals": 8,
-"assists": 5,
-"main": [
-90,
-80,
-80,
-88,
-51,
-55,
-84
-],
-"gk": null,
-"crossing": 85,
-"ratingSource": "NEON XI formül",
-"transfer": "2026-09-01",
-"weakFoot": 4
-},
-{
-"id": "tm528833",
-"tm_id": 528833,
-"name": "Lazar Samardžić",
-"pos": "AM",
-"positions": [
-"AM"
-],
-"age": 24,
-"birth": "2002-02-24",
-"foot": "L",
-"height": 184,
-"nation": "Sırbistan",
-"club": "Atalanta",
-"league": "serie-a",
-"former": [
-"Udinese",
-"Leipzig",
-"Hertha Berlin"
-],
-"mins": 1421,
-"goals": 6,
-"assists": 2,
-"main": [
-78,
-85,
-79,
-87,
-64,
-64,
-86
-],
-"gk": null,
-"crossing": 80,
-"ratingSource": "NEON XI formül",
-"weakFoot": 4
-},
-{
 "id": "tm708635",
 "tm_id": 708635,
 "name": "Lorenzo Bernasconi",
@@ -29267,7 +29325,7 @@
 86,
 49,
 65,
-80
+81
 ],
 "gk": null,
 "crossing": 82,
@@ -29374,7 +29432,7 @@
 82,
 74,
 81,
-75,
+74,
 72,
 83
 ],
@@ -29413,11 +29471,50 @@
 88,
 66,
 56,
-88
+87
 ],
 "gk": null,
 "crossing": 83,
 "ratingSource": "NEON XI formül"
+},
+{
+"id": "tm434433",
+"tm_id": 434433,
+"name": "Nikola Krstović",
+"pos": "ST",
+"positions": [
+"ST"
+],
+"age": 26,
+"birth": "2000-04-05",
+"foot": "R",
+"height": 185,
+"nation": "Karadağ",
+"club": "Atalanta",
+"league": "serie-a",
+"former": [
+"Lecce",
+"Dunajska Streda",
+"Red Star Belgrade",
+"Graficar",
+"Zeta Golubovac"
+],
+"mins": 2624,
+"goals": 12,
+"assists": 8,
+"main": [
+84,
+73,
+88,
+83,
+45,
+83,
+84
+],
+"gk": null,
+"crossing": 66,
+"ratingSource": "NEON XI formül",
+"weakFoot": 5
 },
 {
 "id": "tm644771",
@@ -29651,44 +29748,6 @@
 "transfer": "2026-08-30"
 },
 {
-"id": "tm136514",
-"tm_id": 136514,
-"name": "Charalampos Lykogiannis",
-"pos": "LB",
-"positions": [
-"LB"
-],
-"age": 33,
-"birth": "1993-10-22",
-"foot": "L",
-"height": 191,
-"nation": "Yunanistan",
-"club": "Bologna",
-"league": "serie-a",
-"former": [
-"Cagliari",
-"Sportklub Puntigamer Sturm Graz",
-"Olympiakos Syndesmos Filathlon Peiraios",
-"GS Ergotelis",
-"APO Levadiakos"
-],
-"mins": 1092,
-"goals": 0,
-"assists": 1,
-"main": [
-62,
-60,
-46,
-65,
-62,
-58,
-66
-],
-"gk": null,
-"crossing": 71,
-"ratingSource": "NEON XI formül"
-},
-{
 "id": "tm197300",
 "tm_id": 197300,
 "name": "Federico Bernardeschi",
@@ -29715,7 +29774,7 @@
 "main": [
 75,
 72,
-72,
+71,
 80,
 43,
 56,
@@ -29754,7 +29813,7 @@
 "gk": [
 86,
 85,
-79,
+80,
 76
 ],
 "crossing": null,
@@ -29788,16 +29847,16 @@
 "goals": 7,
 "assists": 2,
 "main": [
-73,
-82,
-77,
-84,
-62,
-64,
-84
+72,
+81,
+76,
+83,
+61,
+63,
+83
 ],
 "gk": null,
-"crossing": 79,
+"crossing": 78,
 "ratingSource": "NEON XI formül",
 "weakFoot": 5
 },
@@ -29830,11 +29889,47 @@
 73,
 90,
 89,
-87
+86
 ],
 "gk": null,
 "crossing": 66,
 "ratingSource": "NEON XI formül"
+},
+{
+"id": "tm672381",
+"tm_id": 672381,
+"name": "Jonathan Rowe",
+"pos": "LW",
+"positions": [
+"LW"
+],
+"age": 23,
+"birth": "2003-04-30",
+"foot": "R",
+"height": 173,
+"nation": "İngiltere",
+"club": "Bologna",
+"league": "serie-a",
+"former": [
+"Marsilya",
+"Norwich"
+],
+"mins": 2519,
+"goals": 8,
+"assists": 5,
+"main": [
+91,
+81,
+80,
+89,
+52,
+56,
+84
+],
+"gk": null,
+"crossing": 85,
+"ratingSource": "NEON XI formül",
+"weakFoot": 4
 },
 {
 "id": "tm341227",
@@ -29896,7 +29991,7 @@
 "goals": 1,
 "assists": 0,
 "main": [
-75,
+76,
 82,
 75,
 83,
@@ -29936,8 +30031,8 @@
 "main": null,
 "gk": [
 89,
-87,
-82,
+88,
+83,
 79
 ],
 "crossing": null,
@@ -30008,7 +30103,7 @@
 "main": [
 63,
 67,
-66,
+65,
 76,
 39,
 50,
@@ -30054,7 +30149,7 @@
 67,
 77,
 40,
-56,
+55,
 72
 ],
 "gk": null,
@@ -30129,7 +30224,7 @@
 74,
 74,
 65,
-80
+79
 ],
 "gk": null,
 "crossing": 69,
@@ -30167,7 +30262,7 @@
 67,
 79,
 79,
-69,
+68,
 84
 ],
 "gk": null,
@@ -30201,7 +30296,7 @@
 86,
 79,
 80,
-87,
+88,
 50,
 64,
 82
@@ -30533,11 +30628,11 @@
 "assists": 2,
 "main": [
 71,
-62,
+61,
 46,
 66,
 63,
-53,
+52,
 66
 ],
 "gk": null,
@@ -30674,8 +30769,8 @@
 82,
 73,
 83,
-77,
-61,
+76,
+60,
 84
 ],
 "gk": null,
@@ -30708,11 +30803,11 @@
 "assists": 1,
 "main": [
 61,
-61,
+60,
 38,
 60,
 77,
-79,
+78,
 73
 ],
 "gk": null,
@@ -30743,7 +30838,7 @@
 "assists": 4,
 "main": [
 81,
-91,
+90,
 83,
 89,
 67,
@@ -30782,10 +30877,10 @@
 75,
 83,
 73,
-83,
-76,
+82,
+75,
 60,
-85
+84
 ],
 "gk": null,
 "crossing": 74,
@@ -30893,10 +30988,10 @@
 83,
 90,
 84,
-91,
+90,
 68,
-68,
-91
+67,
+90
 ],
 "gk": null,
 "crossing": 82,
@@ -30997,16 +31092,16 @@
 "goals": 1,
 "assists": 4,
 "main": [
-83,
+82,
 73,
-54,
-75,
-73,
+53,
+74,
+72,
 56,
-76
+75
 ],
 "gk": null,
-"crossing": 75,
+"crossing": 74,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -31044,7 +31139,7 @@
 86,
 81,
 43,
-87,
+88,
 81
 ],
 "gk": null,
@@ -31079,11 +31174,11 @@
 "goals": 3,
 "assists": 1,
 "main": [
-76,
+77,
 81,
 73,
 81,
-75,
+74,
 74,
 82
 ],
@@ -31185,7 +31280,7 @@
 "goals": 1,
 "assists": 2,
 "main": [
-77,
+76,
 67,
 65,
 76,
@@ -31234,112 +31329,47 @@
 "transfer": "2026-08-01"
 },
 {
-"id": "tm430280",
-"tm_id": 430280,
-"name": "Hans Nicolussi Caviglia",
-"pos": "DM",
+"id": "tm417346",
+"tm_id": 417346,
+"name": "Jack Harrison",
+"pos": "RW",
 "positions": [
-"DM",
-"CM"
+"RW"
 ],
-"age": 26,
-"birth": "2000-06-18",
-"foot": "R",
-"height": 184,
-"nation": "İtalya",
+"age": 30,
+"birth": "1996-11-20",
+"foot": "L",
+"height": 175,
+"nation": "İngiltere",
 "club": "Fiorentina",
 "league": "serie-a",
 "former": [
-"Venezia",
-"Parma",
-"Juventus",
-"Salernitana",
-"Südtirol",
-"Perugia"
+"Leeds",
+"Everton",
+"Manchester City",
+"Middlesbrough",
+"New York City",
+"Chicago Fire Soccer Club",
+"Wake Forest",
+"Manhattan",
+"Black Rock"
 ],
-"mins": 1458,
-"goals": 0,
-"assists": 4,
+"mins": 1511,
+"goals": 1,
+"assists": 3,
 "main": [
-61,
-72,
-61,
-71,
-71,
-62,
-76
-],
-"gk": null,
-"crossing": 69,
-"ratingSource": "NEON XI formül"
-},
-{
-"id": "tm691482",
-"tm_id": 691482,
-"name": "Jacopo Fazzini",
-"pos": "AM",
-"positions": [
-"AM",
-"CM"
-],
-"age": 23,
-"birth": "2003-03-16",
-"foot": "R",
-"height": 178,
-"nation": "İtalya",
-"club": "Fiorentina",
-"league": "serie-a",
-"former": [
-"Empoli"
-],
-"mins": 741,
-"goals": 0,
-"assists": 0,
-"main": [
-71,
-77,
+76,
 70,
-79,
-57,
-50,
-78
+67,
+78,
+41,
+45,
+73
 ],
 "gk": null,
-"crossing": 71,
-"ratingSource": "NEON XI formül"
-},
-{
-"id": "tm135747",
-"tm_id": 135747,
-"name": "Luca Lezzerini",
-"pos": "GK",
-"positions": [
-"GK"
-],
-"age": 31,
-"birth": "1995-03-24",
-"foot": "R",
-"height": 195,
-"nation": "İtalya",
-"club": "Fiorentina",
-"league": "serie-a",
-"former": [
-"Brescia",
-"Venezia",
-"Avellino"
-],
-"mins": 3,
-"goals": 0,
-"assists": 0,
-"main": null,
-"gk": [
-83,
-82,
-77,
-74
-],
-"crossing": null,
-"ratingSource": "NEON XI formül"
+"crossing": 73,
+"ratingSource": "NEON XI formül",
+"weakFoot": 4
 },
 {
 "id": "tm346561",
@@ -31379,6 +31409,45 @@
 "ratingSource": "NEON XI formül"
 },
 {
+"id": "tm396638",
+"tm_id": 396638,
+"name": "Manor Solomon",
+"pos": "LW",
+"positions": [
+"LW"
+],
+"age": 27,
+"birth": "1999-07-24",
+"foot": "R",
+"height": 170,
+"nation": "İsrail",
+"club": "Fiorentina",
+"league": "serie-a",
+"former": [
+"Tottenham",
+"Villarreal",
+"Leeds",
+"Şahtar Donetsk",
+"Fulham",
+"M. Petah Tikva"
+],
+"mins": 1262,
+"goals": 3,
+"assists": 5,
+"main": [
+80,
+73,
+71,
+80,
+43,
+46,
+75
+],
+"gk": null,
+"crossing": 76,
+"ratingSource": "NEON XI formül"
+},
+{
 "id": "tm459128",
 "tm_id": 459128,
 "name": "Marco Brescianini",
@@ -31406,12 +31475,12 @@
 "goals": 2,
 "assists": 1,
 "main": [
-67,
+68,
 74,
 67,
 75,
 68,
-64,
+63,
 76
 ],
 "gk": null,
@@ -31445,51 +31514,16 @@
 "goals": 0,
 "assists": 0,
 "main": [
-69,
-67,
+68,
+66,
 42,
-67,
+66,
 83,
 87,
-80
+79
 ],
 "gk": null,
-"crossing": 59,
-"ratingSource": "NEON XI formül"
-},
-{
-"id": "tm984964",
-"tm_id": 984964,
-"name": "Niccolò Fortini",
-"pos": "LM",
-"positions": [
-"LM",
-"RB"
-],
-"age": 20,
-"birth": "2006-02-13",
-"foot": "R",
-"height": 185,
-"nation": "İtalya",
-"club": "Fiorentina",
-"league": "serie-a",
-"former": [
-"Juve Stabia"
-],
-"mins": 620,
-"goals": 0,
-"assists": 0,
-"main": [
-79,
-66,
-64,
-76,
-38,
-50,
-70
-],
-"gk": null,
-"crossing": 72,
+"crossing": 58,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -31520,13 +31554,90 @@
 73,
 85,
 71,
-82,
+81,
 81,
 68,
 87
 ],
 "gk": null,
 "crossing": 77,
+"ratingSource": "NEON XI formül"
+},
+{
+"id": "tm471936",
+"tm_id": 471936,
+"name": "Oliver Christensen",
+"pos": "GK",
+"positions": [
+"GK"
+],
+"age": 27,
+"birth": "1999-03-22",
+"foot": "R",
+"height": 190,
+"nation": "Danimarka",
+"club": "Fiorentina",
+"league": "serie-a",
+"former": [
+"Sportklub Puntigamer Sturm Graz",
+"Salernitana",
+"Hertha Berlin",
+"Odense Boldklub"
+],
+"mins": 807,
+"goals": 0,
+"assists": 0,
+"main": null,
+"gk": [
+85,
+84,
+79,
+76
+],
+"crossing": null,
+"ratingSource": "NEON XI formül"
+},
+{
+"id": "tm210178",
+"tm_id": 210178,
+"name": "Pablo Marí",
+"pos": "CB",
+"positions": [
+"CB"
+],
+"age": 33,
+"birth": "1993-08-31",
+"foot": "L",
+"height": 193,
+"nation": "İspanya",
+"club": "Fiorentina",
+"league": "serie-a",
+"former": [
+"Al-Hilal",
+"Monza",
+"Arsenal",
+"Udinese",
+"Flamengo",
+"Manchester City",
+"Deportivo La Coruña",
+"NAC Breda",
+"Girona",
+"Gimnàstic"
+],
+"mins": 899,
+"goals": 0,
+"assists": 0,
+"main": [
+53,
+56,
+32,
+57,
+73,
+77,
+69
+],
+"gk": null,
+"crossing": 49,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -31563,7 +31674,7 @@
 84
 ],
 "gk": null,
-"crossing": 87,
+"crossing": 88,
 "ratingSource": "NEON XI formül",
 "transfer": "2026-09-01",
 "weakFoot": 3
@@ -31590,8 +31701,8 @@
 "goals": 1,
 "assists": 0,
 "main": [
-77,
-69,
+76,
+68,
 46,
 69,
 86,
@@ -31599,7 +31710,7 @@
 82
 ],
 "gk": null,
-"crossing": 62,
+"crossing": 61,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -31710,16 +31821,16 @@
 "goals": 4,
 "assists": 3,
 "main": [
+75,
+73,
+60,
 76,
-74,
-61,
-76,
-74,
-67,
-77
+73,
+66,
+76
 ],
 "gk": null,
-"crossing": 76,
+"crossing": 75,
 "ratingSource": "NEON XI formül",
 "weakFoot": 2
 },
@@ -31756,7 +31867,7 @@
 71,
 77,
 70,
-64,
+63,
 79
 ],
 "gk": null,
@@ -31791,10 +31902,10 @@
 "main": [
 72,
 80,
-72,
+71,
 81,
 74,
-67,
+66,
 82
 ],
 "gk": null,
@@ -31872,7 +31983,7 @@
 69,
 92,
 96,
-85
+84
 ],
 "gk": null,
 "crossing": 59,
@@ -31907,7 +32018,7 @@
 82,
 44,
 88,
-84
+85
 ],
 "gk": null,
 "crossing": 65,
@@ -31942,9 +32053,9 @@
 "main": [
 74,
 71,
-50,
+49,
 71,
-88,
+87,
 90,
 84
 ],
@@ -32020,7 +32131,7 @@
 "main": null,
 "gk": [
 92,
-91,
+90,
 85,
 82
 ],
@@ -32059,7 +32170,7 @@
 73
 ],
 "gk": null,
-"crossing": 54,
+"crossing": 55,
 "ratingSource": "NEON XI formül",
 "transfer": "2026-07-01"
 },
@@ -32092,7 +32203,7 @@
 "assists": 3,
 "main": [
 78,
-71,
+72,
 70,
 79,
 42,
@@ -32343,9 +32454,9 @@
 "assists": 0,
 "main": null,
 "gk": [
-90,
-88,
-82,
+91,
+89,
+83,
 78
 ],
 "crossing": null,
@@ -32381,7 +32492,7 @@
 "main": null,
 "gk": [
 87,
-85,
+86,
 80,
 77
 ],
@@ -32415,7 +32526,7 @@
 "assists": 5,
 "main": [
 87,
-73,
+74,
 89,
 84,
 46,
@@ -32456,7 +32567,7 @@
 85,
 76,
 85,
-79,
+78,
 73,
 87
 ],
@@ -32497,7 +32608,7 @@
 87
 ],
 "gk": null,
-"crossing": 72,
+"crossing": 71,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -32568,14 +32679,14 @@
 "main": [
 79,
 83,
-76,
+75,
 83,
 73,
-68,
-86
+67,
+85
 ],
 "gk": null,
-"crossing": 76,
+"crossing": 75,
 "ratingSource": "NEON XI",
 "weakFoot": 4
 },
@@ -32686,12 +32797,12 @@
 73,
 57,
 77,
-75,
+74,
 67,
-77
+76
 ],
 "gk": null,
-"crossing": 75,
+"crossing": 74,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -32726,11 +32837,11 @@
 86,
 81,
 43,
-73,
+74,
 82
 ],
 "gk": null,
-"crossing": 69,
+"crossing": 70,
 "ratingSource": "NEON XI formül",
 "weakFoot": 5,
 "transfer": "2026-09-01"
@@ -32803,13 +32914,13 @@
 57,
 73,
 60,
-72,
+71,
 71,
 60,
-76
+75
 ],
 "gk": null,
-"crossing": 65,
+"crossing": 64,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -32838,7 +32949,7 @@
 "goals": 0,
 "assists": 3,
 "main": [
-76,
+77,
 84,
 77,
 84,
@@ -32877,7 +32988,7 @@
 "gk": [
 88,
 87,
-81,
+82,
 78
 ],
 "crossing": null,
@@ -32907,11 +33018,11 @@
 "goals": 2,
 "assists": 2,
 "main": [
-68,
-75,
+69,
+74,
 67,
 75,
-69,
+68,
 62,
 77
 ],
@@ -32989,7 +33100,7 @@
 88,
 87,
 82,
-78
+79
 ],
 "crossing": null,
 "ratingSource": "NEON XI formül"
@@ -33025,7 +33136,7 @@
 86
 ],
 "gk": null,
-"crossing": 77,
+"crossing": 76,
 "ratingSource": "NEON XI formül",
 "weakFoot": 5
 },
@@ -33055,11 +33166,11 @@
 "goals": 1,
 "assists": 0,
 "main": [
-73,
+72,
 64,
-49,
+48,
 68,
-66,
+65,
 49,
 68
 ],
@@ -33098,7 +33209,7 @@
 77,
 40,
 53,
-72
+71
 ],
 "gk": null,
 "crossing": 71,
@@ -33132,8 +33243,8 @@
 "main": [
 83,
 77,
-76,
-85,
+77,
+86,
 48,
 56,
 81
@@ -33142,46 +33253,6 @@
 "crossing": 82,
 "ratingSource": "NEON XI formül",
 "weakFoot": 4
-},
-{
-"id": "nx-sl-fb-guendouzi",
-"tm_id": 465830,
-"name": "Mattéo Guendouzi",
-"pos": "CM",
-"positions": [
-"CM",
-"DM"
-],
-"age": 27,
-"birth": "1999-04-14",
-"foot": "R",
-"height": 185,
-"nation": "Fransa",
-"club": "Lazio",
-"league": "serie-a",
-"former": [
-"Fenerbahçe",
-"Marsilya",
-"Arsenal",
-"Hertha Berlin",
-"Lorient"
-],
-"mins": 3020,
-"goals": 3,
-"assists": 2,
-"main": [
-77,
-84,
-75,
-85,
-78,
-72,
-86
-],
-"gk": null,
-"crossing": 77,
-"ratingSource": "NEON XI formül",
-"weakFoot": 3
 },
 {
 "id": "tm535955",
@@ -33255,6 +33326,44 @@
 "ratingSource": "NEON XI formül"
 },
 {
+"id": "tm65278",
+"tm_id": 65278,
+"name": "Pedro",
+"pos": "LW",
+"positions": [
+"LW",
+"AM"
+],
+"age": 39,
+"birth": "1987-07-28",
+"foot": "B",
+"height": 167,
+"nation": "İspanya",
+"club": "Lazio",
+"league": "serie-a",
+"former": [
+"Roma",
+"Chelsea",
+"Barcelona"
+],
+"mins": 1041,
+"goals": 5,
+"assists": 2,
+"main": [
+56,
+68,
+68,
+76,
+39,
+41,
+71
+],
+"gk": null,
+"crossing": 70,
+"ratingSource": "NEON XI formül",
+"weakFoot": 5
+},
+{
 "id": "tm457736",
 "tm_id": 457736,
 "name": "Tijjani Noslin",
@@ -33283,9 +33392,9 @@
 "assists": 3,
 "main": [
 72,
-61,
+60,
 76,
-72,
+71,
 33,
 66,
 72
@@ -33324,13 +33433,52 @@
 71,
 62,
 72,
-66,
-63,
+65,
+62,
 73
 ],
 "gk": null,
 "crossing": 64,
 "ratingSource": "NEON XI formül"
+},
+{
+"id": "ext-cm-14",
+"tm_id": 182913,
+"name": "Adrien Rabiot",
+"pos": "CM",
+"positions": [
+"CM",
+"AM"
+],
+"age": 31,
+"birth": "1995-04-03",
+"foot": "L",
+"height": 191,
+"nation": "Fransa",
+"club": "Milan",
+"league": "serie-a",
+"former": [
+"Marsilya",
+"Juventus",
+"PSG",
+"Toulouse"
+],
+"mins": 3090,
+"goals": 6,
+"assists": 6,
+"main": [
+81,
+86,
+78,
+85,
+75,
+71,
+88
+],
+"gk": null,
+"crossing": 77,
+"ratingSource": "NEON XI",
+"weakFoot": 3
 },
 {
 "id": "fmi26-381950",
@@ -33368,41 +33516,6 @@
 "crossing": 85,
 "ratingSource": "NEON XI formül",
 "weakFoot": 5
-},
-{
-"id": "fmi26-608172",
-"tm_id": 608172,
-"name": "Ardon Jashari",
-"pos": "DM",
-"positions": [
-"DM"
-],
-"age": 24,
-"birth": "2002-07-30",
-"foot": "L",
-"height": 181,
-"nation": "İsviçre",
-"club": "Milan",
-"league": "serie-a",
-"former": [
-"Club Brugge",
-"Luzern"
-],
-"mins": 881,
-"goals": 0,
-"assists": 1,
-"main": [
-74,
-84,
-69,
-82,
-81,
-71,
-87
-],
-"gk": null,
-"crossing": 78,
-"ratingSource": "NEON XI formül"
 },
 {
 "id": "final-rw-pulisic",
@@ -33473,7 +33586,7 @@
 76
 ],
 "gk": null,
-"crossing": 74,
+"crossing": 75,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -33506,7 +33619,7 @@
 90,
 80,
 77,
-87,
+88,
 50,
 57,
 83
@@ -33725,7 +33838,7 @@
 "assists": 0,
 "main": [
 74,
-71,
+70,
 48,
 71,
 88,
@@ -33838,7 +33951,7 @@
 "assists": 1,
 "main": [
 91,
-75,
+74,
 60,
 83,
 75,
@@ -33879,7 +33992,7 @@
 "main": null,
 "gk": [
 86,
-84,
+85,
 79,
 76
 ],
@@ -33915,7 +34028,7 @@
 77,
 69,
 78,
-72,
+71,
 73,
 79
 ],
@@ -33956,7 +34069,7 @@
 90
 ],
 "gk": null,
-"crossing": 80,
+"crossing": 79,
 "ratingSource": "NEON XI"
 },
 {
@@ -34060,7 +34173,7 @@
 90,
 88,
 82,
-77
+78
 ],
 "crossing": null,
 "ratingSource": "NEON XI"
@@ -34208,13 +34321,13 @@
 "goals": 1,
 "assists": 4,
 "main": [
-77,
+76,
 85,
 79,
-88,
+87,
 65,
 63,
-87
+86
 ],
 "gk": null,
 "crossing": 81,
@@ -34249,8 +34362,8 @@
 84,
 75,
 84,
-78,
-73,
+77,
+72,
 86
 ],
 "gk": null,
@@ -34410,7 +34523,7 @@
 60,
 80,
 78,
-70,
+69,
 80
 ],
 "gk": null,
@@ -34445,8 +34558,8 @@
 "assists": 6,
 "main": [
 78,
-77,
-75,
+78,
+76,
 86,
 49,
 49,
@@ -34483,7 +34596,7 @@
 "main": [
 86,
 77,
-61,
+60,
 80,
 78,
 63,
@@ -34564,7 +34677,7 @@
 85
 ],
 "gk": null,
-"crossing": 64,
+"crossing": 63,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -34626,11 +34739,11 @@
 "goals": 1,
 "assists": 1,
 "main": [
-72,
+71,
 87,
-67,
-82,
-82,
+66,
+81,
+81,
 73,
 90
 ],
@@ -34669,7 +34782,7 @@
 "gk": [
 92,
 91,
-86,
+85,
 82
 ],
 "crossing": null,
@@ -34704,16 +34817,16 @@
 "goals": 1,
 "assists": 1,
 "main": [
-64,
+63,
+66,
+43,
 67,
-44,
-68,
-84,
 83,
-81
+82,
+80
 ],
 "gk": null,
-"crossing": 60,
+"crossing": 59,
 "ratingSource": "NEON XI formül",
 "transfer": "2026-09-01"
 },
@@ -34747,8 +34860,8 @@
 82,
 69,
 81,
-81,
-78,
+80,
+77,
 85
 ],
 "gk": null,
@@ -34816,14 +34929,14 @@
 "main": [
 77,
 67,
-51,
+50,
 70,
-68,
+67,
 54,
-71
+70
 ],
 "gk": null,
-"crossing": 70,
+"crossing": 69,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -35035,7 +35148,7 @@
 76,
 85,
 62,
-62,
+61,
 84
 ],
 "gk": null,
@@ -35106,9 +35219,9 @@
 "main": [
 70,
 70,
-48,
+47,
 69,
-86,
+85,
 84,
 83
 ],
@@ -35142,15 +35255,15 @@
 "assists": 4,
 "main": [
 58,
-82,
-67,
+81,
+68,
 79,
 79,
 73,
 84
 ],
 "gk": null,
-"crossing": 74,
+"crossing": 73,
 "ratingSource": "NEON XI formül",
 "transfer": "2026-08-01"
 },
@@ -35288,9 +35401,9 @@
 82,
 75,
 83,
-77,
+76,
 68,
-85
+84
 ],
 "gk": null,
 "crossing": 76,
@@ -35362,7 +35475,7 @@
 "assists": 0,
 "main": null,
 "gk": [
-85,
+86,
 84,
 79,
 76
@@ -35476,7 +35589,7 @@
 38,
 61,
 78,
-84,
+83,
 74
 ],
 "gk": null,
@@ -35513,7 +35626,7 @@
 "assists": 1,
 "main": [
 60,
-58,
+57,
 35,
 57,
 74,
@@ -35521,7 +35634,7 @@
 70
 ],
 "gk": null,
-"crossing": 50,
+"crossing": 49,
 "ratingSource": "NEON XI formül",
 "transfer": "2026-07-29"
 },
@@ -35556,11 +35669,11 @@
 "main": [
 70,
 66,
-48,
-68,
+47,
+67,
 65,
 56,
-69
+68
 ],
 "gk": null,
 "crossing": 68,
@@ -35592,16 +35705,16 @@
 "goals": 0,
 "assists": 0,
 "main": [
-52,
-60,
+51,
+59,
 36,
 59,
 76,
 75,
-73
+72
 ],
 "gk": null,
-"crossing": 54,
+"crossing": 53,
 "ratingSource": "NEON XI formül",
 "transfer": "2026-08-01"
 },
@@ -35639,41 +35752,6 @@
 "gk": null,
 "crossing": 74,
 "ratingSource": "NEON XI"
-},
-{
-"id": "fmi26-827734",
-"tm_id": 827734,
-"name": "Ange-Yoan Bonny",
-"pos": "ST",
-"positions": [
-"ST"
-],
-"age": 23,
-"birth": "2003-10-25",
-"foot": "R",
-"height": 189,
-"nation": "Fildişi Sahili",
-"club": "İnter",
-"league": "serie-a",
-"former": [
-"Parma"
-],
-"mins": 1838,
-"goals": 7,
-"assists": 9,
-"main": [
-86,
-73,
-87,
-83,
-44,
-86,
-84
-],
-"gk": null,
-"crossing": 66,
-"ratingSource": "NEON XI formül",
-"weakFoot": 2
 },
 {
 "id": "fmi26-585982",
@@ -35741,7 +35819,7 @@
 85,
 76,
 85,
-79,
+78,
 72,
 87
 ],
@@ -35859,7 +35937,7 @@
 "goals": 0,
 "assists": 0,
 "main": [
-48,
+47,
 62,
 38,
 61,
@@ -35897,11 +35975,11 @@
 "assists": 7,
 "main": [
 72,
-88,
+87,
 83,
 83,
 82,
-69,
+68,
 86
 ],
 "gk": null,
@@ -35939,9 +36017,9 @@
 "main": [
 57,
 80,
-71,
+70,
 80,
-74,
+73,
 61,
 82
 ],
@@ -35979,7 +36057,7 @@
 51,
 73,
 90,
-91,
+92,
 87
 ],
 "gk": null,
@@ -36051,7 +36129,7 @@
 87
 ],
 "gk": null,
-"crossing": 68,
+"crossing": 69,
 "ratingSource": "NEON XI",
 "weakFoot": 5
 },
@@ -36083,10 +36161,10 @@
 88,
 79,
 76,
-86,
+87,
 49,
 59,
-81
+82
 ],
 "gk": null,
 "crossing": 81,
@@ -36118,18 +36196,17 @@
 "goals": 2,
 "assists": 0,
 "main": [
-72,
-79,
-48,
-74,
+73,
+80,
+49,
+75,
+87,
 86,
-85,
-91
+92
 ],
 "gk": null,
-"crossing": 71,
-"ratingSource": "NEON XI",
-"transfer": "2026-07-01"
+"crossing": 72,
+"ratingSource": "NEON XI"
 },
 {
 "id": "final-st-mthuram",
@@ -36197,10 +36274,10 @@
 87,
 82,
 68,
-87
+86
 ],
 "gk": null,
-"crossing": 79,
+"crossing": 78,
 "ratingSource": "NEON XI",
 "weakFoot": 5
 },
@@ -36314,6 +36391,43 @@
 "weakFoot": 5
 },
 {
+"id": "tm70580",
+"tm_id": 70580,
+"name": "Raffaele Di Gennaro",
+"pos": "GK",
+"positions": [
+"GK"
+],
+"age": 33,
+"birth": "1993-10-03",
+"foot": "R",
+"height": 188,
+"nation": "İtalya",
+"club": "İnter",
+"league": "serie-a",
+"former": [
+"AS Gubbio",
+"Delfino Pescara 1936",
+"Catanzaro",
+"Spezia",
+"Ternana",
+"Latina",
+"Cittadella"
+],
+"mins": 9,
+"goals": 0,
+"assists": 0,
+"main": null,
+"gk": [
+84,
+83,
+78,
+74
+],
+"crossing": null,
+"ratingSource": "NEON XI formül"
+},
+{
 "id": "fmi26-441986",
 "tm_id": 441986,
 "name": "Yann Bisseck",
@@ -36352,41 +36466,41 @@
 "ratingSource": "NEON XI formül"
 },
 {
-"id": "tm754037",
-"tm_id": 754037,
-"name": "Abbosbek Fayzullaev",
-"pos": "AM",
+"id": "tm372711",
+"tm_id": 372711,
+"name": "Amine Harit",
+"pos": "LW",
 "positions": [
-"AM",
-"RW"
+"LW",
+"AM"
 ],
-"age": 23,
-"birth": "2003-10-03",
+"age": 29,
+"birth": "1997-06-18",
 "foot": "R",
-"height": 167,
-"nation": "Özbekistan",
+"height": 180,
+"nation": "Fas",
 "club": "Başakşehir",
 "league": "super-lig",
 "former": [
-"PFK CSKA Moskva",
-"Pakhtakor"
+"Marsilya",
+"Schalke 04",
+"Nantes"
 ],
-"mins": 1384,
-"goals": 4,
-"assists": 5,
+"mins": 1566,
+"goals": 2,
+"assists": 4,
 "main": [
+77,
 71,
-79,
-72,
-79,
-57,
-47,
-80
+67,
+78,
+41,
+50,
+74
 ],
 "gk": null,
-"crossing": 77,
-"ratingSource": "NEON XI formül",
-"weakFoot": 4
+"crossing": 72,
+"ratingSource": "NEON XI formül"
 },
 {
 "id": "tm483063",
@@ -36451,15 +36565,15 @@
 "assists": 8,
 "main": [
 71,
-65,
+64,
 49,
-68,
+67,
 65,
 54,
-69
+68
 ],
 "gk": null,
-"crossing": 72,
+"crossing": 71,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -36492,12 +36606,12 @@
 58,
 75,
 70,
-32,
-78,
+31,
+77,
 70
 ],
 "gk": null,
-"crossing": 52,
+"crossing": 51,
 "ratingSource": "NEON XI formül",
 "weakFoot": 4
 },
@@ -36524,7 +36638,7 @@
 "gk": [
 83,
 82,
-76,
+77,
 73
 ],
 "crossing": null,
@@ -36572,42 +36686,6 @@
 "weakFoot": 5
 },
 {
-"id": "tm586756",
-"tm_id": 586756,
-"name": "Festy Ebosele",
-"pos": "RB",
-"positions": [
-"RB"
-],
-"age": 24,
-"birth": "2002-08-02",
-"foot": "R",
-"height": 180,
-"nation": "İrlanda",
-"club": "Başakşehir",
-"league": "super-lig",
-"former": [
-"Udinese",
-"Watford",
-"Derby"
-],
-"mins": 787,
-"goals": 1,
-"assists": 0,
-"main": [
-72,
-61,
-44,
-65,
-63,
-48,
-65
-],
-"gk": null,
-"crossing": 63,
-"ratingSource": "NEON XI formül"
-},
-{
 "id": "tm432752",
 "tm_id": 432752,
 "name": "Ivan Brnic",
@@ -36635,7 +36713,7 @@
 "main": [
 75,
 65,
-66,
+65,
 74,
 37,
 44,
@@ -36670,16 +36748,52 @@
 "goals": 0,
 "assists": 2,
 "main": [
-64,
+63,
 62,
-38,
-61,
-78,
+37,
+60,
+77,
 84,
 75
 ],
 "gk": null,
 "crossing": 53,
+"ratingSource": "NEON XI formül"
+},
+{
+"id": "tm312678",
+"tm_id": 312678,
+"name": "Léo Duarte",
+"pos": "CB",
+"positions": [
+"CB",
+"RB"
+],
+"age": 30,
+"birth": "1996-07-17",
+"foot": "R",
+"height": 183,
+"nation": "Brezilya",
+"club": "Başakşehir",
+"league": "super-lig",
+"former": [
+"Milan",
+"Flamengo"
+],
+"mins": 2710,
+"goals": 0,
+"assists": 1,
+"main": [
+58,
+57,
+33,
+57,
+73,
+70,
+70
+],
+"gk": null,
+"crossing": 49,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -36747,7 +36861,7 @@
 "gk": [
 87,
 86,
-80,
+81,
 77
 ],
 "crossing": null,
@@ -36898,7 +37012,7 @@
 "main": [
 57,
 56,
-32,
+31,
 56,
 73,
 76,
@@ -36932,7 +37046,7 @@
 "goals": 1,
 "assists": 1,
 "main": [
-64,
+65,
 71,
 61,
 72,
@@ -36976,7 +37090,7 @@
 75,
 38,
 40,
-72
+71
 ],
 "gk": null,
 "crossing": 74,
@@ -37007,7 +37121,7 @@
 "goals": 3,
 "assists": 1,
 "main": [
-60,
+59,
 60,
 45,
 64,
@@ -37056,6 +37170,85 @@
 "transfer": "2026-07-08"
 },
 {
+"id": "tm500054",
+"tm_id": 500054,
+"name": "David Jurásek",
+"pos": "LB",
+"positions": [
+"LB",
+"LM"
+],
+"age": 26,
+"birth": "2000-08-07",
+"foot": "L",
+"height": 183,
+"nation": "Çekya",
+"club": "Beşiktaş",
+"league": "super-lig",
+"former": [
+"Slavia Prague",
+"Benfica",
+"Hoffenheim",
+"Mlada Boleslav",
+"Prostejov",
+"Zbrojovka Brno"
+],
+"mins": 964,
+"goals": 0,
+"assists": 0,
+"main": [
+73,
+64,
+46,
+68,
+65,
+53,
+70
+],
+"gk": null,
+"crossing": 74,
+"ratingSource": "NEON XI formül"
+},
+{
+"id": "tm495722",
+"tm_id": 495722,
+"name": "Devis Vásquez",
+"pos": "GK",
+"positions": [
+"GK"
+],
+"age": 28,
+"birth": "1998-05-12",
+"foot": "R",
+"height": 195,
+"nation": "Kolombiya",
+"club": "Beşiktaş",
+"league": "super-lig",
+"former": [
+"Roma",
+"Milan",
+"Empoli",
+"Ascoli",
+"Sheff Wed",
+"Guaraní",
+"Llaneros",
+"Patriotas",
+"Internacional de Bogotá"
+],
+"mins": 90,
+"goals": 0,
+"assists": 0,
+"main": null,
+"gk": [
+85,
+84,
+79,
+75
+],
+"crossing": null,
+"ratingSource": "NEON XI formül"
+},
+{
 "id": "tm649016",
 "tm_id": 649016,
 "name": "El Bilal Touré",
@@ -37083,7 +37276,7 @@
 "assists": 5,
 "main": [
 87,
-78,
+79,
 78,
 86,
 49,
@@ -37121,7 +37314,7 @@
 "main": [
 65,
 62,
-38,
+37,
 61,
 78,
 79,
@@ -37157,9 +37350,9 @@
 "goals": 1,
 "assists": 3,
 "main": [
-74,
+73,
 72,
-48,
+47,
 71,
 88,
 87,
@@ -37223,13 +37416,13 @@
 "goals": 1,
 "assists": 3,
 "main": [
-74,
-80,
 73,
+80,
+72,
 82,
-60,
+59,
 54,
-82
+81
 ],
 "gk": null,
 "crossing": 74,
@@ -37263,13 +37456,13 @@
 60,
 58,
 34,
-58,
+57,
 74,
 78,
 70
 ],
 "gk": null,
-"crossing": 50,
+"crossing": 49,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -37343,7 +37536,7 @@
 64,
 62,
 43,
-65,
+64,
 62,
 47,
 65
@@ -37351,6 +37544,44 @@
 "gk": null,
 "crossing": 64,
 "ratingSource": "NEON XI formül"
+},
+{
+"id": "tm639246",
+"tm_id": 639246,
+"name": "Hyeon-gyu Oh",
+"pos": "ST",
+"positions": [
+"ST"
+],
+"age": 25,
+"birth": "2001-04-12",
+"foot": "R",
+"height": 187,
+"nation": "Güney Kore",
+"club": "Beşiktaş",
+"league": "super-lig",
+"former": [
+"Genk",
+"Celtic",
+"Suwon Bluewings",
+"Gimcheon Sangmu"
+],
+"mins": 3082,
+"goals": 17,
+"assists": 6,
+"main": [
+81,
+69,
+85,
+80,
+41,
+81,
+80
+],
+"gk": null,
+"crossing": 61,
+"ratingSource": "NEON XI formül",
+"weakFoot": 5
 },
 {
 "id": "tm900938",
@@ -37419,7 +37650,7 @@
 "goals": 10,
 "assists": 11,
 "main": [
-87,
+86,
 82,
 81,
 89,
@@ -37432,39 +37663,6 @@
 "ratingSource": "NEON XI formül",
 "weakFoot": 5,
 "transfer": "2026-07-15"
-},
-{
-"id": "tm51894",
-"tm_id": 51894,
-"name": "Mert Günok",
-"pos": "GK",
-"positions": [
-"GK"
-],
-"age": 37,
-"birth": "1989-03-01",
-"foot": "R",
-"height": 196,
-"nation": "Türkiye",
-"club": "Beşiktaş",
-"league": "super-lig",
-"former": [
-"Fenerbahçe",
-"Başakşehir",
-"Bursaspor"
-],
-"mins": 1555,
-"goals": 0,
-"assists": 0,
-"main": null,
-"gk": [
-86,
-85,
-80,
-76
-],
-"crossing": null,
-"ratingSource": "NEON XI formül"
 },
 {
 "id": "tm291739",
@@ -37496,9 +37694,9 @@
 70,
 68,
 78,
-41,
+40,
 47,
-74
+73
 ],
 "gk": null,
 "crossing": 77,
@@ -37542,43 +37740,6 @@
 "weakFoot": 4
 },
 {
-"id": "tm238055",
-"tm_id": 238055,
-"name": "Rafa Silva",
-"pos": "ST",
-"positions": [
-"ST"
-],
-"age": 33,
-"birth": "1993-05-17",
-"foot": "R",
-"height": 172,
-"nation": "Portekiz",
-"club": "Beşiktaş",
-"league": "super-lig",
-"former": [
-"Benfica",
-"Braga",
-"Feirense"
-],
-"mins": 2444,
-"goals": 11,
-"assists": 3,
-"main": [
-67,
-64,
-78,
-73,
-35,
-63,
-75
-],
-"gk": null,
-"crossing": 58,
-"ratingSource": "NEON XI formül",
-"weakFoot": 2
-},
-{
 "id": "nx-sl-bjk-ridvan",
 "tm_id": 477930,
 "name": "Rıdvan Yılmaz",
@@ -37600,13 +37761,13 @@
 "goals": 0,
 "assists": 1,
 "main": [
-75,
+74,
 64,
-48,
+47,
 69,
 66,
 48,
-69
+68
 ],
 "gk": null,
 "crossing": 68,
@@ -37642,53 +37803,13 @@
 58,
 72,
 72,
-62,
-76
+61,
+75
 ],
 "gk": null,
 "crossing": 66,
 "ratingSource": "NEON XI formül",
 "transfer": "2026-07-09"
-},
-{
-"id": "tm331726",
-"tm_id": 331726,
-"name": "Tammy Abraham",
-"pos": "ST",
-"positions": [
-"ST"
-],
-"age": 29,
-"birth": "1997-10-02",
-"foot": "R",
-"height": 194,
-"nation": "İngiltere",
-"club": "Beşiktaş",
-"league": "super-lig",
-"former": [
-"Aston Villa",
-"Roma",
-"Milan",
-"Chelsea",
-"Swansea City",
-"Bristol City"
-],
-"mins": 2161,
-"goals": 15,
-"assists": 3,
-"main": [
-81,
-71,
-86,
-82,
-43,
-88,
-82
-],
-"gk": null,
-"crossing": 66,
-"ratingSource": "NEON XI formül",
-"weakFoot": 2
 },
 {
 "id": "tm420465",
@@ -37718,7 +37839,7 @@
 60,
 39,
 61,
-78,
+77,
 82,
 74
 ],
@@ -37800,7 +37921,7 @@
 85
 ],
 "gk": null,
-"crossing": 76,
+"crossing": 75,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -37827,16 +37948,124 @@
 "goals": 4,
 "assists": 6,
 "main": [
-83,
-74,
-58,
-77,
-74,
+82,
+73,
+57,
+76,
+73,
 70,
-78
+77
 ],
 "gk": null,
-"crossing": 80,
+"crossing": 79,
+"ratingSource": "NEON XI formül"
+},
+{
+"id": "tm671591",
+"tm_id": 671591,
+"name": "Dorgeles Nene",
+"pos": "RW",
+"positions": [
+"RW"
+],
+"age": 23,
+"birth": "2002-12-23",
+"foot": "R",
+"height": 174,
+"nation": "Mali",
+"club": "Fenerbahçe",
+"league": "super-lig",
+"former": [
+"Red Bull Salzburg",
+"KVC Westerlo",
+"Ried"
+],
+"mins": 2374,
+"goals": 11,
+"assists": 9,
+"main": [
+90,
+82,
+83,
+88,
+50,
+55,
+85
+],
+"gk": null,
+"crossing": 83,
+"ratingSource": "NEON XI formül",
+"weakFoot": 5
+},
+{
+"id": "gk4",
+"tm_id": 238223,
+"name": "Ederson",
+"pos": "GK",
+"positions": [
+"GK"
+],
+"age": 33,
+"birth": "1993-08-17",
+"foot": "L",
+"height": 188,
+"nation": "Brezilya",
+"club": "Fenerbahçe",
+"league": "super-lig",
+"former": [
+"Manchester City",
+"Benfica",
+"Rio Ave",
+"GD Ribeirão"
+],
+"mins": 3062,
+"goals": 0,
+"assists": 0,
+"main": null,
+"gk": [
+92,
+91,
+86,
+82
+],
+"crossing": null,
+"ratingSource": "NEON XI formül"
+},
+{
+"id": "tm401356",
+"tm_id": 401356,
+"name": "Edson Álvarez",
+"pos": "DM",
+"positions": [
+"DM"
+],
+"age": 29,
+"birth": "1997-10-24",
+"foot": "R",
+"height": 190,
+"nation": "Meksika",
+"club": "Fenerbahçe",
+"league": "super-lig",
+"former": [
+"West Ham",
+"Ajax",
+"América",
+"América Coapa"
+],
+"mins": 1275,
+"goals": 0,
+"assists": 1,
+"main": [
+70,
+82,
+69,
+81,
+81,
+79,
+85
+],
+"gk": null,
+"crossing": 74,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -37866,7 +38095,7 @@
 76,
 71,
 48,
-72,
+71,
 88,
 90,
 85
@@ -37979,9 +38208,9 @@
 "assists": 13,
 "main": [
 76,
-89,
+88,
 83,
-89,
+88,
 66,
 62,
 89
@@ -38019,7 +38248,7 @@
 "assists": 8,
 "main": [
 91,
-82,
+83,
 82,
 90,
 53,
@@ -38027,10 +38256,83 @@
 85
 ],
 "gk": null,
-"crossing": 85,
+"crossing": 86,
 "ratingSource": "NEON XI formül",
 "weakFoot": 5,
 "transfer": "2026-07-01"
+},
+{
+"id": "nx-sl-fb-guendouzi",
+"tm_id": 465830,
+"name": "Mattéo Guendouzi",
+"pos": "CM",
+"positions": [
+"CM",
+"DM"
+],
+"age": 27,
+"birth": "1999-04-14",
+"foot": "R",
+"height": 185,
+"nation": "Fransa",
+"club": "Fenerbahçe",
+"league": "super-lig",
+"former": [
+"Lazio",
+"Marsilya",
+"Arsenal",
+"Hertha Berlin",
+"Lorient"
+],
+"mins": 3020,
+"goals": 3,
+"assists": 2,
+"main": [
+77,
+84,
+74,
+84,
+78,
+71,
+86
+],
+"gk": null,
+"crossing": 77,
+"ratingSource": "NEON XI formül",
+"weakFoot": 3
+},
+{
+"id": "tm51894",
+"tm_id": 51894,
+"name": "Mert Günok",
+"pos": "GK",
+"positions": [
+"GK"
+],
+"age": 37,
+"birth": "1989-03-01",
+"foot": "R",
+"height": 196,
+"nation": "Türkiye",
+"club": "Fenerbahçe",
+"league": "super-lig",
+"former": [
+"Beşiktaş",
+"Başakşehir",
+"Bursaspor"
+],
+"mins": 1555,
+"goals": 0,
+"assists": 0,
+"main": null,
+"gk": [
+86,
+85,
+80,
+76
+],
+"crossing": null,
+"ratingSource": "NEON XI formül"
 },
 {
 "id": "nx-sl-fb-mert",
@@ -38057,13 +38359,13 @@
 "goals": 1,
 "assists": 2,
 "main": [
-77,
-70,
+76,
+69,
 53,
 72,
 69,
 61,
-73
+72
 ],
 "gk": null,
 "crossing": 71,
@@ -38135,15 +38437,15 @@
 "assists": 0,
 "main": [
 59,
-84,
+83,
 73,
-81,
+80,
 80,
 62,
-86
+85
 ],
 "gk": null,
-"crossing": 76,
+"crossing": 75,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -38217,53 +38519,14 @@
 78,
 77,
 59,
-81,
+80,
 78,
-63,
+62,
 80
 ],
 "gk": null,
 "crossing": 79,
 "ratingSource": "NEON XI formül"
-},
-{
-"id": "nx-sl-fb-oguz",
-"tm_id": 563749,
-"name": "Oğuz Aydın",
-"pos": "RM",
-"positions": [
-"RM",
-"LW"
-],
-"age": 26,
-"birth": "2000-10-27",
-"foot": "R",
-"height": 183,
-"nation": "Türkiye",
-"club": "Fenerbahçe",
-"league": "super-lig",
-"former": [
-"Alanyaspor",
-"1928 Bucaspor",
-"Karacabey Belediyespor",
-"Bucaspor"
-],
-"mins": 1113,
-"goals": 0,
-"assists": 3,
-"main": [
-78,
-71,
-69,
-78,
-40,
-52,
-73
-],
-"gk": null,
-"crossing": 72,
-"ratingSource": "NEON XI formül",
-"weakFoot": 5
 },
 {
 "id": "fmi26-96341",
@@ -38303,42 +38566,10 @@
 82
 ],
 "gk": null,
-"crossing": 63,
+"crossing": 64,
 "ratingSource": "NEON XI formül",
 "weakFoot": 4,
 "transfer": "2026-08-12"
-},
-{
-"id": "tm286170",
-"tm_id": 286170,
-"name": "Tarık Çetin",
-"pos": "GK",
-"positions": [
-"GK"
-],
-"age": 29,
-"birth": "1997-01-08",
-"foot": "R",
-"height": 193,
-"nation": "Türkiye",
-"club": "Fenerbahçe",
-"league": "super-lig",
-"former": [
-"Çaykur Rizespor",
-"Fatih Karagümrük"
-],
-"mins": 270,
-"goals": 0,
-"assists": 0,
-"main": null,
-"gk": [
-83,
-82,
-77,
-73
-],
-"crossing": null,
-"ratingSource": "NEON XI formül"
 },
 {
 "id": "nx-sl-fb-muriqi",
@@ -38369,10 +38600,10 @@
 "assists": 1,
 "main": [
 69,
-62,
+63,
 79,
 74,
-35,
+36,
 81,
 74
 ],
@@ -38381,41 +38612,6 @@
 "ratingSource": "NEON XI formül",
 "transfer": "2026-06-01",
 "weakFoot": 4
-},
-{
-"id": "tm889136",
-"tm_id": 889136,
-"name": "Yiğit Efe Demir",
-"pos": "CB",
-"positions": [
-"CB"
-],
-"age": 22,
-"birth": "2004-08-02",
-"foot": "R",
-"height": 194,
-"nation": "Türkiye",
-"club": "Fenerbahçe",
-"league": "super-lig",
-"former": [
-"Fatih Karagümrük",
-"Gençlerbirliği Spor Kulübü"
-],
-"mins": 931,
-"goals": 0,
-"assists": 0,
-"main": [
-65,
-58,
-34,
-58,
-75,
-80,
-71
-],
-"gk": null,
-"crossing": 50,
-"ratingSource": "NEON XI formül"
 },
 {
 "id": "tm433049",
@@ -38444,7 +38640,7 @@
 "assists": 1,
 "main": [
 81,
-70,
+71,
 88,
 82,
 44,
@@ -38455,39 +38651,6 @@
 "crossing": 65,
 "ratingSource": "NEON XI formül",
 "weakFoot": 4
-},
-{
-"id": "tm322873",
-"tm_id": 322873,
-"name": "İrfan Can Eğribayat",
-"pos": "GK",
-"positions": [
-"GK"
-],
-"age": 28,
-"birth": "1998-06-30",
-"foot": "R",
-"height": 193,
-"nation": "Türkiye",
-"club": "Fenerbahçe",
-"league": "super-lig",
-"former": [
-"Samsunspor",
-"Göztepe",
-"Adanaspor"
-],
-"mins": 810,
-"goals": 0,
-"assists": 0,
-"main": null,
-"gk": [
-85,
-83,
-78,
-75
-],
-"crossing": null,
-"ratingSource": "NEON XI formül"
 },
 {
 "id": "nx-sl-fb-ismail",
@@ -38520,11 +38683,11 @@
 69,
 81,
 81,
-73,
+72,
 86
 ],
 "gk": null,
-"crossing": 75,
+"crossing": 74,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -38568,40 +38731,6 @@
 "ratingSource": "NEON XI formül"
 },
 {
-"id": "tm1048118",
-"tm_id": 1048118,
-"name": "Arda Ünyay",
-"pos": "CB",
-"positions": [
-"CB"
-],
-"age": 19,
-"birth": "2007-01-18",
-"foot": "R",
-"height": 187,
-"nation": "Türkiye",
-"club": "Galatasaray",
-"league": "super-lig",
-"former": [
-"MKE Ankaragücü"
-],
-"mins": 241,
-"goals": 0,
-"assists": 0,
-"main": [
-63,
-55,
-31,
-56,
-72,
-71,
-68
-],
-"gk": null,
-"crossing": 48,
-"ratingSource": "NEON XI formül"
-},
-{
 "id": "nx-sl-gs-baris",
 "tm_id": 541537,
 "name": "Barış Alper Yılmaz",
@@ -38637,41 +38766,6 @@
 "crossing": 85,
 "ratingSource": "NEON XI formül",
 "weakFoot": 5
-},
-{
-"id": "tm352659",
-"tm_id": 352659,
-"name": "Batuhan Şen",
-"pos": "GK",
-"positions": [
-"GK"
-],
-"age": 27,
-"birth": "1999-02-03",
-"foot": "R",
-"height": 194,
-"nation": "Türkiye",
-"club": "Galatasaray",
-"league": "super-lig",
-"former": [
-"Kocaelispor",
-"Gaziantep FK",
-"Fatih Karagümrük",
-"Menemenspor",
-"Hekimoglu"
-],
-"mins": 69,
-"goals": 0,
-"assists": 0,
-"main": null,
-"gk": [
-83,
-82,
-77,
-73
-],
-"crossing": null,
-"ratingSource": "NEON XI formül"
 },
 {
 "id": "nx-sl-gs-davinson",
@@ -38734,8 +38828,8 @@
 "main": [
 73,
 58,
-74,
-70,
+73,
+69,
 31,
 76,
 69
@@ -38770,10 +38864,10 @@
 "main": [
 70,
 63,
-39,
+38,
 63,
 80,
-86,
+85,
 76
 ],
 "gk": null,
@@ -38806,7 +38900,7 @@
 "assists": 0,
 "main": [
 74,
-65,
+64,
 48,
 69,
 66,
@@ -38843,10 +38937,10 @@
 "main": [
 76,
 83,
-75,
-84,
+74,
+83,
 77,
-65,
+64,
 86
 ],
 "gk": null,
@@ -38885,7 +38979,7 @@
 84,
 83,
 78,
-74
+75
 ],
 "crossing": null,
 "ratingSource": "NEON XI formül"
@@ -38913,55 +39007,16 @@
 "goals": 0,
 "assists": 2,
 "main": [
-78,
+77,
+69,
+51,
+72,
 70,
-52,
-73,
-71,
-59,
-74
+58,
+73
 ],
 "gk": null,
-"crossing": 75,
-"ratingSource": "NEON XI formül"
-},
-{
-"id": "tm119031",
-"tm_id": 119031,
-"name": "Kaan Ayhan",
-"pos": "RB",
-"positions": [
-"RB",
-"CB",
-"DM"
-],
-"age": 32,
-"birth": "1994-11-10",
-"foot": "R",
-"height": 185,
-"nation": "Türkiye",
-"club": "Galatasaray",
-"league": "super-lig",
-"former": [
-"Sassuolo",
-"Fortuna Düsseldorf",
-"Schalke 04",
-"Eintracht Frankfurt"
-],
-"mins": 426,
-"goals": 2,
-"assists": 0,
-"main": [
-65,
-62,
-47,
-66,
-63,
-52,
-66
-],
-"gk": null,
-"crossing": 65,
+"crossing": 73,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -39029,7 +39084,7 @@
 "goals": 3,
 "assists": 4,
 "main": [
-70,
+69,
 83,
 70,
 81,
@@ -39072,9 +39127,9 @@
 59,
 78,
 65,
-77,
 76,
-74,
+76,
+73,
 81
 ],
 "gk": null,
@@ -39106,7 +39161,7 @@
 "assists": 1,
 "main": [
 68,
-64,
+65,
 81,
 75,
 36,
@@ -39116,6 +39171,47 @@
 "gk": null,
 "crossing": 56,
 "ratingSource": "NEON XI formül",
+"weakFoot": 4
+},
+{
+"id": "ext-lw-11",
+"tm_id": 339332,
+"name": "Noa Lang",
+"pos": "LW",
+"positions": [
+"LW"
+],
+"age": 27,
+"birth": "1999-06-17",
+"foot": "R",
+"height": 176,
+"nation": "Hollanda",
+"club": "Galatasaray",
+"league": "super-lig",
+"former": [
+"Napoli",
+"PSV",
+"Club Brugge",
+"Ajax",
+"Twente",
+"Emmen",
+"AZ Alkmaar"
+],
+"mins": 1923,
+"goals": 3,
+"assists": 5,
+"main": [
+86,
+83,
+78,
+90,
+48,
+55,
+85
+],
+"gk": null,
+"crossing": 87,
+"ratingSource": "NEON XI",
 "weakFoot": 4
 },
 {
@@ -39194,6 +39290,38 @@
 "crossing": 81,
 "ratingSource": "NEON XI formül",
 "weakFoot": 3
+},
+{
+"id": "nx-sl-gs-ugurcan",
+"tm_id": 292199,
+"name": "Uğurcan Çakır",
+"pos": "GK",
+"positions": [
+"GK"
+],
+"age": 30,
+"birth": "1996-04-05",
+"foot": "R",
+"height": 191,
+"nation": "Türkiye",
+"club": "Galatasaray",
+"league": "super-lig",
+"former": [
+"Trabzonspor",
+"1461 Trabzon"
+],
+"mins": 3967,
+"goals": 0,
+"assists": 0,
+"main": null,
+"gk": [
+91,
+90,
+85,
+82
+],
+"crossing": null,
+"ratingSource": "NEON XI formül"
 },
 {
 "id": "st4",
@@ -39294,9 +39422,9 @@
 "goals": 9,
 "assists": 11,
 "main": [
-87,
+88,
 81,
-78,
+79,
 87,
 50,
 54,
@@ -39304,6 +39432,46 @@
 ],
 "gk": null,
 "crossing": 82,
+"ratingSource": "NEON XI formül",
+"weakFoot": 5
+},
+{
+"id": "fmi26-53622",
+"tm_id": 53622,
+"name": "İlkay Gündoğan",
+"pos": "CM",
+"positions": [
+"CM",
+"DM",
+"AM"
+],
+"age": 36,
+"birth": "1990-10-24",
+"foot": "R",
+"height": 180,
+"nation": "Almanya",
+"club": "Galatasaray",
+"league": "super-lig",
+"former": [
+"Manchester City",
+"Barcelona",
+"Dortmund",
+"Nürnberg"
+],
+"mins": 1859,
+"goals": 2,
+"assists": 5,
+"main": [
+56,
+78,
+69,
+77,
+70,
+59,
+79
+],
+"gk": null,
+"crossing": 70,
 "ratingSource": "NEON XI formül",
 "weakFoot": 5
 },
@@ -39336,7 +39504,7 @@
 91,
 90,
 85,
-82
+81
 ],
 "crossing": null,
 "ratingSource": "NEON XI formül"
@@ -39405,16 +39573,16 @@
 "goals": 0,
 "assists": 2,
 "main": [
-71,
-67,
-42,
+69,
 65,
-82,
+40,
+64,
 80,
-80
+78,
+78
 ],
 "gk": null,
-"crossing": 57,
+"crossing": 56,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -39480,16 +39648,16 @@
 "goals": 0,
 "assists": 0,
 "main": [
-63,
+62,
 58,
 34,
-59,
+58,
 75,
-77,
+76,
 72
 ],
 "gk": null,
-"crossing": 51,
+"crossing": 50,
 "ratingSource": "NEON XI formül",
 "transfer": "2026-07-18"
 },
@@ -39517,16 +39685,16 @@
 "goals": 4,
 "assists": 1,
 "main": [
-69,
+68,
 64,
 44,
-63,
+62,
 79,
 89,
 78
 ],
 "gk": null,
-"crossing": 55,
+"crossing": 54,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -39552,16 +39720,54 @@
 "assists": 4,
 "main": [
 78,
-82,
+81,
 72,
 82,
-76,
-59,
-84
+75,
+58,
+83
 ],
 "gk": null,
 "crossing": 76,
 "ratingSource": "NEON XI formül"
+},
+{
+"id": "tm583917",
+"tm_id": 583917,
+"name": "Ernest Muci",
+"pos": "LW",
+"positions": [
+"LW",
+"AM"
+],
+"age": 25,
+"birth": "2001-03-19",
+"foot": "B",
+"height": 180,
+"nation": "Arnavutluk",
+"club": "Trabzonspor",
+"league": "super-lig",
+"former": [
+"Beşiktaş",
+"Legia Warszawa",
+"KF Tirana"
+],
+"mins": 2126,
+"goals": 11,
+"assists": 4,
+"main": [
+83,
+73,
+75,
+82,
+44,
+54,
+77
+],
+"gk": null,
+"crossing": 76,
+"ratingSource": "NEON XI formül",
+"weakFoot": 4
 },
 {
 "id": "tm225693",
@@ -39589,7 +39795,7 @@
 "goals": 0,
 "assists": 0,
 "main": [
-65,
+66,
 86,
 70,
 83,
@@ -39672,45 +39878,6 @@
 "crossing": 62,
 "ratingSource": "NEON XI formül",
 "transfer": "2026-09-02",
-"weakFoot": 3
-},
-{
-"id": "tm565406",
-"tm_id": 565406,
-"name": "Kazeem Olaigbe",
-"pos": "LW",
-"positions": [
-"LW"
-],
-"age": 23,
-"birth": "2003-01-02",
-"foot": "R",
-"height": 178,
-"nation": "Belçika",
-"club": "Trabzonspor",
-"league": "super-lig",
-"former": [
-"Konyaspor",
-"Rennes",
-"Cercle Brugge",
-"Harrogate Town",
-"Ross County"
-],
-"mins": 2044,
-"goals": 0,
-"assists": 1,
-"main": [
-78,
-66,
-66,
-75,
-38,
-44,
-70
-],
-"gk": null,
-"crossing": 70,
-"ratingSource": "NEON XI formül",
 "weakFoot": 3
 },
 {
@@ -39818,13 +39985,13 @@
 "goals": 0,
 "assists": 5,
 "main": [
-71,
-65,
-47,
-68,
+70,
 65,
 46,
-68
+67,
+64,
+46,
+67
 ],
 "gk": null,
 "crossing": 66,
@@ -39859,10 +40026,10 @@
 "main": [
 55,
 71,
-57,
+58,
 70,
 70,
-69,
+68,
 74
 ],
 "gk": null,
@@ -39907,6 +40074,35 @@
 "weakFoot": 4
 },
 {
+"id": "tm1054214",
+"tm_id": 1054214,
+"name": "Onuralp Çevikkan",
+"pos": "GK",
+"positions": [
+"GK"
+],
+"age": 20,
+"birth": "2006-01-02",
+"foot": "R",
+"height": 192,
+"nation": "Türkiye",
+"club": "Trabzonspor",
+"league": "super-lig",
+"former": [],
+"mins": 90,
+"goals": 0,
+"assists": 0,
+"main": null,
+"gk": [
+83,
+82,
+77,
+73
+],
+"crossing": null,
+"ratingSource": "NEON XI formül"
+},
+{
 "id": "tm236471",
 "tm_id": 236471,
 "name": "Ozan Tufan",
@@ -39942,7 +40138,7 @@
 73
 ],
 "gk": null,
-"crossing": 64,
+"crossing": 63,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -40016,13 +40212,13 @@
 61,
 77,
 68,
-77,
+76,
 70,
-60,
+59,
 78
 ],
 "gk": null,
-"crossing": 68,
+"crossing": 67,
 "ratingSource": "NEON XI formül",
 "transfer": "2026-07-01",
 "weakFoot": 2
@@ -40055,11 +40251,11 @@
 "main": [
 50,
 58,
-34,
+33,
 58,
-75,
 74,
-71
+74,
+70
 ],
 "gk": null,
 "crossing": 50,
@@ -40094,44 +40290,12 @@
 73,
 63,
 74,
-68,
+67,
 62,
 75
 ],
 "gk": null,
 "crossing": 64,
-"ratingSource": "NEON XI formül"
-},
-{
-"id": "nx-sl-gs-ugurcan",
-"tm_id": 292199,
-"name": "Uğurcan Çakır",
-"pos": "GK",
-"positions": [
-"GK"
-],
-"age": 30,
-"birth": "1996-04-05",
-"foot": "R",
-"height": 191,
-"nation": "Türkiye",
-"club": "Trabzonspor",
-"league": "super-lig",
-"former": [
-"Galatasaray",
-"1461 Trabzon"
-],
-"mins": 3967,
-"goals": 0,
-"assists": 0,
-"main": null,
-"gk": [
-91,
-89,
-84,
-81
-],
-"crossing": null,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -40161,11 +40325,11 @@
 "goals": 0,
 "assists": 7,
 "main": [
-86,
+85,
 76,
 58,
 79,
-77,
+76,
 62,
 80
 ],
@@ -40207,7 +40371,7 @@
 72,
 78,
 41,
-45,
+44,
 73
 ],
 "gk": null,
@@ -40215,46 +40379,6 @@
 "ratingSource": "NEON XI formül",
 "weakFoot": 5,
 "transfer": "2026-08-28"
-},
-{
-"id": "tm320141",
-"tm_id": 320141,
-"name": "Çağlar Söyüncü",
-"pos": "CB",
-"positions": [
-"CB"
-],
-"age": 30,
-"birth": "1996-05-23",
-"foot": "B",
-"height": 185,
-"nation": "Türkiye",
-"club": "Çorum FK",
-"league": "tff-1-lig",
-"former": [
-"Fenerbahçe",
-"Atlético Madrid",
-"Leicester",
-"Freiburg",
-"Altinordu",
-"B. Yesiltepe"
-],
-"mins": 1064,
-"goals": 0,
-"assists": 1,
-"main": [
-63,
-61,
-39,
-61,
-78,
-76,
-75
-],
-"gk": null,
-"crossing": 56,
-"ratingSource": "NEON XI formül",
-"transfer": "2026-09-04"
 }
 ]
 }

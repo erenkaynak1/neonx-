@@ -120,21 +120,33 @@ def main() -> None:
     args = ap.parse_args()
     c = duckdb.connect(str(args.database), read_only=True)
 
+    # The dataset's "current club" lags behind loans and mid-season moves (Ederson, Guendouzi, Gündoğan, Lammens …).
+    # A player's club is therefore the club of his last 2025-26 club appearance (national-team tournaments such as
+    # the 2026 World Cup do not count); players without appearances keep the recorded current club.
+    c.execute("""create temp table eff as
+        select p.player_id, coalesce(l.club, try_cast(p.current_club_id as int)) club_id
+        from players p left join (select player_id, arg_max(player_club_id, date) club from appearances
+                                  where date between ? and ? and competition_id not in
+                                    (select competition_id from competitions where type = 'national_team_competition')
+                                  group by 1) l using (player_id)""", list(SEASON))
     stats_sql = """
       select p.player_id, p.name, p.sub_position, p.date_of_birth, p.foot, p.height_in_cm, p.country_of_citizenship,
-             p.market_value_in_eur, p.highest_market_value_in_eur, p.international_caps, p.current_club_id,
-             p.current_club_name, p.current_club_domestic_competition_id,
+             p.market_value_in_eur, p.highest_market_value_in_eur, p.international_caps,
+             case when cl.name is null then try_cast(p.current_club_id as int) else e.club_id end,
+             coalesce(cl.name, p.current_club_name), coalesce(cl.domestic_competition_id, p.current_club_domestic_competition_id),
              coalesce(sum(a.minutes_played), 0) mins, coalesce(sum(a.goals), 0) goals, coalesce(sum(a.assists), 0) assists
-      from players p left join appearances a on a.player_id = p.player_id and a.date between ? and ?
+      from players p join eff e using (player_id) left join clubs cl on try_cast(cl.club_id as int) = e.club_id
+      left join appearances a on a.player_id = p.player_id and a.date between ? and ?
       where p.last_season = '2025' and {where}
       group by all"""
     cols = ['tm_id', 'name', 'sub', 'dob', 'foot', 'height', 'nation', 'mv', 'hmv', 'caps', 'club_id', 'club', 'lg',
             'mins', 'goals', 'assists']
 
     picked: dict[int, dict] = {}
+    club_rows: dict[str, list[dict]] = {}  # every candidate of a club, best first (used to refill keepers)
     for lg, names in TEAMS.items():
         for nm in names:
-            rows = c.execute(stats_sql.format(where='p.current_club_name = ? and p.current_club_domestic_competition_id = ?'),
+            rows = c.execute(stats_sql.format(where='cl.name = ? and cl.domestic_competition_id = ?'),
                              [*SEASON, nm, lg]).fetchall()
             rows = [dict(zip(cols, r)) for r in rows if r[1] not in EXCLUDE]
             if not rows:
@@ -153,6 +165,7 @@ def main() -> None:
                 pick[drop] = extra
             for r in pick:
                 picked[r['tm_id']] = r
+            club_rows[nm] = rows
     for nm, hint in STARS:
         rows = [dict(zip(cols, r)) for r in c.execute(stats_sql.format(where='p.name = ?'), [*SEASON, nm]).fetchall()]
         rows = [r for r in rows if hint.lower() in (r['club'] or '').lower()] or rows
@@ -182,6 +195,20 @@ def main() -> None:
         r['club_mins'] = r['mins']
         r['_arrival'] = (new_club, new_lg, a['tarih'])
         picked[r['tm_id']] = r
+
+    # every club keeps at least two keepers after the summer: if departures (and arrivals) leave fewer, the club's
+    # next keeper by 2025-26 minutes joins the pool
+    leaving = {t['tm_id'] for t in SUMMER}
+    for nm, rows in club_rows.items():
+        def keepers():
+            stay = [r for r in picked.values() if r['club'] == nm and not r.get('_arrival') and r['tm_id'] not in leaving]
+            come = [r for r in picked.values() if r.get('_arrival') and r['_arrival'][0] == nm]
+            return sum(r['sub'] == 'Goalkeeper' for r in stay + come)
+        for r in rows:
+            if keepers() >= 2:
+                break
+            if r['sub'] == 'Goalkeeper' and r['tm_id'] not in picked and r['tm_id'] not in leaving:
+                picked[r['tm_id']] = r
 
     # career clubs (for chemistry and trivia): senior clubs from the transfer history plus clubs the player
     # appeared for, most recent first, excluding the current one. Names use the clubs table spelling when known.

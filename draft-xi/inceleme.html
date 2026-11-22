@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Draft XI · Havuz inceleme</title>
+<meta name="robots" content="noindex">
+<style>
+:root{--bg:#070b0a;--s1:#0f1418;--s2:#141a20;--line:rgba(255,255,255,.09);--fg:#e8efe9;--mut:#9aa79f;--a:#baff18;--b:#2fe0ff;--red:#ff7a8a;--yel:#ffd34d}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:980px;margin:0 auto;padding:18px 16px 60px}
+h1{font:800 26px/1.1 system-ui;margin:4px 0 4px;letter-spacing:.02em}h1 span{color:var(--a)}
+.note{color:var(--mut);font-size:13px;margin:0 0 14px}
+.bar{position:sticky;top:0;z-index:2;background:var(--bg);padding:10px 0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;border-bottom:1px solid var(--line)}
+select,input,textarea{width:100%;min-height:42px;border-radius:10px;border:1px solid var(--line);background:var(--s2);color:var(--fg);font:15px system-ui;padding:0 10px}
+textarea{min-height:60px;padding:8px 10px;resize:vertical}
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0}
+button{min-height:40px;padding:0 14px;border-radius:10px;border:1px solid var(--line);background:var(--s2);color:var(--fg);font:700 13px system-ui;cursor:pointer}
+button.pri{background:var(--a);color:#0a0f02;border:0}
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--a);outline-offset:2px}
+.sum{color:var(--mut);font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px}
+.p{background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:12px;display:grid;gap:8px}
+.p.flag{border-color:var(--red)}
+.top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.nm{font:700 16px/1.2 system-ui}
+.meta{color:var(--mut);font-size:12.5px}
+.chips{display:flex;flex-wrap:wrap;gap:4px}
+.chip{font:700 11px/1 system-ui;padding:4px 6px;border-radius:6px;background:var(--s2);border:1px solid var(--line)}
+.chip.main{border-color:var(--a);color:var(--a)}
+.src{font:700 10.5px/1 system-ui;padding:4px 6px;border-radius:6px;white-space:nowrap}
+.src.own{background:rgba(186,255,24,.12);color:var(--a)}.src.form{background:rgba(47,224,255,.12);color:var(--b)}
+.est{color:var(--yel)}
+.attrs{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:4px 10px}
+.at{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;font-size:12.5px;align-items:center}
+.at i{grid-column:1/-1;height:4px;border-radius:2px;background:var(--s2);overflow:hidden}
+.at i b{display:block;height:100%;background:var(--a)}
+.former{font-size:12px;color:var(--mut)}
+.fl{justify-self:start;min-height:34px;font-size:12px}
+.p.flag .fl{border-color:var(--red);color:var(--red)}
+.empty{color:var(--mut);padding:30px 0;text-align:center}
+@media (max-width:520px){.bar{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+  <h1>DRAFT XI · <span>HAVUZ İNCELEME</span></h1>
+  <p class="note">Kulüp kulüp oyuncuları gözden geçir. Mantıksız gördüğün oyuncuya <b>İşaretle</b> de, istersen kısa bir not yaz. Bitince <b>Notları kopyala</b> ile listeyi al ve gönder. <span class="est">Sarı</span> alanlar tahmini; kulüp, mevki, ayak ve boy gerçek veriden. Notlar yalnızca bu cihazda saklanır.</p>
+  <div class="bar">
+    <select id="club" aria-label="Kulüp"></select>
+    <input id="q" type="search" placeholder="Oyuncu ara (tüm havuz)" aria-label="Oyuncu ara">
+  </div>
+  <div class="tools">
+    <button class="pri" id="copy" type="button">Notları kopyala</button>
+    <button id="onlyFlag" type="button" aria-pressed="false">Yalnızca işaretliler</button>
+    <span class="sum" id="sum"></span>
+  </div>
+  <div class="grid" id="list" aria-live="polite"></div>
+</main>
+<script type="module">
+import { HAVUZ } from './data/havuz.mjs?v=3';
+
+const ONEMLI = {
+  GK: [['ref', 'Refleks'], ['gpos', 'Pozisyon'], ['ghd', 'Hava'], ['one', 'Bire bir']],
+  CB: [['tac', 'Top kapma'], ['mar', 'Markaj'], ['hed', 'Hava topu'], ['str', 'Güç']],
+  LB: [['pac', 'Hız'], ['tac', 'Top kapma'], ['cro', 'Orta'], ['sp', 'Pas']],
+  DM: [['tac', 'Top kapma'], ['sp', 'Pas'], ['vis', 'Vizyon'], ['mar', 'Markaj']],
+  CM: [['sp', 'Pas'], ['vis', 'Vizyon'], ['ft', 'İlk dokunuş'], ['lp', 'Uzun pas']],
+  AM: [['vis', 'Vizyon'], ['dri', 'Dribling'], ['ft', 'İlk dokunuş'], ['lon', 'Uzaktan şut']],
+  LW: [['pac', 'Hız'], ['dri', 'Dribling'], ['cro', 'Orta'], ['fin', 'Bitiricilik']],
+  ST: [['fin', 'Bitiricilik'], ['posn', 'Pozisyon alma'], ['hed', 'Kafa'], ['pac', 'Hız']],
+};
+for (const k of ['RB', 'LWB', 'RWB']) ONEMLI[k] = ONEMLI.LB;
+for (const k of ['RW', 'LM', 'RM']) ONEMLI[k] = ONEMLI.LW;
+const MEVKI = { GK: 'Kaleci', CB: 'Stoper', LB: 'Sol bek', RB: 'Sağ bek', LWB: 'Sol kanat bek', RWB: 'Sağ kanat bek', DM: 'Ön libero',
+  CM: 'Merkez orta saha', AM: '10 numara', LM: 'Sol orta saha', RM: 'Sağ orta saha', LW: 'Sol kanat', RW: 'Sağ kanat', ST: 'Forvet' };
+const SIRA = ['GK', 'RB', 'RWB', 'CB', 'LB', 'LWB', 'DM', 'CM', 'AM', 'RM', 'LM', 'RW', 'LW', 'ST'];
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const store = {
+  get() { try { return JSON.parse(localStorage.getItem('nxDraftInceleme') || '{}'); } catch { return {}; } },
+  set(v) { try { localStorage.setItem('nxDraftInceleme', JSON.stringify(v)); } catch { /* private mode: notes stay for this visit */ } },
+};
+let notes = store.get();
+let onlyFlag = false;
+
+const clubs = {};
+for (const p of HAVUZ) (clubs[p.club] ||= []).push(p);
+const leagueOf = (c) => clubs[c][0].league;
+const LIG_SIRA = ['Süper Lig', 'Premier League', 'La Liga', 'Serie A', 'Bundesliga', 'Ligue 1'];
+const leagues = [...new Set(Object.keys(clubs).map(leagueOf))].sort((a, b) => ((LIG_SIRA.indexOf(a) + 1 || 99) - (LIG_SIRA.indexOf(b) + 1 || 99)) || a.localeCompare(b, 'tr'));
+const sel = document.getElementById('club');
+sel.innerHTML = leagues.map((lg) => `<optgroup label="${esc(lg)}">${Object.keys(clubs).filter((c) => leagueOf(c) === lg)
+  .sort((a, b) => clubs[b].length - clubs[a].length || a.localeCompare(b, 'tr'))
+  .map((c) => `<option value="${esc(c)}">${esc(c)} (${clubs[c].length})</option>`).join('')}</optgroup>`).join('');
+try { const last = localStorage.getItem('nxDraftIncelemeKulup'); if (last && clubs[last]) sel.value = last; } catch { /* ignore */ }
+
+function card(p) {
+  const n = notes[p.id];
+  const ana = p.positions[0];
+  const keys = ONEMLI[ana] || ONEMLI.CM;
+  const est = (k) => (p.tahmini || []).includes(k) ? ' est' : '';
+  const ayak = p.foot === 'L' ? 'Sol' : 'Sağ';
+  return `<article class="p${n ? ' flag' : ''}" data-id="${esc(p.id)}">
+    <div class="top"><div><div class="nm">${esc(p.name)}</div>
+      <div class="meta">${esc(p.club)} · ${p.age} yaş · ${esc(p.nation)}</div></div>
+      <span class="src ${p.kaynak === 'NEON XI' ? 'own' : 'form'}" title="${p.kaynak === 'NEON XI' ? 'Kendi değerimiz (seviyesi formülle düzeltildi)' : 'Değerler formülden'}">${p.kaynak === 'NEON XI' ? 'KENDİ' : 'FORMÜL'}</span></div>
+    <div class="chips">${p.positions.map((q, i) => `<span class="chip${i ? '' : ' main'}" title="${esc(MEVKI[q] || q)}">${esc(q)}</span>`).join('')}
+      <span class="chip${est('foot')}">${ayak} ayak</span><span class="chip${est('weakFoot')}">Zayıf ayak ${p.weakFoot}/5</span><span class="chip${est('height')}">${p.height} cm</span></div>
+    <div class="attrs">${keys.map(([k, ad]) => `<div class="at"><span>${esc(ad)}</span><b>${p.attrs[k]}</b><i><b style="width:${p.attrs[k]}%"></b></i></div>`).join('')}</div>
+    ${p.former?.length ? `<div class="former">Eski: ${p.former.slice(0, 6).map(esc).join(', ')}</div>` : ''}
+    <button class="fl" type="button" aria-pressed="${!!n}">${n ? 'İşaretli ✓' : 'İşaretle'}</button>
+    ${n ? `<textarea aria-label="${esc(p.name)} için not" placeholder="Ne mantıksız? (örn. hız çok düşük, mevki yanlış)">${esc(n.not || '')}</textarea>` : ''}
+  </article>`;
+}
+
+function render() {
+  const q = document.getElementById('q').value.trim().toLocaleLowerCase('tr');
+  let ps = q ? HAVUZ.filter((p) => p.name.toLocaleLowerCase('tr').includes(q)) : (clubs[sel.value] || []);
+  if (onlyFlag) ps = HAVUZ.filter((p) => notes[p.id]);
+  ps = [...ps].sort((a, b) => SIRA.indexOf(a.positions[0]) - SIRA.indexOf(b.positions[0]) || a.name.localeCompare(b.name, 'tr'));
+  document.getElementById('list').innerHTML = ps.length ? ps.map(card).join('') : '<p class="empty">Oyuncu yok.</p>';
+  const say = Object.keys(notes).length;
+  document.getElementById('sum').textContent = `${HAVUZ.length} oyuncu · ${Object.keys(clubs).length} kulüp · işaretli ${say}`;
+}
+
+document.getElementById('list').addEventListener('click', (e) => {
+  const b = e.target.closest('.fl'); if (!b) return;
+  const id = b.closest('.p').dataset.id;
+  if (notes[id]) delete notes[id]; else notes[id] = { not: '' };
+  store.set(notes); render();
+  if (notes[id]) document.querySelector(`.p[data-id="${CSS.escape(id)}"] textarea`)?.focus();
+});
+document.getElementById('list').addEventListener('input', (e) => {
+  if (e.target.tagName !== 'TEXTAREA') return;
+  const id = e.target.closest('.p').dataset.id;
+  if (notes[id]) { notes[id].not = e.target.value.slice(0, 300); store.set(notes); }
+});
+sel.addEventListener('change', () => { document.getElementById('q').value = ''; try { localStorage.setItem('nxDraftIncelemeKulup', sel.value); } catch { /* ignore */ } render(); });
+document.getElementById('q').addEventListener('input', render);
+document.getElementById('onlyFlag').addEventListener('click', (e) => { onlyFlag = !onlyFlag; e.currentTarget.setAttribute('aria-pressed', String(onlyFlag)); render(); });
+document.getElementById('copy').addEventListener('click', async (e) => {
+  const byId = Object.fromEntries(HAVUZ.map((p) => [p.id, p]));
+  const lines = Object.entries(notes).filter(([id]) => byId[id]).map(([id, n]) => `- ${byId[id].name} (${byId[id].club}, ${byId[id].positions[0]})${n.not ? ': ' + n.not : ''}`);
+  const text = lines.length ? `Draft XI havuz notları (${lines.length}):\n${lines.join('\n')}` : 'İşaretli oyuncu yok.';
+  try { await navigator.clipboard.writeText(text); e.currentTarget.textContent = 'Kopyalandı ✓'; }
+  catch { prompt('Notları kopyala:', text); }
+  setTimeout(() => { e.currentTarget.textContent = 'Notları kopyala'; }, 1600);
+});
+render();
+</script>
+</body>
+</html>
