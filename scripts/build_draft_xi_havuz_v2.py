@@ -36,7 +36,8 @@ ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / 'draft-xi/data/kaynak-havuz.json'          # output (read by scripts/build_draft_xi_pool.mjs)
 OLD = ROOT / 'draft-xi/data/kaynak-havuz-v1.json'       # frozen first pool: our own values are taught from here
 CLUB_NAMES = json.loads((ROOT / 'draft-xi/data/kulup-adlari.json').read_text())['adlar']
-SUMMER = json.loads((ROOT / 'draft-xi/data/yaz-2026-transferleri.json').read_text())['transferler']
+_YAZ = json.loads((ROOT / 'draft-xi/data/yaz-2026-transferleri.json').read_text())
+SUMMER, ARRIVALS = _YAZ['transferler'], _YAZ.get('gelenler', [])
 COUNTRY_TR = json.loads((ROOT / 'side-games/data/master/country-tr.json').read_text())
 TODAY = date(2026, 11, 22)
 SEASON = ('2025-07-01', '2026-06-30')
@@ -161,6 +162,27 @@ def main() -> None:
         r['club_mins'] = r['mins']
         picked.setdefault(r['tm_id'], r)
 
+    # summer 2026 arrivals from outside the pool (Wikidata list): kept when they played in 2025-26 and are at
+    # least rotation level (market value ≥ €4M or a peak value ≥ €15M); the old club becomes a former club
+    our_club = {}
+    for lg, names in TEAMS.items():
+        for nm in names:
+            for (cid,) in c.execute("select club_id from clubs where name = ? and domestic_competition_id = ?", [nm, lg]).fetchall():
+                our_club[int(cid)] = (nm, lg)
+    for a in ARRIVALS:
+        if a['tm_id'] in picked or a['kulup_tm_id'] not in our_club:
+            continue
+        rows = [dict(zip(cols, r)) for r in c.execute(stats_sql.format(where='p.player_id = ?'), [*SEASON, a['tm_id']]).fetchall()]
+        if not rows or rows[0]['name'] in EXCLUDE:
+            continue
+        r = rows[0]
+        new_club, new_lg = our_club[a['kulup_tm_id']]
+        if r['club'] == new_club or not ((r['mv'] or 0) >= 4e6 or (r['hmv'] or 0) >= 1.5e7):
+            continue
+        r['club_mins'] = r['mins']
+        r['_arrival'] = (new_club, new_lg, a['tarih'])
+        picked[r['tm_id']] = r
+
     # career clubs (for chemistry and trivia): senior clubs from the transfer history plus clubs the player
     # appeared for, most recent first, excluding the current one. Names use the clubs table spelling when known.
     ids = list(picked)
@@ -234,18 +256,20 @@ def main() -> None:
     # --- features for the value model ---
     club_max = {}
     for r in picked.values():
-        club_max[r['club']] = max(club_max.get(r['club'], 1), r['club_mins'])
+        if not r.get('_arrival'):  # arrivals: their old club is not in the pool, so no minutes share
+            club_max[r['club']] = max(club_max.get(r['club'], 1), r['club_mins'])
 
     POS_KIND = {'CB': 0, 'LB': 1, 'RB': 1, 'LWB': 1, 'RWB': 1, 'DM': 2, 'CM': 3, 'AM': 4, 'LM': 5, 'RM': 5, 'LW': 5, 'RW': 5, 'ST': 6}
 
     def feats(r, pos):
-        a = age_of(r['dob']) or 26
+        a = min(max(age_of(r['dob']) or 26, 19), 33)  # clamped: no wild extrapolation for very young/old players
         kind = [1.0 if POS_KIND.get(pos) == k else 0.0 for k in range(7)]  # lets the model learn e.g. AM ≠ DM
         m90 = max(r['mins'], 1) / 90
         return [1.0, math.log10((r['mv'] or 2e5) + 1e5), math.log10((r['hmv'] or r['mv'] or 2e5) + 1e5), a, a * a / 100,
-                r['club_mins'] / club_max[r['club']], min(r['goals'] / m90, 1.2) if r['mins'] > 450 else 0,
+                (r['club_mins'] / club_max[r['club']] if r['club'] in club_max and not r.get('_arrival') else 0.5), min(r['goals'] / m90, 1.2) if r['mins'] > 450 else 0,
                 min(r['assists'] / m90, 0.8) if r['mins'] > 450 else 0, (r['height'] or 182) / 10,
-                math.log10((r['caps'] or 0) + 1), 1.0 if r['lg'] in TEAMS else 0.0, *kind]
+                math.log10((r['caps'] or 0) + 1), 1.0 if r['lg'] in ('GB1', 'ES1', 'IT1', 'L1', 'FR1') else 0.0,
+                1.0 if r['lg'] == 'TR1' else 0.0, *kind]
 
     players, train = [], {'GK': ([], []), 'DEF': ([], []), 'MID': ([], []), 'ATT': ([], [])}
     for r in picked.values():
@@ -265,75 +289,129 @@ def main() -> None:
             'crossing': o.get('crossing') if o and not is_fm(o) else None,
             'ratingSource': (o.get('ratingSource') if o and not is_fm(o) else None),
         }
+        if r.get('_arrival'):
+            new_club, new_lg, when = r['_arrival']
+            x['former'] = [r['club']] + [k for k in x['former'] if k != new_club]
+            x['club'], x['league'], x['transfer'] = new_club, LEAGUE_SLUG.get(new_lg, new_lg), when
         x['_f'] = feats(r, x['pos'])
         x['_g'] = GROUP.get(x['pos'], 'MID')
+        x['_r'] = r
         if o and not is_fm(o) and (o.get('main') or o.get('gk')):
             tgt = o['gk'] if x['_g'] == 'GK' else (o['main'] + [o.get('crossing') if o.get('crossing') is not None else float('nan')])
             if (x['_g'] == 'GK') == bool(o.get('gk')):
                 train[x['_g']][0].append(x['_f']); train[x['_g']][1].append(tgt)
         players.append(x)
 
-    # Value model (our own pool is the only teacher):
-    #   level   = one number per player (mean of its values), ridge regression on the facts above, per group;
-    #   profile = average (value − level) of our own players of the same position kind;
-    #   tweaks  = small personal adjustments from the player's own numbers (goals, assists, height, age).
+    # ── Value model ─────────────────────────────────────────────────────────────────────────────────────
+    # LEVEL (one number per player) comes from an explicit rule on objective facts, not from old values:
+    #   current market value (main weight), peak market value, share of the club's minutes, caps, league;
+    #   young players lose part of the "potential premium" in their market value, veterans get part of the
+    #   age discount back. The result is mapped to the game scale per position group.
+    # SHAPE (how the level spreads over the attributes): players with our own old values keep their own shape
+    #   (only their level moves); everyone else gets the average shape of our players of the same position kind,
+    #   plus small personal tweaks (goals → shooting, assists → passing/vision, height → heading, age → pace).
     # Main value order: [pace, passing, shooting, dribbling, defending, heading, iq] (+ crossing); keeper: 4 values.
-    KIND_OF = lambda pos: POS_KIND.get(pos, 7)  # 7 = goalkeeper
-    models, profiles, ref = {}, {}, {}
-    for g, (X, Y) in train.items():
-        X, Y = np.array(X, float), np.array(Y, float)
-        lvl = np.nanmean(Y[:, :7] if g != 'GK' else Y, axis=1)
-        mu, sd = X[:, 1:].mean(0), X[:, 1:].std(0)
-        mu[sd < 1e-6], sd[sd < 1e-6] = 0.0, 1.0
-        Xs = np.hstack([X[:, :1], (X[:, 1:] - mu) / sd])
-        lam = np.eye(Xs.shape[1]) * 3.0; lam[0, 0] = 0
-        w = np.linalg.solve(Xs.T @ Xs + lam, Xs.T @ lvl)
-        models[g] = (mu, sd, w, lvl.min(), lvl.max())
-        print(f'{g}: {len(X)} oyuncuyla öğrenildi, genel seviye hatası ±{np.sqrt(np.mean((Xs @ w - lvl) ** 2)):.1f}')
-    for g, (X, Y) in train.items():
-        X, Y = np.array(X, float), np.array(Y, float)
-        lvl = np.nanmean(Y[:, :7] if g != 'GK' else Y, axis=1)
-        kinds = [int(np.argmax(r[-7:])) if g != 'GK' else 7 for r in X]
-        for k in set(kinds) | {None}:
-            rows = [i for i, kk in enumerate(kinds) if k is None or kk == k]
-            if len(rows) >= 4 or k is None:
-                key = (g, k)
-                profiles[key] = np.nanmean(Y[rows] - lvl[rows, None], axis=0)
-                ref[key] = (np.mean([X[i][6] for i in rows]), np.mean([X[i][7] for i in rows]), np.mean([X[i][8] for i in rows]))
+    TOP5 = ('GB1', 'ES1', 'IT1', 'L1', 'FR1')
 
-    def predict(x):
+    def quality_raw(x):
+        r = x['_r']
+        age = age_of(r['dob']) or 26
+        mv = math.log10((r['mv'] or 3e5) + 2e5)
+        peak = math.log10((r['hmv'] or r['mv'] or 3e5) + 2e5)
+        share = r['club_mins'] / club_max[r['club']] if r['club'] in club_max and not r.get('_arrival') else 0.5
+        caps = math.log10((r['caps'] or 0) + 1)
+        league = 0.0 if r['lg'] in TOP5 else -0.03  # small: market value already carries most of the league level
+        youth = -0.06 * max(0, 23 - age)          # market value runs ahead of today's level for young players
+        veteran = 0.05 * min(4, max(0, age - 30))  # and behind it for players past 30
+        return 0.62 * mv + 0.18 * peak + 0.22 * share + 0.10 * caps + league + youth + veteran
+
+    for x in players:
+        x['_q'] = quality_raw(x)
+    # map to the game scale per group. The ORDER comes from the rule above; the NUMBERS keep the scale our match
+    # engine was tuned on: the top 70 % of the new pool follows the distribution of our first pool in that group
+    # (quantile mapping), and the weaker 30 % (bench players the first pool did not have) reaches up to 8 points
+    # (keepers 4) below that pool's lowest value. Group means differ by nature (a defender's mean includes low shooting).
+    first = {g: [] for g in ('GK', 'DEF', 'MID', 'ATT')}
+    for o in all_old:
+        if is_fm(o):
+            continue
+        g = 'GK' if o.get('gk') else GROUP.get(o.get('pos'), 'MID')
+        v = o.get('gk') or o.get('main')
+        if v:
+            first[g].append(float(np.mean(v)))
+    # small balance shift: with full club squads (not only stars) defences need a little help so that club-vs-club
+    # matches stay near real football goal totals (checked with best XIs of every club, see the PR notes)
+    BALANCE = {'GK': 2.0, 'DEF': 1.5}
+    for g in ('GK', 'DEF', 'MID', 'ATT'):
+        xs = sorted((x for x in players if x['_g'] == g), key=lambda x: x['_q'])
+        scale = np.sort(np.array(first[g]))
+        for i, x in enumerate(xs):
+            pct = i / max(1, len(xs) - 1)
+            tail = 4 if g == 'GK' else 8  # keepers: a shorter tail (goal totals stay football-like)
+            shift = BALANCE.get(g, 0.0)
+            x['_lvl'] = shift + (float(np.quantile(scale, (pct - 0.3) / 0.7)) if pct >= 0.3
+                                 else float(scale[0]) - tail * (0.3 - pct) / 0.3)
+
+    # shapes of our own players (value − own mean) → average shape per position kind
+    KIND_OF = lambda pos: POS_KIND.get(pos, 7)
+    shapes: dict[tuple, list] = {}
+    own = lambda x: (x['gk'] if x['_g'] == 'GK' else x['main']) if (x['gk'] if x['_g'] == 'GK' else x['main']) else None
+    for x in players:
+        v = own(x)
+        if v and x['ratingSource'] != 'NEON XI formül':
+            vec = list(v) + ([] if x['_g'] == 'GK' else [x['crossing'] if x['crossing'] is not None else float('nan')])
+            base = float(np.mean(v))
+            k = (x['_g'], KIND_OF(x['pos']) if x['_g'] != 'GK' else 7)
+            shapes.setdefault(k, []).append(np.array(vec, float) - base)
+            shapes.setdefault((x['_g'], None), []).append(np.array(vec, float) - base)
+    profile = {k: np.nanmean(np.array(v), axis=0) for k, v in shapes.items() if len(v) >= 4 or k[1] is None}
+    ref = {}
+    for g in ('GK', 'DEF', 'MID', 'ATT'):
+        xs = [x for x in players if x['_g'] == g]
+        ref[g] = tuple(float(np.mean([x['_f'][i] for x in xs])) for i in (6, 7, 8))
+
+    def shape_for(x):
         g, k = x['_g'], (KIND_OF(x['pos']) if x['_g'] != 'GK' else 7)
-        mu, sd, w, lo, hi = models[g]
-        f = np.array(x['_f'], float)
-        level = float(np.clip(w @ np.concatenate([[1.0], (f[1:] - mu) / sd]), lo, hi))
-        key = (g, k) if (g, k) in profiles else (g, None)
-        prof = profiles[key]
-        if k == 4 and (g, 4) not in profiles and ('MID', 3) in profiles and ('ATT', 5) in profiles:
-            # our pool has no own-valued AM: a playmaker sits between a central midfielder and a winger
-            prof, key = (profiles[('MID', 3)] + profiles[('ATT', 5)]) / 2, ('MID', 3)
-        v = level + prof
-        if g != 'GK':
-            g90, a90, h = f[6], f[7], f[8]
-            rg, ra, rh = ref[key]
-            v[2] += float(np.clip((g90 - rg) * 20, -6, 6))       # shooting  ← goals per 90
-            v[1] += float(np.clip((a90 - ra) * 25, -5, 5))       # passing   ← assists per 90
-            v[6] += float(np.clip((a90 - ra) * 15, -3, 3))       # iq/vision ← assists per 90
-            v[5] += float(np.clip((h - rh) * 6, -8, 8))          # heading   ← height (f[8] is cm/10)
-            if (x['age'] or 0) > 31:
-                v[0] -= 2.0 * (x['age'] - 31)                    # pace drops with age
-        return [int(max(1, min(99, round(t)))) for t in v]
+        if (g, k) in profile:
+            return profile[(g, k)].copy()
+        if k == 4 and ('MID', 3) in profile and ('ATT', 5) in profile:  # no own-valued AM: between a CM and a winger
+            return (profile[('MID', 3)] + profile[('ATT', 5)]) / 2
+        return profile[(g, None)].copy()
 
     new = 0
     for x in players:
-        if x['main'] is None and x['gk'] is None:
-            v = predict(x)
-            if x['_g'] == 'GK':
-                x['gk'] = v[:4]
+        g, lvl = x['_g'], x['_lvl']
+        v = own(x)
+        if v and x['ratingSource'] != 'NEON XI formül' and ((g == 'GK') == bool(x['gk'])):
+            base = float(np.mean(v))
+            vals = [t - base + lvl for t in v]
+            if g == 'GK':
+                x['gk'] = [int(max(1, min(99, round(t)))) for t in vals]
             else:
-                x['main'], x['crossing'] = v[:7], v[7]
+                x['main'] = [int(max(1, min(99, round(t)))) for t in vals]
+                if x['crossing'] is not None:
+                    x['crossing'] = int(max(1, min(99, round(x['crossing'] - base + lvl))))
+            x['ratingSource'] = 'NEON XI'
+        else:
+            vec = lvl + shape_for(x)
+            if g != 'GK':
+                f = x['_f']; rg, ra, rh = ref[g]
+                vec[2] += float(np.clip((f[6] - rg) * 10, -3, 3))   # shooting  ← goals per 90
+                vec[1] += float(np.clip((f[7] - ra) * 12, -3, 3))   # passing   ← assists per 90
+                vec[6] += float(np.clip((f[7] - ra) * 8, -2, 2))   # iq/vision ← assists per 90
+                vec[5] += float(np.clip((f[8] - rh) * 4, -6, 6))    # heading   ← height
+                if (x['age'] or 0) > 31:
+                    vec[0] -= 2.0 * (x['age'] - 31)                 # pace drops with age
+                vec = np.nan_to_num(vec, nan=lvl - 10)
+                x['main'], x['crossing'] = [int(max(1, min(99, round(t)))) for t in vec[:7]], int(max(1, min(99, round(vec[7]))))
+                x['gk'] = None
+            else:
+                x['gk'], x['main'], x['crossing'] = [int(max(1, min(99, round(t)))) for t in vec[:4]], None, None
             x['ratingSource'] = 'NEON XI formül'
             new += 1
-        del x['_f'], x['_g']
+    for x in players:
+        for k in ('_f', '_g', '_r', '_q', '_lvl'):
+            x.pop(k, None)
 
     # summer 2026 transfers (Wikidata list the user reviewed); the league follows the new club when we know it
     league_of = {}
@@ -367,7 +445,8 @@ def main() -> None:
     SRC.write_text(json.dumps(out, ensure_ascii=False, indent=0) + '\n')
     kept = len(players) - new
     print(f'{len(players)} oyuncu → {SRC.relative_to(ROOT)} (mevcut değerini koruyan {kept}, formülle yeni {new})')
-    print(f'yaz 2026 transferi uygulanan: {sum(1 for x in players if x.get("transfer"))}')
+    print(f'yaz 2026 transferi uygulanan: {sum(1 for x in players if x.get("transfer"))} '
+          f'(havuz dışından gelen {sum(1 for r in picked.values() if r.get("_arrival"))})')
     dropped = [x['name'] for x in old['players'] if x['id'] not in {p['id'] for p in players}]
     print(f'eski havuzdan çıkan {len(dropped)}:', ', '.join(dropped[:60]))
 

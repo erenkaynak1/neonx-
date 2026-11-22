@@ -1,6 +1,6 @@
 {
- "_aciklama": "Yaz 2026 transferleri: Wikidata'da (CC0) başlangıç tarihi 2026-06-01 veya sonrası olan kulüp kayıtları. Kullanıcı listeyi gördü; yanlış olan satır silinir ya da düzeltilir.",
- "kaynak": "Wikidata (query.wikidata.org), 2026-11-22",
+ "_aciklama": "Yaz 2026 transferleri Wikidata'dan (CC0): kulüp kaydının başlangıç tarihi 2026-06-01 veya sonrası. transferler = havuzdaki oyuncuların yeni kulübü; gelenler = havuzdaki kulüplere havuz dışından katılanlar. Yanlış satır silinir ya da düzeltilir; üretici: scripts/fetch_draft_xi_yaz_transferleri.py",
+ "kaynak": "Wikidata (query.wikidata.org)",
  "transferler": [
   {
    "tm_id": 344381,
@@ -1089,6 +1089,540 @@
    "yeni": "OGC Nice",
    "tarih": "2026-08-01",
    "wikidata": "Q107285723"
+  }
+ ],
+ "gelenler": [
+  {
+   "tm_id": 957653,
+   "ad": "Rodrigo Mora",
+   "kulup_tm_id": 12,
+   "tarih": "2026-08-01",
+   "wikidata": "Q122733082"
+  },
+  {
+   "tm_id": 1214123,
+   "ad": "Kennet Eichhorn",
+   "kulup_tm_id": 15,
+   "tarih": "2026-07-01",
+   "wikidata": "Q135686049"
+  },
+  {
+   "tm_id": 395516,
+   "ad": "Moussa Diaby",
+   "kulup_tm_id": 15,
+   "tarih": "2026-09-01",
+   "wikidata": "Q51855361"
+  },
+  {
+   "tm_id": 890719,
+   "ad": "Ethan Nwaneri",
+   "kulup_tm_id": 16,
+   "tarih": "2026-09-01",
+   "wikidata": "Q114027518"
+  },
+  {
+   "tm_id": 628331,
+   "ad": "Giannis Konstantelias",
+   "kulup_tm_id": 16,
+   "tarih": "2026-08-01",
+   "wikidata": "Q104870781"
+  },
+  {
+   "tm_id": 408574,
+   "ad": "Joey Veerman",
+   "kulup_tm_id": 16,
+   "tarih": "2026-08-18",
+   "wikidata": "Q27518278"
+  },
+  {
+   "tm_id": 968424,
+   "ad": "Muhammet Doğukan Demir",
+   "kulup_tm_id": 36,
+   "tarih": "2026-07-01",
+   "wikidata": "Q136089775"
+  },
+  {
+   "tm_id": 256267,
+   "ad": "Vedat Muriqi",
+   "kulup_tm_id": 36,
+   "tarih": "2026-06-01",
+   "wikidata": "Q15620192"
+  },
+  {
+   "tm_id": 186590,
+   "ad": "John Stones",
+   "kulup_tm_id": 46,
+   "tarih": "2026-07-30",
+   "wikidata": "Q2025900"
+  },
+  {
+   "tm_id": 284730,
+   "ad": "Manuel Akanji",
+   "kulup_tm_id": 46,
+   "tarih": "2026-07-01",
+   "wikidata": "Q19938984"
+  },
+  {
+   "tm_id": 710886,
+   "ad": "Leo Sauer",
+   "kulup_tm_id": 79,
+   "tarih": "2026-07-01",
+   "wikidata": "Q118515513"
+  },
+  {
+   "tm_id": 244940,
+   "ad": "Salih Özcan",
+   "kulup_tm_id": 114,
+   "tarih": "2026-07-09",
+   "wikidata": "Q26965570"
+  },
+  {
+   "tm_id": 1176699,
+   "ad": "Zachar Dračoŭ",
+   "kulup_tm_id": 114,
+   "tarih": "2026-11-01",
+   "wikidata": "Q133277034"
+  },
+  {
+   "tm_id": 205927,
+   "ad": "Dominik Livaković",
+   "kulup_tm_id": 131,
+   "tarih": "2026-08-01",
+   "wikidata": "Q18207229"
+  },
+  {
+   "tm_id": 1063292,
+   "ad": "Deniz Gül",
+   "kulup_tm_id": 141,
+   "tarih": "2026-09-01",
+   "wikidata": "Q123174990"
+  },
+  {
+   "tm_id": 469781,
+   "ad": "Marcos Senesi",
+   "kulup_tm_id": 148,
+   "tarih": "2026-07-01",
+   "wikidata": "Q23413053"
+  },
+  {
+   "tm_id": 74960,
+   "ad": "Martin Dúbravka",
+   "kulup_tm_id": 148,
+   "tarih": "2026-07-01",
+   "wikidata": "Q510401"
+  },
+  {
+   "tm_id": 880245,
+   "ad": "Mateus Fernandes",
+   "kulup_tm_id": 148,
+   "tarih": "2026-07-02",
+   "wikidata": "Q114870703"
+  },
+  {
+   "tm_id": 537860,
+   "ad": "Mykhailo Mudryk",
+   "kulup_tm_id": 148,
+   "tarih": "2026-09-01",
+   "wikidata": "Q58494476"
+  },
+  {
+   "tm_id": 743591,
+   "ad": "Savinho",
+   "kulup_tm_id": 148,
+   "tarih": "2026-08-25",
+   "wikidata": "Q99485542"
+  },
+  {
+   "tm_id": 319745,
+   "ad": "Dani Ceballos",
+   "kulup_tm_id": 150,
+   "tarih": "2026-09-01",
+   "wikidata": "Q16972254"
+  },
+  {
+   "tm_id": 552655,
+   "ad": "Troy Parrott",
+   "kulup_tm_id": 150,
+   "tarih": "2026-08-01",
+   "wikidata": "Q67243168"
+  },
+  {
+   "tm_id": 391065,
+   "ad": "Hamed Junior Traoré",
+   "kulup_tm_id": 244,
+   "tarih": "2026-07-01",
+   "wikidata": "Q43559571"
+  },
+  {
+   "tm_id": 1082631,
+   "ad": "Allan",
+   "kulup_tm_id": 281,
+   "tarih": "2026-08-31",
+   "wikidata": "Q132307478"
+  },
+  {
+   "tm_id": 623570,
+   "ad": "Iliman Ndiaye",
+   "kulup_tm_id": 281,
+   "tarih": "2026-09-01",
+   "wikidata": "Q105956269"
+  },
+  {
+   "tm_id": 405564,
+   "ad": "Giorgi Kochorashvili",
+   "kulup_tm_id": 368,
+   "tarih": "2026-08-01",
+   "wikidata": "Q97303836"
+  },
+  {
+   "tm_id": 315865,
+   "ad": "Andrea Pinamonti",
+   "kulup_tm_id": 398,
+   "tarih": "2026-08-27",
+   "wikidata": "Q27981508"
+  },
+  {
+   "tm_id": 394300,
+   "ad": "Davide Frattesi",
+   "kulup_tm_id": 398,
+   "tarih": "2026-08-01",
+   "wikidata": "Q55366763"
+  },
+  {
+   "tm_id": 477758,
+   "ad": "Aaron Wan-Bissaka",
+   "kulup_tm_id": 405,
+   "tarih": "2026-08-21",
+   "wikidata": "Q50137347"
+  },
+  {
+   "tm_id": 1185888,
+   "ad": "Ibrahim Mbaye",
+   "kulup_tm_id": 405,
+   "tarih": "2026-09-01",
+   "wikidata": "Q129088593"
+  },
+  {
+   "tm_id": 432298,
+   "ad": "Zion Suzuki",
+   "kulup_tm_id": 405,
+   "tarih": "2026-08-01",
+   "wikidata": "Q67498669"
+  },
+  {
+   "tm_id": 1270796,
+   "ad": "Christ Tape",
+   "kulup_tm_id": 415,
+   "tarih": "2026-07-09",
+   "wikidata": "Q140855622"
+  },
+  {
+   "tm_id": 953004,
+   "ad": "Thomas Jørgensen",
+   "kulup_tm_id": 415,
+   "tarih": "2026-08-19",
+   "wikidata": "Q127260116"
+  },
+  {
+   "tm_id": 595809,
+   "ad": "Norberto Bercique Gomes Betuncal",
+   "kulup_tm_id": 430,
+   "tarih": "2026-09-01",
+   "wikidata": "Q66363735"
+  },
+  {
+   "tm_id": 426620,
+   "ad": "Pedro António Pereira Gonçalves",
+   "kulup_tm_id": 430,
+   "tarih": "2026-09-01",
+   "wikidata": "Q56289593"
+  },
+  {
+   "tm_id": 568559,
+   "ad": "Radu Drăgușin",
+   "kulup_tm_id": 430,
+   "tarih": "2026-07-01",
+   "wikidata": "Q86835512"
+  },
+  {
+   "tm_id": 615350,
+   "ad": "Cenk Özkacar",
+   "kulup_tm_id": 449,
+   "tarih": "2026-07-18",
+   "wikidata": "Q98091477"
+  },
+  {
+   "tm_id": 225693,
+   "ad": "Fabinho",
+   "kulup_tm_id": 449,
+   "tarih": "2026-08-24",
+   "wikidata": "Q641425"
+  },
+  {
+   "tm_id": 929090,
+   "ad": "Franculino Djú",
+   "kulup_tm_id": 449,
+   "tarih": "2026-09-02",
+   "wikidata": "Q121549217"
+  },
+  {
+   "tm_id": 207877,
+   "ad": "Ruslan Malinovskyi",
+   "kulup_tm_id": 449,
+   "tarih": "2026-07-01",
+   "wikidata": "Q7381020"
+  },
+  {
+   "tm_id": 934878,
+   "ad": "Jeff Ekhator",
+   "kulup_tm_id": 506,
+   "tarih": "2026-07-01",
+   "wikidata": "Q128895710"
+  },
+  {
+   "tm_id": 111819,
+   "ad": "Neto",
+   "kulup_tm_id": 506,
+   "tarih": "2026-09-01",
+   "wikidata": "Q62657"
+  },
+  {
+   "tm_id": 1074986,
+   "ad": "Alessandro Longoni",
+   "kulup_tm_id": 583,
+   "tarih": "2026-07-06",
+   "wikidata": "Q126325871"
+  },
+  {
+   "tm_id": 1198342,
+   "ad": "Khalil Ayari",
+   "kulup_tm_id": 583,
+   "tarih": "2026-07-01",
+   "wikidata": "Q134711363"
+  },
+  {
+   "tm_id": 748804,
+   "ad": "Mika Godts",
+   "kulup_tm_id": 583,
+   "tarih": "2026-08-15",
+   "wikidata": "Q113515004"
+  },
+  {
+   "tm_id": 1138758,
+   "ad": "Geovany Quenda",
+   "kulup_tm_id": 631,
+   "tarih": "2026-07-01",
+   "wikidata": "Q123499230"
+  },
+  {
+   "tm_id": 61651,
+   "ad": "Jordan Henderson",
+   "kulup_tm_id": 631,
+   "tarih": "2026-08-03",
+   "wikidata": "Q273715"
+  },
+  {
+   "tm_id": 895937,
+   "ad": "Marco Palestra",
+   "kulup_tm_id": 631,
+   "tarih": "2026-07-01",
+   "wikidata": "Q123825412"
+  },
+  {
+   "tm_id": 434224,
+   "ad": "Maxence Lacroix",
+   "kulup_tm_id": 631,
+   "tarih": "2026-07-30",
+   "wikidata": "Q60286976"
+  },
+  {
+   "tm_id": 670717,
+   "ad": "Dário Essugo",
+   "kulup_tm_id": 667,
+   "tarih": "2026-09-01",
+   "wikidata": "Q106091717"
+  },
+  {
+   "tm_id": 1084638,
+   "ad": "Karim Coulibaly",
+   "kulup_tm_id": 667,
+   "tarih": "2026-08-01",
+   "wikidata": "Q135968088"
+  },
+  {
+   "tm_id": 937955,
+   "ad": "Héctor Fort",
+   "kulup_tm_id": 681,
+   "tarih": "2026-08-01",
+   "wikidata": "Q118876190"
+  },
+  {
+   "tm_id": 910905,
+   "ad": "Mamadou Sarr",
+   "kulup_tm_id": 681,
+   "tarih": "2026-08-28",
+   "wikidata": "Q108187024"
+  },
+  {
+   "tm_id": 493003,
+   "ad": "Daniel Muñoz",
+   "kulup_tm_id": 703,
+   "tarih": "2026-10-03",
+   "wikidata": "Q56703599"
+  },
+  {
+   "tm_id": 974982,
+   "ad": "Ousmane Diomande",
+   "kulup_tm_id": 703,
+   "tarih": "2026-08-01",
+   "wikidata": "Q116753805"
+  },
+  {
+   "tm_id": 975347,
+   "ad": "Aladji Bamba",
+   "kulup_tm_id": 762,
+   "tarih": "2026-07-01",
+   "wikidata": "Q135891358"
+  },
+  {
+   "tm_id": 519184,
+   "ad": "Amar Dedić",
+   "kulup_tm_id": 762,
+   "tarih": "2026-08-01",
+   "wikidata": "Q65948595"
+  },
+  {
+   "tm_id": 629773,
+   "ad": "Lukáš Horníček",
+   "kulup_tm_id": 762,
+   "tarih": "2026-08-01",
+   "wikidata": "Q100271491"
+  },
+  {
+   "tm_id": 294808,
+   "ad": "Franck Kessié",
+   "kulup_tm_id": 800,
+   "tarih": "2026-08-29",
+   "wikidata": "Q18044401"
+  },
+  {
+   "tm_id": 672381,
+   "ad": "Jonathan Rowe",
+   "kulup_tm_id": 800,
+   "tarih": "2026-09-01",
+   "wikidata": "Q110320890"
+  },
+  {
+   "tm_id": 605184,
+   "ad": "Jean-Clair Todibo",
+   "kulup_tm_id": 826,
+   "tarih": "2026-09-01",
+   "wikidata": "Q56223972"
+  },
+  {
+   "tm_id": 344600,
+   "ad": "Michaël Cuisance",
+   "kulup_tm_id": 826,
+   "tarih": "2026-07-01",
+   "wikidata": "Q40352866"
+  },
+  {
+   "tm_id": 343537,
+   "ad": "Artem Dovbyk",
+   "kulup_tm_id": 1025,
+   "tarih": "2026-07-30",
+   "wikidata": "Q20066885"
+  },
+  {
+   "tm_id": 54906,
+   "ad": "Matteo Darmian",
+   "kulup_tm_id": 1025,
+   "tarih": "2026-10-01",
+   "wikidata": "Q44788"
+  },
+  {
+   "tm_id": 654991,
+   "ad": "Samuel Mbangula",
+   "kulup_tm_id": 1025,
+   "tarih": "2026-09-01",
+   "wikidata": "Q105955422"
+  },
+  {
+   "tm_id": 405397,
+   "ad": "Keito Nakamura",
+   "kulup_tm_id": 1041,
+   "tarih": "2026-09-02",
+   "wikidata": "Q45819496"
+  },
+  {
+   "tm_id": 1275040,
+   "ad": "Noham Kamara",
+   "kulup_tm_id": 1041,
+   "tarih": "2026-07-01",
+   "wikidata": "Q134311556"
+  },
+  {
+   "tm_id": 128223,
+   "ad": "Álvaro Morata",
+   "kulup_tm_id": 1047,
+   "tarih": "2026-07-01",
+   "wikidata": "Q48770"
+  },
+  {
+   "tm_id": 565822,
+   "ad": "Harvey Elliott",
+   "kulup_tm_id": 1049,
+   "tarih": "2026-09-01",
+   "wikidata": "Q56752774"
+  },
+  {
+   "tm_id": 842420,
+   "ad": "Nathan Saliba",
+   "kulup_tm_id": 1050,
+   "tarih": "2026-08-01",
+   "wikidata": "Q116908746"
+  },
+  {
+   "tm_id": 589128,
+   "ad": "Ayase Ueda",
+   "kulup_tm_id": 1082,
+   "tarih": "2026-08-31",
+   "wikidata": "Q62085431"
+  },
+  {
+   "tm_id": 538996,
+   "ad": "Tanguy Nianzou",
+   "kulup_tm_id": 1082,
+   "tarih": "2026-07-01",
+   "wikidata": "Q67070943"
+  },
+  {
+   "tm_id": 892160,
+   "ad": "Luka Vušković",
+   "kulup_tm_id": 1237,
+   "tarih": "2026-07-01",
+   "wikidata": "Q115162374"
+  },
+  {
+   "tm_id": 463603,
+   "ad": "Benoît Badiashile",
+   "kulup_tm_id": 6195,
+   "tarih": "2026-08-01",
+   "wikidata": "Q57704058"
+  },
+  {
+   "tm_id": 282810,
+   "ad": "Carles Pérez",
+   "kulup_tm_id": 12321,
+   "tarih": "2026-09-03",
+   "wikidata": "Q22082452"
+  },
+  {
+   "tm_id": 938158,
+   "ad": "Marc Guiu Paz",
+   "kulup_tm_id": 23826,
+   "tarih": "2026-09-01",
+   "wikidata": "Q118472572"
   }
  ]
 }
