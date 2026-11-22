@@ -87,11 +87,11 @@ function cevir(x) {
   const boy = Math.round((BOY[ana] || 180) + (hed - 70) * 0.25);
   // Foot and height come from the source when it has them (Transfermarkt); otherwise estimated and marked.
   // Both-footed players: right foot, weak foot 4. Weak foot is never in the source → always estimated.
-  const tahmini = ['weakFoot'];
+  const tahmini = x.weakFoot ? [] : ['weakFoot'];  // weak foot from goals with each foot when there is enough data
   const foot = x.foot === 'L' || x.foot === 'R' ? x.foot : x.foot === 'B' ? 'R' : (tahmini.push('foot'), LEFT.has(ana) ? 'L' : 'R');
   const height = x.height || (tahmini.push('height'), boy);
   return {
-    id: x.id, name: x.name, positions, foot, weakFoot: x.foot === 'B' ? 4 : 3, height,
+    id: x.id, name: x.name, positions, foot, weakFoot: x.weakFoot || (x.foot === 'B' ? 4 : 3), height,
     nation: x.nation, club: x.club, league: ligAdi(x.league), former: x.former || [], age: x.age,
     a, g, kaynak: x.ratingSource || 'NEON XI', tahmini,
   };
@@ -101,7 +101,7 @@ const src = JSON.parse(fs.readFileSync(SRC, 'utf8'));
 const pool = src.players.map(cevir).filter(Boolean);
 const lines = pool.map((p) => '  ' + JSON.stringify([p.id, p.name, p.positions, p.foot, p.weakFoot, p.height, p.nation, p.club, p.league, p.former, p.age, p.a, p.g, p.kaynak, p.tahmini]));
 const out = `// ÜRETİLMİŞ DOSYA — elle düzenleme. Kaynak: draft-xi/data/kaynak-havuz.json (${src.source || 'aktif NEON XI havuzu'}, ${src.extractedAt}),
-// havuz: scripts/build_draft_xi_havuz_v2.py, dönüştürücü: scripts/build_draft_xi_pool.mjs. Ayak ve boy kaynaktan; zayıf ayak tahmini.
+// havuz: scripts/build_draft_xi_havuz_v2.py, dönüştürücü: scripts/build_draft_xi_pool.mjs. Ayak ve boy kaynaktan; zayıf ayak her iki ayakla atılan gollerden (veri yoksa tahmini).
 // Sırası: [id, ad, mevkiler, ayak, zayıf ayak, boy, ülke, kulüp, lig, eski kulüpler, yaş, özellikler[14], kaleci[4]|null, değer kaynağı, tahmini alanlar]
 export const KEYS = ['fin', 'lon', 'hed', 'posn', 'dri', 'ft', 'sp', 'lp', 'cro', 'vis', 'tac', 'mar', 'pac', 'str'];
 export const GK_KEYS = ['ref', 'gpos', 'ghd', 'one'];

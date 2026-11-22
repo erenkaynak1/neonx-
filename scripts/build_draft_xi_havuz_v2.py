@@ -302,6 +302,47 @@ def main() -> None:
                 train[x['_g']][0].append(x['_f']); train[x['_g']][1].append(tgt)
         players.append(x)
 
+    # ── Match-event profile (last four seasons) ─────────────────────────────────────────────────────────
+    # How goals were scored and what kind of assists a player gives, per 90 minutes. Rates of players with few
+    # minutes are pulled towards their position average (shrinkage with 900 virtual minutes).
+    EV_FROM = '2022-07-01'
+    ev = {pid: dict(zip(('npg', 'head', 'left', 'right', 'long'), rest)) for pid, *rest in c.execute("""
+        select player_id,
+               count(*) filter (where description not ilike '%Penalty%' and description not ilike '%Own-goal%'),
+               count(*) filter (where description ilike ', Header%'),
+               count(*) filter (where description ilike ', Left-footed shot%'),
+               count(*) filter (where description ilike ', Right-footed shot%'),
+               count(*) filter (where description ilike ', Long distance kick%' or description ilike ', Direct free kick%')
+        from game_events where type = 'Goals' and date >= ? and player_id in (select unnest(?::int[])) group by 1""",
+        [EV_FROM, ids]).fetchall()}
+    for pid, a_pass, a_cross, a_all in c.execute("""
+        select player_assist_id,
+               count(*) filter (where description ilike '%Assist: , Pass%'),
+               count(*) filter (where description ilike '%Assist: , Cross%' or description ilike '%Assist: , Corner%'
+                                or description ilike '%Assist: , Free kick%'),
+               count(*)
+        from game_events where type = 'Goals' and date >= ? and player_assist_id in (select unnest(?::int[])) group by 1""",
+        [EV_FROM, ids]).fetchall():
+        ev.setdefault(pid, {}).update({'a_pass': a_pass, 'a_cross': a_cross, 'a_all': a_all})
+    for pid, mins in c.execute("""select player_id, sum(minutes_played) from appearances where date >= ?
+            and player_id in (select unnest(?::int[])) group by 1""", [EV_FROM, ids]).fetchall():
+        ev.setdefault(pid, {})['mins'] = int(mins or 0)
+    RATES = ('npg', 'head', 'long', 'a_pass', 'a_cross', 'a_all')
+
+    def ev_rates(pid):
+        e = ev.get(pid, {})
+        m = e.get('mins', 0)
+        return m, {k: e.get(k, 0) for k in RATES}
+
+    def weak_foot(x):
+        """Weak foot from goals scored with each foot (≥ 8 foot goals); None when there is not enough data."""
+        e = ev.get(x['tm_id'], {})
+        left, right = e.get('left', 0), e.get('right', 0)
+        if left + right < 8:
+            return None
+        weak = min(left, right) / (left + right)
+        return 2 if weak < 0.08 else 3 if weak < 0.18 else 4 if weak < 0.30 else 5
+
     # ── Value model ─────────────────────────────────────────────────────────────────────────────────────
     # LEVEL (one number per player) comes from an explicit rule on objective facts, not from old values:
     #   current market value (main weight), peak market value, share of the club's minutes, caps, league;
@@ -378,8 +419,41 @@ def main() -> None:
             return (profile[('MID', 3)] + profile[('ATT', 5)]) / 2
         return profile[(g, None)].copy()
 
+    # per-kind averages of the event rates (players with ≥ 900 minutes), then shrunk personal z-scores
+    kind_stats: dict[int, dict[str, tuple[float, float]]] = {}
+    for k in set(KIND_OF(x['pos']) for x in players if x['_g'] != 'GK'):
+        rows = [ev_rates(x['tm_id']) for x in players if x['_g'] != 'GK' and KIND_OF(x['pos']) == k]
+        rows = [(m, r) for m, r in rows if m >= 900]
+        kind_stats[k] = {key: (float(np.mean([r[key] / m * 90 for m, r in rows])) if rows else 0.0,
+                               float(np.std([r[key] / m * 90 for m, r in rows])) + 1e-6 if rows else 1.0) for key in RATES}
+
+    def ev_z(x):
+        k = KIND_OF(x['pos'])
+        m, r = ev_rates(x['tm_id'])
+        z = {}
+        for key in RATES:
+            mean, sd = kind_stats[k][key]
+            rate = (r[key] * 90 + mean * 10) / (m + 900)  # shrunk per-90 rate (900 virtual minutes at the average)
+            z[key] = (rate - mean) / sd
+        return z
+
+    def ev_tweak(vec, x, weight=1.0):
+        """Personal adjustments from match events (main value order: pace, passing, shooting, dribbling, defending,
+        heading, iq, crossing)."""
+        z = ev_z(x)
+        vec[2] += weight * float(np.clip(z['npg'] * 1.6 + z['long'] * 0.5, -4, 4))   # shooting ← open-play goals, long shots
+        vec[5] += weight * float(np.clip(z['head'] * 2.0, -4, 4))                    # heading  ← headed goals
+        vec[1] += weight * float(np.clip(z['a_pass'] * 1.2, -3, 3))                  # passing  ← assists from passes
+        vec[6] += weight * float(np.clip(z['a_all'] * 0.8, -2, 2))                   # iq       ← all assists
+        if len(vec) > 7 and not np.isnan(vec[7]):
+            vec[7] += weight * float(np.clip(z['a_cross'] * 2.5, -5, 5))             # crossing ← crosses, corners, free kicks
+        return vec
+
     new = 0
     for x in players:
+        wf = weak_foot(x)
+        if wf:
+            x['weakFoot'] = wf
         g, lvl = x['_g'], x['_lvl']
         v = own(x)
         if v and x['ratingSource'] != 'NEON XI formül' and ((g == 'GK') == bool(x['gk'])):
@@ -388,20 +462,22 @@ def main() -> None:
             if g == 'GK':
                 x['gk'] = [int(max(1, min(99, round(t)))) for t in vals]
             else:
-                x['main'] = [int(max(1, min(99, round(t)))) for t in vals]
+                cro = x['crossing'] - base + lvl if x['crossing'] is not None else float('nan')
+                vals = ev_tweak(np.array(vals + [cro], float), x, weight=0.5)  # own shape stays, events nudge it
+                x['main'] = [int(max(1, min(99, round(t)))) for t in vals[:7]]
                 if x['crossing'] is not None:
-                    x['crossing'] = int(max(1, min(99, round(x['crossing'] - base + lvl))))
+                    x['crossing'] = int(max(1, min(99, round(vals[7]))))
             x['ratingSource'] = 'NEON XI'
         else:
             vec = lvl + shape_for(x)
             if g != 'GK':
                 f = x['_f']; rg, ra, rh = ref[g]
-                vec[2] += float(np.clip((f[6] - rg) * 10, -3, 3))   # shooting  ← goals per 90
-                vec[1] += float(np.clip((f[7] - ra) * 12, -3, 3))   # passing   ← assists per 90
-                vec[6] += float(np.clip((f[7] - ra) * 8, -2, 2))   # iq/vision ← assists per 90
-                vec[5] += float(np.clip((f[8] - rh) * 4, -6, 6))    # heading   ← height
-                if (x['age'] or 0) > 31:
-                    vec[0] -= 2.0 * (x['age'] - 31)                 # pace drops with age
+                vec = ev_tweak(vec, x)                               # goals and assists from match events
+                vec[5] += float(np.clip((f[8] - rh) * 8, -8, 8))    # heading   ← height (8 points per 10 cm)
+                age = x['age'] or 26
+                vec[0] += float(np.clip((26 - age) * 0.6, -4, 3))   # pace: young players a little quicker
+                if age > 31:
+                    vec[0] -= 2.0 * (age - 31)                      # and a clear drop past 31
                 vec = np.nan_to_num(vec, nan=lvl - 10)
                 x['main'], x['crossing'] = [int(max(1, min(99, round(t)))) for t in vec[:7]], int(max(1, min(99, round(vec[7]))))
                 x['gk'] = None
