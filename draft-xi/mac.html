@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Draft XI · Maç</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="./ui/mac.css?v=1">
+</head>
+<body>
+<main id="app">
+  <section id="kur" class="kur" aria-labelledby="kurBaslik">
+    <h1 id="kurBaslik">DRAFT XI · <span>MAÇ</span></h1>
+    <p class="note">Maç ekranı denemesi: iki kulüp seç, her birine bir plan ver. Her kulübün en iyi 11'i sahaya çıkar. Gerçek oyunda takımlar draft'tan gelecek.</p>
+    <div class="kur-grid">
+      <div class="takim a"><b>EV SAHİBİ</b><select id="kA" aria-label="Ev sahibi kulüp"></select><select id="pA" aria-label="Ev sahibi plan"></select></div>
+      <div class="takim b"><b>DEPLASMAN</b><select id="kB" aria-label="Deplasman kulübü"></select><select id="pB" aria-label="Deplasman planı"></select></div>
+    </div>
+    <button id="basla" class="go" type="button">MAÇA BAŞLA</button>
+  </section>
+
+  <section id="mac" class="mac" hidden aria-label="Maç">
+    <header class="tabela">
+      <div class="tk a"><span class="ad" id="adA"></span></div>
+      <div class="skor"><span id="sA">0</span><i>–</i><span id="sB">0</span><small id="dk">1'</small></div>
+      <div class="tk b"><span class="ad" id="adB"></span></div>
+      <div class="baski" aria-hidden="true"><b id="baski"></b></div>
+    </header>
+    <div class="paneller" id="paneller">
+      <div class="panel saha-panel">
+        <svg id="saha" viewBox="-20 -20 720 1090" role="img" aria-label="Saha"></svg>
+        <div class="kutlama" id="kutlama" hidden><b>GOL!</b><span id="kutlamaAd"></span></div>
+        <div class="tekrar" id="tekrar" hidden>TEKRAR</div>
+      </div>
+      <div class="panel spiker-panel"><ol id="spiker" aria-live="polite"></ol></div>
+      <div class="panel ist-panel" id="istPanel"><h2>İSTATİSTİK</h2><div id="ist"></div></div>
+    </div>
+    <footer class="kontrol">
+      <button id="oynat" type="button" aria-label="Duraklat">❚❚</button>
+      <button id="hiz" type="button" aria-label="Hız">1x</button>
+      <button id="istAc" type="button" aria-expanded="false" aria-controls="istPanel">İSTATİSTİK</button>
+      <button id="atla" type="button">SONUCA ATLA</button>
+    </footer>
+  </section>
+
+  <section id="son" class="son" hidden aria-labelledby="sonBaslik">
+    <h2 id="sonBaslik">MAÇ SONU</h2>
+    <div class="son-skor" id="sonSkor"></div>
+    <div class="son-grid"><div id="sonIst"></div><div id="sonPuan"></div></div>
+    <button id="tekrarOyna" class="go" type="button">YENİ MAÇ</button>
+  </section>
+</main>
+<script type="module" src="./ui/mac.mjs?v=1"></script>
+</body>
+</html>
