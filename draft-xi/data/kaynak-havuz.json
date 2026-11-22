@@ -38,7 +38,7 @@
 60,
 76,
 71,
-32,
+33,
 79,
 71
 ],
@@ -112,7 +112,7 @@
 "assists": 4,
 "main": [
 65,
-82,
+83,
 73,
 81,
 74,
@@ -120,7 +120,7 @@
 83
 ],
 "gk": null,
-"crossing": 71,
+"crossing": 72,
 "ratingSource": "NEON XI formül",
 "weakFoot": 5,
 "transfer": "2026-08-14"
@@ -129,10 +129,10 @@
 "id": "tm68290",
 "tm_id": 68290,
 "name": "Neymar",
-"pos": "ST",
+"pos": "AM",
 "positions": [
-"ST",
-"AM"
+"AM",
+"ST"
 ],
 "age": 34,
 "birth": "1992-02-05",
@@ -150,16 +150,16 @@
 "goals": 0,
 "assists": 0,
 "main": [
-75,
-76,
-91,
-84,
-45,
-76,
-87
+70,
+92,
+87,
+90,
+67,
+60,
+92
 ],
 "gk": null,
-"crossing": 72,
+"crossing": 88,
 "ratingSource": "NEON XI formül",
 "weakFoot": 5
 },
@@ -270,12 +270,12 @@
 "goals": 3,
 "assists": 5,
 "main": [
-72,
+73,
 83,
-74,
+75,
 84,
 61,
-54,
+55,
 84
 ],
 "gk": null,
@@ -417,7 +417,7 @@
 85,
 50,
 91,
-92
+93
 ],
 "gk": null,
 "crossing": 79,
@@ -1631,11 +1631,11 @@
 "goals": 3,
 "assists": 3,
 "main": [
-88,
+87,
 75,
 56,
-82,
-73,
+81,
+72,
 64,
 78
 ],
@@ -1651,8 +1651,8 @@
 "positions": [
 "RW",
 "LW",
-"ST",
-"AM"
+"AM",
+"ST"
 ],
 "age": 24,
 "birth": "2002-01-10",
@@ -1674,7 +1674,7 @@
 86,
 49,
 57,
-82
+81
 ],
 "gk": null,
 "crossing": 80,
@@ -1778,7 +1778,7 @@
 "main": [
 82,
 89,
-84,
+83,
 89,
 66,
 68,
@@ -1793,10 +1793,10 @@
 "id": "tm855015",
 "tm_id": 855015,
 "name": "Farès Chaïbi",
-"pos": "CM",
+"pos": "AM",
 "positions": [
-"CM",
 "AM",
+"CM",
 "LW"
 ],
 "age": 23,
@@ -1813,16 +1813,16 @@
 "goals": 4,
 "assists": 10,
 "main": [
-77,
-84,
-74,
-83,
-76,
-68,
-86
+79,
+86,
+78,
+87,
+64,
+62,
+87
 ],
 "gk": null,
-"crossing": 80,
+"crossing": 83,
 "ratingSource": "NEON XI formül",
 "weakFoot": 4
 },
@@ -2025,7 +2025,7 @@
 "main": [
 64,
 83,
-75,
+76,
 84,
 62,
 54,
@@ -2313,7 +2313,7 @@
 77,
 40,
 52,
-71
+72
 ],
 "gk": null,
 "crossing": 72,
@@ -2385,7 +2385,7 @@
 82
 ],
 "gk": null,
-"crossing": 64,
+"crossing": 63,
 "ratingSource": "NEON XI formül",
 "weakFoot": 5
 },
@@ -3133,7 +3133,7 @@
 62,
 72,
 64,
-73,
+72,
 66,
 61,
 74
@@ -3264,9 +3264,9 @@
 "main": [
 68,
 73,
-65,
+66,
 76,
-54,
+53,
 52,
 75
 ],
@@ -3412,7 +3412,7 @@
 81
 ],
 "gk": null,
-"crossing": 65,
+"crossing": 66,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -3490,7 +3490,7 @@
 89
 ],
 "gk": null,
-"crossing": 82,
+"crossing": 81,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -4127,7 +4127,7 @@
 "assists": 2,
 "main": [
 73,
-82,
+83,
 72,
 83,
 76,
@@ -4248,7 +4248,7 @@
 84,
 78,
 61,
-86
+87
 ],
 "gk": null,
 "crossing": 81,
@@ -4563,7 +4563,7 @@
 "main": [
 57,
 76,
-71,
+70,
 77,
 55,
 49,
@@ -4713,7 +4713,7 @@
 "main": [
 69,
 80,
-76,
+75,
 81,
 59,
 62,
@@ -4767,10 +4767,10 @@
 "id": "fmi26-340322",
 "tm_id": 340322,
 "name": "Nathan Tella",
-"pos": "ST",
+"pos": "AM",
 "positions": [
-"ST",
-"AM"
+"AM",
+"ST"
 ],
 "age": 27,
 "birth": "1999-07-05",
@@ -4787,16 +4787,16 @@
 "goals": 1,
 "assists": 6,
 "main": [
-75,
-65,
-79,
-75,
-37,
-66,
-76
+73,
+83,
+76,
+84,
+61,
+54,
+84
 ],
 "gk": null,
-"crossing": 60,
+"crossing": 75,
 "ratingSource": "NEON XI formül",
 "weakFoot": 4
 },
@@ -4828,7 +4828,7 @@
 "assists": 4,
 "main": [
 84,
-68,
+69,
 93,
 82,
 43,
@@ -4977,12 +4977,12 @@
 "assists": 9,
 "main": [
 76,
-71,
-69,
+70,
+68,
 78,
 41,
 49,
-75
+74
 ],
 "gk": null,
 "crossing": 80,
@@ -5014,7 +5014,7 @@
 "assists": 1,
 "main": [
 82,
-71,
+70,
 69,
 79,
 42,
@@ -5130,7 +5130,7 @@
 "main": [
 58,
 75,
-67,
+68,
 76,
 54,
 45,
@@ -5589,7 +5589,7 @@
 89
 ],
 "gk": null,
-"crossing": 84,
+"crossing": 83,
 "ratingSource": "NEON XI formül",
 "weakFoot": 3
 },
@@ -5655,7 +5655,7 @@
 "assists": 16,
 "main": [
 81,
-73,
+74,
 89,
 82,
 44,
@@ -6249,7 +6249,7 @@
 74
 ],
 "gk": null,
-"crossing": 56,
+"crossing": 55,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -6321,7 +6321,7 @@
 71
 ],
 "gk": null,
-"crossing": 53,
+"crossing": 52,
 "ratingSource": "NEON XI formül",
 "weakFoot": 4
 },
@@ -6496,7 +6496,7 @@
 77
 ],
 "gk": null,
-"crossing": 72,
+"crossing": 71,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -6569,7 +6569,7 @@
 85,
 78,
 86,
-63,
+64,
 60,
 86
 ],
@@ -7075,7 +7075,7 @@
 71
 ],
 "gk": null,
-"crossing": 54,
+"crossing": 55,
 "ratingSource": "NEON XI formül",
 "weakFoot": 4
 },
@@ -7987,8 +7987,8 @@
 "pos": "RB",
 "positions": [
 "RB",
-"RM",
-"CM"
+"CM",
+"RM"
 ],
 "age": 31,
 "birth": "1995-01-30",
@@ -8836,7 +8836,7 @@
 87
 ],
 "gk": null,
-"crossing": 77,
+"crossing": 78,
 "ratingSource": "NEON XI",
 "weakFoot": 5,
 "transfer": "2026-08-01"
@@ -9015,8 +9015,8 @@
 "assists": 2,
 "main": [
 65,
-77,
-68,
+76,
+69,
 78,
 55,
 45,
@@ -10354,8 +10354,8 @@
 "main": [
 75,
 81,
-71,
-81,
+72,
+82,
 75,
 70,
 82
@@ -10837,7 +10837,7 @@
 82
 ],
 "gk": null,
-"crossing": 61,
+"crossing": 62,
 "ratingSource": "NEON XI",
 "weakFoot": 4
 },
@@ -10984,7 +10984,7 @@
 90
 ],
 "gk": null,
-"crossing": 86,
+"crossing": 87,
 "ratingSource": "NEON XI",
 "weakFoot": 3
 },
@@ -11485,7 +11485,7 @@
 81,
 75,
 65,
-82
+83
 ],
 "gk": null,
 "crossing": 72,
@@ -11526,7 +11526,7 @@
 81,
 44,
 51,
-77
+76
 ],
 "gk": null,
 "crossing": 77,
@@ -11729,7 +11729,7 @@
 "main": [
 73,
 78,
-71,
+70,
 79,
 72,
 65,
@@ -11833,7 +11833,7 @@
 "main": [
 70,
 76,
-68,
+69,
 78,
 56,
 50,
@@ -12009,7 +12009,7 @@
 "assists": 6,
 "main": [
 82,
-70,
+69,
 85,
 81,
 42,
@@ -12082,7 +12082,7 @@
 "goals": 1,
 "assists": 0,
 "main": [
-64,
+65,
 75,
 61,
 74,
@@ -12241,7 +12241,7 @@
 71
 ],
 "gk": null,
-"crossing": 53,
+"crossing": 54,
 "ratingSource": "NEON XI formül",
 "weakFoot": 5
 },
@@ -12396,8 +12396,8 @@
 "pos": "ST",
 "positions": [
 "ST",
-"LW",
-"AM"
+"AM",
+"LW"
 ],
 "age": 24,
 "birth": "2002-10-04",
@@ -12419,7 +12419,7 @@
 68,
 30,
 58,
-69
+68
 ],
 "gk": null,
 "crossing": 50,
@@ -12524,7 +12524,7 @@
 "main": [
 70,
 78,
-70,
+71,
 80,
 58,
 49,
@@ -12717,7 +12717,7 @@
 88
 ],
 "gk": null,
-"crossing": 82,
+"crossing": 81,
 "ratingSource": "NEON XI formül",
 "transfer": "2026-09-01",
 "weakFoot": 5
@@ -12755,7 +12755,7 @@
 80,
 75,
 37,
-71,
+70,
 75
 ],
 "gk": null,
@@ -13138,7 +13138,7 @@
 "goals": 10,
 "assists": 6,
 "main": [
-93,
+92,
 82,
 81,
 90,
@@ -13320,7 +13320,7 @@
 "assists": 6,
 "main": [
 84,
-73,
+74,
 89,
 83,
 45,
@@ -13328,7 +13328,7 @@
 84
 ],
 "gk": null,
-"crossing": 68,
+"crossing": 69,
 "ratingSource": "NEON XI formül",
 "weakFoot": 4
 },
@@ -13802,7 +13802,7 @@
 76,
 86,
 49,
-63,
+62,
 81
 ],
 "gk": null,
@@ -14131,11 +14131,11 @@
 "goals": 3,
 "assists": 4,
 "main": [
-74,
+75,
 80,
 64,
-78,
-93,
+79,
+94,
 83,
 89
 ],
@@ -14623,14 +14623,14 @@
 "main": [
 80,
 69,
-85,
+84,
 80,
 41,
 82,
 80
 ],
 "gk": null,
-"crossing": 62,
+"crossing": 61,
 "ratingSource": "NEON XI formül",
 "weakFoot": 5
 },
@@ -14663,7 +14663,7 @@
 69
 ],
 "gk": null,
-"crossing": 51,
+"crossing": 50,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -14730,7 +14730,7 @@
 65,
 76,
 39,
-43,
+42,
 71
 ],
 "gk": null,
@@ -14804,7 +14804,7 @@
 76
 ],
 "gk": null,
-"crossing": 77,
+"crossing": 76,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -14841,7 +14841,7 @@
 71
 ],
 "gk": null,
-"crossing": 53,
+"crossing": 52,
 "ratingSource": "NEON XI formül",
 "weakFoot": 4
 },
@@ -15168,7 +15168,7 @@
 63,
 75,
 75,
-70,
+71,
 80
 ],
 "gk": null,
@@ -15316,7 +15316,7 @@
 69,
 78,
 41,
-42,
+41,
 74
 ],
 "gk": null,
@@ -16189,8 +16189,8 @@
 "assists": 0,
 "main": [
 72,
-81,
-72,
+80,
+73,
 82,
 59,
 47,
@@ -16448,7 +16448,7 @@
 76,
 86,
 78,
-86,
+87,
 64,
 67,
 87
@@ -16964,7 +16964,7 @@
 70,
 80,
 65,
-77,
+76,
 76,
 64,
 82
@@ -17070,7 +17070,7 @@
 "main": [
 74,
 86,
-80,
+79,
 87,
 64,
 55,
@@ -17188,7 +17188,7 @@
 75,
 38,
 47,
-70
+69
 ],
 "gk": null,
 "crossing": 70,
@@ -17372,7 +17372,7 @@
 "assists": 3,
 "main": [
 74,
-81,
+82,
 72,
 82,
 75,
@@ -17453,8 +17453,8 @@
 75,
 77,
 74,
-85,
-48,
+84,
+47,
 54,
 81
 ],
@@ -17640,7 +17640,7 @@
 84
 ],
 "gk": null,
-"crossing": 68,
+"crossing": 69,
 "ratingSource": "NEON XI formül",
 "weakFoot": 4,
 "transfer": "2026-08-01"
@@ -17677,7 +17677,7 @@
 76,
 70,
 59,
-77
+78
 ],
 "gk": null,
 "crossing": 69,
@@ -17831,10 +17831,10 @@
 "id": "tm750904",
 "tm_id": 750904,
 "name": "Tom Louchet",
-"pos": "RM",
+"pos": "CM",
 "positions": [
-"RM",
 "CM",
+"RM",
 "LM",
 "RB"
 ],
@@ -17852,16 +17852,16 @@
 "goals": 3,
 "assists": 2,
 "main": [
-80,
 69,
-67,
-78,
-41,
-47,
-72
+73,
+65,
+75,
+68,
+56,
+76
 ],
 "gk": null,
-"crossing": 73,
+"crossing": 68,
 "ratingSource": "NEON XI formül",
 "transfer": "2026-08-03"
 },
@@ -18113,7 +18113,7 @@
 "assists": 10,
 "main": [
 89,
-87,
+86,
 84,
 91,
 62,
@@ -18475,7 +18475,7 @@
 85
 ],
 "gk": null,
-"crossing": 74,
+"crossing": 75,
 "ratingSource": "NEON XI formül",
 "weakFoot": 4
 },
@@ -18863,7 +18863,7 @@
 74,
 72,
 82,
-45,
+44,
 53,
 77
 ],
@@ -18929,7 +18929,7 @@
 "assists": 2,
 "main": [
 72,
-79,
+80,
 72,
 80,
 74,
@@ -19260,11 +19260,11 @@
 80,
 75,
 36,
-76,
+75,
 76
 ],
 "gk": null,
-"crossing": 57,
+"crossing": 56,
 "ratingSource": "NEON XI formül",
 "weakFoot": 5,
 "transfer": "2026-09-01"
@@ -19340,7 +19340,7 @@
 81
 ],
 "gk": null,
-"crossing": 63,
+"crossing": 62,
 "ratingSource": "NEON XI formül",
 "weakFoot": 5
 },
@@ -19864,7 +19864,7 @@
 "assists": 4,
 "main": [
 77,
-70,
+69,
 67,
 78,
 41,
@@ -19934,8 +19934,8 @@
 "assists": 4,
 "main": [
 74,
-80,
-70,
+81,
+71,
 81,
 74,
 60,
@@ -20216,9 +20216,9 @@
 70,
 75,
 65,
-75,
+76,
 69,
-59,
+60,
 77
 ],
 "gk": null,
@@ -20352,7 +20352,7 @@
 "main": [
 67,
 73,
-62,
+61,
 71,
 64,
 57,
@@ -20472,7 +20472,7 @@
 82
 ],
 "gk": null,
-"crossing": 64,
+"crossing": 63,
 "ratingSource": "NEON XI formül",
 "weakFoot": 2,
 "transfer": "2026-08-01"
@@ -20548,7 +20548,7 @@
 74,
 83,
 83,
-80,
+81,
 88
 ],
 "gk": null,
@@ -20627,7 +20627,7 @@
 82,
 72,
 34,
-69,
+68,
 75
 ],
 "gk": null,
@@ -20711,7 +20711,7 @@
 58,
 62,
 77,
-73,
+72,
 34,
 61,
 73
@@ -20791,7 +20791,7 @@
 89
 ],
 "gk": null,
-"crossing": 80,
+"crossing": 81,
 "ratingSource": "NEON XI",
 "weakFoot": 3,
 "transfer": "2026-08-08"
@@ -21144,7 +21144,7 @@
 89,
 84,
 46,
-91,
+90,
 85
 ],
 "gk": null,
@@ -21327,7 +21327,7 @@
 "main": [
 95,
 81,
-83,
+82,
 94,
 50,
 59,
@@ -21734,13 +21734,13 @@
 "goals": 5,
 "assists": 4,
 "main": [
-86,
-75,
+85,
+74,
 73,
 82,
 45,
 49,
-78
+77
 ],
 "gk": null,
 "crossing": 75,
@@ -22370,10 +22370,10 @@
 "id": "tm996897",
 "tm_id": 996897,
 "name": "Diego Gómez",
-"pos": "RM",
+"pos": "CM",
 "positions": [
-"RM",
 "CM",
+"RM",
 "AM"
 ],
 "age": 23,
@@ -22391,16 +22391,16 @@
 "goals": 10,
 "assists": 1,
 "main": [
-91,
-80,
-81,
-89,
-52,
-62,
-83
+79,
+84,
+79,
+85,
+78,
+70,
+86
 ],
 "gk": null,
-"crossing": 82,
+"crossing": 75,
 "ratingSource": "NEON XI formül",
 "weakFoot": 3
 },
@@ -22473,7 +22473,7 @@
 83
 ],
 "gk": null,
-"crossing": 65,
+"crossing": 64,
 "ratingSource": "NEON XI formül",
 "weakFoot": 5
 },
@@ -22900,7 +22900,7 @@
 "goals": 3,
 "assists": 4,
 "main": [
-92,
+93,
 82,
 81,
 90,
@@ -23058,7 +23058,7 @@
 74,
 36,
 76,
-75
+74
 ],
 "gk": null,
 "crossing": 56,
@@ -23546,7 +23546,7 @@
 85
 ],
 "gk": null,
-"crossing": 86,
+"crossing": 85,
 "ratingSource": "NEON XI",
 "weakFoot": 4
 },
@@ -23699,8 +23699,8 @@
 "pos": "LB",
 "positions": [
 "LB",
-"LM",
-"CB"
+"CB",
+"LM"
 ],
 "age": 29,
 "birth": "1996-12-21",
@@ -23906,16 +23906,16 @@
 "goals": 5,
 "assists": 4,
 "main": [
-87,
-76,
+86,
+75,
 74,
-84,
-47,
-59,
+83,
+46,
+58,
 79
 ],
 "gk": null,
-"crossing": 79,
+"crossing": 78,
 "ratingSource": "NEON XI formül",
 "weakFoot": 3,
 "transfer": "2026-08-01"
@@ -24206,7 +24206,7 @@
 84,
 92,
 45,
-70,
+69,
 87
 ],
 "gk": null,
@@ -24350,7 +24350,7 @@
 78,
 87,
 50,
-54,
+53,
 82
 ],
 "gk": null,
@@ -24820,7 +24820,7 @@
 75,
 80,
 43,
-47,
+46,
 78
 ],
 "gk": null,
@@ -25521,10 +25521,10 @@
 86,
 71,
 68,
-92
+91
 ],
 "gk": null,
-"crossing": 88,
+"crossing": 87,
 "ratingSource": "NEON XI",
 "weakFoot": 3
 },
@@ -25881,7 +25881,7 @@
 89,
 67,
 62,
-88
+89
 ],
 "gk": null,
 "crossing": 82,
@@ -26339,7 +26339,7 @@
 "goals": 4,
 "assists": 5,
 "main": [
-83,
+82,
 78,
 76,
 85,
@@ -26818,12 +26818,12 @@
 "goals": 5,
 "assists": 2,
 "main": [
-70,
+69,
 67,
-84,
-79,
+83,
+78,
 40,
-87,
+86,
 78
 ],
 "gk": null,
@@ -27007,7 +27007,7 @@
 87,
 82,
 44,
-81,
+80,
 82
 ],
 "gk": null,
@@ -27557,7 +27557,7 @@
 82
 ],
 "gk": null,
-"crossing": 84,
+"crossing": 83,
 "ratingSource": "NEON XI formül",
 "weakFoot": 5,
 "transfer": "2026-09-01"
@@ -28304,13 +28304,13 @@
 "goals": 2,
 "assists": 5,
 "main": [
-87,
-75,
+86,
+74,
 73,
-83,
-46,
+82,
+45,
 55,
-78
+77
 ],
 "gk": null,
 "crossing": 77,
@@ -28503,7 +28503,7 @@
 83
 ],
 "gk": null,
-"crossing": 64,
+"crossing": 65,
 "ratingSource": "NEON XI formül",
 "weakFoot": 5
 },
@@ -28770,7 +28770,7 @@
 85
 ],
 "gk": null,
-"crossing": 68,
+"crossing": 69,
 "ratingSource": "NEON XI formül",
 "weakFoot": 4
 },
@@ -29267,7 +29267,7 @@
 86,
 49,
 65,
-81
+80
 ],
 "gk": null,
 "crossing": 82,
@@ -30089,7 +30089,7 @@
 83,
 73,
 72,
-82,
+81,
 44,
 50,
 77
@@ -30235,7 +30235,7 @@
 "assists": 4,
 "main": [
 81,
-71,
+70,
 69,
 78,
 41,
@@ -30270,7 +30270,7 @@
 "assists": 4,
 "main": [
 86,
-71,
+72,
 87,
 82,
 44,
@@ -30312,7 +30312,7 @@
 77,
 72,
 34,
-79,
+78,
 73
 ],
 "gk": null,
@@ -30429,7 +30429,7 @@
 83
 ],
 "gk": null,
-"crossing": 66,
+"crossing": 67,
 "ratingSource": "NEON XI formül",
 "weakFoot": 4
 },
@@ -30672,7 +30672,7 @@
 "main": [
 76,
 82,
-74,
+73,
 83,
 77,
 61,
@@ -30744,11 +30744,11 @@
 "main": [
 81,
 91,
-84,
+83,
 89,
 67,
 55,
-91
+90
 ],
 "gk": null,
 "crossing": 85,
@@ -30785,7 +30785,7 @@
 83,
 76,
 60,
-84
+85
 ],
 "gk": null,
 "crossing": 74,
@@ -30893,7 +30893,7 @@
 83,
 90,
 84,
-90,
+91,
 68,
 68,
 91
@@ -31261,8 +31261,8 @@
 "goals": 0,
 "assists": 4,
 "main": [
-62,
-73,
+61,
+72,
 61,
 71,
 71,
@@ -31756,7 +31756,7 @@
 71,
 77,
 70,
-63,
+64,
 79
 ],
 "gk": null,
@@ -31791,7 +31791,7 @@
 "main": [
 72,
 80,
-71,
+72,
 81,
 74,
 67,
@@ -32059,7 +32059,7 @@
 73
 ],
 "gk": null,
-"crossing": 55,
+"crossing": 54,
 "ratingSource": "NEON XI formül",
 "transfer": "2026-07-01"
 },
@@ -32726,7 +32726,7 @@
 86,
 81,
 43,
-74,
+73,
 82
 ],
 "gk": null,
@@ -32770,7 +32770,7 @@
 76
 ],
 "gk": null,
-"crossing": 58,
+"crossing": 57,
 "ratingSource": "NEON XI formül",
 "transfer": "2026-08-27",
 "weakFoot": 4
@@ -32838,7 +32838,7 @@
 "goals": 0,
 "assists": 3,
 "main": [
-77,
+76,
 84,
 77,
 84,
@@ -32908,10 +32908,10 @@
 "assists": 2,
 "main": [
 68,
-74,
+75,
 67,
 75,
-68,
+69,
 62,
 77
 ],
@@ -33020,7 +33020,7 @@
 84,
 76,
 84,
-78,
+77,
 68,
 86
 ],
@@ -33132,7 +33132,7 @@
 "main": [
 83,
 77,
-77,
+76,
 85,
 48,
 56,
@@ -33465,15 +33465,15 @@
 "assists": 1,
 "main": [
 85,
-73,
-71,
+72,
+70,
 81,
 44,
 61,
 76
 ],
 "gk": null,
-"crossing": 75,
+"crossing": 74,
 "ratingSource": "NEON XI formül"
 },
 {
@@ -34445,7 +34445,7 @@
 "assists": 6,
 "main": [
 78,
-78,
+77,
 75,
 86,
 49,
@@ -34860,7 +34860,7 @@
 85
 ],
 "gk": null,
-"crossing": 70,
+"crossing": 71,
 "ratingSource": "NEON XI formül",
 "weakFoot": 2
 },
@@ -35039,7 +35039,7 @@
 84
 ],
 "gk": null,
-"crossing": 81,
+"crossing": 80,
 "ratingSource": "NEON XI formül",
 "weakFoot": 4
 },
@@ -35150,7 +35150,7 @@
 84
 ],
 "gk": null,
-"crossing": 73,
+"crossing": 74,
 "ratingSource": "NEON XI formül",
 "transfer": "2026-08-01"
 },
@@ -35326,7 +35326,7 @@
 80,
 42,
 73,
-81
+82
 ],
 "gk": null,
 "crossing": 69,
@@ -35739,7 +35739,7 @@
 "main": [
 79,
 85,
-77,
+76,
 85,
 79,
 72,
@@ -36051,7 +36051,7 @@
 87
 ],
 "gk": null,
-"crossing": 69,
+"crossing": 68,
 "ratingSource": "NEON XI",
 "weakFoot": 5
 },
@@ -36197,7 +36197,7 @@
 87,
 82,
 68,
-86
+87
 ],
 "gk": null,
 "crossing": 79,
@@ -37225,7 +37225,7 @@
 "main": [
 74,
 80,
-72,
+73,
 82,
 60,
 54,
@@ -37686,7 +37686,7 @@
 82
 ],
 "gk": null,
-"crossing": 65,
+"crossing": 66,
 "ratingSource": "NEON XI formül",
 "weakFoot": 2
 },
@@ -37984,7 +37984,7 @@
 89,
 66,
 62,
-90
+89
 ],
 "gk": null,
 "crossing": 84,
@@ -38019,7 +38019,7 @@
 "assists": 8,
 "main": [
 91,
-83,
+82,
 82,
 90,
 53,
@@ -39074,7 +39074,7 @@
 65,
 77,
 76,
-73,
+74,
 81
 ],
 "gk": null,
@@ -39552,7 +39552,7 @@
 "assists": 4,
 "main": [
 78,
-81,
+82,
 72,
 82,
 76,
@@ -39705,7 +39705,7 @@
 66,
 75,
 38,
-45,
+44,
 70
 ],
 "gk": null,
@@ -39862,7 +39862,7 @@
 57,
 70,
 70,
-68,
+69,
 74
 ],
 "gk": null,
@@ -39937,7 +39937,7 @@
 71,
 63,
 72,
-66,
+65,
 56,
 73
 ],
@@ -40022,7 +40022,7 @@
 78
 ],
 "gk": null,
-"crossing": 67,
+"crossing": 68,
 "ratingSource": "NEON XI formül",
 "transfer": "2026-07-01",
 "weakFoot": 2

@@ -144,7 +144,7 @@ def main() -> None:
                 where player_club_id = ? and date between ? and ? group by 1""", [int(rows[0]['club_id']), *SEASON]).fetchall())
             for r in rows:
                 r['club_mins'] = int(club_mins.get(r['tm_id'], 0))
-            rows.sort(key=lambda r: (-r['club_mins'], -(r['mv'] or 0)))
+            rows.sort(key=lambda r: (-r['club_mins'], -(r['mv'] or 0), r['tm_id']))  # tm_id: same result every run
             pick = rows[:18]
             gks = [r for r in rows if r['sub'] == 'Goalkeeper']
             while sum(r['sub'] == 'Goalkeeper' for r in pick) < 2 and len(gks) >= 2:
@@ -201,7 +201,7 @@ def main() -> None:
         best = {}
         for name, d in lst:
             best[name] = max(best.get(name, ''), d)
-        career[pid] = [k for k, _ in sorted(best.items(), key=lambda kv: kv[1], reverse=True)]
+        career[pid] = [k for k, _ in sorted(best.items(), key=lambda kv: (kv[1], kv[0]), reverse=True)]
 
     # positions from starting line-ups, last two seasons: the most frequent one first, plus every position that
     # holds ≥15 % of the starts and at least 4 starts (user decision: secondary positions from match data)
@@ -219,7 +219,7 @@ def main() -> None:
         total = sum(st.values())
         if total < 8:
             return None
-        ordered = sorted(st.items(), key=lambda kv: -kv[1])
+        ordered = sorted(st.items(), key=lambda kv: (-kv[1], kv[0]))
         return [k for i, (k, n) in enumerate(ordered) if i == 0 or (n >= 4 and n / total >= 0.15)]
 
     # --- match the existing pool (values are kept) ---
@@ -384,7 +384,7 @@ def main() -> None:
     # matches stay near real football goal totals (checked with best XIs of every club, see the PR notes)
     BALANCE = {'GK': 2.0, 'DEF': 1.5}
     for g in ('GK', 'DEF', 'MID', 'ATT'):
-        xs = sorted((x for x in players if x['_g'] == g), key=lambda x: x['_q'])
+        xs = sorted((x for x in players if x['_g'] == g), key=lambda x: (x['_q'], x['tm_id']))
         scale = np.sort(np.array(first[g]))
         for i, x in enumerate(xs):
             pct = i / max(1, len(xs) - 1)
@@ -514,7 +514,7 @@ def main() -> None:
                 seen.add(k); former.append(k)
         x['former'] = former[:10]
 
-    players.sort(key=lambda x: (x['league'], x['club'], x['name']))
+    players.sort(key=lambda x: (x['league'], x['club'], x['name'], x['tm_id']))
     out = {'extractedAt': datetime.now(timezone.utc).strftime('%Y-%m-%d'), 'count': len(players),
            'source': 'dcaribou/transfermarkt-datasets (2025-26 sonu); değerler: mevcut havuz + NEON XI formül',
            'players': players}
