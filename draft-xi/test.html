@@ -57,7 +57,7 @@ td:first-child{color:var(--a);font-weight:700}td:last-child{color:var(--b);font-
 <body>
 <main class="wrap">
   <h1>DRAFT XI <span>v2</span> · Motor testi</h1>
-  <p class="note">Yeni maç motorunun ilk sürümü. Ekranlar henüz yok: burada takımları ve taktikleri seçip motorun ürettiği maçı okuyorsun. <b>Kendi kadron</b> ile havuzdaki 1000'den fazla oyuncudan takım kurabilirsin. Kulüp, mevki, ayak ve boy gerçek veriden; değerler ilk geçiş (formülle), mantıksız görünen oyuncuyu not al.</p>
+  <p class="note">Yeni maç motorunun ilk sürümü. Ekranlar henüz yok: burada takımları ve taktikleri seçip motorun ürettiği maçı okuyorsun. <b>Kendi kadron</b> ile havuzdaki 1000'den fazla oyuncudan takım kurabilirsin. Kulüp, mevki, ayak ve boy gerçek veriden; değerler ilk geçiş (formülle), mantıksız görünen oyuncuyu <a href="./inceleme.html" style="color:var(--a)">havuz inceleme sayfasında</a> işaretle.</p>
 
   <div class="grid">
     <section class="card" aria-labelledby="h-a"><h2 id="h-a" style="color:var(--a)">SENİN TAKIMIN</h2><div id="formA"></div></section>
@@ -82,7 +82,7 @@ td:first-child{color:var(--a);font-weight:700}td:last-child{color:var(--b);font-
 <script type="module">
 import { simulateMatch, ENGINE_VERSION } from './engine/match.mjs?v=3';
 import { SQUADS, BY_ID } from './engine/sample-players.mjs?v=2';
-import { HAVUZ, HAVUZ_BY_ID } from './data/havuz.mjs?v=2';
+import { HAVUZ, HAVUZ_BY_ID } from './data/havuz.mjs?v=3';
 import { FORMATIONS } from './engine/formations.mjs?v=2';
 const ALL = { ...BY_ID, ...HAVUZ_BY_ID };
 
