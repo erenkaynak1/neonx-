@@ -84,7 +84,7 @@ function fromDraft() {
     const sq = (t) => ({ name: t.name, formation: t.formation, players: Object.fromEntries(Object.entries(t.slots).map(([s, id]) => [s, HAVUZ_BY_ID[id]])) });
     const home = sq(d.home), away = sq(d.away);
     if (Object.values(home.players).some((p) => !p) || Object.values(away.players).some((p) => !p)) return null;
-    return { home, away, planA: d.home.plan, planB: d.away.plan };
+    return { home, away, planA: d.home.plan, planB: d.away.plan, tacA: d.home.tactic, tacB: d.away.tactic };
   } catch { return null; }
 }
 
@@ -94,7 +94,7 @@ function start(given) {
   const planA = given?.planA || $('pA').value, planB = given?.planB || $('pB').value;
   const fixed = Number(new URLSearchParams(location.search).get('tohum')); // test aid: ?tohum=N replays the same match
   const seed = fixed > 0 ? fixed : (Date.now() % 100000) + 1;
-  const r = simulateMatch({ home, away, seed, tacticHome: tactic(planA), tacticAway: tactic(planB), frames: true });
+  const r = simulateMatch({ home, away, seed, tacticHome: given?.tacA || tactic(planA), tacticAway: given?.tacB || tactic(planB), frames: true });
   const byId = Object.fromEntries(HAVUZ.map((p) => [p.id, p]));
   const short = (id) => { const n = byId[id]?.name || id; const parts = n.split(' '); return parts.length > 1 && n.length > 14 ? parts.slice(-1)[0] : n; };
   const layers = drawPitch();

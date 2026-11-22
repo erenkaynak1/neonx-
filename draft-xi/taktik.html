@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Draft XI · Taktik</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="./ui/taktik.css?v=2">
+</head>
+<body>
+<main>
+  <section id="yok" class="yok" hidden>
+    <h1>DRAFT XI · <span>TAKTİK</span></h1>
+    <p>Taktik ekranı draft bitince açılır. Önce takımını kur.</p>
+    <a class="go" href="./draft.html">DRAFT'A GİT</a>
+  </section>
+
+  <section id="devir" class="yok" hidden aria-live="polite">
+    <h1>SIRA <span id="devirAd"></span></h1>
+    <p>Telefonu rakibine ver. Senin taktiğin ona gösterilmez.</p>
+    <button id="devam" class="go" type="button">TAKTİĞİMİ KUR</button>
+  </section>
+
+  <section id="ekran" class="ekran" aria-labelledby="baslik">
+    <header class="ust">
+      <div><h1 id="baslik"></h1><p id="alt" class="alt"></p></div>
+    </header>
+    <div class="planlar" id="planlar" role="group" aria-label="Hazır plan"></div>
+    <div class="izgara">
+      <figure class="saha-kutu">
+        <svg id="saha" viewBox="0 0 680 1050" role="img" aria-labelledby="sahaEtiket"></svg>
+        <figcaption id="sahaEtiket"></figcaption>
+      </figure>
+      <div id="ayarlar" class="ayarlar"></div>
+    </div>
+    <div class="alt-bar"><button id="hazir" class="go" type="button">MAÇA ÇIK</button></div>
+  </section>
+</main>
+<script type="module" src="./ui/taktik.mjs?v=2"></script>
+</body>
+</html>
