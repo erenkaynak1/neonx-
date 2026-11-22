@@ -14,6 +14,7 @@ dcaribou/transfermarkt-datasets'ten gelir. Yetenek değerleri:
   * yeni oyuncular, mevcut havuzdan öğrenilen bir formülle (mevki grubuna göre ridge regresyon:
     piyasa değeri, en yüksek piyasa değeri, yaş, dakika payı, gol/asist, boy, millî maç) hesaplanır
     ve ratingSource = "NEON XI formül" olarak işaretlenir.
+Savunma ve kafa için küçük düzeltmeler StatsBomb açık verisinden gelir (draft-xi/data/statsbomb-duzeltme.json).
 Hiçbir dış oyunun (FM, EA FC) değeri kullanılmaz.
 
   python3 scripts/build_draft_xi_havuz_v2.py [--database .tmp-transfermarkt.duckdb]
@@ -36,6 +37,9 @@ ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / 'draft-xi/data/kaynak-havuz.json'          # output (read by scripts/build_draft_xi_pool.mjs)
 OLD = ROOT / 'draft-xi/data/kaynak-havuz-v1.json'       # frozen first pool: our own values are taught from here
 CLUB_NAMES = json.loads((ROOT / 'draft-xi/data/kulup-adlari.json').read_text())['adlar']
+_SB = ROOT / 'draft-xi/data/statsbomb-duzeltme.json'
+# defending/heading nudges from StatsBomb Open Data match events (scripts/build_draft_xi_statsbomb.py); optional
+SB_ADJ = json.loads(_SB.read_text())['duzeltmeler'] if _SB.exists() else {}
 _YAZ = json.loads((ROOT / 'draft-xi/data/yaz-2026-transferleri.json').read_text())
 SUMMER, ARRIVALS = _YAZ['transferler'], _YAZ.get('gelenler', [])
 COUNTRY_TR = json.loads((ROOT / 'side-games/data/master/country-tr.json').read_text())
@@ -486,6 +490,10 @@ def main() -> None:
             x['ratingSource'] = 'NEON XI formül'
             new += 1
     for x in players:
+        adj = SB_ADJ.get(str(x['tm_id']))
+        if adj and x['main']:
+            x['main'][4] = int(max(1, min(99, x['main'][4] + adj[0])))  # defending (tackling/marking)
+            x['main'][5] = int(max(1, min(99, x['main'][5] + adj[1])))  # heading
         for k in ('_f', '_g', '_r', '_q', '_lvl'):
             x.pop(k, None)
 
