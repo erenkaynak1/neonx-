@@ -47,17 +47,20 @@ h2{font:800 15px/1 system-ui;letter-spacing:.16em;color:var(--mut);margin:0 0 8p
   background:repeating-linear-gradient(0deg,var(--grass1) 0 10%,var(--grass2) 10% 20%);border:1px solid rgba(232,255,228,.22)}
 .saha::before{content:"";position:absolute;left:0;right:0;top:50%;border-top:2px solid rgba(232,255,228,.22)}
 .saha::after{content:"";position:absolute;left:30%;right:30%;bottom:0;height:13%;border:2px solid rgba(232,255,228,.22);border-bottom:0}
-.slot{position:absolute;transform:translate(-50%,-50%);width:clamp(46px,15%,72px);min-height:38px;padding:3px 3px;border-radius:9px;
-  background:rgba(7,11,10,.82);border:1px dashed rgba(232,255,228,.35);text-align:center;font-size:11px;line-height:1.15;cursor:default}
+.saha{display:flex;flex-direction:column;justify-content:space-around;padding:10px 4px}
+.hat{display:flex;justify-content:space-evenly;align-items:center;gap:4px}
+.slot{position:relative;flex:0 1 84px;min-width:0;min-height:44px;padding:4px 3px;border-radius:9px;
+  background:rgba(7,11,10,.85);border:1px dashed rgba(232,255,228,.35);text-align:center;font-size:11px;line-height:1.15;cursor:default}
 .slot .mv{display:block;font:800 10px/1 system-ui;letter-spacing:.06em;color:var(--mut)}
-.slot .ad{display:block;font-weight:700;margin-top:2px;font-size:10.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.slot .ad{display:block;font-weight:700;margin-top:2px;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.slot .bos-ad{color:var(--mut);font-weight:400}
 .slot .kim{display:block;color:var(--mut);font-size:9.5px}
 .slot.dolu{border-style:solid}
 .a .slot.dolu{border-color:rgba(186,255,24,.6)}.b .slot.dolu{border-color:rgba(47,224,255,.6)}
 .slot.hedef{border:2px solid var(--yel);box-shadow:0 0 12px rgba(255,211,77,.5);cursor:pointer;animation:nab 1s ease-in-out infinite}
 @keyframes nab{50%{box-shadow:0 0 22px rgba(255,211,77,.8)}}
 .slot.yeni{animation:gel .5s ease}
-@keyframes gel{from{transform:translate(-50%,-50%) scale(1.4);opacity:.3}to{transform:translate(-50%,-50%) scale(1);opacity:1}}
+@keyframes gel{from{transform:scale(1.25);opacity:.3}to{transform:scale(1);opacity:1}}
 
 /* pool */
 .filtre{padding:10px;border-bottom:1px solid var(--line);display:grid;gap:8px}

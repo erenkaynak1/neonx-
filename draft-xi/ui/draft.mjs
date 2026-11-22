@@ -147,15 +147,25 @@ function teamPanel(t) {
   const avgChem = count ? (Object.values(chem).reduce((a, b) => a + b, 0) / count).toFixed(1) : '0.0';
   const avgG = count ? Math.round(Object.entries(tm.slots).reduce((n, [s, id]) => n + guc(HAVUZ_BY_ID[id], FORMATIONS[tm.formation].find((x) => x[0] === s)[2]), 0) / count) : 0;
   const canEdit = !isBot(t);
-  const slots = FORMATIONS[tm.formation].map(([slot, label, mevki, zPoss]) => {
-    const pt = zonePoint(zPoss), p = players[slot]; // the shape with the ball uses the whole pitch
-    const left = 10 + (pt.x / 680) * 80, top = 96 - (pt.y / 1050) * 92; // keep boxes inside the pitch
+  // formation as lines (GK, then the formation's own numbers, e.g. 4-2-3-1): the template lists slots line by line
+  // from the own goal, so cut it into lines of those sizes, left → right inside a line. Rows are flexbox, so cards never overlap.
+  const tpl = FORMATIONS[tm.formation];
+  const outfield = tpl.filter(([, , m]) => m !== 'GK');
+  const lines = [tpl.filter(([, , m]) => m === 'GK')];
+  let at = 0;
+  for (const n of tm.formation.split('-').map(Number)) {
+    lines.push(outfield.slice(at, at + n).map((x) => ({ x, px: zonePoint(x[3]).x })).sort((u, v) => u.px - v.px).map((o) => o.x));
+    at += n;
+  }
+  const card = ([slot, label, mevki]) => {
+    const p = players[slot];
     const hedef = !p && sel && uygun(sel, mevki);
     const yeni = S.last && S.last.t === t && S.last.slot === slot;
-    return `<div class="slot${p ? ' dolu' : ''}${hedef ? ' hedef' : ''}${yeni ? ' yeni' : ''}" style="left:${left.toFixed(1)}%;top:${top.toFixed(1)}%"
+    return `<div class="slot${p ? ' dolu' : ''}${hedef ? ' hedef' : ''}${yeni ? ' yeni' : ''}"
       ${hedef ? `role="button" tabindex="0" data-yer="${slot}" aria-label="${esc(sel.name)} → ${esc(label)}"` : ''} title="${esc(label)}">
-      <span class="mv">${mevki}</span>${p ? `<span class="ad">${esc(p.name.split(' ').slice(-1)[0])}</span><span class="kim">${guc(p, mevki)} · K${chem[slot] ?? 0}</span>` : ''}</div>`;
-  }).join('');
+      <span class="mv">${mevki}</span>${p ? `<span class="ad">${esc(p.name.split(' ').slice(-1)[0])}</span><span class="kim">${guc(p, mevki)} · K${chem[slot] ?? 0}</span>` : '<span class="ad bos-ad">—</span>'}</div>`;
+  };
+  const slots = lines.slice().reverse().map((ln) => `<div class="hat">${ln.map(card).join('')}</div>`).join('');
   return `<div class="${cls}" style="display:contents">
     <div class="th ${cls}"><b>${esc(tm.name)}</b>${canEdit ? `<select data-dizilis="${t}" aria-label="Diziliş">${FORMS.map((f) => `<option${f === tm.formation ? ' selected' : ''}>${f}</option>`).join('')}</select>` : `<span class="tur-no">${tm.formation}</span>`}</div>
     <div class="ozet"><span>Kadro <b>${count}/11</b></span><span>Ort. güç <b>${avgG}</b></span><span>Kimya <b>${avgChem}</b></span></div>
