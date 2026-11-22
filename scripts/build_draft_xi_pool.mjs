@@ -9,7 +9,7 @@
 // Conversion (first pass, to be refined): the active pool has 7 values per outfield player
 // [pace, passing, shooting, dribbling, defending, heading, iq] (+ crossing for many) and 4 for keepers
 // [reflex, positioning, aerial/catching, distribution]. They are mapped to the v2 engine's 14 attributes with the
-// formulas below. Foot, weak foot and height are not in the source: they are estimated and marked `tahmini`.
+// formulas below. Foot and height come from the source when present (Transfermarkt, via build_draft_xi_havuz_v2.py); weak foot is estimated (`tahmini`).
 // Players whose values come from an outside rating source (ratingSource) keep `kaynak` so they can be replaced.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -49,7 +49,8 @@ const V2 = new Set(['GK', 'RB', 'RWB', 'CB', 'LB', 'LWB', 'DM', 'CM', 'AM', 'RM'
 // The source mixes display names and slugs for the same league; one display name each.
 const LIG = { 'premier-league': 'Premier League', laliga: 'La Liga', 'la-liga': 'La Liga', 'serie-a': 'Serie A', bundesliga: 'Bundesliga',
   'ligue-1': 'Ligue 1', 'super-lig': 'Süper Lig', 'super-lig-tr': 'Süper Lig', BRA1: 'Brasileirão', 'liga-portugal': 'Liga Portugal', eredivisie: 'Eredivisie',
-  'saudi-pro-league': 'Saudi Pro League', 'major-league-soccer': 'MLS' };
+  'saudi-pro-league': 'Saudi Pro League', 'major-league-soccer': 'MLS', 'tff-1-lig': 'TFF 1. Lig', GB2: 'Championship', A1: 'Avusturya Bundesliga',
+  BE1: 'Belçika Pro Lig', GR1: 'Yunanistan Süper Lig', QSL: 'Katar Yıldızlar Ligi', UAE1: 'BAE Pro Lig', SC1: 'İskoçya Premiership', DK1: 'Danimarka Süper Lig' };
 const ligAdi = (l) => LIG[l] || LIG[String(l || '').toLowerCase()] || l || '';
 const BOY = { GK: 191, CB: 188, DM: 183, ST: 184, CM: 180, AM: 177, LB: 178, RB: 178, LWB: 177, RWB: 177, LM: 176, RM: 176, LW: 176, RW: 176 };
 
@@ -84,28 +85,33 @@ function cevir(x) {
   } else return null;
   const hed = g ? g[2] : a[2];
   const boy = Math.round((BOY[ana] || 180) + (hed - 70) * 0.25);
+  // Foot and height come from the source when it has them (Transfermarkt); otherwise estimated and marked.
+  // Both-footed players: right foot, weak foot 4. Weak foot is never in the source → always estimated.
+  const tahmini = ['weakFoot'];
+  const foot = x.foot === 'L' || x.foot === 'R' ? x.foot : x.foot === 'B' ? 'R' : (tahmini.push('foot'), LEFT.has(ana) ? 'L' : 'R');
+  const height = x.height || (tahmini.push('height'), boy);
   return {
-    id: x.id, name: x.name, positions, foot: LEFT.has(ana) ? 'L' : 'R', weakFoot: 3, height: boy,
+    id: x.id, name: x.name, positions, foot, weakFoot: x.foot === 'B' ? 4 : 3, height,
     nation: x.nation, club: x.club, league: ligAdi(x.league), former: x.former || [], age: x.age,
-    a, g, kaynak: x.ratingSource || 'NEON XI', tahmini: ['foot', 'weakFoot', 'height'],
+    a, g, kaynak: x.ratingSource || 'NEON XI', tahmini,
   };
 }
 
 const src = JSON.parse(fs.readFileSync(SRC, 'utf8'));
 const pool = src.players.map(cevir).filter(Boolean);
-const lines = pool.map((p) => '  ' + JSON.stringify([p.id, p.name, p.positions, p.foot, p.weakFoot, p.height, p.nation, p.club, p.league, p.former, p.age, p.a, p.g, p.kaynak]));
-const out = `// ÜRETİLMİŞ DOSYA — elle düzenleme. Kaynak: draft-xi/data/kaynak-havuz.json (aktif NEON XI havuzu, ${src.extractedAt}),
-// dönüştürücü: scripts/build_draft_xi_pool.mjs. İlk geçiş: değerler formülle türetildi; ayak, zayıf ayak ve boy tahmini.
-// Sırası: [id, ad, mevkiler, ayak, zayıf ayak, boy, ülke, kulüp, lig, eski kulüpler, yaş, özellikler[14], kaleci[4]|null, değer kaynağı]
+const lines = pool.map((p) => '  ' + JSON.stringify([p.id, p.name, p.positions, p.foot, p.weakFoot, p.height, p.nation, p.club, p.league, p.former, p.age, p.a, p.g, p.kaynak, p.tahmini]));
+const out = `// ÜRETİLMİŞ DOSYA — elle düzenleme. Kaynak: draft-xi/data/kaynak-havuz.json (${src.source || 'aktif NEON XI havuzu'}, ${src.extractedAt}),
+// havuz: scripts/build_draft_xi_havuz_v2.py, dönüştürücü: scripts/build_draft_xi_pool.mjs. Ayak ve boy kaynaktan; zayıf ayak tahmini.
+// Sırası: [id, ad, mevkiler, ayak, zayıf ayak, boy, ülke, kulüp, lig, eski kulüpler, yaş, özellikler[14], kaleci[4]|null, değer kaynağı, tahmini alanlar]
 export const KEYS = ['fin', 'lon', 'hed', 'posn', 'dri', 'ft', 'sp', 'lp', 'cro', 'vis', 'tac', 'mar', 'pac', 'str'];
 export const GK_KEYS = ['ref', 'gpos', 'ghd', 'one'];
 const RAW = [
 ${lines.join(',\n')}
 ];
-export const HAVUZ = RAW.map(([id, name, positions, foot, weakFoot, height, nation, club, league, former, age, a, g, kaynak]) => {
+export const HAVUZ = RAW.map(([id, name, positions, foot, weakFoot, height, nation, club, league, former, age, a, g, kaynak, tahmini]) => {
   const attrs = Object.fromEntries(KEYS.map((k, i) => [k, a[i]]));
   if (g) GK_KEYS.forEach((k, i) => { attrs[k] = g[i]; });
-  return { id, name, positions, foot, weakFoot, height, nation, club, league, former, age, attrs, kaynak, tahmini: ['foot', 'weakFoot', 'height'] };
+  return { id, name, positions, foot, weakFoot, height, nation, club, league, former, age, attrs, kaynak, tahmini };
 });
 export const HAVUZ_BY_ID = Object.fromEntries(HAVUZ.map((p) => [p.id, p]));
 `;

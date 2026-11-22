@@ -1,0 +1,1094 @@
+{
+ "_aciklama": "Yaz 2026 transferleri: Wikidata'da (CC0) başlangıç tarihi 2026-06-01 veya sonrası olan kulüp kayıtları. Kullanıcı listeyi gördü; yanlış olan satır silinir ya da düzeltilir.",
+ "kaynak": "Wikidata (query.wikidata.org), 2026-11-22",
+ "transferler": [
+  {
+   "tm_id": 344381,
+   "ad": "Christopher Nkunku",
+   "eski": "AC Milan",
+   "yeni": "RB Leipzig",
+   "tarih": "2026-08-01",
+   "wikidata": "Q21693199"
+  },
+  {
+   "tm_id": 357164,
+   "ad": "Rafael Leão",
+   "eski": "AC Milan",
+   "yeni": "Galatasaray S.K.",
+   "tarih": "2026-08-29",
+   "wikidata": "Q30055335"
+  },
+  {
+   "tm_id": 552955,
+   "ad": "Santiago Giménez",
+   "eski": "AC Milan",
+   "yeni": "FC Porto",
+   "tarih": "2026-08-01",
+   "wikidata": "Q33296979"
+  },
+  {
+   "tm_id": 569598,
+   "ad": "Youssouf Fofana",
+   "eski": "AC Milan",
+   "yeni": "Sevilla FC",
+   "tarih": "2026-09-01",
+   "wikidata": "Q56282611"
+  },
+  {
+   "tm_id": 305947,
+   "ad": "Albert Gudmundsson",
+   "eski": "ACF Fiorentina",
+   "yeni": "SS Lazio",
+   "tarih": "2026-09-01",
+   "wikidata": "Q21171299"
+  },
+  {
+   "tm_id": 364135,
+   "ad": "Moise Kean",
+   "eski": "ACF Fiorentina",
+   "yeni": "Como 1907",
+   "tarih": "2026-09-01",
+   "wikidata": "Q27889974"
+  },
+  {
+   "tm_id": 745200,
+   "ad": "Maghnes Akliouche",
+   "eski": "AS Monaco",
+   "yeni": "Paris Saint-Germain FC",
+   "tarih": "2026-08-06",
+   "wikidata": "Q108910786"
+  },
+  {
+   "tm_id": 228948,
+   "ad": "Thilo Kehrer",
+   "eski": "AS Monaco",
+   "yeni": "AFC Ajax",
+   "tarih": "2026-09-02",
+   "wikidata": "Q20823439"
+  },
+  {
+   "tm_id": 182712,
+   "ad": "João Cancelo",
+   "eski": "Al-Hilal Saudi Football Club",
+   "yeni": "FC Barcelona",
+   "tarih": "2026-08-20",
+   "wikidata": "Q6298063"
+  },
+  {
+   "tm_id": 655488,
+   "ad": "Gabriel Martinelli",
+   "eski": "Arsenal FC",
+   "yeni": "Al Hilal SFC",
+   "tarih": "2026-09-01",
+   "wikidata": "Q61460651"
+  },
+  {
+   "tm_id": 144028,
+   "ad": "Leandro Trossard",
+   "eski": "Arsenal FC",
+   "yeni": "Beşiktaş J.K.",
+   "tarih": "2026-07-15",
+   "wikidata": "Q6509762"
+  },
+  {
+   "tm_id": 901019,
+   "ad": "Neil El Aynaoui",
+   "eski": "Associazione Sportiva Roma",
+   "yeni": "RB Leipzig",
+   "tarih": "2026-09-01",
+   "wikidata": "Q107745867"
+  },
+  {
+   "tm_id": 251075,
+   "ad": "Zeki Çelik",
+   "eski": "Associazione Sportiva Roma",
+   "yeni": "Juventus FC",
+   "tarih": "2026-07-01",
+   "wikidata": "Q50628268"
+  },
+  {
+   "tm_id": 111873,
+   "ad": "Emiliano Martínez",
+   "eski": "Aston Villa",
+   "yeni": "Chelsea F.C.",
+   "tarih": "2026-08-01",
+   "wikidata": "Q3275904"
+  },
+  {
+   "tm_id": 413403,
+   "ad": "Ezri Konsa",
+   "eski": "Aston Villa",
+   "yeni": "Arsenal F.C.",
+   "tarih": "2026-08-01",
+   "wikidata": "Q27063854"
+  },
+  {
+   "tm_id": 126664,
+   "ad": "Lucas Digne",
+   "eski": "Aston Villa",
+   "yeni": "Paris Saint-Germain FC",
+   "tarih": "2026-08-09",
+   "wikidata": "Q72648"
+  },
+  {
+   "tm_id": 503743,
+   "ad": "Morgan Rogers",
+   "eski": "Aston Villa",
+   "yeni": "Chelsea F.C.",
+   "tarih": "2026-07-21",
+   "wikidata": "Q61598452"
+  },
+  {
+   "tm_id": 324358,
+   "ad": "Ollie Watkins",
+   "eski": "Aston Villa",
+   "yeni": "Al Hilal SFC",
+   "tarih": "2026-08-30",
+   "wikidata": "Q16911979"
+  },
+  {
+   "tm_id": 249565,
+   "ad": "Youri Tielemans",
+   "eski": "Aston Villa",
+   "yeni": "Manchester United F.C.",
+   "tarih": "2026-07-14",
+   "wikidata": "Q14327453"
+  },
+  {
+   "tm_id": 165513,
+   "ad": "Berat Djimsiti",
+   "eski": "Atalanta BC",
+   "yeni": "Al-Diriyah Club",
+   "tarih": "2026-08-10",
+   "wikidata": "Q15197300"
+  },
+  {
+   "tm_id": 1077175,
+   "ad": "Honest Ahanor",
+   "eski": "Atalanta BC",
+   "yeni": "Crystal Palace F.C.",
+   "tarih": "2026-09-01",
+   "wikidata": "Q129796620"
+  },
+  {
+   "tm_id": 133179,
+   "ad": "Marten de Roon",
+   "eski": "Atalanta BC",
+   "yeni": "AS Roma",
+   "tarih": "2026-08-01",
+   "wikidata": "Q285684"
+  },
+  {
+   "tm_id": 182904,
+   "ad": "Clément Lenglet",
+   "eski": "Atlético de Madrid",
+   "yeni": "S.L. Benfica",
+   "tarih": "2026-07-01",
+   "wikidata": "Q16236859"
+  },
+  {
+   "tm_id": 616631,
+   "ad": "Matteo Ruggeri",
+   "eski": "Atlético de Madrid",
+   "yeni": "Aston Villa F.C.",
+   "tarih": "2026-08-01",
+   "wikidata": "Q97365426"
+  },
+  {
+   "tm_id": 424042,
+   "ad": "Nahuel Molina",
+   "eski": "Atlético de Madrid",
+   "yeni": "AS Roma",
+   "tarih": "2026-08-01",
+   "wikidata": "Q22082590"
+  },
+  {
+   "tm_id": 193082,
+   "ad": "Alejandro Grimaldo",
+   "eski": "Bayer 04 Leverkusen",
+   "yeni": "Atlético Madrid",
+   "tarih": "2026-07-01",
+   "wikidata": "Q921324"
+  },
+  {
+   "tm_id": 401578,
+   "ad": "Exequiel Palacios",
+   "eski": "Bayer 04 Leverkusen",
+   "yeni": "Ipswich Town F.C.",
+   "tarih": "2026-08-01",
+   "wikidata": "Q19345715"
+  },
+  {
+   "tm_id": 153084,
+   "ad": "Leon Goretzka",
+   "eski": "Bayern Munich",
+   "yeni": "Aston Villa F.C.",
+   "tarih": "2026-08-01",
+   "wikidata": "Q520721"
+  },
+  {
+   "tm_id": 776890,
+   "ad": "Nicolas Jackson",
+   "eski": "Bayern Munich",
+   "yeni": "Aston Villa F.C.",
+   "tarih": "2026-08-28",
+   "wikidata": "Q100144350"
+  },
+  {
+   "tm_id": 341647,
+   "ad": "Cengiz Ünder",
+   "eski": "Beşiktaş Jimnastik Kulübü",
+   "yeni": "Çorum FK",
+   "tarih": "2026-08-28",
+   "wikidata": "Q19613570"
+  },
+  {
+   "tm_id": 187492,
+   "ad": "Julian Brandt",
+   "eski": "Borussia Dortmund",
+   "yeni": "AFC Ajax",
+   "tarih": "2026-07-31",
+   "wikidata": "Q3189078"
+  },
+  {
+   "tm_id": 496094,
+   "ad": "Karim Adeyemi",
+   "eski": "Borussia Dortmund",
+   "yeni": "FC Barcelona",
+   "tarih": "2026-07-01",
+   "wikidata": "Q56424307"
+  },
+  {
+   "tm_id": 203123,
+   "ad": "Haris Tabakovic",
+   "eski": "Borussia Mönchengladbach",
+   "yeni": "FC Red Bull Salzburg",
+   "tarih": "2026-07-11",
+   "wikidata": "Q15257381"
+  },
+  {
+   "tm_id": 973085,
+   "ad": "Carlos Baleba",
+   "eski": "Brighton & Hove Albion",
+   "yeni": "Manchester United F.C.",
+   "tarih": "2026-08-01",
+   "wikidata": "Q113472432"
+  },
+  {
+   "tm_id": 67063,
+   "ad": "Danny Welbeck",
+   "eski": "Brighton & Hove Albion",
+   "yeni": "Chelsea F.C.",
+   "tarih": "2026-08-01",
+   "wikidata": "Q188457"
+  },
+  {
+   "tm_id": 811779,
+   "ad": "Alejandro Garnacho",
+   "eski": "Chelsea FC",
+   "yeni": "Aston Villa F.C.",
+   "tarih": "2026-07-23",
+   "wikidata": "Q111366053"
+  },
+  {
+   "tm_id": 648195,
+   "ad": "Enzo Fernández",
+   "eski": "Chelsea FC",
+   "yeni": "Manchester City F.C.",
+   "tarih": "2026-09-01",
+   "wikidata": "Q96105248"
+  },
+  {
+   "tm_id": 610849,
+   "ad": "Liam Delap",
+   "eski": "Chelsea FC",
+   "yeni": "Nottingham Forest F.C.",
+   "tarih": "2026-08-27",
+   "wikidata": "Q99584177"
+  },
+  {
+   "tm_id": 284857,
+   "ad": "Marc Cucurella",
+   "eski": "Chelsea FC",
+   "yeni": "Real Madrid Club de Fútbol",
+   "tarih": "2026-06-15",
+   "wikidata": "Q22082505"
+  },
+  {
+   "tm_id": 403151,
+   "ad": "Robert Sánchez",
+   "eski": "Chelsea FC",
+   "yeni": "Como 1907",
+   "tarih": "2026-09-01",
+   "wikidata": "Q56043276"
+  },
+  {
+   "tm_id": 258878,
+   "ad": "Tosin Adarabioyo",
+   "eski": "Chelsea FC",
+   "yeni": "Tottenham Hotspur F.C.",
+   "tarih": "2026-09-01",
+   "wikidata": "Q21620666"
+  },
+  {
+   "tm_id": 207917,
+   "ad": "Alberto Moreno",
+   "eski": "Como 1907",
+   "yeni": "RCD Mallorca",
+   "tarih": "2026-08-24",
+   "wikidata": "Q4712133"
+  },
+  {
+   "tm_id": 329145,
+   "ad": "Diego Carlos",
+   "eski": "Como 1907",
+   "yeni": "Parma Calcio 1913",
+   "tarih": "2026-09-01",
+   "wikidata": "Q15830968"
+  },
+  {
+   "tm_id": 336125,
+   "ad": "Mërgim Vojvoda",
+   "eski": "Como 1907",
+   "yeni": "Udinese Calcio",
+   "tarih": "2026-07-18",
+   "wikidata": "Q18589243"
+  },
+  {
+   "tm_id": 368891,
+   "ad": "Arthur Theate",
+   "eski": "Eintracht Frankfurt",
+   "yeni": "Bologna F.C. 1909",
+   "tarih": "2026-08-30",
+   "wikidata": "Q97724521"
+  },
+  {
+   "tm_id": 290587,
+   "ad": "Ellyes Skhiri",
+   "eski": "Eintracht Frankfurt",
+   "yeni": "1. FC Köln",
+   "tarih": "2026-08-01",
+   "wikidata": "Q20641500"
+  },
+  {
+   "tm_id": 939964,
+   "ad": "Jean-Mattéo Bahoya",
+   "eski": "Eintracht Frankfurt",
+   "yeni": "Leeds United F.C.",
+   "tarih": "2026-09-01",
+   "wikidata": "Q116052667"
+  },
+  {
+   "tm_id": 398184,
+   "ad": "Ferran Torres",
+   "eski": "FC Barcelona",
+   "yeni": "Paris Saint-Germain FC",
+   "tarih": "2026-08-15",
+   "wikidata": "Q44297797"
+  },
+  {
+   "tm_id": 636695,
+   "ad": "Marc Casadó",
+   "eski": "FC Barcelona",
+   "yeni": "Deportivo de A Coruña",
+   "tarih": "2026-09-01",
+   "wikidata": "Q114085673"
+  },
+  {
+   "tm_id": 74857,
+   "ad": "Marc-André ter Stegen",
+   "eski": "FC Barcelona",
+   "yeni": "AFC Ajax",
+   "tarih": "2026-08-01",
+   "wikidata": "Q160472"
+  },
+  {
+   "tm_id": 38253,
+   "ad": "Robert Lewandowski",
+   "eski": "FC Barcelona",
+   "yeni": "Chicago Fire FC",
+   "tarih": "2026-06-29",
+   "wikidata": "Q151269"
+  },
+  {
+   "tm_id": 480267,
+   "ad": "Ronald Araújo",
+   "eski": "FC Barcelona",
+   "yeni": "Liverpool F.C.",
+   "tarih": "2026-08-01",
+   "wikidata": "Q56332606"
+  },
+  {
+   "tm_id": 161869,
+   "ad": "Djibril Sidibé",
+   "eski": "FC Toulouse",
+   "yeni": "Le Mans F.C.",
+   "tarih": "2026-08-01",
+   "wikidata": "Q66737676"
+  },
+  {
+   "tm_id": 191614,
+   "ad": "Fred",
+   "eski": "Fenerbahce",
+   "yeni": "Clube Atlético Mineiro",
+   "tarih": "2026-08-14",
+   "wikidata": "Q965448"
+  },
+  {
+   "tm_id": 258626,
+   "ad": "Talisca",
+   "eski": "Fenerbahce",
+   "yeni": "Al Jazira Club",
+   "tarih": "2026-09-04",
+   "wikidata": "Q9613708"
+  },
+  {
+   "tm_id": 320141,
+   "ad": "Çağlar Söyüncü",
+   "eski": "Fenerbahce",
+   "yeni": "Çorum FK",
+   "tarih": "2026-09-04",
+   "wikidata": "Q19612578"
+  },
+  {
+   "tm_id": 35047,
+   "ad": "Axel Witsel",
+   "eski": "Girona FC",
+   "yeni": "OGC Nice",
+   "tarih": "2026-08-01",
+   "wikidata": "Q151838"
+  },
+  {
+   "tm_id": 593482,
+   "ad": "Azzedine Ounahi",
+   "eski": "Girona FC",
+   "yeni": "Panathinaikos F.C.",
+   "tarih": "2026-09-02",
+   "wikidata": "Q108109586"
+  },
+  {
+   "tm_id": 12282,
+   "ad": "Daley Blind",
+   "eski": "Girona FC",
+   "yeni": "AFC Ajax",
+   "tarih": "2026-07-01",
+   "wikidata": "Q128912"
+  },
+  {
+   "tm_id": 205562,
+   "ad": "Thomas Lemar",
+   "eski": "Girona FC",
+   "yeni": "Elche CF",
+   "tarih": "2026-09-01",
+   "wikidata": "Q15081905"
+  },
+  {
+   "tm_id": 264372,
+   "ad": "Viktor Tsygankov",
+   "eski": "Girona FC",
+   "yeni": "AFC Ajax",
+   "tarih": "2026-08-27",
+   "wikidata": "Q26267167"
+  },
+  {
+   "tm_id": 321528,
+   "ad": "Denzel Dumfries",
+   "eski": "Inter Milan",
+   "yeni": "Real Madrid Club de Fútbol",
+   "tarih": "2026-07-01",
+   "wikidata": "Q19882816"
+  },
+  {
+   "tm_id": 42205,
+   "ad": "Yann Sommer",
+   "eski": "Inter Milan",
+   "yeni": "Club Brugge K.V.",
+   "tarih": "2026-07-01",
+   "wikidata": "Q667596"
+  },
+  {
+   "tm_id": 571607,
+   "ad": "Fabio Miretti",
+   "eski": "Juventus FC",
+   "yeni": "Beşiktaş J.K.",
+   "tarih": "2026-08-28",
+   "wikidata": "Q105477844"
+  },
+  {
+   "tm_id": 533738,
+   "ad": "Jonathan David",
+   "eski": "Juventus FC",
+   "yeni": "Atlético Madrid",
+   "tarih": "2026-09-01",
+   "wikidata": "Q56085180"
+  },
+  {
+   "tm_id": 368887,
+   "ad": "Loïs Openda",
+   "eski": "Juventus FC",
+   "yeni": "Olympique Lyonnais",
+   "tarih": "2026-07-28",
+   "wikidata": "Q56183407"
+  },
+  {
+   "tm_id": 1097139,
+   "ad": "Ayyoub Bouaddi",
+   "eski": "LOSC Lille",
+   "yeni": "Manchester City F.C.",
+   "tarih": "2026-08-01",
+   "wikidata": "Q122971833"
+  },
+  {
+   "tm_id": 80293,
+   "ad": "Aïssa Mandi",
+   "eski": "LOSC Lille",
+   "yeni": "Levante UD",
+   "tarih": "2026-07-16",
+   "wikidata": "Q2876432"
+  },
+  {
+   "tm_id": 203348,
+   "ad": "Chancel Mbemba",
+   "eski": "LOSC Lille",
+   "yeni": "Al-Diriyah Club",
+   "tarih": "2026-08-06",
+   "wikidata": "Q3196721"
+  },
+  {
+   "tm_id": 100986,
+   "ad": "Thomas Meunier",
+   "eski": "LOSC Lille",
+   "yeni": "Sunderland A.F.C.",
+   "tarih": "2026-07-01",
+   "wikidata": "Q2036160"
+  },
+  {
+   "tm_id": 433188,
+   "ad": "Curtis Jones",
+   "eski": "Liverpool FC",
+   "yeni": "Inter Milan",
+   "tarih": "2026-08-01",
+   "wikidata": "Q59913917"
+  },
+  {
+   "tm_id": 148455,
+   "ad": "Mohamed Salah",
+   "eski": "Liverpool FC",
+   "yeni": "Trabzonspor",
+   "tarih": "2026-08-06",
+   "wikidata": "Q1354960"
+  },
+  {
+   "tm_id": 241641,
+   "ad": "Bernardo Silva",
+   "eski": "Manchester City",
+   "yeni": "Real Madrid Club de Fútbol",
+   "tarih": "2026-06-01",
+   "wikidata": "Q15521306"
+  },
+  {
+   "tm_id": 177476,
+   "ad": "Nathan Aké",
+   "eski": "Manchester City",
+   "yeni": "Fenerbahçe Istanbul",
+   "tarih": "2026-07-01",
+   "wikidata": "Q1755683"
+  },
+  {
+   "tm_id": 466805,
+   "ad": "Nico González",
+   "eski": "Manchester City",
+   "yeni": "Newcastle United F.C.",
+   "tarih": "2026-08-26",
+   "wikidata": "Q106625792"
+  },
+  {
+   "tm_id": 445939,
+   "ad": "Omar Marmoush",
+   "eski": "Manchester City",
+   "yeni": "Tottenham Hotspur F.C.",
+   "tarih": "2026-08-01",
+   "wikidata": "Q28065104"
+  },
+  {
+   "tm_id": 357565,
+   "ad": "Rodri",
+   "eski": "Manchester City",
+   "yeni": "FC Barcelona",
+   "tarih": "2026-08-01",
+   "wikidata": "Q20994118"
+  },
+  {
+   "tm_id": 460939,
+   "ad": "Tijjani Reijnders",
+   "eski": "Manchester City",
+   "yeni": "Al Qadsiah FC",
+   "tarih": "2026-08-01",
+   "wikidata": "Q39500352"
+  },
+  {
+   "tm_id": 336077,
+   "ad": "Altay Bayındır",
+   "eski": "Manchester United",
+   "yeni": "RC Celta de Vigo",
+   "tarih": "2026-08-07",
+   "wikidata": "Q57415806"
+  },
+  {
+   "tm_id": 16306,
+   "ad": "Casemiro",
+   "eski": "Manchester United",
+   "yeni": "Inter Miami CF",
+   "tarih": "2026-07-22",
+   "wikidata": "Q616664"
+  },
+  {
+   "tm_id": 503733,
+   "ad": "Anthony Gordon",
+   "eski": "Newcastle United",
+   "yeni": "FC Barcelona",
+   "tarih": "2026-07-01",
+   "wikidata": "Q45179405"
+  },
+  {
+   "tm_id": 520624,
+   "ad": "Bruno Guimarães",
+   "eski": "Newcastle United",
+   "yeni": "Arsenal F.C.",
+   "tarih": "2026-08-08",
+   "wikidata": "Q58323172"
+  },
+  {
+   "tm_id": 455661,
+   "ad": "Nick Woltemade",
+   "eski": "Newcastle United",
+   "yeni": "Juventus FC",
+   "tarih": "2026-09-01",
+   "wikidata": "Q84158344"
+  },
+  {
+   "tm_id": 397033,
+   "ad": "Sandro Tonali",
+   "eski": "Newcastle United",
+   "yeni": "Tottenham Hotspur F.C.",
+   "tarih": "2026-07-01",
+   "wikidata": "Q43402334"
+  },
+  {
+   "tm_id": 741238,
+   "ad": "Omari Hutchinson",
+   "eski": "Nottingham Forest",
+   "yeni": "AC Milan",
+   "tarih": "2026-08-01",
+   "wikidata": "Q111145131"
+  },
+  {
+   "tm_id": 670847,
+   "ad": "Mohamed-Ali Cho",
+   "eski": "OGC Nice",
+   "yeni": "Hull City A.F.C.",
+   "tarih": "2026-08-01",
+   "wikidata": "Q98777530"
+  },
+  {
+   "tm_id": 750904,
+   "ad": "Tom Louchet",
+   "eski": "OGC Nice",
+   "yeni": "PAOK FC",
+   "tarih": "2026-08-03",
+   "wikidata": "Q123863201"
+  },
+  {
+   "tm_id": 743386,
+   "ad": "Malick Fofana",
+   "eski": "Olympique Lyon",
+   "yeni": "Sunderland A.F.C.",
+   "tarih": "2026-09-01",
+   "wikidata": "Q113133054"
+  },
+  {
+   "tm_id": 229604,
+   "ad": "Gerónimo Rulli",
+   "eski": "Olympique Marseille",
+   "yeni": "Manchester City F.C.",
+   "tarih": "2026-08-01",
+   "wikidata": "Q5879014"
+  },
+  {
+   "tm_id": 575998,
+   "ad": "Leonardo Balerdi",
+   "eski": "Olympique Marseille",
+   "yeni": "AS Roma",
+   "tarih": "2026-08-01",
+   "wikidata": "Q50233588"
+  },
+  {
+   "tm_id": 532826,
+   "ad": "Mason Greenwood",
+   "eski": "Olympique Marseille",
+   "yeni": "Fenerbahçe Istanbul",
+   "tarih": "2026-07-01",
+   "wikidata": "Q61986758"
+  },
+  {
+   "tm_id": 58864,
+   "ad": "Pierre-Emerick Aubameyang",
+   "eski": "Olympique Marseille",
+   "yeni": "Deportivo de A Coruña",
+   "tarih": "2026-07-01",
+   "wikidata": "Q44977"
+  },
+  {
+   "tm_id": 420213,
+   "ad": "Quinten Timber",
+   "eski": "Olympique Marseille",
+   "yeni": "Crystal Palace F.C.",
+   "tarih": "2026-09-01",
+   "wikidata": "Q53996595"
+  },
+  {
+   "tm_id": 708265,
+   "ad": "Bradley Barcola",
+   "eski": "Paris Saint-Germain",
+   "yeni": "Liverpool F.C.",
+   "tarih": "2026-08-01",
+   "wikidata": "Q99670930"
+  },
+  {
+   "tm_id": 550550,
+   "ad": "Gonçalo Ramos",
+   "eski": "Paris Saint-Germain",
+   "yeni": "AC Milan",
+   "tarih": "2026-06-30",
+   "wikidata": "Q60621615"
+  },
+  {
+   "tm_id": 557149,
+   "ad": "Kang-in Lee",
+   "eski": "Paris Saint-Germain",
+   "yeni": "Atlético Madrid",
+   "tarih": "2026-07-01",
+   "wikidata": "Q16174734"
+  },
+  {
+   "tm_id": 807386,
+   "ad": "Conrad Harder",
+   "eski": "RB Leipzig",
+   "yeni": "RC Strasbourg Alsace",
+   "tarih": "2026-09-01",
+   "wikidata": "Q122618590"
+  },
+  {
+   "tm_id": 787912,
+   "ad": "El Chadaille Bitshiabu",
+   "eski": "RB Leipzig",
+   "yeni": "Galatasaray S.K.",
+   "tarih": "2026-09-01",
+   "wikidata": "Q110211916"
+  },
+  {
+   "tm_id": 57071,
+   "ad": "Péter Gulácsi",
+   "eski": "RB Leipzig",
+   "yeni": "Villarreal CF",
+   "tarih": "2026-08-03",
+   "wikidata": "Q357507"
+  },
+  {
+   "tm_id": 1390649,
+   "ad": "Yan Diomande",
+   "eski": "RB Leipzig",
+   "yeni": "Real Madrid Club de Fútbol",
+   "tarih": "2026-08-06",
+   "wikidata": "Q133698867"
+  },
+  {
+   "tm_id": 344596,
+   "ad": "Malang Sarr",
+   "eski": "RC Lens",
+   "yeni": "Neom SC",
+   "tarih": "2026-07-22",
+   "wikidata": "Q26405823"
+  },
+  {
+   "tm_id": 316125,
+   "ad": "Ben Chilwell",
+   "eski": "RC Strasbourg Alsace",
+   "yeni": "Crystal Palace F.C.",
+   "tarih": "2026-09-01",
+   "wikidata": "Q21621029"
+  },
+  {
+   "tm_id": 655006,
+   "ad": "Diego Moreira",
+   "eski": "RC Strasbourg Alsace",
+   "yeni": "AC Milan",
+   "tarih": "2026-08-01",
+   "wikidata": "Q110616805"
+  },
+  {
+   "tm_id": 711980,
+   "ad": "Guéla Doué",
+   "eski": "RC Strasbourg Alsace",
+   "yeni": "Bayer 04 Leverkusen",
+   "tarih": "2026-09-01",
+   "wikidata": "Q116605365"
+  },
+  {
+   "tm_id": 660867,
+   "ad": "Julio Enciso",
+   "eski": "RC Strasbourg Alsace",
+   "yeni": "Ipswich Town F.C.",
+   "tarih": "2026-08-01",
+   "wikidata": "Q85872272"
+  },
+  {
+   "tm_id": 341264,
+   "ad": "Fran García",
+   "eski": "Real Madrid",
+   "yeni": "Real Betis Balompié",
+   "tarih": "2026-07-08",
+   "wikidata": "Q98872225"
+  },
+  {
+   "tm_id": 1057316,
+   "ad": "Franco Mastantuono",
+   "eski": "Real Madrid",
+   "yeni": "ACF Fiorentina",
+   "tarih": "2026-08-01",
+   "wikidata": "Q123289726"
+  },
+  {
+   "tm_id": 238266,
+   "ad": "Duje Caleta-Car",
+   "eski": "Real Sociedad",
+   "yeni": "US Sassuolo Calcio",
+   "tarih": "2026-09-01",
+   "wikidata": "Q17612806"
+  },
+  {
+   "tm_id": 121985,
+   "ad": "Juan Jesus",
+   "eski": "SSC Napoli",
+   "yeni": "Venezia F.C.",
+   "tarih": "2026-08-01",
+   "wikidata": "Q454910"
+  },
+  {
+   "tm_id": 96341,
+   "ad": "Romelu Lukaku",
+   "eski": "SSC Napoli",
+   "yeni": "Fenerbahçe Istanbul",
+   "tarih": "2026-08-12",
+   "wikidata": "Q313316"
+  },
+  {
+   "tm_id": 40433,
+   "ad": "Alexis Sánchez",
+   "eski": "Sevilla FC",
+   "yeni": "CF Montréal",
+   "tarih": "2026-08-11",
+   "wikidata": "Q180553"
+  },
+  {
+   "tm_id": 212723,
+   "ad": "Djibril Sow",
+   "eski": "Sevilla FC",
+   "yeni": "Genoa CFC",
+   "tarih": "2026-08-01",
+   "wikidata": "Q27995699"
+  },
+  {
+   "tm_id": 676042,
+   "ad": "Juanlu Sánchez",
+   "eski": "Sevilla FC",
+   "yeni": "AFC Bournemouth",
+   "tarih": "2026-08-01",
+   "wikidata": "Q110164175"
+  },
+  {
+   "tm_id": 74294,
+   "ad": "Nemanja Gudelj",
+   "eski": "Sevilla FC",
+   "yeni": "Getafe CF",
+   "tarih": "2026-08-30",
+   "wikidata": "Q644989"
+  },
+  {
+   "tm_id": 1032280,
+   "ad": "Oso",
+   "eski": "Sevilla FC",
+   "yeni": "RC Strasbourg Alsace",
+   "tarih": "2026-08-01",
+   "wikidata": "Q123709305"
+  },
+  {
+   "tm_id": 73517,
+   "ad": "Ørjan Nyland",
+   "eski": "Sevilla FC",
+   "yeni": "RB Leipzig",
+   "tarih": "2026-08-01",
+   "wikidata": "Q869214"
+  },
+  {
+   "tm_id": 197747,
+   "ad": "Alessio Romagnoli",
+   "eski": "Società Sportiva Lazio S.p.A.",
+   "yeni": "Al Sadd Sports Club",
+   "tarih": "2026-09-03",
+   "wikidata": "Q795017"
+  },
+  {
+   "tm_id": 626913,
+   "ad": "Boulaye Dia",
+   "eski": "Società Sportiva Lazio S.p.A.",
+   "yeni": "Stade Rennais F.C.",
+   "tarih": "2026-09-01",
+   "wikidata": "Q57603663"
+  },
+  {
+   "tm_id": 618341,
+   "ad": "Mario Gila",
+   "eski": "Società Sportiva Lazio S.p.A.",
+   "yeni": "AC Milan",
+   "tarih": "2026-07-01",
+   "wikidata": "Q109255453"
+  },
+  {
+   "tm_id": 237662,
+   "ad": "Breel Embolo",
+   "eski": "Stade Rennais FC",
+   "yeni": "Atlanta United FC",
+   "tarih": "2026-08-01",
+   "wikidata": "Q15956282"
+  },
+  {
+   "tm_id": 1004301,
+   "ad": "Jérémy Jacquet",
+   "eski": "Stade Rennais FC",
+   "yeni": "Liverpool F.C.",
+   "tarih": "2026-07-01",
+   "wikidata": "Q124283398"
+  },
+  {
+   "tm_id": 485960,
+   "ad": "Lilian Brassier",
+   "eski": "Stade Rennais FC",
+   "yeni": "Eintracht Frankfurt",
+   "tarih": "2026-08-01",
+   "wikidata": "Q66095792"
+  },
+  {
+   "tm_id": 355915,
+   "ad": "Cristian Romero",
+   "eski": "Tottenham Hotspur",
+   "yeni": "Atlético Madrid",
+   "tarih": "2026-08-01",
+   "wikidata": "Q28058687"
+  },
+  {
+   "tm_id": 483348,
+   "ad": "Djed Spence",
+   "eski": "Tottenham Hotspur",
+   "yeni": "Inter Milan",
+   "tarih": "2026-08-15",
+   "wikidata": "Q56222532"
+  },
+  {
+   "tm_id": 286047,
+   "ad": "Guglielmo Vicario",
+   "eski": "Tottenham Hotspur",
+   "yeni": "Juventus FC",
+   "tarih": "2026-08-01",
+   "wikidata": "Q44083681"
+  },
+  {
+   "tm_id": 257455,
+   "ad": "João Palhinha",
+   "eski": "Tottenham Hotspur",
+   "yeni": "S.L. Benfica",
+   "tarih": "2026-08-01",
+   "wikidata": "Q16236952"
+  },
+  {
+   "tm_id": 263236,
+   "ad": "Kevin Danso",
+   "eski": "Tottenham Hotspur",
+   "yeni": "Sunderland A.F.C.",
+   "tarih": "2026-09-01",
+   "wikidata": "Q28868192"
+  },
+  {
+   "tm_id": 568693,
+   "ad": "Pape Matar Sarr",
+   "eski": "Tottenham Hotspur",
+   "yeni": "Juventus FC",
+   "tarih": "2026-09-01",
+   "wikidata": "Q104877690"
+  },
+  {
+   "tm_id": 487969,
+   "ad": "Randal Kolo Muani",
+   "eski": "Tottenham Hotspur",
+   "yeni": "Juventus FC",
+   "tarih": "2026-07-29",
+   "wikidata": "Q59655998"
+  },
+  {
+   "tm_id": 285323,
+   "ad": "Baptiste Santamaria",
+   "eski": "Valencia CF",
+   "yeni": "PAOK FC",
+   "tarih": "2026-07-13",
+   "wikidata": "Q17778052"
+  },
+  {
+   "tm_id": 298583,
+   "ad": "Eray Cömert",
+   "eski": "Valencia CF",
+   "yeni": "Torino FC",
+   "tarih": "2026-07-29",
+   "wikidata": "Q24052364"
+  },
+  {
+   "tm_id": 195778,
+   "ad": "Alexander Nübel",
+   "eski": "VfB Stuttgart",
+   "yeni": "Beşiktaş J.K.",
+   "tarih": "2026-07-08",
+   "wikidata": "Q20435178"
+  },
+  {
+   "tm_id": 948279,
+   "ad": "Chema Andrés",
+   "eski": "VfB Stuttgart",
+   "yeni": "Brighton & Hove Albion F.C.",
+   "tarih": "2026-09-01",
+   "wikidata": "Q127932393"
+  },
+  {
+   "tm_id": 346551,
+   "ad": "Kamil Grabara",
+   "eski": "VfL Wolfsburg",
+   "yeni": "Juventus FC",
+   "tarih": "2026-08-01",
+   "wikidata": "Q56441182"
+  },
+  {
+   "tm_id": 387106,
+   "ad": "Lovro Majer",
+   "eski": "VfL Wolfsburg",
+   "yeni": "AEK Athens F.C.",
+   "tarih": "2026-07-29",
+   "wikidata": "Q28137504"
+  },
+  {
+   "tm_id": 746910,
+   "ad": "Mohamed Amoura",
+   "eski": "VfL Wolfsburg",
+   "yeni": "OGC Nice",
+   "tarih": "2026-08-01",
+   "wikidata": "Q107285723"
+  }
+ ]
+}
