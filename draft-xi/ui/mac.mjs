@@ -78,7 +78,8 @@ const RATE = { 1: 22 * FAST, 2: 44 * FAST }; // match seconds per real second
 function start() {
   const home = bestXI($('kA').value), away = bestXI($('kB').value);
   if (home.name === away.name) { away.name += ' (2)'; }
-  const seed = (Date.now() % 100000) + 1;
+  const fixed = Number(new URLSearchParams(location.search).get('tohum')); // test aid: ?tohum=N replays the same match
+  const seed = fixed > 0 ? fixed : (Date.now() % 100000) + 1;
   const r = simulateMatch({ home, away, seed, tacticHome: tactic($('pA').value), tacticAway: tactic($('pB').value), frames: true });
   const byId = Object.fromEntries(HAVUZ.map((p) => [p.id, p]));
   const short = (id) => { const n = byId[id]?.name || id; const parts = n.split(' '); return parts.length > 1 && n.length > 14 ? parts.slice(-1)[0] : n; };
@@ -101,7 +102,7 @@ function start() {
   $('sA').textContent = '0'; $('sB').textContent = '0'; $('dk').textContent = "1'"; $('spiker').innerHTML = '';
   $('kur').hidden = true; $('son').hidden = true; $('mac').hidden = false;
   $('oynat').textContent = '❚❚'; $('hiz').textContent = '1x';
-  enterFrame(0); renderStats(); requestAnimationFrame(loop);
+  initMotion(); enterFrame(0); renderStats(); requestAnimationFrame(loop);
 }
 
 // ── visual director: the engine's positions plus what a viewer expects to see ──
@@ -140,27 +141,61 @@ const frameDur = (k) => {
   if (!b) return Infinity;
   return Math.min(2.2, Math.max(0.14 / FAST, (b.t - a.t) / 10 / RATE[M.speed]));
 };
-const ease = (u) => u * u * (3 - 2 * u);
 
-function place(k, u) {
-  const f = M.r.frames, a = f[k], b = f[Math.min(k + 1, f.length - 1)];
-  const A = M.display[k], B = M.display[Math.min(k + 1, f.length - 1)];
+// ── motion: continuous, individual, physical ─────────────────────────────────────────────────────────
+// Each event gives a target position. The target slides linearly between events (no stop at every event);
+// every player follows his target like a critically damped spring with his own response (faster players react
+// quicker), a top speed, and his own slow off-ball drift. Result: smooth, individual movement, no block shifting.
+const VMAX = 1150;   // pitch units (dm) per real second at 1x — playback compresses match time
+function initMotion() {
+  const byId = Object.fromEntries(HAVUZ.map((p) => [p.id, p]));
+  M.motion = M.r.teams.map((tm, side) => tm.lineup.map((pl, i) => {
+    const p0 = M.display[0][side][i] || [W / 2, L / 2];
+    const pac = byId[pl.id]?.attrs?.pac ?? 70;
+    const rnd = (n) => { const x = Math.sin((i + 1) * 12.9898 + (side + 1) * 78.233 + n * 37.719) * 43758.5453; return x - Math.floor(x); };
+    return { x: p0[0], y: p0[1], vx: 0, vy: 0, w: (3.6 + pac / 20) * (0.85 + rnd(6) * 0.3), f1: 0.11 + rnd(1) * 0.18, f2: 0.09 + rnd(2) * 0.16,
+      ph1: rnd(3) * 6.28, ph2: rnd(4) * 6.28, amp: 9 + rnd(5) * 10 };
+  }));
+}
+
+function place(k, u, dt) {
+  const f = M.r.frames, last = f.length - 1, a = f[k], b = f[Math.min(k + 1, last)];
+  const A = M.display[k], B = M.display[Math.min(k + 1, last)];
+  const ev = M.r.events[k];
+  // ball: straight for passes with a slight slow-down at the end, plain glide otherwise
+  const passing = ['pass', 'through', 'cross', 'pass_bad', 'clear'].includes(ev.type);
+  const eb = passing ? 1 - (1 - u) * (1 - u) : u;
+  const bx = a.b[0] + (b.b[0] - a.b[0]) * eb, by = a.b[1] + (b.b[1] - a.b[1]) * eb;
+  M.layers.ball.setAttribute('cx', sx(bx)); M.layers.ball.setAttribute('cy', sy(by));
   const now = performance.now() / 1000;
+  const step = Math.min(dt || 0.016, 0.05);
   for (let side = 0; side < 2; side++) M.discs[side].forEach((d, i) => {
     const p = A[side][i], q = B[side][i] || p;
     if (!p) { d.g.style.display = 'none'; return; }
     d.g.style.display = '';
-    // players near the ball react first, far ones a little later: no block movement
-    const dist = Math.hypot(p[0] - a.b[0], p[1] - a.b[1]);
-    const delay = reduced() ? 0 : Math.min(0.35, dist / 1800);
-    const ui = reduced() ? 1 : ease(Math.max(0, Math.min(1, (u - delay) / (1 - delay))));
-    // gentle idle sway (not for the ball holder, who is glued to the ball)
-    const sway = reduced() || dist < 20 ? [0, 0] : [Math.sin(now * 0.9 + i * 1.7 + side) * 7, Math.cos(now * 0.7 + i * 2.3 + side * 2) * 5];
-    d.g.setAttribute('transform', `translate(${sx(p[0] + (q[0] - p[0]) * ui + sway[0])},${sy(p[1] + (q[1] - p[1]) * ui + sway[1])})`);
+    const m = M.motion[side][i];
+    let tx = p[0] + (q[0] - p[0]) * u, ty = p[1] + (q[1] - p[1]) * u;
+    const nearBall = Math.hypot(tx - bx, ty - by) < 40;
+    if (!nearBall) { // own slow wandering, different for every player
+      tx += Math.sin(now * m.f1 * 6.28 + m.ph1) * m.amp;
+      ty += Math.sin(now * m.f2 * 6.28 + m.ph2) * m.amp * 0.8;
+    }
+    if (reduced()) { m.x = tx; m.y = ty; m.vx = m.vy = 0; }
+    else {
+      // the man on the ball stays with it; others react the slower the farther they are from the ball
+      const dBall = Math.hypot(m.x - bx, m.y - by);
+      const w = nearBall ? 14 : m.w * (1.25 - Math.min(0.7, dBall / 1100));
+      for (let t = 0; t < step; t += 0.01) { // small sub-steps keep the spring stable
+        const h = Math.min(0.01, step - t);
+        m.vx += (w * w * (tx - m.x) - 2 * w * m.vx) * h;
+        m.vy += (w * w * (ty - m.y) - 2 * w * m.vy) * h;
+        const v = Math.hypot(m.vx, m.vy), vmax = VMAX * (M.speed === 2 ? 1.6 : 1);
+        if (v > vmax) { m.vx *= vmax / v; m.vy *= vmax / v; }
+        m.x += m.vx * h; m.y += m.vy * h;
+      }
+    }
+    d.g.setAttribute('transform', `translate(${sx(m.x).toFixed(1)},${sy(m.y).toFixed(1)})`);
   });
-  const e = reduced() ? 1 : ease(u);
-  const bx = a.b[0] + (b.b[0] - a.b[0]) * e, by = a.b[1] + (b.b[1] - a.b[1]) * e;
-  M.layers.ball.setAttribute('cx', sx(bx)); M.layers.ball.setAttribute('cy', sy(by));
 }
 
 function passLine(k) {
@@ -242,7 +277,8 @@ async function goal(k, ev) {
     for (let i = from; i < k; i++) {
       const t0 = performance.now();
       await new Promise((res) => {
-        const step = (now) => { const u = Math.min(1, (now - t0) / 650); place(i, u); if (u < 1) requestAnimationFrame(step); else res(); };
+        let prev = t0;
+        const step = (now) => { const u = Math.min(1, (now - t0) / 650); place(i, u, (now - prev) / 1000); prev = now; if (u < 1) requestAnimationFrame(step); else res(); };
         requestAnimationFrame(step);
       });
     }
@@ -264,9 +300,13 @@ function loop(now) {
   if (M.playing && !M.busy) {
     const dt = (now - M.last) / 1000;
     M.u += dt / frameDur(M.k);
-    while (M.u >= 1 && M.k < M.r.frames.length - 1 && !M.busy) { const carry = M.u - 1; enterFrame(M.k + 1); M.u = M.busy ? 0 : carry * 0.5; }
+    while (M.u >= 1 && M.k < M.r.frames.length - 1 && !M.busy) {
+      const carry = (M.u - 1) * frameDur(M.k);            // leftover real time, carried over in full (no hitch)
+      enterFrame(M.k + 1);
+      M.u = M.busy ? 0 : carry / frameDur(M.k);
+    }
     if (M.k >= M.r.frames.length - 1) return finish();
-    if (!M.busy) place(M.k, Math.min(1, M.u));
+    if (!M.busy) place(M.k, Math.min(1, M.u), dt);
   }
   // holder label follows the ball
   M.layers.label.setAttribute('x', M.layers.ball.getAttribute('cx'));
