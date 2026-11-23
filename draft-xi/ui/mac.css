@@ -34,7 +34,10 @@ select{width:100%;min-height:44px;border-radius:10px;border:1px solid var(--line
 .paneller{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr) minmax(0,.8fr);gap:10px;padding:10px}
 .panel{min-height:0;background:var(--s1);border:1px solid var(--line);border-radius:14px;overflow:hidden;position:relative}
 .saha-panel{display:grid;place-items:center;padding:6px;background:radial-gradient(ellipse at center,rgba(186,255,24,.06),transparent 70%),var(--s1)}
-#saha{width:100%;height:100%;max-height:100%}
+#saha{display:block;width:100%;height:100%}
+.saha-panel{padding:0;display:block}
+.ozet{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font:900 34px/1 system-ui;letter-spacing:.06em;color:#fff;text-shadow:0 0 18px rgba(0,0,0,.8);pointer-events:none}
+.puan small{display:block;color:var(--mut);font-size:11.5px;font-weight:400}
 .spiker-panel{overflow-y:auto}
 #spiker{list-style:none;margin:0;padding:8px 12px;display:flex;flex-direction:column;gap:6px}
 #spiker li{display:grid;grid-template-columns:36px minmax(0,1fr);gap:6px;font-size:14px;color:var(--fg);animation:gir .35s ease}
@@ -66,8 +69,8 @@ select{width:100%;min-height:44px;border-radius:10px;border:1px solid var(--line
 #istAc{display:none}
 #istAc,#atla{flex:1 1 0}
 @media (min-width:900px){#atla{flex:0 0 220px;margin-left:auto}}
-.kutlama{position:absolute;inset:0;display:grid;place-content:center;gap:6px;text-align:center;background:radial-gradient(circle,rgba(186,255,24,.25),rgba(7,11,10,.85) 70%);animation:gir .3s ease}
-.kutlama b{font:900 64px/1 system-ui;letter-spacing:.06em;color:var(--a);text-shadow:0 0 24px rgba(186,255,24,.7)}
+.kutlama{position:absolute;left:10px;right:10px;top:10px;display:grid;place-content:center;gap:2px;padding:8px 12px;text-align:center;border-radius:12px;background:linear-gradient(90deg,rgba(7,11,10,.2),rgba(7,11,10,.82),rgba(7,11,10,.2));animation:gir .3s ease;pointer-events:none}
+.kutlama b{font:900 44px/1 system-ui;letter-spacing:.06em;color:var(--a);text-shadow:0 0 24px rgba(186,255,24,.7)}
 .kutlama.b b{color:var(--b);text-shadow:0 0 24px rgba(47,224,255,.7)}
 .kutlama span{font:700 16px/1.2 system-ui}
 .anlik{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);padding:8px 16px;border-radius:10px;background:rgba(7,11,10,.85);border:2px solid var(--b);color:#fff;font:900 26px/1 system-ui;letter-spacing:.08em;animation:gir .25s ease;pointer-events:none}

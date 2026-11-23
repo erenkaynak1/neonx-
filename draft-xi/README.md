@@ -14,6 +14,11 @@ Run the lab: `node scripts/draft_xi_lab.mjs 400` (add `--meta` for the meta hunt
 
 Not wired into the site yet; the live Draft XI still runs on `neon-xi-core.html`.
 
+## Maç ekranı · 2D motor (2026-11-23)
+
+`ui/mac.mjs` + `ui/mac/` beş katman (kullanıcının 2D maç motoru istemi): **durum** (olay kaydından oyun durumu, takım/oyuncu istatistikleri, önemli anlar), **taktik** (diziliş + taktik ayarlarından her oyuncunun hedefi: düz savunma çizgisi, bloğun topa kayması, pres + kademe + pas yolu kapatma, son üçte birde markaj; hücumda stoperlerin açılması, kanat genişliği, bindiren bek, pas üçgenleri, savunma arkasına koşu, ortada ceza sahası doldurma; duran toplar ve gol sevinci), **fizik** (oyuncu hız/ivme Hız'dan, yorgunluk; top yerden/havadan/şut/yuvarlanma; sabit 50 Hz), **yönetmen** (motor olayı → aksiyon: pas, orta, şut + kaleci, müdahale, faul, duran top), **çizim** (canvas, adımlar arası ara değer). Sonucu motor belirler; ekran onu oynatır. Oyuncu görevleri kullanılmaz (davranış mevkiden).
+Önemli anlar tam oynanır (1x: maç saniyesi ×1,6), aralarda saat ilerler; maç 1x'te ~2,5–4 dk. Test yardımcıları: `?tohum=N`, `?an=N`, `?hizli`. CI: `scripts/test_draft_xi_mac.mjs` (istatistikler = motor, goller özette).
+
 ## Motor 0.4 · gol seviyesi ve plan dengesi (2026-11-23)
 
 Hedef (kullanıcı): eşit kadrolar, iki takım da dengeli → maç başına ~3 gol; açık oyunda 5–6, savunmacı maçta 1–2 gol olabilir; hiçbir hazır plan baskın değil.

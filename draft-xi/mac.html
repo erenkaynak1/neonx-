@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Draft XI · Maç</title>
 <meta name="robots" content="noindex">
-<link rel="stylesheet" href="./ui/mac.css?v=3">
+<link rel="stylesheet" href="./ui/mac.css?v=5">
 </head>
 <body>
 <main id="app">
@@ -29,7 +29,8 @@
     </header>
     <div class="paneller" id="paneller">
       <div class="panel saha-panel">
-        <svg id="saha" viewBox="-20 -20 720 1090" role="img" aria-label="Saha"></svg>
+        <canvas id="saha" role="img" aria-label="Saha: maçın önemli anları"></canvas>
+        <div class="ozet" id="ozet" hidden></div>
         <div class="kutlama" id="kutlama" hidden><b>GOL!</b><span id="kutlamaAd"></span></div>
         <div class="tekrar" id="tekrar" hidden>TEKRAR</div>
         <div class="anlik" id="anlik" hidden></div>
@@ -52,6 +53,6 @@
     <button id="tekrarOyna" class="go" type="button">YENİ MAÇ</button>
   </section>
 </main>
-<script type="module" src="./ui/mac.mjs?v=10"></script>
+<script type="module" src="./ui/mac.mjs?v=11"></script>
 </body>
 </html>
