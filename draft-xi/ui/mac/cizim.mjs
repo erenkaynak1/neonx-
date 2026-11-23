@@ -87,27 +87,36 @@ export function createRenderer(canvas, W, info) {
       if (age > (c.life || 0.9)) { cues.splice(n, 1); continue; }
       const k = 1 - age / (c.life || 0.9);
       if (c.kind === 'line') {
-        ctx.strokeStyle = c.color; ctx.globalAlpha = 0.55 * k; ctx.lineWidth = Math.max(1.5, u * 0.3); ctx.setLineDash(c.dash ? [6, 6] : []);
-        ctx.beginPath(); ctx.moveTo(sx(c.a.x), sy(c.a.y)); ctx.lineTo(sx(c.b.x), sy(c.b.y)); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+        const ax = sx(c.a.x), ay = sy(c.a.y), bx2 = sx(c.b.x), by2 = sy(c.b.y);
+        const gr = ctx.createLinearGradient(ax, ay, bx2, by2);
+        gr.addColorStop(0, 'rgba(255,255,255,0)'); gr.addColorStop(1, c.color);
+        ctx.strokeStyle = gr; ctx.globalAlpha = 0.6 * k; ctx.lineWidth = Math.max(1.4, u * 0.26); ctx.lineCap = 'round'; ctx.setLineDash(c.dash ? [5, 6] : []);
+        ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx2, by2); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1; ctx.lineCap = 'butt';
       } else if (c.kind === 'net') {
-        const top = c.y > 50, gx = sx(50 - GOAL_HALF), gw = (2 * GOAL_HALF / 100) * box.w, depth = 2 * u;
-        ctx.strokeStyle = `rgba(255,255,255,${0.9 * k})`; ctx.lineWidth = 2;
-        const gy = top ? sy(100) - depth : sy(0);
-        for (let i = 0; i <= 8; i++) { const wob = Math.sin(age * 30 + i) * 3 * k; ctx.beginPath(); ctx.moveTo(gx + (gw * i) / 8, gy); ctx.lineTo(gx + (gw * i) / 8 + wob, gy + depth); ctx.stroke(); }
+        // the goal at that end, drawn outwards from its line (the view turns round at half time)
+        const line = sy(c.y > 50 ? 100 : 0), out = line < box.y + box.h / 2 ? -1 : 1;
+        const gx = sx(50 - GOAL_HALF), gw = (2 * GOAL_HALF / 100) * box.w, depth = 2 * u;
+        ctx.strokeStyle = `rgba(255,255,255,${0.85 * k})`; ctx.lineWidth = 1.6;
+        for (let i = 0; i <= 8; i++) {
+          const wob = Math.sin(age * 22 + i * 1.3) * 2.4 * k * k, bulge = out * depth * (1 + 0.35 * k * Math.sin((Math.PI * i) / 8));
+          ctx.beginPath(); ctx.moveTo(gx + (gw * i) / 8, line); ctx.lineTo(gx + (gw * i) / 8 + wob, line + bulge); ctx.stroke();
+        }
       } else if (c.kind === 'ring') {
-        ctx.strokeStyle = c.color; ctx.globalAlpha = k; ctx.lineWidth = 2.5;
-        ctx.beginPath(); ctx.arc(sx(c.x), sy(c.y), u * (1.5 + age * 6), 0, Math.PI * 2); ctx.stroke(); ctx.globalAlpha = 1;
+        // a duel: one thin ring that opens quickly and fades (ease-out), no flashing
+        const e = 1 - (1 - age / (c.life || 0.9)) ** 3;
+        ctx.strokeStyle = c.color; ctx.globalAlpha = 0.7 * k; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.arc(sx(c.x), sy(c.y), u * (1.2 + e * 2.6), 0, Math.PI * 2); ctx.stroke(); ctx.globalAlpha = 1;
       }
     }
     const ball = W.ball;
     const bx = ball.px + (ball.x - ball.px) * alpha, by = ball.py + (ball.y - ball.py) * alpha, bz = ball.pz + (ball.z - ball.pz) * alpha;
     // players (back to front so nearer ones overlap correctly)
     const list = [];
-    for (let s = 0; s < 2; s++) W.bodies[s].forEach((b, i) => { if (b) list.push({ b, s, i }); });
-    list.sort((p, q) => q.b.y - p.b.y);
+    for (let s = 0; s < 2; s++) W.bodies[s].forEach((b, i) => { if (b) list.push({ b, s, i, x: sx(b.px + (b.x - b.px) * alpha), y: sy(b.py + (b.y - b.py) * alpha) }); });
+    list.sort((p, q) => p.y - q.y);
     const r = Math.max(5.5, u * 1.05);
-    for (const { b, s, i } of list) {
-      const x = sx(b.px + (b.x - b.px) * alpha), y = sy(b.py + (b.y - b.py) * alpha);
+    const own = ball.owner;
+    for (const { b, s, i, x, y } of list) {
       const sp = Math.hypot(b.vx * MX, b.vy * MY);
       const st = b.state;
       let scale = 1, lift = 0;
@@ -115,6 +124,12 @@ export function createRenderer(canvas, W, info) {
       // shadow
       ctx.fillStyle = 'rgba(0,0,0,.35)';
       ctx.beginPath(); ctx.ellipse(x + lift * 0.4, y + r * 0.55 + lift * 0.2, r * 0.95, r * 0.5, 0, 0, Math.PI * 2); ctx.fill();
+      // the man on the ball: a thin ring in his team's colour on the grass, so he stands out in a crowd
+      if (own && own[0] === s && own[1] === i) {
+        const pulse = 0.5 + 0.5 * Math.sin(now / 260);
+        ctx.strokeStyle = COL[s]; ctx.globalAlpha = 0.55 + 0.3 * pulse; ctx.lineWidth = Math.max(1.2, r * 0.16);
+        ctx.beginPath(); ctx.ellipse(x, y + r * 0.35, r * 1.75, r * 1.05, 0, 0, Math.PI * 2); ctx.stroke(); ctx.globalAlpha = 1;
+      }
       // running feet: two small marks alternating with the stride
       if (sp > 0.6 && !st.startsWith('dive') && st !== 'slide') {
         const F = fa(b.face), ph = Math.sin(b.stride * 3.2), fx = -Math.sin(F), fy = -Math.cos(F);
@@ -160,9 +175,16 @@ export function createRenderer(canvas, W, info) {
     ctx.beginPath(); ctx.ellipse(ground.x + zpx * 0.28, ground.y + 1, u * 0.62 * sh + 1, u * 0.36 * sh + 0.6, 0, 0, Math.PI * 2); ctx.fill();
     if (ball.trail.length > 2) {
       // the flight path drawn at its height; a faint line down to the ground marks the highest point
-      ctx.strokeStyle = 'rgba(255,255,255,.4)'; ctx.lineWidth = Math.max(1, u * 0.22); ctx.beginPath();
-      ball.trail.forEach(([tx, ty, tz], n) => { const X = sx(tx) + tz * u * H * 0.28, Y = sy(ty) - tz * u * H; if (n) ctx.lineTo(X, Y); else ctx.moveTo(X, Y); });
-      ctx.stroke();
+      // thin and faint at the tail, thicker and brighter near the ball
+      const T = ball.trail, n = T.length, w0 = Math.max(1.2, u * 0.34);
+      let X0 = sx(T[0][0]) + T[0][2] * u * H * 0.28, Y0 = sy(T[0][1]) - T[0][2] * u * H;
+      ctx.lineCap = 'round'; ctx.strokeStyle = '#fff';
+      for (let j = 1; j < n; j++) {
+        const [tx, ty, tz] = T[j], X = sx(tx) + tz * u * H * 0.28, Y = sy(ty) - tz * u * H, f = j / (n - 1);
+        ctx.globalAlpha = 0.05 + 0.45 * f; ctx.lineWidth = w0 * (0.25 + 0.75 * f);
+        ctx.beginPath(); ctx.moveTo(X0, Y0); ctx.lineTo(X, Y); ctx.stroke(); X0 = X; Y0 = Y;
+      }
+      ctx.globalAlpha = 1; ctx.lineCap = 'butt';
     }
     if (bz > 0.8) {
       ctx.strokeStyle = 'rgba(255,255,255,.18)'; ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
@@ -178,7 +200,7 @@ export function createRenderer(canvas, W, info) {
     // name of the man on the ball
     const owner = ball.owner && W.bodies[ball.owner[0]][ball.owner[1]];
     if (owner) {
-      const x = sx(owner.x), y = sy(owner.y) + r * 2.2;
+      const x = sx(owner.px + (owner.x - owner.px) * alpha), y = sy(owner.py + (owner.y - owner.py) * alpha) + r * 2.2;
       ctx.font = `700 ${Math.max(10, Math.round(r * 1.05))}px system-ui,sans-serif`; ctx.textAlign = 'center';
       ctx.lineWidth = 3.5; ctx.strokeStyle = 'rgba(7,11,10,.9)'; ctx.strokeText(info.name(ball.owner), x, y);
       ctx.fillStyle = '#fff'; ctx.fillText(info.name(ball.owner), x, y);
