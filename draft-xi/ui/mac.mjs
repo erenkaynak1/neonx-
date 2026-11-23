@@ -6,12 +6,12 @@ import { FORMATIONS } from '../engine/formations.mjs?v=2';
 import { simulateMatch } from '../engine/match.mjs?v=6';
 import { createSpiker, dakika } from './spiker.mjs?v=3';
 import { PLANLAR, planTaktik } from './ortak.mjs?v=3';
-import { buildState, createStats, highlights } from './mac/durum.mjs?v=1';
-import { makeBody, makeBall, stepBody, stepBall, DT } from './mac/fizik.mjs?v=1';
-import { basePositions } from './mac/taktik.mjs?v=1';
-import { fromRel } from './mac/saha.mjs?v=1';
-import { createDirector } from './mac/yonetmen.mjs?v=1';
-import { createRenderer } from './mac/cizim.mjs?v=1';
+import { buildState, createStats, highlights } from './mac/durum.mjs?v=2';
+import { makeBody, makeBall, stepBody, stepBall, DT } from './mac/fizik.mjs?v=2';
+import { basePositions } from './mac/taktik.mjs?v=2';
+import { fromRel } from './mac/saha.mjs?v=2';
+import { createDirector } from './mac/yonetmen.mjs?v=2';
+import { createRenderer } from './mac/cizim.mjs?v=2';
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -81,12 +81,13 @@ function start(given) {
   const komik = $('komik').checked;
   try { localStorage.setItem('nxDraftKomik', komik ? '1' : '0'); } catch { /* ignore */ }
   M = { r, S, W, seed, short, names: S.names, stats: createStats(S), spiker: createSpiker(r, short, S.names, { jokes: komik, seed }),
-    reel: highlights(S, { budget: 700 }), hi: -1, mode: 'cut', cutT: 0, cutFrom: 0, playing: true, speed: 1, score: [0, 0],
+    reel: highlights(S, { budget: 560 }), hi: -1, mode: 'cut', cutT: 0, cutFrom: 0, playing: true, speed: 1, score: [0, 0],
     acc: 0, last: performance.now(), dim: 0, recent: [], shown: -1 };
   M.render = createRenderer($('saha'), W, {
     number: (s, i) => String(NUM[S.lineup[s][i].slot] ?? ''),
     name: ([s, i]) => short(S.lineup[s][i].id),
     get dim() { return M.dim; },
+    get flip() { return M.flip; },
   });
   M.dir = createDirector(S, W, { event: (k) => onEvent(k, false), goal: onGoal, cue: onCue, reshape: () => { W.base = S.lineup.map((list, s) => basePositions(r.teams[s].formation, list)); } });
   $('adA').textContent = M.names[0]; $('adB').textContent = M.names[1];
@@ -127,6 +128,7 @@ function onEvent(k, silent) {
   for (let j = M.shown + 1; j <= k; j++) {
     const ev = M.S.E[j];
     M.stats.add(j);
+    if (ev.type === 'half_time') M.flip = true;   // teams change ends
     if (ev.team != null) { M.recent.push(M.S.poss[j]); if (M.recent.length > 40) M.recent.shift(); }
     const lines = M.spiker(ev, j).reverse();
     for (const line of lines) if (!(silent || j < k) || line.kind !== 'build') addLine(ev, line);
@@ -201,7 +203,7 @@ function loop(now) {
       if (!M.cutPlayed && (u >= 0.5 || M.hi === 0)) playHighlight();
       if (u >= 1) { M.dim = 0; M.mode = 'play'; $('ozet').hidden = true; }
     } else {
-      M.acc += real * RATE[M.speed] * FAST;
+      M.acc += real * RATE[M.speed] * FAST * (M.dir.hurry ? 2.6 : 1);   // dead time runs faster
       let n = 0;
       while (M.acc >= DT && n < 400) {
         M.acc -= DT; n++;

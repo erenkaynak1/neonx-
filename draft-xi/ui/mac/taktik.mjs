@@ -12,7 +12,7 @@
 //   counter plans, crosses fill near post, far post and the penalty spot.
 // Player roles are not used: behaviour follows the position the player plays (the user's decision).
 import { FORMATIONS, zonePoint } from '../../engine/formations.mjs?v=2';
-import { MX, MY, clamp, lerp, toRel, fromRel, onPitch, metres, GOAL_HALF, BOX } from './saha.mjs?v=1';
+import { MX, MY, clamp, lerp, toRel, fromRel, onPitch, metres, GOAL_HALF, BOX } from './saha.mjs?v=2';
 
 const DEF = new Set(['CB', 'LB', 'RB', 'LWB', 'RWB']), FULL = new Set(['LB', 'RB', 'LWB', 'RWB']);
 const WIDE = new Set(['LM', 'RM', 'LW', 'RW']), MID = new Set(['DM', 'CM', 'AM']);
@@ -220,8 +220,12 @@ function setPiece(W, P, side, out, ball) {
     const m = pl.mevki, base = B[i].def;
     let p;
     if (s.kind === 'kickoff') {
-      const r = { u: base.u, v: Math.min(base.v * 0.85, 47) };
-      p = fromRel(side, r.u, r.v);
+      // both sides in their own half, in shape; the side not kicking off stays outside the centre circle
+      let v = clamp(base.v * 0.82, 4, 46.5);
+      let u = base.u;
+      if (m === 'GK') v = 4;
+      if (!att) { const d = Math.hypot((u - 50) * MX, (v - 50) * MY); if (d < 10.5) { const k = 10.5 / Math.max(d, 0.1); v = 50 - (50 - v) * k; u = 50 + (u - 50) * k; if (v > 47) v = 47; } }
+      p = fromRel(side, u, v);
     } else if (s.kind === 'goalkick') {
       const r = att ? (m === 'GK' ? { u: 50, v: 5 } : m === 'CB' ? { u: base.u < 50 ? 30 : 70, v: 15 } : { u: base.u, v: clamp(base.v + 6, 18, 66) })
         : { u: base.u, v: clamp(base.v * 0.9 + 8, 20, 72) };
@@ -259,6 +263,10 @@ function setPiece(W, P, side, out, ball) {
     out[i] = { ...p };
   });
   if (s.taker && s.taker[0] === side && bodies[s.taker[1]]) out[s.taker[1]] = { ...s.at, mode: 'run', free: true };
+  if (s.kind === 'kickoff' && att) {   // a second player next to the ball (a striker if there is one)
+    const partner = L.map((pl, i) => ({ i, m: pl.mevki })).filter((x) => bodies[x.i] && x.m !== 'GK' && !(s.taker && s.taker[1] === x.i)).sort((a, b) => (b.m === 'ST') - (a.m === 'ST') || B[b.i].def.v - B[a.i].def.v)[0];
+    if (partner) out[partner.i] = { ...fromRel(side, 50 + 3.5, 48.8), mode: 'jog', free: true };
+  }
   void T;
 }
 
