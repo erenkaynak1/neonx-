@@ -1,7 +1,6 @@
 // Draft XI — tactics screen between the draft and the match (design doc 9.3: formation, settings and numbers only,
-// no advice). One-tap plans fill every setting; each setting is fine-tuned with chips. Every option that sets up a
-// specific match-up shows the gap between our and the opponent's relevant attributes (average of the players
-// involved); the pitch draws what the focused setting changes. Bots keep the plan of their draft style.
+// no advice). One-tap plans fill every setting; each setting is fine-tuned with chips. The selected option shows the
+// relevant attributes of our and the opponent's players in the match-up it sets up; the pitch draws what the focused setting changes. Bots keep the plan of their draft style.
 import { HAVUZ_BY_ID } from '../data/havuz.mjs?v=3';
 import { FORMATIONS, zonePoint, PITCH_W, PITCH_L, COL_W } from '../engine/formations.mjs?v=2';
 import { TAKTIK, PLANLAR, planTaktik, hangiPlan, esc } from './ortak.mjs?v=2';
@@ -98,9 +97,7 @@ function sayilar(k, v, t) {
   const m = f(TEAMS[t].xi, TEAMS[1 - t].xi);
   const side = (list) => list.map(([ad, xs, keys]) => ({ ad, xs, keys: keys.map((a) => [a, xs.length ? Math.round(mean(xs.map((x) => x.p.attrs[a]))) : null]) }));
   const biz = side(m.biz), rakip = side(m.rakip);
-  const avg = (s) => mean(s.flatMap((g) => g.keys.map(([, n]) => n)).filter((n) => n != null));
-  const a = avg(biz), b = avg(rakip);
-  return { biz, rakip, fark: a == null || b == null ? null : Math.round(a - b) };
+  return { biz, rakip };
 }
 
 // ── state ──
@@ -108,7 +105,6 @@ const order = [0, 1].filter((t) => !TEAMS[t].bot);
 let step = 0, focus = 'direction';
 const tac = TEAMS.map((tm) => (tm.bot ? planTaktik(tm.plan || 'dengeli') : planTaktik('dengeli')));
 
-const fmtFark = (n) => (n == null ? '' : `<i class="fk ${n > 0 ? 'art' : n < 0 ? 'eks' : ''}">${n > 0 ? '+' : ''}${n}</i>`);
 function render() {
   const t = order[step], tm = TEAMS[t], T = tac[t], plan = hangiPlan(T);
   document.body.dataset.taraf = t ? 'b' : 'a';
@@ -123,8 +119,8 @@ function render() {
     const head = s.grup !== grup ? `${grup ? '</div>' : ''}<h2>${s.grup === 'TOPLA' ? 'TOP BİZDEYKEN' : s.grup === 'GEÇİŞ' ? 'GEÇİŞ' : 'TOP RAKİPTEYKEN'}</h2><div class="kart">` : '';
     grup = s.grup;
     const v = T[s.k], sec = s.o.find((o) => o[0] === v), n = sayilar(s.k, v, t);
-    const chips = s.o.map(([id, ad]) => { const f = sayilar(s.k, id, t)?.fark; return `<button type="button" class="cip" data-k="${s.k}" data-v="${id}" aria-pressed="${id === v}">${ad}${fmtFark(f)}</button>`; }).join('');
-    const detay = n ? `<div class="sayi"><div class="yan biz"><em>BİZ</em>${n.biz.map(grupHtml).join('')}</div><div class="fark-kutu">${n.fark == null ? '—' : fmtFark(n.fark)}<small>ort. fark</small></div><div class="yan rakip"><em>RAKİP</em>${n.rakip.map(grupHtml).join('')}</div></div>` : '';
+    const chips = s.o.map(([id, ad]) => `<button type="button" class="cip" data-k="${s.k}" data-v="${id}" aria-pressed="${id === v}">${ad}</button>`).join('');
+    const detay = n ? `<div class="sayi"><div class="yan biz"><em>BİZ</em>${n.biz.map(grupHtml).join('')}</div><div class="yan rakip"><em>RAKİP</em>${n.rakip.map(grupHtml).join('')}</div></div>` : '';
     return `${head}<section class="ayar${focus === s.k ? ' odak' : ''}" data-ayar="${s.k}"><div class="ayar-ust"><b>${s.ad}</b></div>
       <div class="cipler" role="group" aria-label="${s.ad}">${chips}</div><p class="etki">${esc(sec[2])}</p>${detay}</section>`;
   }).join('') + '</div>';
