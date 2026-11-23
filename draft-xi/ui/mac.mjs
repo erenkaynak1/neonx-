@@ -7,11 +7,11 @@ import { simulateMatch } from '../engine/match.mjs?v=6';
 import { createSpiker, dakika } from './spiker.mjs?v=3';
 import { PLANLAR, planTaktik } from './ortak.mjs?v=3';
 import { buildState, createStats, highlights } from './mac/durum.mjs?v=2';
-import { makeBody, makeBall, stepBody, stepBall, DT } from './mac/fizik.mjs?v=2';
+import { makeBody, makeBall, stepBody, stepBall, DT } from './mac/fizik.mjs?v=3';
 import { basePositions } from './mac/taktik.mjs?v=2';
 import { fromRel } from './mac/saha.mjs?v=2';
 import { createDirector } from './mac/yonetmen.mjs?v=2';
-import { createRenderer } from './mac/cizim.mjs?v=2';
+import { createRenderer } from './mac/cizim.mjs?v=3';
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -154,6 +154,7 @@ function onEvent(k, silent) {
         const a = M.S.F[j].b, b = (M.S.F[j + 1] || M.S.F[j]).b;
         M.render.cue({ kind: 'line', a, b, color: ev.team === 0 ? 'rgba(186,255,24,.9)' : 'rgba(47,224,255,.9)', dash: ev.type === 'pass_bad', life: 1.1 });
       }
+      if (['tackle', 'press_win', 'aerial'].includes(ev.type)) M.render.cue({ kind: 'ring', x: M.W.ball.x, y: M.W.ball.y, color: ev.team === 0 ? '#baff18' : '#2fe0ff', life: 0.6 });
       if (ev.type === 'foul' && ev.card === 'red') toast('KIRMIZI KART', 'red');
       else if (ev.type === 'foul' && ev.card === 'yellow') toast('SARI KART', 'yel');
     }
