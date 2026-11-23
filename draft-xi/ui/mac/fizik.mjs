@@ -53,9 +53,10 @@ export function makeBall() {
  * Start a flight from the ball's position to `to` lasting `dur` match seconds.
  * kind: 'ground' (passes along the floor, slowing down), 'air' (lofted: long ball, cross, clearance), 'shot', 'drive'.
  */
-export function kick(ball, to, dur, kind = 'ground', h = 0, onEnd = null) {
+// z1: height the ball is at when the flight ends (a cross met by a head); the flight starts at the ball's own height
+export function kick(ball, to, dur, kind = 'ground', h = 0, onEnd = null, z1 = 0) {
   globalThis.__kickLog?.push({ x: ball.x, y: ball.y, z: ball.z, kind, state: ball.state }); // test aid (touch audit)
-  ball.flight = { fx: ball.x, fy: ball.y, tx: to.x, ty: to.y, t: 0, dur: Math.max(0.15, dur), kind, h, onEnd };
+  ball.flight = { fx: ball.x, fy: ball.y, fz: ball.z || 0, z1, tx: to.x, ty: to.y, t: 0, dur: Math.max(0.15, dur), kind, h, onEnd };
   ball.owner = null; ball.state = 'flight'; ball.trail = []; ball.hop = null;
 }
 export function stepBall(ball, dt, bodies) {
@@ -75,22 +76,25 @@ export function stepBall(ball, dt, bodies) {
     // ground: decelerating roll (arrives at 45 % of its start speed); air / shot: straight with height
     const s = f.kind === 'ground' ? u + 0.55 * u * (1 - u) : f.kind === 'drive' ? u + 0.25 * u * (1 - u) : u;
     ball.x = f.fx + (f.tx - f.fx) * s; ball.y = f.fy + (f.ty - f.fy) * s;
-    ball.z = f.kind === 'air' ? 4 * f.h * u * (1 - u) : f.kind === 'shot' ? f.h * Math.sin(Math.PI * u) : 0;
+    const base = f.fz + (f.z1 - f.fz) * u;   // from the height it was struck at to the height it is met at
+    ball.z = f.kind === 'air' ? base + 4 * f.h * u * (1 - u) : f.kind === 'shot' ? base + f.h * Math.sin(Math.PI * u) : f.fz * (1 - u) * (1 - u);
     if (ball.trail.length > 14) ball.trail.shift();
     ball.trail.push([ball.x, ball.y, ball.z]);
     if (u >= 1) {
       const vx = (f.tx - f.fx) / f.dur, vy = (f.ty - f.fy) / f.dur;
       // hand over to the roll at the speed the flight ended with (ground 45 %, drive 75 %); a lofted ball bounces
-      const keep = f.kind === 'ground' ? 0.45 : f.kind === 'drive' ? 0.75 : 0.35;
-      ball.flight = null; ball.state = 'roll'; ball.vx = vx * keep; ball.vy = vy * keep; ball.z = 0;
-      ball.hop = f.kind === 'air' && f.h > 2 ? { t: 0, dur: 0.18 + Math.min(f.h, 12) * 0.03, h: Math.min(f.h, 12) * 0.1 } : null;
+      const keep = f.z1 > 0.2 ? 0.1 : f.kind === 'ground' ? 0.45 : f.kind === 'drive' ? 0.75 : 0.35;   // met in the air: it drops where it is
+      ball.flight = null; ball.state = 'roll'; ball.vx = vx * keep; ball.vy = vy * keep; ball.z = f.z1;
+      // a ball still in the air drops to the grass; a lofted ball that lands bounces once
+      ball.hop = f.z1 > 0.2 ? { t: 0, dur: 0.3 + 0.15 * f.z1, h: 0.15, z0: f.z1 }
+        : f.kind === 'air' && f.h > 2 ? { t: 0, dur: 0.18 + Math.min(f.h, 12) * 0.03, h: Math.min(f.h, 12) * 0.1, z0: 0 } : null;
       f.onEnd?.();
     }
   } else if (ball.state === 'roll') {
     const k = Math.exp(-1.6 * dt);
     ball.vx *= k; ball.vy *= k;
     ball.x += ball.vx * dt; ball.y += ball.vy * dt;
-    if (ball.hop) { const H = ball.hop; H.t += dt; const u = H.t / H.dur; if (u >= 1) { ball.hop = null; ball.z = 0; } else ball.z = 4 * H.h * u * (1 - u); }
+    if (ball.hop) { const H = ball.hop; H.t += dt; const u = H.t / H.dur; if (u >= 1) { ball.hop = null; ball.z = 0; } else ball.z = H.z0 * (1 - u) + 4 * H.h * u * (1 - u); }
     if (Math.hypot(ball.vx * MX, ball.vy * MY) < 0.2 && !ball.hop) ball.state = 'dead';
   } else if (ball.hop || ball.z) { ball.hop = null; ball.z = 0; }
 }

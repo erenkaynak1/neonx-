@@ -7,11 +7,11 @@ import { simulateMatch } from '../engine/match.mjs?v=6';
 import { createSpiker, dakika } from './spiker.mjs?v=3';
 import { PLANLAR, planTaktik } from './ortak.mjs?v=3';
 import { buildState, createStats, highlights } from './mac/durum.mjs?v=2';
-import { makeBody, makeBall, stepBody, stepBall, DT } from './mac/fizik.mjs?v=3';
+import { makeBody, makeBall, stepBody, stepBall, DT } from './mac/fizik.mjs?v=4';
 import { basePositions } from './mac/taktik.mjs?v=2';
 import { fromRel } from './mac/saha.mjs?v=2';
-import { createDirector } from './mac/yonetmen.mjs?v=2';
-import { createRenderer } from './mac/cizim.mjs?v=3';
+import { createDirector } from './mac/yonetmen.mjs?v=3';
+import { createRenderer } from './mac/cizim.mjs?v=4';
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -102,6 +102,7 @@ function start(given) {
     name: ([s, i]) => short(S.lineup[s][i].id),
     get dim() { return M.dim; },
     get flip() { return M.flip; },
+    get focus() { return camFocus(); },
   });
   M.dir = createDirector(S, W, { event: (k) => onEvent(k, false), goal: onGoal, cue: onCue, reshape: () => { W.base = S.lineup.map((list, s) => basePositions(r.teams[s].formation, list)); } });
   $('adA').textContent = M.names[0]; $('adB').textContent = M.names[1];
@@ -166,6 +167,22 @@ function onEvent(k, silent) {
   const sh = M.recent.length ? M.recent.filter((x) => x === 0).length / M.recent.length : 0.5;
   $('baski').style.width = `${Math.round(sh * 100)}%`;
   if (k % 6 === 0 || silent || M.mode === 'text') renderStats();   // commentary only: the stats are on screen, keep them live
+}
+// camera: zoom in on the goalmouth while a cross, corner, header or shot is on, and for the goal celebration
+const FOCUS = new Set(['shot', 'goal', 'save', 'miss', 'post', 'block', 'cross', 'aerial', 'corner', 'fk_wall', 'keeper_rush']);
+function camFocus() {
+  if (!M || M.mode !== 'play' || reduced()) return null;
+  const E = M.S.E, k = M.W.k;
+  let on = false, close = !!M.dir?.ctl?.celebrate;
+  for (let j = Math.max(0, k - 1); j <= Math.min(E.length - 1, k + 2); j++) {
+    if (FOCUS.has(E[j].type)) on = true;
+    if (j >= k && ['shot', 'goal', 'save', 'post', 'fk_wall'].includes(E[j].type)) close = true;
+  }
+  if (!on && !close) return null;
+  const b = M.W.ball;
+  // towards the goal being attacked: frame the ball with the goal in view
+  const goalY = b.y > 50 ? 100 : 0;
+  return { x: 50 + (b.x - 50) * 0.6, y: b.y + (goalY - b.y) * 0.35, z: close ? 1.75 : 1.4 };
 }
 function scoreGoal(ev) {
   if (M.scored?.has(ev.t + ':' + ev.p)) return;
