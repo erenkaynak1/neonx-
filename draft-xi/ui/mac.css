@@ -58,7 +58,7 @@ select{width:100%;min-height:44px;border-radius:10px;border:1px solid var(--line
 .ayar input{width:20px;height:20px;accent-color:var(--a)}
 @keyframes gir{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
 .ist-panel{padding:12px;overflow-y:auto}
-.ist-panel h2,.son h2{font:800 13px/1 system-ui;letter-spacing:.16em;color:var(--mut);margin:0 0 10px}
+.son h2{font:800 13px/1 system-ui;letter-spacing:.16em;color:var(--mut);margin:0 0 10px}
 .st{display:grid;grid-template-columns:3ch minmax(0,1fr) 3ch;gap:8px;align-items:center;font-size:13px;margin-bottom:9px;font-variant-numeric:tabular-nums}
 .st span:last-child{text-align:right}
 .st .bar{grid-column:1/-1;display:flex;height:5px;border-radius:3px;overflow:hidden;background:var(--s2);margin-top:-4px}
@@ -84,7 +84,6 @@ select{width:100%;min-height:44px;border-radius:10px;border:1px solid var(--line
   .paneller{grid-template-columns:minmax(0,2.1fr) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);gap:8px;padding:8px}
   .saha-panel{grid-column:1;grid-row:1;aspect-ratio:68/105;max-height:62dvh;width:100%}
   .ist-panel{grid-column:2;grid-row:1;padding:8px 8px 4px;overflow-y:auto;max-height:62dvh;align-self:stretch}
-  .ist-panel h2{font-size:10px;margin-bottom:6px;letter-spacing:.12em}
   .ist-panel .st{grid-template-columns:auto minmax(0,1fr) auto;gap:4px;font-size:11px;margin-bottom:5px}
   .ist-panel .st em{font-size:9.5px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .ist-panel .st em .uzun{display:none}.ist-panel .st em .kisa{display:inline}
@@ -134,8 +133,27 @@ select{width:100%;min-height:44px;border-radius:10px;border:1px solid var(--line
   .mac.yalniz-spiker .ist-panel .st{font-size:12px}
   .mac.yalniz-spiker .ist-panel .st em{font-size:11px}
   .mac.yalniz-spiker .ist-panel .st em .uzun{display:inline}.mac.yalniz-spiker .ist-panel .st em .kisa{display:none}
-  .mac.yalniz-spiker .ist-panel h2{display:none}
   .mac.yalniz-spiker #ist{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:14px}
   .mac.yalniz-spiker #ist .st{margin-bottom:6px;font-size:12px}
   .mac.yalniz-spiker #istAc{display:none}
+}
+
+/* panels: soft cards instead of hard frames; the pitch carries its own neon edge */
+.paneller .panel{background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.008) 40%),#0b1013;border:0;border-radius:16px;
+  box-shadow:0 10px 30px rgba(0,0,0,.35),inset 0 0 0 1px rgba(255,255,255,.05)}
+.paneller .saha-panel{background:radial-gradient(ellipse at 50% 40%,rgba(186,255,24,.07),transparent 65%),#070b0a;box-shadow:none}
+.panel-baslik{display:flex;align-items:center;gap:8px;margin:0;padding:10px 12px 8px;font:800 11px/1 system-ui;letter-spacing:.18em;color:var(--mut);
+  position:sticky;top:0;z-index:1;background:linear-gradient(180deg,#0e1417 70%,rgba(14,20,23,0))}
+.panel-baslik i{width:6px;height:6px;border-radius:50%;background:var(--a);box-shadow:0 0 8px var(--a)}
+.spiker-panel .panel-baslik i{animation:canli 1.6s ease-in-out infinite}
+@keyframes canli{50%{opacity:.35}}
+.ist-panel{padding:0 12px 10px}
+.ist-panel .panel-baslik{padding-left:0;padding-right:0;margin-bottom:4px}
+#spiker{padding-top:2px}
+#spiker li{padding:4px 0;border-bottom:1px solid rgba(255,255,255,.035)}
+#spiker li:last-child{border-bottom:0}
+@media (max-width:899px){
+  .ist-panel{padding:0 7px 4px}
+  .ist-panel .panel-baslik{font-size:9.5px;letter-spacing:.14em;padding:8px 0 6px;gap:6px}
+  .spiker-panel .panel-baslik{padding:9px 12px 6px}
 }

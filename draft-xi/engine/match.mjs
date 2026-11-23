@@ -6,7 +6,7 @@
 import { makeRng, prob, bForBase, combineTactics, weighted, hash, pickWeighted } from './core.mjs';
 import { FORMATIONS, zonePoint, PITCH_W, PITCH_L, COL_W, ROW_L } from './formations.mjs';
 
-export const ENGINE_VERSION = '0.4.0';
+export const ENGINE_VERSION = '0.4.1';
 
 // k: milli-logit per attribute point (14.1)
 const K = { duel: 85, air: 110, short: 54, long: 43, shot: 85, cross: 43 };
@@ -492,6 +492,8 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     else if (wing) opts = [['short', 40], ['dribble', 17], ['cross', 40], [z.row === 6 ? 'shotIn' : 'shotOut', 3]];
     else opts = [['short', 64], ['dribble', 14], ['shotOut', 6], ['through', 16]];
     if (h.mevki === 'GK') opts = [['short', 70], ['long', 30]];
+    // 0.4.1: nobody shoots from more than 30 m (long shots came from 35–53 m); the carrier drives on instead
+    if (dist(h.cur, goalPt(side)) > 300) opts = opts.map(([n, w]) => (n === 'shotOut' ? ['carry', w] : [n, w]));
     // frequency effects (0.4) combine like point effects (14.4): the strongest boost counts in full, the next at half,
     // then a quarter …, capped at ×3; reducing factors multiply. (Fast tempo + through-ball finishing + a counter used to
     // multiply the through ball by ×8.) Short passing: ×2 in build-up, ×1.2 in the final third (it crowded out shots).

@@ -35,7 +35,8 @@ export function createRenderer(canvas, W, info) {
     c.width = canvas.width; c.height = canvas.height;
     const g = c.getContext('2d');
     g.scale(dpr, dpr);
-    g.fillStyle = '#071209'; g.fillRect(0, 0, cw, ch);
+    g.clearRect(0, 0, cw, ch);
+    g.shadowColor = 'rgba(186,255,24,.25)'; g.shadowBlur = 18; g.fillStyle = '#0e3119'; g.fillRect(box.x, box.y, box.w, box.h); g.shadowBlur = 0;
     for (let i = 0; i < 12; i++) { g.fillStyle = i % 2 ? '#0e3119' : '#11391d'; g.fillRect(box.x, box.y + (i * box.h) / 12, box.w, box.h / 12 + 0.5); }
     g.strokeStyle = 'rgba(236,255,228,.55)'; g.lineWidth = Math.max(1.2, unit() * 0.14);
     g.strokeRect(box.x, box.y, box.w, box.h);
@@ -76,6 +77,7 @@ export function createRenderer(canvas, W, info) {
   function draw(alpha) {
     if (!pitch) resize();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(pitch, 0, 0);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     const now = performance.now(), u = unit();
@@ -148,20 +150,30 @@ export function createRenderer(canvas, W, info) {
       ctx.fillText(info.number(s, i), x, y - lift + r * 0.05);
       if (st === 'kick') { ctx.strokeStyle = 'rgba(255,255,255,.8)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(x, y, r * 1.5, 0, Math.PI * 2); ctx.stroke(); }
     }
-    // ball: shadow on the ground, the ball raised by its height
+    // ball: depth is shown three ways — the ball rises above its shadow, grows as it comes up, and the shadow
+    // shrinks and fades the higher it goes (a lofted ball is unmistakable)
     const ground = { x: sx(bx), y: sy(by) };
-    const zpx = bz * u * 0.9;
-    ctx.fillStyle = 'rgba(0,0,0,.4)';
-    ctx.beginPath(); ctx.ellipse(ground.x + zpx * 0.35, ground.y + zpx * 0.15 + 1, u * 0.5, u * 0.3, 0, 0, Math.PI * 2); ctx.fill();
+    const H = 1.55;                                        // screen lift per metre of height (in pitch-metre units)
+    const zpx = bz * u * H;
+    const sh = 1 / (1 + bz * 0.22);                        // shadow scale: 1 on the ground, smaller in the air
+    ctx.fillStyle = `rgba(0,0,0,${0.5 * sh + 0.1})`;
+    ctx.beginPath(); ctx.ellipse(ground.x + zpx * 0.28, ground.y + 1, u * 0.62 * sh + 1, u * 0.36 * sh + 0.6, 0, 0, Math.PI * 2); ctx.fill();
     if (ball.trail.length > 2) {
-      ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = Math.max(1, u * 0.25); ctx.beginPath();
-      ball.trail.forEach(([tx, ty, tz], n) => { const X = sx(tx), Y = sy(ty) - tz * u * 0.9; if (n) ctx.lineTo(X, Y); else ctx.moveTo(X, Y); });
+      // the flight path drawn at its height; a faint line down to the ground marks the highest point
+      ctx.strokeStyle = 'rgba(255,255,255,.4)'; ctx.lineWidth = Math.max(1, u * 0.22); ctx.beginPath();
+      ball.trail.forEach(([tx, ty, tz], n) => { const X = sx(tx) + tz * u * H * 0.28, Y = sy(ty) - tz * u * H; if (n) ctx.lineTo(X, Y); else ctx.moveTo(X, Y); });
       ctx.stroke();
     }
-    const br = Math.max(3, u * (0.55 + bz * 0.05));
+    if (bz > 0.8) {
+      ctx.strokeStyle = 'rgba(255,255,255,.18)'; ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
+      ctx.beginPath(); ctx.moveTo(ground.x + zpx * 0.28, ground.y); ctx.lineTo(ground.x, ground.y - zpx); ctx.stroke(); ctx.setLineDash([]);
+    }
+    const br = Math.max(3, u * (0.55 + Math.min(bz, 14) * 0.085));
     ctx.globalAlpha = ball.fresh > 0 ? 1 - ball.fresh / 0.45 : 1;   // a new ball for a restart fades in
+    if (bz > 1.5) { ctx.shadowColor = 'rgba(255,255,255,.65)'; ctx.shadowBlur = Math.min(16, bz * 1.4); }
     ctx.fillStyle = '#fff'; ctx.strokeStyle = DARK; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.arc(ground.x, ground.y - zpx, br, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.shadowBlur = 0;
     ctx.globalAlpha = 1;
     // name of the man on the ball
     const owner = ball.owner && W.bodies[ball.owner[0]][ball.owner[1]];
