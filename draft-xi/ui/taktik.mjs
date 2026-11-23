@@ -102,12 +102,16 @@ function sayilar(k, v, t) {
 
 // ── state ──
 const order = [0, 1].filter((t) => !TEAMS[t].bot);
-let step = 0, focus = 'direction';
+let step = 0, focus = 'direction', view = 'plan';
 const tac = TEAMS.map((tm) => (tm.bot ? planTaktik(tm.plan || 'dengeli') : planTaktik('dengeli')));
 
 function render() {
   const t = order[step], tm = TEAMS[t], T = tac[t], plan = hangiPlan(T);
   document.body.dataset.taraf = t ? 'b' : 'a';
+  $('planEkran').hidden = view !== 'plan'; $('ince').hidden = view !== 'ince';
+  $('inceBtn').textContent = view === 'plan' ? 'İNCE AYAR' : '← HAZIR PLANLAR';
+  $('hazir').textContent = order.length > 1 && step === 0 ? 'HAZIR · SIRA OYUNCU 2' : 'MAÇA ÇIK';
+  if (view === 'plan') { planRender(); return; }
   $('baslik').innerHTML = `TAKTİK · <span>${esc(tm.name)}</span>`;
   $('alt').textContent = `${tm.formation} · rakip: ${TEAMS[1 - t].name} (${TEAMS[1 - t].formation})`;
   $('planlar').innerHTML = PLANLAR.map(([id, ad, s]) => {
@@ -124,7 +128,6 @@ function render() {
     return `${head}<section class="ayar${focus === s.k ? ' odak' : ''}" data-ayar="${s.k}"><div class="ayar-ust"><b>${s.ad}</b></div>
       <div class="cipler" role="group" aria-label="${s.ad}">${chips}</div><p class="etki">${esc(sec[2])}</p>${detay}</section>`;
   }).join('') + '</div>';
-  $('hazir').textContent = order.length > 1 && step === 0 ? 'HAZIR · SIRA OYUNCU 2' : 'MAÇA ÇIK';
   ciz();
 }
 const grupHtml = (g) => `<div class="g"><small>${esc(g.ad)}${g.xs.length ? ` · ${g.xs.map((x) => esc(x.p.name.split(' ').slice(-1)[0])).join(', ')}` : ''}</small>
@@ -209,6 +212,133 @@ function ciz() {
   $('sahaEtiket').textContent = `${s.ad}: ${s.o.find((o) => o[0] === v)[1]} · ${topsuz ? 'top rakipteyken' : 'top bizdeyken'}`;
 }
 
+// ── plan screen (first view): big pitch with the team's own players, the ball acting out the chosen plan ──
+const PLAN_METIN = {
+  dengeli: ['Her şey orta karar', 'Pas karışık, tempo dengeli, hat orta, pres orta.', 'Belirgin bir üstünlük de yok.'],
+  tikitaka: ['Kısa pas, topa sahip ol', 'Kısa pas, sabırlı tempo, yüksek hat, yoğun pres, ara pasıyla bitir.', 'Hattın arkası boş: hızlı forvete karşı tehlikeli.'],
+  kontra: ['Geride bekle, hızlı çık', 'Alçak hat, az pres, top kazanınca kontra, uzun pas, hızlı tempo.', 'Rakibe topu bırakırsın; uzaktan şuta açık.'],
+  kanat: ['İki kanattan orta', 'Hücum yönü kanatlar, bitiriş orta, bekler öne çıkar.', 'Merkez boşalır; hava topu zayıf forvette verim düşer.'],
+  pres: ['Rakibi kendi alanında boğ', 'Yoğun pres, yüksek hat, sert müdahale, hızlı tempo.', 'Faul ve kart riski; pres kırılırsa arka boş.'],
+  otobus: ['Kaleyi kapat, puanı koru', 'Alçak hat, merkezi kapat, disiplinli oyun, kontra.', 'Az gol atarsın; ortalara açık kalırsın.'],
+};
+let anim = null, lastPos = {}; // running ball animation; dot positions of the previous render (for the glide)
+/** Player dots for a plan: attacking shape, or the defensive shape for the deep plans; the line moves with the plan. */
+function planNoktalar(xi, id, T) {
+  const deep = id === 'kontra' || id === 'otobus';
+  const shift = T.line === 'low' ? -110 : T.line === 'high' ? 120 : 0;
+  return xi.map((x) => {
+    const p = deep ? x.def : x.pos;
+    let y = p.y;
+    if (x.mevki !== 'GK') {
+      const back = DEFN.includes(x.mevki) || x.mevki === 'DM';
+      y += back ? shift : Math.trunc(shift * 0.6);
+      if (id === 'kanat' && ['LB', 'RB', 'LWB', 'RWB'].includes(x.mevki)) { // overlap: up the flank, just behind the wide man
+        const side = Math.sign(p.x - PITCH_W / 2), wide = xi.filter((o) => o !== x && o.mevki !== 'GK' && Math.sign(o.pos.x - PITCH_W / 2) === side && Math.abs(o.pos.x - PITCH_W / 2) > 150 && o.pos.y > p.y);
+        const cap = wide.length ? Math.min(...wide.map((o) => o.pos.y)) - 150 : y + 230;
+        y = Math.max(y, Math.min(y + 230, cap));
+      }
+      if (id === 'otobus' && G.mid([x]).length) y -= 60;
+    }
+    return { x, X: p.x, Y: Y(x.mevki === 'GK' ? p.y : Math.max(DEFN.includes(x.mevki) ? 250 : 340, Math.min(PITCH_L - 90, y))) };
+  });
+}
+/** Ball route for a plan from the team's own players: [x, y, ms to get there, colour]. Goal is at the top. */
+function planYol(pts, id) {
+  const by = (f) => pts.filter((p) => f(p.x));
+  const top = (list) => list.slice().sort((a, b) => a.Y - b.Y)[0];
+  const st = top(by((x) => x.mevki !== 'GK')) || pts[0];
+  const mids = by((x) => ['DM', 'CM', 'AM', 'LM', 'RM'].includes(x.mevki)).sort((a, b) => a.X - b.X);
+  const mid = mids[Math.floor(mids.length / 2)] || st;
+  const wideR = top(by((x) => ['RW', 'RM'].includes(x.mevki))) || top(by((x) => x.X > 470 && x.mevki !== 'GK')) || st;
+  const backR = by((x) => ['RB', 'RWB'].includes(x.mevki))[0] || wideR;
+  const wideL = top(by((x) => ['LW', 'LM'].includes(x.mevki))) || top(by((x) => x.X < 210 && x.mevki !== 'GK')) || st;
+  const cb = by((x) => x.mevki === 'CB').sort((a, b) => b.X - a.X)[0] || mid;
+  const goal = [PITCH_W / 2, 30];
+  const P = (p, ms, c) => [p.X, p.Y - 2, ms, c];
+  const W = '#ffffff', RED = '#ff6b7d';
+  if (id === 'tikitaka') {
+    const a = mids[0] || mid, b = mid, c = mids[mids.length - 1] || mid;
+    return [P(a, 0, W), P(b, 380, W), P(c, 380, W), P(wideR, 420, W), P(c, 380, W), P(b, 380, W), P(a, 380, W), P(b, 380, W), P(st, 520, W), [...goal, 420, W]];
+  }
+  if (id === 'kontra') return [P(cb, 0, W), P(cb, 500, W), P(st, 900, W), [st.X, st.Y - 170, 520, W], [...goal, 380, W]];
+  if (id === 'kanat') return [P(mid, 0, W), P(backR, 600, W), P(wideR, 600, W), [Math.min(PITCH_W - 50, wideR.X + 40), 190, 520, W], P(st, 560, W), [...goal, 380, W]];
+  if (id === 'pres') {
+    const rakip = [wideL.X + 30, Math.max(110, st.Y - 40)], kap = [st.X + 50, st.Y + 30];
+    return [[...rakip, 0, RED], [...kap, 800, RED], [...kap, 260, RED, 'halka'], [...kap, 140, W], P(st, 380, W), [...goal, 420, W]];
+  }
+  if (id === 'otobus') { const yy = Math.min(...pts.filter((p) => p.x.mevki !== 'GK').map((p) => p.Y)) - 70; return [[90, yy, 0, RED], [340, yy - 40, 1500, RED], [590, yy, 1500, RED], [340, yy - 40, 1500, RED], [90, yy, 1500, RED]]; }
+  return [P(mid, 0, W), P(mids[0] || mid, 700, W), P(wideL, 800, W), P(st, 800, W), [...goal, 480, W]]; // dengeli
+}
+function planRender() {
+  const t = order[step], tm = TEAMS[t], T = tac[t], plan = hangiPlan(T), id = plan || 'dengeli';
+  $('pBaslik').innerHTML = `TAKTİK · <span>${esc(tm.name)}</span>`;
+  $('pAlt').textContent = `${tm.formation} · rakip: ${TEAMS[1 - t].name}`;
+  $('pKartlar').innerHTML = PLANLAR.map(([pid, ad]) => `<button type="button" class="pk" data-plan="${pid}" aria-pressed="${plan === pid}"><b>${ad}</b><small>${PLAN_METIN[pid][0]}</small></button>`).join('');
+  const m = PLAN_METIN[id];
+  $('pOzet').innerHTML = plan
+    ? `<em>BU PLANDA</em><span>${m[1]}</span><span class="risk">Risk: ${m[2]}</span>`
+    : `<em>ÖZEL AYAR</em><span>${TAKTIK.map((s) => s.o.find((o) => o[0] === T[s.k])[1]).join(' · ')}</span><span class="risk">İnce ayarda kendi seçimlerini yaptın.</span>`;
+  $('pEtiket').textContent = plan ? PLANLAR.find((x) => x[0] === plan)[1].toLocaleUpperCase('tr') : 'ÖZEL';
+  planSaha(TEAMS[t].xi, id, T, !!plan);
+}
+function planSaha(xi, id, T, animate) {
+  const svg = $('pSaha'); svg.innerHTML = '';
+  const line = 'rgba(236,255,228,.35)';
+  for (let i = 0; i < 10; i++) el('rect', { x: 0, y: i * 105, width: PITCH_W, height: 105, fill: i % 2 ? '#0f3d20' : '#124726' }, svg);
+  el('rect', { x: 14, y: 14, width: PITCH_W - 28, height: PITCH_L - 28, fill: 'none', stroke: line, 'stroke-width': 4, rx: 4 }, svg);
+  el('line', { x1: 14, y1: PITCH_L / 2, x2: PITCH_W - 14, y2: PITCH_L / 2, stroke: line, 'stroke-width': 4 }, svg);
+  el('circle', { cx: PITCH_W / 2, cy: PITCH_L / 2, r: 88, fill: 'none', stroke: line, 'stroke-width': 4 }, svg);
+  for (const top of [true, false]) {
+    el('rect', { x: 140, y: top ? 14 : PITCH_L - 180, width: 400, height: 166, fill: 'none', stroke: line, 'stroke-width': 4 }, svg);
+    el('rect', { x: 250, y: top ? 14 : PITCH_L - 70, width: 180, height: 56, fill: 'none', stroke: line, 'stroke-width': 4 }, svg);
+  }
+  const pts = planNoktalar(xi, id, T);
+  const fx = el('g', {}, svg), pl = el('g', {}, svg);
+  const defs = el('defs', {}, svg), gr = el('linearGradient', { id: 'okg', x1: 0, y1: 1, x2: 0, y2: 0 }, defs);
+  el('stop', { offset: 0, 'stop-color': 'var(--tk)', 'stop-opacity': 0.08 }, gr); el('stop', { offset: 1, 'stop-color': 'var(--tk)', 'stop-opacity': 1 }, gr);
+  const ok = (x, y1, y2) => (y2 = Math.max(40, y2), el('rect', { x: x - 5, y: y2, width: 10, height: Math.max(0, y1 - y2), rx: 5, fill: 'url(#okg)', style: 'filter:drop-shadow(0 0 8px var(--tk))' }, fx));
+  const by = (f) => pts.filter((p) => f(p.x));
+  if (id === 'tikitaka') by((x) => ['CM', 'DM', 'AM'].includes(x.mevki)).slice(0, 2).forEach((p) => ok(p.X, p.Y - 30, p.Y - 230));
+  if (id === 'kontra') ok(PITCH_W / 2, 760, 230);
+  if (id === 'kanat') { ok(90, 690, 270); ok(PITCH_W - 90, 690, 270); }
+  if (id === 'pres') pts.slice().sort((a, b) => a.Y - b.Y).slice(0, 3).forEach((p) => ok(p.X, p.Y - 30, p.Y - 180));
+  if (id === 'otobus') { const yy = Math.max(...by((x) => DEFN.includes(x.mevki)).map((p) => p.Y)); el('rect', { x: 120, y: yy - 120, width: PITCH_W - 240, height: PITCH_L - 30 - (yy - 120), fill: 'var(--tk)', opacity: 0.07, rx: 18 }, fx); }
+  for (const { x, X, Y: yy } of pts) {
+    const o = lastPos[x.slot] || [X, yy];
+    const g = el('g', { class: 'nokta', style: `transform:translate(${o[0]}px,${o[1]}px)` }, pl);
+    requestAnimationFrame(() => requestAnimationFrame(() => { g.style.transform = `translate(${X}px,${yy}px)`; }));
+    lastPos[x.slot] = [X, yy];
+    el('circle', { r: 22, fill: x.mevki === 'GK' ? '#ffd23f' : 'var(--tk)', stroke: '#070b0a', 'stroke-width': 6, style: 'filter:drop-shadow(0 0 10px var(--tk))' }, g);
+    const n = el('text', { y: 54, 'text-anchor': 'middle', fill: '#f3f6f8', 'font-size': 24, 'font-weight': 700, stroke: '#070b0a', 'stroke-width': 6, 'paint-order': 'stroke' }, g);
+    const sn = x.p.name.split(' ').slice(-1)[0]; n.textContent = sn.length > 10 ? sn.slice(0, 9) + '.' : sn;
+  }
+  // ball: follows the plan's route in a loop (fades in at the start and out at the goal)
+  if (anim) cancelAnimationFrame(anim.raf);
+  anim = null;
+  if (!animate || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const route = planYol(pts, id), loop = id === 'otobus';
+  const ring = el('circle', { r: 26, fill: 'none', stroke: '#ff6b7d', 'stroke-width': 5, opacity: 0 }, svg);
+  const ball = el('circle', { r: 13, fill: '#fff', stroke: '#070b0a', 'stroke-width': 5, style: 'filter:drop-shadow(0 0 10px rgba(255,255,255,.8))' }, svg);
+  const times = []; let acc = 0; for (const r of route) { acc += r[2]; times.push(acc); }
+  const total = acc + (loop ? 0 : 700); // short pause at the goal
+  const ease = (u) => (u < 0.5 ? 2 * u * u : 1 - (-2 * u + 2) ** 2 / 2);
+  const t0 = performance.now();
+  const tick = (now) => {
+    const tt = (now - t0) % total;
+    let i = times.findIndex((v) => v >= tt); if (i < 0) i = route.length - 1;
+    const a = route[Math.max(0, i - 1)], b = route[i], seg = b[2] || 1, u = i === 0 ? 1 : ease(Math.min(1, (tt - (times[i] - seg)) / seg));
+    const x = a[0] + (b[0] - a[0]) * u, y = a[1] + (b[1] - a[1]) * u;
+    ball.setAttribute('cx', x); ball.setAttribute('cy', y); ball.setAttribute('fill', b[3]);
+    const op = loop ? 1 : tt < 250 ? tt / 250 : tt > acc ? Math.max(0, 1 - (tt - acc) / 400) : 1;
+    ball.setAttribute('opacity', op);
+    const h = route.findIndex((r) => r[4] === 'halka');
+    if (h >= 0) { const s0 = times[h] - route[h][2], k = (tt - s0) / 700; ring.setAttribute('cx', route[h][0]); ring.setAttribute('cy', route[h][1]); ring.setAttribute('opacity', k > 0 && k < 1 ? 1 - k : 0); ring.setAttribute('r', 20 + 50 * Math.max(0, Math.min(1, k))); }
+    anim.raf = requestAnimationFrame(tick);
+  };
+  anim = { raf: requestAnimationFrame(tick) };
+}
+$('pKartlar').addEventListener('click', (e) => { const b = e.target.closest('[data-plan]'); if (!b) return; tac[order[step]] = planTaktik(b.dataset.plan); render(); });
+
 // ── events ──
 $('planlar').addEventListener('click', (e) => { const b = e.target.closest('[data-plan]'); if (!b) return; tac[order[step]] = planTaktik(b.dataset.plan); render(); });
 $('ayarlar').addEventListener('click', (e) => {
@@ -222,6 +352,7 @@ $('hazir').addEventListener('click', () => {
   try { sessionStorage.setItem('draftxi-mac', JSON.stringify(out)); } catch { /* the match screen falls back to plan ids */ }
   location.href = './mac.html?draft=1';
 });
-$('devam').addEventListener('click', () => { $('devir').hidden = true; $('ekran').hidden = false; render(); window.scrollTo(0, 0); });
-window.__taktik = { TEAMS, tac, sayilar };
+$('inceBtn').addEventListener('click', () => { view = view === 'plan' ? 'ince' : 'plan'; render(); window.scrollTo(0, 0); });
+$('devam').addEventListener('click', () => { view = 'plan'; $('devir').hidden = true; $('ekran').hidden = false; render(); window.scrollTo(0, 0); });
+window.__taktik = { TEAMS, tac, sayilar, get view() { return view; } };
 render();
