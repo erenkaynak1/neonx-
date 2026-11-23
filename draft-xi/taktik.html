@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Draft XI · Taktik</title>
 <meta name="robots" content="noindex">
-<link rel="stylesheet" href="./ui/taktik.css?v=3">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;1,800&family=Barlow:wght@500;600&display=swap">
+<link rel="stylesheet" href="./ui/taktik.css?v=4">
 </head>
 <body>
 <main>
@@ -21,21 +23,40 @@
     <button id="devam" class="go" type="button">TAKTİĞİMİ KUR</button>
   </section>
 
-  <section id="ekran" class="ekran" aria-labelledby="baslik">
-    <header class="ust">
-      <div><h1 id="baslik"></h1><p id="alt" class="alt"></p></div>
-    </header>
-    <div class="planlar" id="planlar" role="group" aria-label="Hazır plan"></div>
-    <div class="izgara">
-      <figure class="saha-kutu">
-        <svg id="saha" viewBox="0 0 680 1050" role="img" aria-labelledby="sahaEtiket"></svg>
-        <figcaption id="sahaEtiket"></figcaption>
-      </figure>
-      <div id="ayarlar" class="ayarlar"></div>
+  <section id="ekran" class="ekran" aria-label="Taktik">
+    <div id="planEkran" class="plan-ekran">
+      <header class="p-ust">
+        <div><span class="ust-etiket">MAÇ ÖNCESİ</span><h1 id="pBaslik"></h1><p id="pAlt" class="alt"></p></div>
+      </header>
+      <div class="p-izgara">
+        <figure class="p-saha">
+          <svg id="pSaha" viewBox="0 0 680 1050" role="img" aria-label="Seçili planın sahadaki görünümü"></svg>
+          <span id="pEtiket" class="p-etiket"></span>
+        </figure>
+        <div class="p-sag">
+          <div class="p-baslik"><span>PLAN SEÇ</span><small>Tek dokunuşla bütün ayarlar</small></div>
+          <div id="pKartlar" class="p-kartlar" role="group" aria-label="Hazır plan"></div>
+          <div id="pOzet" class="p-ozet" aria-live="polite"></div>
+        </div>
+      </div>
     </div>
-    <div class="alt-bar"><button id="hazir" class="go" type="button">MAÇA ÇIK</button></div>
+
+    <div id="ince" hidden>
+      <header class="ust">
+        <div><h1 id="baslik"></h1><p id="alt" class="alt"></p></div>
+      </header>
+      <div class="planlar" id="planlar" role="group" aria-label="Hazır plan"></div>
+      <div class="izgara">
+        <figure class="saha-kutu">
+          <svg id="saha" viewBox="0 0 680 1050" role="img" aria-labelledby="sahaEtiket"></svg>
+          <figcaption id="sahaEtiket"></figcaption>
+        </figure>
+        <div id="ayarlar" class="ayarlar"></div>
+      </div>
+    </div>
+    <div class="alt-bar"><div class="alt-tuslar"><button id="inceBtn" class="ikincil" type="button">İNCE AYAR</button><button id="hazir" class="go" type="button">MAÇA ÇIK</button></div></div>
   </section>
 </main>
-<script type="module" src="./ui/taktik.mjs?v=3"></script>
+<script type="module" src="./ui/taktik.mjs?v=6"></script>
 </body>
 </html>
