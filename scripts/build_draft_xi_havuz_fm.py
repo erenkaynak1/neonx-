@@ -75,13 +75,19 @@ for p in pool:
         for i,k in enumerate(K):
             x=mix(p['attrs'],MAP[k]);x is not None and (pairs[k][0].append(x),pairs[k][1].append(r[11][i]))
 for k in pairs:pairs[k]=(sorted(pairs[k][0]),sorted(pairs[k][1]))
-def cal(k,x):
-    a,b=pairs[k]
-    if len(a)<15:return round(x)
-    lo,hi=bisect.bisect_left(a,x),bisect.bisect_right(a,x);q=(lo+hi)/2/len(a)
-    q=min(max(q,.01),.99);  # trim the extreme 1% so single outliers of the v2 pool are not copied
-    j=q*(len(b)-1);i0=int(j);f=j-i0;v=b[i0]*(1-f)+b[min(i0+1,len(b)-1)]*f
-    return max(1,min(99,round(v)))
+# scale: position-group equipercentile (scripts/draft_xi_fm_olcek.py); the pooled `pairs` above are no longer used
+import sys as _sys;_sys.path.insert(0,str(ROOT/'scripts'))
+from draft_xi_fm_olcek import Olcek,bilesik,GRP as OGRP
+_train=[]
+for p in pool:
+    r=find_v2(norm(p['name']))
+    if not r or bool(p.get('kaleci'))!=isgk(r):continue
+    gk=isgk(r);x=bilesik(p['attrs'],gk)
+    y={k:r[12][i] for i,k in enumerate(GK)} if gk else {k:r[11][i] for i,k in enumerate(K)}
+    if gk:y.update({'g_'+k:r[11][K.index(k)] for k in GK_OUT})
+    _train.append(('GK' if gk else OGRP.get(r[2][0],'ALL'),x,y))
+SC=Olcek(_train);CUR_G='ALL'
+def cal(k,x):return SC.convert(CUR_G,k,x)
 gk_med={k:round(st.median(r[11][i] for r in V2 if isgk(r))) for i,k in enumerate(K)}
 SUB={'Goalkeeper':'GK','Centre-Back':'CB','Left-Back':'LB','Right-Back':'RB','Defensive Midfield':'DM','Central Midfield':'CM','Attacking Midfield':'AM','Left Midfield':'LM','Right Midfield':'RM','Left Winger':'LW','Right Winger':'RW','Centre-Forward':'ST','Second Striker':'ST'}
 LIG={'premier-league':'Premier League','laliga':'La Liga','serie-a':'Serie A','bundesliga':'Bundesliga','ligue-1':'Ligue 1','super-lig':'Süper Lig','liga-portugal':'Liga Portugal','eredivisie':'Eredivisie','saudi-pro-league':'Saudi Pro League','major-league-soccer':'MLS','jupiler-pro-league':'Belçika Pro Lig','scottish-premiership':'İskoçya Premiership','super-league-1':'Yunanistan Süper Lig','superliga':'Danimarka Süper Lig','campeonato-brasileiro-serie-a':'Brasileirão','championship':'Championship','2-bundesliga':'2. Bundesliga','laliga2':'La Liga 2','serie-b':'Serie B','ligue-2':'Ligue 2'}
@@ -125,6 +131,7 @@ for p in pool:
         stats['kimliksiz']+=1;tah+=['positions','foot','height','weakFoot','nation','club','age']
         ident=dict(id='fm-'+re.sub(r'[^a-z0-9]+','-',key).strip('-'),positions=['GK'] if gkp else [],foot='R',wf=3,h=191 if gkp else 180,nation='',club='',league='',former=[],age=None)
     a=p['attrs'];att=[];g=None
+    CUR_G='GK' if gkp else OGRP.get((ident['positions'] or ['ALL'])[0],'ALL')
     if gkp:
         g=[]
         for k in GK:

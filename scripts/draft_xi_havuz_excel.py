@@ -247,7 +247,8 @@ for k, v in MEVKI.items():
     info.cell(r, 2, k).font = F(bold=True); info.cell(r, 3, v).font = F(); r += 1
 r += 1
 for t in ('Notlar',
-          '• Değerler FM 5–100 ölçeğinden, ortak oyuncular üzerinden oyunun 1–99 ölçeğine kalibre edildi.',
+          '• Değerler FM 5–100 ölçeğinden oyunun 1–99 ölçeğine mevki grubuna göre çevrildi: her özellik, iki havuzda da olan oyuncular üzerinden',
+          '  aynı gruptaki (stoper, bek, orta saha, hücum, forvet, kaleci) yüzdelik sırasına göre eşlenir; uçlar kırpılmaz (scripts/draft_xi_fm_olcek.py).',
           '• Kulüp, yaş, boy, ülke: Transfermarkt ana verisi ve mevcut havuzdan.',
           '• Mantık hataları açık verilerle ve tutarlılık kurallarıyla düzeltildi; her değişiklik ve nedeni "Düzeltmeler" sayfasında.',
           '• Kalecilerin saha özellikleri (bitiricilik vb.) oyunda kullanılmadığı için bu tabloda yok.',

@@ -16,6 +16,8 @@ Düzeltmeler (kaynak, kural):
  3. Kulüp ve lig: eski havuzda olmayan oyuncularda 2025-26 sezonunu bitirdiği kulüp (son kulüp maçı, araya giren
     kış transferi) ya da Wikidata yaz 2026 listesi. Veri setindeki 30 Haziran kiralık dönüşleri sayılmaz.
  4. Zayıf ayak: iki ayakla attığı goller (≥8 ayak golü; zayıf ayak payı <%8 → 2, <%18 → 3, <%35 → 4, üstü → 5).
+ 4b. Ölçek: FM'den gelen her satırın değerleri, düzeltilmiş mevkiyle, mevki gruplu dönüşümle yeniden hesaplanır
+    (scripts/draft_xi_fm_olcek.py). Bu hücre hücre kaydedilmez; yöntem Açıklama sayfasında.
  5. Özellik çelişkisi: her özellik, aynı mevki grubundaki oyunculardan öğrenilen modelle oyuncunun diğer 13
     özelliğinden tahmin edilir. Sapma ≥3,5 σ ise ikinci kaynağa (eski açık veri havuzu) bakılır: o da tahmini
     destekliyorsa değer ikisinin ortalaması olur; FM değerini destekliyorsa dokunulmaz; ikinci kaynak yoksa
@@ -44,6 +46,8 @@ SUB_POS = {'Goalkeeper': 'GK', 'Centre-Back': 'CB', 'Left-Back': 'LB', 'Right-Ba
            'Left Winger': 'LW', 'Right Winger': 'RW', 'Centre-Forward': 'ST', 'Second Striker': 'ST'}
 GRP = {'CB': 'CB', 'LB': 'FB', 'RB': 'FB', 'LWB': 'FB', 'RWB': 'FB', 'DM': 'M', 'CM': 'M', 'AM': 'A', 'LM': 'A', 'RM': 'A',
        'LW': 'A', 'RW': 'A', 'ST': 'ST'}
+# v2 keys sharing FM inputs (Passing/Vision/Technique/Decisions; Positioning/Anticipation)
+SHARED = {'sp': {'lp', 'vis'}, 'lp': {'sp', 'vis'}, 'vis': {'sp', 'lp'}, 'posn': {'mar'}, 'mar': {'posn'}}
 CLUB_NAMES = json.loads((ROOT / 'draft-xi/data/kulup-adlari.json').read_text())['adlar']
 _LEGAL = re.compile(r"(\b(Football Club|Futbol Club|Fußballclub|Fútbol Club|Futebol Clube|Calcio|S\.p\.A\.|A\.F\.C\.|F\.C\.|S\.K\.|J\.K\.|FC|CF|AFC|SC|SK|FK|AC|SV|CD|UD|SD|SFC)\b\.?)", re.I)
 
@@ -105,6 +109,7 @@ def main():
     import duckdb
     c = duckdb.connect(str(args.database), read_only=True)
     RAW = load_pool()  # [id, ad, mevkiler, ayak, zf, boy, ülke, kulüp, lig, eski, yaş, a[14], g[4]|null, kaynak, tahmini]
+    START = json.dumps(RAW, ensure_ascii=False)
     log = []
 
     def note(row, field, old, new, why, src):
@@ -301,6 +306,49 @@ def main():
         if 'weakFoot' in row[14]:
             row[14] = [x for x in row[14] if x != 'weakFoot']
 
+    # ── 4b. scale: FM values → v2 with the position-group conversion (uses the corrected positions) ──
+    sys.path.insert(0, str(ROOT / 'scripts'))
+    from draft_xi_fm_olcek import Olcek, bilesik, GRP as OGRP, GKO
+    subprocess.check_call([sys.executable, str(ROOT / 'scripts/fm_havuz_birlestir.py')], cwd=ROOT / 'draft-xi/data/fm-kaynak',
+                          stdout=subprocess.DEVNULL)
+    msrc = (ROOT / 'scripts/fm_havuz_birlestir.py').read_text(encoding='utf-8')
+    mns = {'__file__': str(ROOT / 'scripts/fm_havuz_birlestir.py')}
+    exec(compile(msrc[:msrc.index('pool={};log=[]')], 'fm_havuz_birlestir', 'exec'), mns)
+    fmn = {mns['norm'](p['name']): p for p in json.loads((ROOT / 'draft-xi/data/fm-kaynak/havuz.json').read_text(encoding='utf-8'))['oyuncular']}
+    fm_of = {}
+    for row in RAW:
+        p = fmn.get(mns['norm'](row[1]))
+        if p and bool(p.get('kaleci')) == (row[2] == ['GK']):
+            fm_of[row[0]] = bilesik(p['attrs'], row[2] == ['GK'])
+    train = []
+    for row in RAW:
+        x, o = fm_of.get(row[0]), OLD.get(row[0])
+        gk = row[2] == ['GK']
+        if not x or not o or (o[2] == ['GK']) != gk:
+            continue
+        y = {**{k: o[12][i] for i, k in enumerate(GKK)}, **{'g_' + k: o[11][K.index(k)] for k in GKO}} if gk else {k: o[11][i] for i, k in enumerate(K)}
+        train.append(('GK' if gk else OGRP[row[2][0]], x, y))
+    sc = Olcek(train)
+    for row in RAW:
+        x = fm_of.get(row[0])
+        if not x:
+            continue
+        if row[2] == ['GK']:
+            for i, k in enumerate(GKK):
+                v = sc.convert('GK', k, x[k])
+                if v is not None:
+                    row[12][i] = v
+            for k in GKO:
+                v = sc.convert('GK', 'g_' + k, x['g_' + k])
+                if v is not None:
+                    row[11][K.index(k)] = v
+        else:
+            for i, k in enumerate(K):
+                v = sc.convert(row[2][0], k, x[k])
+                if v is not None:
+                    row[11][i] = v
+    print(f'ölçek: {len(fm_of)} FM satırı mevki gruplu dönüşümle yeniden hesaplandı ({len(train)} ortak oyuncuyla)')
+
     # ── 5. attribute contradictions (repeated until nothing changes, so a second run finds nothing new) ──
     for _round in range(8):
         n_changed = 0
@@ -309,7 +357,8 @@ def main():
             X = np.array([row[11] for row in R], dtype=float)
             changes = []
             for j, k in enumerate(K):
-                others = [i for i in range(len(K)) if i != j]
+                # leave out keys built from the same FM inputs (they would predict the target almost exactly)
+                others = [i for i in range(len(K)) if i != j and not (SHARED.get(k, set()) & {K[i]})]
                 A = np.c_[X[:, others], np.ones(len(X))]
                 y = X[:, j]
                 keep = np.ones(len(X), bool)
@@ -320,7 +369,7 @@ def main():
                     keep = np.abs(res) < 3 * s
                 pred = A @ w
                 for i, row in enumerate(R):
-                    z = (y[i] - pred[i]) / s
+                    z = (y[i] - pred[i]) / max(s, 3.0)  # σ floor: a contradiction is at least ~10 points
                     if abs(z) < 3.5:
                         continue
                     o = OLD.get(row[0])
@@ -403,6 +452,9 @@ def main():
             n_gk += 1
 
     # ── write ──
+    if json.dumps(RAW, ensure_ascii=False) == START:
+        print('havuz değişmedi')
+        return
     count = collections.Counter(x['alan'] if x['alan'] in ('Yaş', 'Boy', 'Ayak', 'Mevki', 'Kulüp', 'Zayıf Ayak', 'Yeni oyuncu') else 'Özellik'
                                 for x in log)
     print('düzeltme:', len(log), dict(count))
@@ -411,11 +463,14 @@ def main():
             args.log_out.write_text(json.dumps(log, ensure_ascii=False, indent=1), encoding='utf-8')
         return
     prev = json.loads(LOG.read_text(encoding='utf-8')) if LOG.exists() else []
+    # attribute corrections are recomputed every run on top of the fresh scale: earlier ones not repeated are dropped
+    prev = [x for x in prev if x['alan'] not in LABEL.values() or any(y['id'] == x['id'] and y['alan'] == x['alan'] for y in log)]
     keyed = {(x['id'], x['alan']): x for x in prev}
     stamp = TODAY.isoformat()
     for x in log:  # a field corrected again later keeps its very first (FM) value as "eski"
         first = keyed.get((x['id'], x['alan']))
-        keyed[(x['id'], x['alan'])] = {**x, 'eski': first['eski'] if first else x['eski'], 'tarih': stamp}
+        keep_first = first and x['alan'] not in LABEL.values()  # attributes: "eski" is the value on the current scale
+        keyed[(x['id'], x['alan'])] = {**x, 'eski': first['eski'] if keep_first else x['eski'], 'tarih': stamp}
     LOG.write_text(json.dumps(list(keyed.values()), ensure_ascii=False, indent=1), encoding='utf-8')
     kim_path.write_text(json.dumps([n for n in kimliksiz if n not in restored], ensure_ascii=False), encoding='utf-8')
     txt = MJS.read_text(encoding='utf-8')
