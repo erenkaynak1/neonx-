@@ -3,7 +3,7 @@
 // match first; this screen plays its highlights in full with physical movement, and runs the clock between them.
 import { HAVUZ, HAVUZ_BY_ID } from '../data/havuz-fm.mjs?v=1';
 import { FORMATIONS } from '../engine/formations.mjs?v=2';
-import { simulateMatch } from '../engine/match.mjs?v=7';
+import { simulateMatch } from '../engine/match.mjs?v=8';
 import { createSpiker, dakika } from './spiker.mjs?v=3';
 import { PLANLAR, planTaktik } from './ortak.mjs?v=3';
 import { buildState, createStats, highlights } from './mac/durum.mjs?v=2';
@@ -73,20 +73,26 @@ const NUM = { GK: 1, RB: 2, RWB: 2, LB: 3, LWB: 3, RCB: 4, CB: 5, LCB: 5, DM: 6,
 
 // ── match ──────────────────────────────────────────────────────────────────────────────────────────
 let M = null;
+const TWIN = '~2';
+const byId = (id) => HAVUZ_BY_ID[String(id).replace(TWIN, '')];
 function start(given) {
-  const home = given?.home || bestXI($('kA').value), away = given?.away || bestXI($('kB').value);
+  let home = given?.home || bestXI($('kA').value), away = given?.away || bestXI($('kB').value);
   if (home.name === away.name) away.name += ' (2)';
+  // the same player in both teams (a club against itself): give the away copies their own ids, or every event, stat
+  // and rating would be booked to one side (possession 0 % – 100 %)
+  const homeIds = new Set(Object.values(home.players).map((p) => p.id));
+  if (Object.values(away.players).some((p) => homeIds.has(p.id))) away = { ...away, players: Object.fromEntries(Object.entries(away.players).map(([s, p]) => [s, homeIds.has(p.id) ? { ...p, id: p.id + TWIN } : p])) };
   const fixed = Number(Q.get('tohum'));
   const seed = fixed > 0 ? fixed : (Date.now() % 100000) + 1;
   const r = simulateMatch({ home, away, seed, tacticHome: given?.tacA || planTaktik($('pA').value), tacticAway: given?.tacB || planTaktik($('pB').value), frames: true });
   const S = buildState(r);
-  const short = (id) => { const n = HAVUZ_BY_ID[id]?.name || id; const parts = n.split(' '); return parts.length > 1 && n.length > 13 ? parts.slice(-1)[0] : n; };
+  const short = (id) => { const n = byId(id)?.name || id; const parts = n.split(' '); return parts.length > 1 && n.length > 13 ? parts.slice(-1)[0] : n; };
   // world: one physics body per player, starting from the engine's first positions
   const W = {
     lineup: S.lineup, tactic: S.tactic, time: 0, minute: 0, k: 0,
     base: S.lineup.map((list, s) => basePositions(r.teams[s].formation, list)),
     bodies: S.lineup.map((list, s) => list.map((pl, i) => {
-      const p = HAVUZ_BY_ID[pl.id], bp = basePositions(r.teams[s].formation, list)[i].def;
+      const p = byId(pl.id), bp = basePositions(r.teams[s].formation, list)[i].def;
       const q = S.F[0].p[s][i] || fromRel(s, bp.u, Math.min(bp.v * 0.85, 47));   // kick-off shape until the engine places them
       return makeBody({ x: q.x, y: q.y, pac: p?.attrs?.pac ?? 70, age: p?.age ?? 26, gk: pl.mevki === 'GK' });
     })),
