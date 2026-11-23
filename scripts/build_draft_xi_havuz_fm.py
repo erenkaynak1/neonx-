@@ -34,9 +34,11 @@ def lastfirst(n):
 V2LF={};TMLF={}
 for r in V2:V2LF.setdefault(lastfirst(norm(r[1])),[]).append(r)
 for q in tm:TMLF.setdefault(lastfirst(norm(q['name'])),[]).append(q)
+def samefirst(a,b):  # Ben ~ Benjamin, but not Albion ~ Amir
+    a,b=a.split()[0],b.split()[0];return len(a.split())==0 or a.startswith(b) or b.startswith(a)
 def find_v2(key):
     if key in v2:return v2[key]
-    c=V2LF.get(lastfirst(key),[]);return c[0] if len(c)==1 else None
+    c=[r for r in V2LF.get(lastfirst(key),[]) if samefirst(key,norm(r[1]))];return c[0] if len(c)==1 else None
 TMTOK={}
 for q in tm:
     if q.get('status')=='active':
@@ -45,7 +47,7 @@ SURN={}
 for q in tm:
     if q.get('status')=='active':SURN.setdefault(norm(q['name']).split()[-1],[]).append(q)
 def find_tm(key):
-    c=TM.get(key) or TMLF.get(lastfirst(key),[])
+    c=TM.get(key) or [q for q in TMLF.get(lastfirst(key),[]) if samefirst(key,norm(q['name']))]
     if not c:  # token subset: 'Fermín' ~ 'Fermín López', 'Eli Junior Kroupi' ~ 'Junior Kroupi'
         toks=set(key.split());cand=set()
         for tok in toks:
