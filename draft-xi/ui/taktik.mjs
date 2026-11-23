@@ -3,7 +3,7 @@
 // relevant attributes of our and the opponent's players in the match-up it sets up; the pitch draws what the focused setting changes. Bots keep the plan of their draft style.
 import { HAVUZ_BY_ID } from '../data/havuz-fm.mjs?v=1';
 import { FORMATIONS, zonePoint, PITCH_W, PITCH_L, COL_W } from '../engine/formations.mjs?v=2';
-import { TAKTIK, PLANLAR, planTaktik, hangiPlan, esc } from './ortak.mjs?v=2';
+import { TAKTIK, PLANLAR, planTaktik, hangiPlan, esc } from './ortak.mjs?v=3';
 
 const $ = (id) => document.getElementById(id);
 const NS = 'http://www.w3.org/2000/svg';
