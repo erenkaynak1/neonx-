@@ -3,7 +3,7 @@
 // position, velocity, acceleration limits and a top speed from their Hız (pace); they steer towards a target the
 // tactical engine gives them and brake before they reach it (no teleporting, no snapping). The ball has its own
 // state: at a player's feet, in flight along the ground or in the air (with height), rolling free, or dead.
-import { MX, MY, clamp } from './saha.mjs?v=1';
+import { MX, MY, clamp } from './saha.mjs?v=2';
 
 export const DT = 1 / 50;                       // 50 physics steps per match second
 const MODE_SPEED = { walk: 1.7, jog: 4.0, run: 6.0 }; // m/s; 'sprint' = the player's own top speed
@@ -52,10 +52,12 @@ export function makeBall() {
  * kind: 'ground' (passes along the floor, slowing down), 'air' (lofted: long ball, cross, clearance), 'shot', 'drive'.
  */
 export function kick(ball, to, dur, kind = 'ground', h = 0, onEnd = null) {
+  globalThis.__kickLog?.push({ x: ball.x, y: ball.y, z: ball.z, kind, state: ball.state }); // test aid (touch audit)
   ball.flight = { fx: ball.x, fy: ball.y, tx: to.x, ty: to.y, t: 0, dur: Math.max(0.15, dur), kind, h, onEnd };
   ball.owner = null; ball.state = 'flight'; ball.trail = [];
 }
 export function stepBall(ball, dt, bodies) {
+  if (ball.fresh > 0) ball.fresh = Math.max(0, ball.fresh - dt);
   ball.px = ball.x; ball.py = ball.y; ball.pz = ball.z;
   if (ball.state === 'held' && ball.owner) {
     const o = bodies(ball.owner);

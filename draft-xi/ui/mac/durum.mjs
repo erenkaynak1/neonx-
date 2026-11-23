@@ -2,7 +2,7 @@
 // Built once from the engine result: the event log with each event's ball and player positions (normalized), who
 // holds the ball after every event, possession chains, live team and player statistics (counted only from engine
 // events, so the screen can never show something that did not happen) and the highlight reel the director plays.
-import { fromEngine } from './saha.mjs?v=1';
+import { fromEngine } from './saha.mjs?v=2';
 
 // who has the ball once the event is over (null: the ball is in flight or dead)
 const HOLDER_AFTER = { possession: 'p', pass: 'to', through: 'to', carry: 'p', dribble: 'p', tackle: 'p', intercept: 'p', press_win: 'p',
@@ -81,6 +81,7 @@ export function createStats(S) {
 // A match logs ~1,300 events; the reel shows the moments that matter in full, at a watchable pace: every goal,
 // penalty and red card, then shots, big chances, corners and cards by importance until the time budget is used.
 // Each highlight starts a few moves before its key event (inside the same attack) so the build-up is visible.
+const OUT_CAUSE = new Set(['cross_bad', 'cross_block', 'save', 'block', 'clear', 'miss']);
 const WEIGHT = { goal: 100, save: 40, post: 45, miss: 28, block: 22, through: 14, corner: 10, offside: 6, keeper_rush: 12 };
 export function highlights(S, { budget = 300 } = {}) {
   const { E, chain } = S;
@@ -94,15 +95,18 @@ export function highlights(S, { budget = 300 } = {}) {
     // an outcome (save, miss, post, block, goal) belongs to the shot just before it: the attack is anchored there
     let anchor = k;
     if (['save', 'miss', 'post', 'block', 'goal'].includes(e.type) && E[k - 1]?.type === 'shot') anchor = k - 1;
+    // a corner is shown from what put the ball out (blocked or wild cross, parried or blocked shot, clearance)
+    if (e.type === 'corner' && k > 0) { anchor = k - 1; if (OUT_CAUSE.has(E[anchor].type) && E[anchor - 1]?.type === 'shot') anchor--; }
     // start: up to 6 events earlier inside the same attack; a very short attack also shows how the ball was won
     let a = anchor;
-    while (a > 0 && anchor - a < 6 && chain[a - 1] === chain[anchor] && !['half_time', 'goal'].includes(E[a - 1].type)) a--;
-    if (anchor - a < 2) while (a > 0 && anchor - a < 3 && !['half_time', 'goal', 'full_time'].includes(E[a - 1].type)) a--;
-    if (e.type === 'corner') a = k;
+    const wall = (x) => ['half_time', 'goal', 'full_time'].includes(x.type) || (x.type === 'possession' && x.how === 'kickoff');
+    while (a > 0 && anchor - a < 6 && chain[a - 1] === chain[anchor] && !wall(E[a - 1]) && !wall(E[a])) a--;
+    if (anchor - a < 2) while (a > 0 && anchor - a < 3 && !wall(E[a - 1]) && !wall(E[a])) a--;
     // end: the outcome and what follows it (a goal keeps the celebration and stops before the kick-off)
     let b = k;
-    while (b + 1 < E.length && b - k < 4 && E[b + 1].t - E[k].t < 60 && !['possession'].includes(E[b + 1].type)) b++;
-    if (E[b + 1]?.type === 'possession' && b - k < 4 && e.type !== 'goal') b++;
+    const stop = (x) => !x || ['half_time', 'full_time'].includes(x.type) || (x.type === 'possession' && x.how === 'kickoff');
+    while (b + 1 < E.length && b - k < 4 && E[b + 1].t - E[k].t < 60 && E[b + 1].type !== 'possession' && !stop(E[b + 1])) b++;
+    if (E[b + 1]?.type === 'possession' && !stop(E[b + 1]) && b - k < 4 && e.type !== 'goal') b++;
     cand.push({ a, b, k, w: w + (e.t > 52000 ? 4 : 0) });
   });
   const cost = (h) => 4 + (h.b - h.a + 1) * 2.2 + (E[h.k].type === 'goal' ? 7 : 0); // match seconds, roughly
@@ -120,7 +124,15 @@ export function highlights(S, { budget = 300 } = {}) {
   }
   chosen.sort((x, y) => x.a - y.a);
   // the opening kick-off is always shown briefly
-  if (!chosen.length || chosen[0].a > 0) chosen.unshift({ a: 0, b: Math.min(5, E.length - 1), k: 0, w: 1 });
+  // both kick-offs (start of the match and of the second half) are always shown: teams lined up in their halves
+  for (let k = 0; k < E.length; k++) {
+    const x = E[k];
+    if (x.type === 'possession' && x.how === 'kickoff' && (k === 0 || E[k - 1].type === 'half_time') && !chosen.some((c) => c.a <= k && k <= c.b)) {
+      let b = k; while (b + 1 < E.length && b - k < 4 && !['goal', 'half_time', 'shot'].includes(E[b + 1].type)) b++;
+      chosen.push({ a: k, b, k, w: 1 });
+    }
+  }
+  chosen.sort((x, y) => x.a - y.a);
   // a highlight that grew while merging can reach into the next one: join them so no event is played twice
   const out = [];
   for (const h of chosen) {

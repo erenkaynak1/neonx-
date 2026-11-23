@@ -2,7 +2,7 @@
 // Canvas renderer, independent of the simulation: it reads body and ball state and interpolates between the last
 // two physics steps (alpha), so motion stays smooth at any frame rate. The pitch is drawn once into an offscreen
 // canvas and reused; each frame draws 22 players and the ball only. Coordinates come in 0–100 pitch units.
-import { MX, MY, GOAL_HALF, BOX } from './saha.mjs?v=1';
+import { MX, MY, GOAL_HALF, BOX } from './saha.mjs?v=2';
 
 const COL = ['#baff18', '#2fe0ff'], KEEPER = ['#ffd34d', '#ff8ad8'], DARK = '#070b0a';
 
@@ -22,11 +22,15 @@ export function createRenderer(canvas, W, info) {
     box = { x: (cw - w) / 2, y: (ch - h) / 2, w, h };
     pitch = drawPitch();
   }
-  const sx = (x) => box.x + (x / 100) * box.w;
-  const sy = (y) => box.y + ((100 - y) / 100) * box.h;      // home attacks upwards
+  // home attacks upwards in the first half; the teams change ends at half time (the view turns round)
+  const sx = (x) => box.x + ((info.flip ? 100 - x : x) / 100) * box.w;
+  const sy = (y) => box.y + ((info.flip ? y : 100 - y) / 100) * box.h;
+  const fa = (a) => (info.flip ? a + Math.PI : a);           // facing on screen
+  const sx0 = (x) => box.x + (x / 100) * box.w, sy0 = (y) => box.y + ((100 - y) / 100) * box.h; // the pitch itself (symmetric)
   const unit = () => box.w / 68;                            // pixels per metre
 
   function drawPitch() {
+    const sx = sx0, sy = sy0;
     const c = document.createElement('canvas');
     c.width = canvas.width; c.height = canvas.height;
     const g = c.getContext('2d');
@@ -111,8 +115,8 @@ export function createRenderer(canvas, W, info) {
       ctx.beginPath(); ctx.ellipse(x + lift * 0.4, y + r * 0.55 + lift * 0.2, r * 0.95, r * 0.5, 0, 0, Math.PI * 2); ctx.fill();
       // running feet: two small marks alternating with the stride
       if (sp > 0.6 && !st.startsWith('dive') && st !== 'slide') {
-        const ph = Math.sin(b.stride * 3.2), fx = -Math.sin(b.face), fy = -Math.cos(b.face);
-        const ax = Math.cos(b.face) * ph * r * 0.55, ay = -Math.sin(b.face) * ph * r * 0.55;
+        const F = fa(b.face), ph = Math.sin(b.stride * 3.2), fx = -Math.sin(F), fy = -Math.cos(F);
+        const ax = Math.cos(F) * ph * r * 0.55, ay = -Math.sin(F) * ph * r * 0.55;
         ctx.fillStyle = 'rgba(0,0,0,.55)';
         ctx.beginPath(); ctx.arc(x + fx * r * 0.35 + ax, y + fy * r * 0.35 + ay, r * 0.22, 0, Math.PI * 2); ctx.fill();
         ctx.beginPath(); ctx.arc(x - fx * r * 0.35 - ax, y - fy * r * 0.35 - ay, r * 0.22, 0, Math.PI * 2); ctx.fill();
@@ -123,7 +127,7 @@ export function createRenderer(canvas, W, info) {
       ctx.translate(x, y - lift);
       if (st === 'slide' || st.startsWith('dive') || st === 'lunge') {
         // stretched body: a slide along the run, a dive across the goal
-        const ang = st.startsWith('dive') ? (st === 'diveR' ? 0 : Math.PI) * (s === 0 ? 1 : 1) : -b.face;
+        const ang = st.startsWith('dive') ? ((st === 'diveR') !== !!info.flip ? 0 : Math.PI) : -fa(b.face);
         ctx.rotate(ang);
         ctx.scale(st === 'lunge' ? 1.25 : 1.7, st === 'lunge' ? 0.9 : 0.72);
       } else if (st === 'beaten') ctx.scale(0.9, 0.9);
@@ -136,7 +140,7 @@ export function createRenderer(canvas, W, info) {
       // facing notch
       if (!st.startsWith('dive') && st !== 'slide') {
         ctx.fillStyle = col;
-        const nx = x + Math.cos(-b.face) * r * 1.05, ny = y - lift + Math.sin(-b.face) * r * 1.05;
+        const nx = x + Math.cos(-fa(b.face)) * r * 1.05, ny = y - lift + Math.sin(-fa(b.face)) * r * 1.05;
         ctx.beginPath(); ctx.arc(nx, ny, r * 0.22, 0, Math.PI * 2); ctx.fill();
       }
       ctx.fillStyle = keeper ? DARK : col;
@@ -155,8 +159,10 @@ export function createRenderer(canvas, W, info) {
       ctx.stroke();
     }
     const br = Math.max(3, u * (0.55 + bz * 0.05));
+    ctx.globalAlpha = ball.fresh > 0 ? 1 - ball.fresh / 0.45 : 1;   // a new ball for a restart fades in
     ctx.fillStyle = '#fff'; ctx.strokeStyle = DARK; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.arc(ground.x, ground.y - zpx, br, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.globalAlpha = 1;
     // name of the man on the ball
     const owner = ball.owner && W.bodies[ball.owner[0]][ball.owner[1]];
     if (owner) {
