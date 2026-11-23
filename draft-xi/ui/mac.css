@@ -64,6 +64,7 @@ select{width:100%;min-height:44px;border-radius:10px;border:1px solid var(--line
 .st .bar{grid-column:1/-1;display:flex;height:5px;border-radius:3px;overflow:hidden;background:var(--s2);margin-top:-4px}
 .st .bar i{background:var(--a)}.st .bar u{background:var(--b);margin-left:auto}
 .st em{font-style:normal;text-align:center;color:var(--mut);font-size:12px}
+.st em i{font-style:normal}.st em .kisa{display:none}
 .kontrol{display:flex;gap:8px;padding:8px 10px calc(10px + env(safe-area-inset-bottom));background:var(--s1);border-top:1px solid var(--line)}
 .kontrol button{flex:0 0 52px;min-height:46px;border-radius:10px;border:1px solid var(--line);background:var(--s2);font:800 13px system-ui;letter-spacing:.08em;cursor:pointer}
 #istAc{display:none}
@@ -80,12 +81,15 @@ select{width:100%;min-height:44px;border-radius:10px;border:1px solid var(--line
 /* phone: pitch + commentary; stats behind a button */
 /* phone: pitch on the left at its own proportions, compact stats on the right, commentary underneath */
 @media (max-width:899px){
-  .paneller{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);gap:8px;padding:8px}
-  .saha-panel{grid-column:1;grid-row:1;aspect-ratio:68/105;max-height:58dvh;width:100%}
-  .ist-panel{grid-column:2;grid-row:1;padding:8px 8px 4px;overflow-y:auto;max-height:58dvh;align-self:stretch}
+  .paneller{grid-template-columns:minmax(0,2.1fr) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);gap:8px;padding:8px}
+  .saha-panel{grid-column:1;grid-row:1;aspect-ratio:68/105;max-height:62dvh;width:100%}
+  .ist-panel{grid-column:2;grid-row:1;padding:8px 8px 4px;overflow-y:auto;max-height:62dvh;align-self:stretch}
   .ist-panel h2{font-size:10px;margin-bottom:6px;letter-spacing:.12em}
   .ist-panel .st{grid-template-columns:auto minmax(0,1fr) auto;gap:4px;font-size:11px;margin-bottom:5px}
   .ist-panel .st em{font-size:9.5px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ist-panel .st em .uzun{display:none}.ist-panel .st em .kisa{display:inline}
+  .ist-panel{padding:7px 6px 3px}
+  .ist-panel .st{gap:2px;font-size:10.5px}
   .ist-panel .st .bar{height:3px;margin-top:-2px}
   .spiker-panel{grid-column:1/-1;grid-row:2}
   #spiker li{font-size:13.5px}
@@ -94,6 +98,7 @@ select{width:100%;min-height:44px;border-radius:10px;border:1px solid var(--line
   .kutlama b{font-size:30px}
   .anlik{font-size:18px}
 }
+@media (max-width:899px) and (max-height:720px){.saha-panel,.ist-panel{max-height:52dvh}}
 
 /* full time */
 .son-skor{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:10px;padding:16px;border-radius:14px;background:var(--s1);border:1px solid var(--line);margin-bottom:12px}
@@ -128,6 +133,7 @@ select{width:100%;min-height:44px;border-radius:10px;border:1px solid var(--line
   .mac.yalniz-spiker .spiker-panel{grid-column:1;grid-row:2}
   .mac.yalniz-spiker .ist-panel .st{font-size:12px}
   .mac.yalniz-spiker .ist-panel .st em{font-size:11px}
+  .mac.yalniz-spiker .ist-panel .st em .uzun{display:inline}.mac.yalniz-spiker .ist-panel .st em .kisa{display:none}
   .mac.yalniz-spiker .ist-panel h2{display:none}
   .mac.yalniz-spiker #ist{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:14px}
   .mac.yalniz-spiker #ist .st{margin-bottom:6px;font-size:12px}
