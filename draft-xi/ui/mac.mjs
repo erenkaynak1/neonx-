@@ -251,6 +251,8 @@ function loop(now) {
 }
 
 // ── stats ──────────────────────────────────────────────────────────────────────────────────────────
+// short labels for the narrow stats column on phones
+const KISA = { 'Topla oynama': 'Top %', 'İsabetli şut': 'İsabetli', 'Pas isabeti': 'Pas %', 'Başarılı çalım': 'Çalım', 'Top kazanma': 'Kazanma', 'Kurtarış': 'Kurtarış' };
 function statRows(T) {
   const p = T[0].possession + T[1].possession || 1;
   const pct = (a, b) => (b ? `${Math.round((a / b) * 100)}%` : '–');
@@ -264,7 +266,7 @@ function statRows(T) {
   ];
   return rows.map(([ad, a, b, va = a, vb = b]) => {
     const t = (Number(va) || 0) + (Number(vb) || 0) || 1;
-    return `<div class="st"><span>${a}</span><em>${ad}</em><span>${b}</span><div class="bar"><i style="width:${((Number(va) || 0) / t) * 100}%"></i><u style="width:${((Number(vb) || 0) / t) * 100}%"></u></div></div>`;
+    return `<div class="st"><span>${a}</span><em><i class="uzun">${ad}</i><i class="kisa">${KISA[ad] || ad}</i></em><span>${b}</span><div class="bar"><i style="width:${((Number(va) || 0) / t) * 100}%"></i><u style="width:${((Number(vb) || 0) / t) * 100}%"></u></div></div>`;
   }).join('');
 }
 const renderStats = () => { $('ist').innerHTML = statRows(M.stats.T); };
