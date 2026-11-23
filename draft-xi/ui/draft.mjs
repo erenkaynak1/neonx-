@@ -1,15 +1,11 @@
 // Draft XI — draft screen (design doc 16.12): snake order, 11 rounds, whole pool visible with position filter and
 // search, every pick must fit an empty position (2.4), formation changeable during the draft, auto pick, bot
-// opponent (16.13: easy / medium / hard) or two players on one phone. Ends with a plan per team and kicks off the
-// match screen.
+// opponent (16.13: easy / medium / hard) or two players on one phone. Ends on the tactics screen.
 import { HAVUZ, HAVUZ_BY_ID } from '../data/havuz.mjs?v=3';
 import { FORMATIONS, zonePoint } from '../engine/formations.mjs?v=2';
-import { uygun, guc, kimya, MEVKI_GRUP, esc } from './ortak.mjs?v=1';
+import { uygun, guc, kimya, MEVKI_GRUP, esc } from './ortak.mjs?v=2';
 
 const $ = (id) => document.getElementById(id);
-const PLANS = [
-  ['dengeli', 'Dengeli'], ['tikitaka', 'Tiki-taka'], ['kontra', 'Kontra atak'], ['kanat', 'Kanat oyunu'], ['pres', 'Yüksek pres'], ['otobus', 'Otobüs çek'],
-];
 const STYLE = { // medium/hard bot: a playing style chosen at the start (16.13) → attributes it values and its plan
   hiz: { keys: ['pac', 'dri'], plan: 'kontra' }, pas: { keys: ['sp', 'vis', 'ft'], plan: 'tikitaka' },
   kanat: { keys: ['cro', 'pac', 'hed'], plan: 'kanat' }, pres: { keys: ['tac', 'str', 'pac'], plan: 'pres' },
@@ -239,18 +235,9 @@ $('ara').addEventListener('input', (e) => { S.query = e.target.value; $('liste')
 document.querySelectorAll('[data-sekme]').forEach((b) => b.addEventListener('click', () => { S.tab = b.dataset.sekme; render(); }));
 $('otomatik').addEventListener('click', () => { const t = cur(); const c = choose(t, 'orta'); if (c) place(t, c.p.id, c.slot); });
 
-// ── end: plans, then the match screen ──
+// ── end: the tactics screen (bot keeps the plan of its draft style), then the match ──
 function finish() {
-  $('draft').hidden = true; $('son').hidden = false;
-  const botPlan = STYLE[S.style].plan;
-  $('sonGrid').innerHTML = S.teams.map((tm, t) => `<div class="son-takim ${t ? 'b' : 'a'}"><b>${esc(tm.name)}</b><small>${tm.formation}</small>
-    <select data-plan="${t}" aria-label="${esc(tm.name)} planı"${isBot(t) ? ' disabled' : ''}>${PLANS.map(([id, ad]) => `<option value="${id}"${(isBot(t) ? botPlan : 'dengeli') === id ? ' selected' : ''}>${ad}</option>`).join('')}</select>
-    ${isBot(t) ? '<small>Bot planını kendi oyun tarzına göre seçti.</small>' : ''}</div>`).join('');
-  window.scrollTo(0, 0);
+  const data = { mod: S.mod, home: { ...S.teams[0], bot: false }, away: { ...S.teams[1], bot: isBot(1), plan: STYLE[S.style].plan } };
+  try { sessionStorage.setItem('draftxi-mac', JSON.stringify(data)); } catch { /* the tactics screen shows a link back */ }
+  location.href = './taktik.html';
 }
-$('macaCik').addEventListener('click', () => {
-  const plan = (t) => document.querySelector(`[data-plan="${t}"]`).value;
-  const data = { home: { ...S.teams[0], plan: plan(0) }, away: { ...S.teams[1], plan: plan(1) } };
-  try { sessionStorage.setItem('draftxi-mac', JSON.stringify(data)); } catch { /* the match screen falls back to its own setup */ }
-  location.href = './mac.html?draft=1';
-});
