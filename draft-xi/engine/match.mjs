@@ -6,7 +6,7 @@
 import { makeRng, prob, bForBase, combineTactics, weighted, hash, pickWeighted } from './core.mjs';
 import { FORMATIONS, zonePoint, PITCH_W, PITCH_L, COL_W, ROW_L } from './formations.mjs';
 
-export const ENGINE_VERSION = '0.6.0';
+export const ENGINE_VERSION = '0.6.1';
 
 // k: milli-logit per attribute point (14.1)
 const K = { duel: 85, air: 110, short: 54, long: 43, shot: 72, cross: 43 };   // 0.5: shot 85 → 72: finishing still decides, but less steeply (a modest finisher's chance is not near zero)
@@ -464,6 +464,13 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
 
   function cross(side, crosser) {
     const ds = opp(side); stats[side].crosses++;
+    // A delivery from a wide final-third position is itself a flank attack,
+    // even though its destination is central in the penalty area.
+    const cz = zoneOf(side, crosser.cur);
+    if (cz.row >= 5 && (cz.col <= 1 || cz.col >= 3)) {
+      if (cz.col >= 3) stats[side].rightCorridorAttacks++;
+      else stats[side].leftCorridorAttacks++;
+    }
     const [bek, bd] = nearest(ds, crosser.cur);
     if (bek && bd < 20) {
       const pBl = prob(weighted(bek.a, W.crossBlock), weighted(crosser.a, W.cross), K.duel, REF.crossBlockB);
@@ -544,6 +551,11 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     else if (box) opts = dist(h.cur, goalPt(side)) < 130 ? [['shotIn', 13], ['short', 72], ['dribble', 12]] : [['shotIn', 10], ['short', 76], ['dribble', 12]];
     else if (wing) opts = [['short', 48], ['dribble', 9], ['cross', 40], [z.row === 6 ? 'shotIn' : 'shotOut', z.row === 6 ? 20 : 7]];   // 0.5: wide men cut in and shoot
     else opts = [['short', 72], ['dribble', 7], ['shotOut', 9], ['through', 16]];
+    // A wings plan must change the final action, not merely the receiver weights:
+    // wide players attack the byline more often and deliver more crosses.
+    if (T.direction === 'wings' && wing && z.row >= 4) {
+      opts = opts.map(([n, w]) => n === 'cross' ? [n, Math.trunc(w * 1.4)] : n === 'short' ? [n, Math.trunc(w * 0.9)] : [n, w]);
+    }
     if (box && h.mevki !== 'GK') {
       const ownThreat = weighted(h.a, { fin: 55, posn: 20, ft: 15, lon: 10 });
       const mateThreats = active(side).filter(p => p !== h && p.mevki !== 'GK' && dist(p.cur, h.cur) < 180)
