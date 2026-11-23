@@ -14,6 +14,15 @@ Run the lab: `node scripts/draft_xi_lab.mjs 400` (add `--meta` for the meta hunt
 
 Not wired into the site yet; the live Draft XI still runs on `neon-xi-core.html`.
 
+## Oyuncu havuzu: Excel (2026-11-23)
+
+Oyunun kullandığı havuz **`data/draft-xi-oyuncu-havuzu.xlsx`** dosyasıdır; `data/havuz-fm.mjs` ondan üretilir (Draft, Taktik, Maç ve İnceleme ekranları bunu okur).
+
+- Düzenleme: Excel'de puan, mevki, kulüp, yaş vb. değiştir, satır ekle/sil, sonra `python3 scripts/draft_xi_havuz_excel_oku.py`. Hatalı hücre (1–99 dışı puan, bilinmeyen mevki, tekrar eden isim) varsa dosya yazılmaz, hatalar listelenir.
+- Kontrol: `python3 scripts/draft_xi_havuz_excel_oku.py --check` (CI'da çalışır) + `node scripts/test_draft_xi_pool_fm.mjs`.
+- Excel'i havuzdan yeniden üretmek: `python3 scripts/draft_xi_havuz_excel.py`.
+- Değerlerin kaynağı: kullanıcının FM özellik listeleri (`data/fm-kaynak/partiler/*.csv`), `scripts/fm_havuz_birlestir.py` ile birleştirilip `scripts/build_draft_xi_havuz_fm.py` ile 14+4 özelliğe çevrildi. Bu dönüştürücü havuzu sıfırdan yazar; Excel'de elle yapılan düzeltmeler üzerine yazılmasın diye yeni FM partisi eklendiğinde yeni oyuncular Excel'e eklenir, sonra Excel okunur.
+
 ## Oyuncu havuzu (ilk geçiş, 2026-11-21)
 
 - `data/havuz.mjs`: aktif NEON XI havuzundan (502 oyuncu) üretildi. Kaynak kopyası `data/kaynak-havuz.json`, dönüştürücü `scripts/build_draft_xi_pool.mjs` (`--extract` canlı oyundan yeniden çeker).

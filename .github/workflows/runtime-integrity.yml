@@ -52,6 +52,8 @@ jobs:
         run: node scripts/test_draft_xi_engine.mjs
       - name: Draft XI v2 player pool (built file up to date, engine-ready, random squads)
         run: node scripts/build_draft_xi_pool.mjs --check && node scripts/test_draft_xi_pool.mjs 120
+      - name: Draft XI Excel player pool (havuz-fm.mjs matches the Excel, engine-ready)
+        run: pip install --disable-pip-version-check openpyxl && python scripts/draft_xi_havuz_excel_oku.py --check && node scripts/test_draft_xi_pool_fm.mjs 120
       - name: Açık Artırma topic list integrity
         run: node scripts/test_acik_artirma_konular.mjs
       - name: Açık Artırma online contract
