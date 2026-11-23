@@ -228,6 +228,16 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
   const nearest = (side, pt, exclude) => { let best = null, bd = 1e9; for (const p of active(side)) { if (p === exclude || p.mevki === 'GK') continue; const d = dist(p.cur, pt); if (d < bd) { bd = d; best = p; } } return [best, bd]; };
   const keeper = side => active(side).find(p => p.mevki === 'GK') || active(side)[0];
   const zoneOf = (side, pt) => { const r = rel(side, pt); return { col: clamp(Math.trunc(r.x / COL_W), 0, 4), row: clamp(Math.trunc(r.y / ROW_L) + 1, 1, 6), r }; };
+  // Count a flank attack when possession enters a wide final-third lane, whether by pass or ball-carry.
+  function recordCorridorEntry(side, from, to) {
+    const a = zoneOf(side, from), b = zoneOf(side, to);
+    const wide = b.col <= 1 || b.col >= 3;
+    const entered = a.row < 5 || (a.row === 5 && a.col >= 1 && a.col <= 3);
+    if (wide && b.row >= 5 && entered) {
+      if (b.col >= 3) stats[side].rightCorridorAttacks++;
+      else stats[side].leftCorridorAttacks++;
+    }
+  }
   const goalPt = side => toAbs(side, { x: PITCH_W >> 1, y: PITCH_L }); // goal side attacks
   const tacticPts = list => combineTactics(list);
   const weakFoot = pl => (pl.player.weakFoot < 5 && rng.int(4) === 0 ? (5 - pl.player.weakFoot) * 50 : 0); // ×10 units
@@ -660,7 +670,7 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     advance(kind === 'long' ? durOf(30, 50, Math.trunc((d - 250) / 3), side) : durOf(20, 40, Math.trunc((d - 40) / 2.4), side));
     const from = { ...h.cur };
     // a flank attack is the ball played into a wide lane of the final third from outside the box (0.5: passes inside the box no longer count)
-    const zr = zoneOf(side, m.cur); if (zr.row >= 5 && zoneOf(side, h.cur).row < 6) { if (zr.col >= 3) stats[side].rightCorridorAttacks++; else if (zr.col <= 1) stats[side].leftCorridorAttacks++; }
+    recordCorridorEntry(side, h.cur, m.cur);
     if (rng.roll() >= pOk) {
       // inaccurate: nearest opponent to the target picks it up
       log('pass_bad', side, h, { to: m.player.id, kind, p: pOk }); rate(h, -Math.trunc(pOk / 2000));
@@ -706,7 +716,7 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     // 0.5: a carry is not a take-on: unless a defender is right on him (≤ 2.5 m) he runs with the ball, and only part of
     // the time does a defender 2.5–5 m away step in (take-ons were 43 a team a match, about 16 in real football)
     const engage = dd <= 25 || (dd <= 50 && rng.int(100) < 40);
-    if (!d || (kind === 'carry' && !engage)) { const dt = durOf(30, 60, 50, side); advance(dt); moveToward(h, stepTo(dd > 50 ? 100 : 60), dt); st.ball = { ...h.cur }; log('carry', side, h); return; }
+    if (!d || (kind === 'carry' && !engage)) { const dt = durOf(30, 60, 50, side); const from = { ...h.cur }; advance(dt); moveToward(h, stepTo(dd > 50 ? 100 : 60), dt); recordCorridorEntry(side, from, h.cur); st.ball = { ...h.cur }; log('carry', side, h); return; }
     stats[side].dribbles++;
     const second = active(ds).some(p => p !== d && p.mevki !== 'GK' && dist(p.cur, h.cur) < 60) ? 300 : 0;
     const pts = defPoints(ds, h.cur, 'tackle');
@@ -717,7 +727,7 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     if (rng.roll() < pW) {
       duel(h, d, pW);
       if (foulCheck(d, h, h.cur, 'tackle')) return;
-      stats[side].dribblesOk++; moveToward(h, stepTo(70), st.lastDt); st.ball = { ...h.cur }; st.beaten = d; log('dribble', side, h, { past: d.player.id, p: pW });
+      stats[side].dribblesOk++; const from = { ...h.cur }; moveToward(h, stepTo(70), st.lastDt); recordCorridorEntry(side, from, h.cur); st.ball = { ...h.cur }; st.beaten = d; log('dribble', side, h, { past: d.player.id, p: pW });
       // 0.5: past his man inside the box, close in: he shoots (the run stops at the penalty spot now, it is not walked in)
       const zz = zoneOf(side, h.cur);
       if (zz.row === 6 && zz.col >= 1 && zz.col <= 3 && dist(h.cur, goal) < 140) { advance(durOf(10, 20, 50, side)); shoot(side, h, 'in', h.cur); }
@@ -765,7 +775,7 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     if (rng.roll() < pR) {
       duel(run, chaser, pR);
       if (foulCheck(chaser, run, target, 'race')) return;
-      stats[side].throughsOk++; moveToward(run, target, st.lastDt); st.ball = { ...run.cur }; st.lastPasser = h;
+      stats[side].throughsOk++; const from = { ...h.cur }; moveToward(run, target, st.lastDt); recordCorridorEntry(side, from, run.cur); st.ball = { ...run.cur }; st.lastPasser = h;
       log('through', side, h, { to: run.player.id, p: pR });
       return shoot(side, run, 'one', run.cur);
     }
