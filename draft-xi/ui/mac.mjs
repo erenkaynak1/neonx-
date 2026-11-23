@@ -3,15 +3,15 @@
 // match first; this screen plays its highlights in full with physical movement, and runs the clock between them.
 import { HAVUZ, HAVUZ_BY_ID } from '../data/havuz-fm.mjs?v=1';
 import { FORMATIONS } from '../engine/formations.mjs?v=2';
-import { simulateMatch } from '../engine/match.mjs?v=6';
+import { simulateMatch } from '../engine/match.mjs?v=7';
 import { createSpiker, dakika } from './spiker.mjs?v=3';
 import { PLANLAR, planTaktik } from './ortak.mjs?v=3';
 import { buildState, createStats, highlights } from './mac/durum.mjs?v=2';
 import { makeBody, makeBall, stepBody, stepBall, DT } from './mac/fizik.mjs?v=4';
-import { basePositions } from './mac/taktik.mjs?v=2';
+import { basePositions } from './mac/taktik.mjs?v=3';
 import { fromRel } from './mac/saha.mjs?v=2';
-import { createDirector } from './mac/yonetmen.mjs?v=3';
-import { createRenderer } from './mac/cizim.mjs?v=4';
+import { createDirector } from './mac/yonetmen.mjs?v=4';
+import { createRenderer } from './mac/cizim.mjs?v=5';
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -133,6 +133,20 @@ function nextHighlight() {
   $('ozet').textContent = M.hi === 0 ? '' : dakika(M.cutTo);
 }
 // the cut happens while the pitch is darkest: the players are already in the next highlight's positions when it clears
+function simulate(real) {
+  const mode = M.mode;
+  M.acc += real * RATE[M.speed] * FAST * (M.dir.hurry ? 2.6 : 1);   // dead time runs faster
+  let n = 0;
+  while (M.acc >= DT && n < 400) {
+    M.acc -= DT; n++;
+    M.W.time += DT;
+    M.dir.step(DT);
+    const W = M.W;
+    for (const team of W.bodies) for (const b of team) if (b) stepBody(b, DT, W.minute);
+    stepBall(W.ball, DT, ([s, i]) => W.bodies[s][i]);
+    if (M.mode !== mode || (mode === 'cut' && !M.cutPlayed)) break;   // a highlight ended inside this frame: the cut takes over
+  }
+}
 function playHighlight() {
   const h = M.reel[M.hi];
   M.cutPlayed = true;
@@ -205,6 +219,7 @@ function onCue(c) {
   if (c.kind === 'save') toast('KURTARIŞ!');
   else if (c.kind === 'post') toast('DİREK!');
   else if (c.kind === 'offside') toast('OFSAYT', 'yel');
+  else if (c.kind === 'oline') M.render.cue({ kind: 'oline', y: c.y, life: 2.2 });
   else if (c.kind === 'block') toast('BLOK!');
   else if (c.kind === 'net') M.render.cue({ kind: 'net', y: M.W.ball.y, life: 1.4 });
   else if (c.kind === 'whistle' && !c.card) toast('FAUL');
@@ -246,25 +261,15 @@ function loop(now) {
     if (M.mode === 'cut') {
       M.cutT += real * FAST;
       const u = Math.min(1, M.cutT / M.cutDur);
-      M.dim = M.hi === 0 ? 0 : Math.sin(Math.PI * u) * 0.75;
+      // fully dark while the scene changes (the switch is never seen), then the new move is already under way
+      M.dim = M.hi === 0 ? 0 : Math.min(1, Math.sin(Math.PI * u) * 1.5);
       $('dk').textContent = dakika(M.cutFrom + (M.cutTo - M.cutFrom) * u);
       if (!M.cutPlayed && (u >= 0.5 || M.hi === 0)) playHighlight();
-      if (u >= 1) { M.dim = 0; M.mode = 'play'; $('ozet').hidden = true; }
-    } else {
-      M.acc += real * RATE[M.speed] * FAST * (M.dir.hurry ? 2.6 : 1);   // dead time runs faster
-      let n = 0;
-      while (M.acc >= DT && n < 400) {
-        M.acc -= DT; n++;
-        M.W.time += DT;
-        M.dir.step(DT);
-        const W = M.W;
-        for (const team of W.bodies) for (const b of team) if (b) stepBody(b, DT, W.minute);
-        stepBall(W.ball, DT, ([s, i]) => W.bodies[s][i]);
-        if (M.mode !== 'play') break;   // a highlight ended inside this frame: the cut takes over
-      }
-    }
+      else if (M.cutPlayed) simulate(real);
+      if (u >= 1 && M.mode === 'cut') { M.dim = 0; M.mode = 'play'; $('ozet').hidden = true; }
+    } else simulate(real);
   }
-  if (M.mode !== 'text') M.render.draw(M.mode === 'play' ? Math.min(1, M.acc / DT) : 1);
+  if (M.mode !== 'text') M.render.draw(M.mode === 'play' || M.cutPlayed ? Math.min(1, M.acc / DT) : 1);
   requestAnimationFrame(loop);
 }
 

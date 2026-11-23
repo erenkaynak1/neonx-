@@ -19,6 +19,21 @@ Not wired into the site yet; the live Draft XI still runs on `neon-xi-core.html`
 `ui/mac.mjs` + `ui/mac/` beş katman (kullanıcının 2D maç motoru istemi): **durum** (olay kaydından oyun durumu, takım/oyuncu istatistikleri, önemli anlar), **taktik** (diziliş + taktik ayarlarından her oyuncunun hedefi: düz savunma çizgisi, bloğun topa kayması, pres + kademe + pas yolu kapatma, son üçte birde markaj; hücumda stoperlerin açılması, kanat genişliği, bindiren bek, pas üçgenleri, savunma arkasına koşu, ortada ceza sahası doldurma; duran toplar ve gol sevinci), **fizik** (oyuncu hız/ivme Hız'dan, yorgunluk; top yerden/havadan/şut/yuvarlanma; sabit 50 Hz), **yönetmen** (motor olayı → aksiyon: pas, orta, şut + kaleci, müdahale, faul, duran top), **çizim** (canvas, adımlar arası ara değer). Sonucu motor belirler; ekran onu oynatır. Oyuncu görevleri kullanılmaz (davranış mevkiden).
 Kurallar: top yalnızca bir oyuncu dokununca hareket eder (vuran topa koşar, kafa topunu kazanan vurur, sahipsiz topa koşulur, kurtarış kalecinin erişiminde); top bir sonraki oyuncunun motordaki konumuna gider; oyundaki ölü top atışı kullanan oyuncuca noktaya taşınır, oyun dışına çıkan top yerine yeni top konur; korner her zaman topun çizgiyi geçmesiyle başlar; santralar (maç başı, ikinci yarı) iki yarıda dizilişle; devre arasında taraflar değişir. İzleme şekilleri: **Sadece spiker** (saha yok, ~1,5 dk), **Önemli anlar** (~4 dk), **Uzun özet** (~7 dk, daha uzun atak kuruluşları); hızlı maç kurulumunda ve draft→maç geçişinde seçilir, son seçim hatırlanır (`?izle=spiker|onemli|uzun`). Önemli anlar tam oynanır (1x: maç saniyesi ×1,6, ölü top hazırlığı hızlı), aralarda saat ilerler; maç 1x'te ~2,5–4 dk. Test yardımcıları: `?tohum=N`, `?an=N`, `?hizli`. CI: `scripts/test_draft_xi_mac.mjs` (istatistikler = motor, goller özette).
 
+## Motor 0.5 · bitirişte çeşitlilik, kornerler, top sürüşü (2026-11-23)
+
+Sorunlar (kullanıcı): şutları hep aynı oyuncu çekiyor; top sürüşü kale ağzına kadar gidip geri dönüyor; topa kimse dokunmadan korner; kornerden kafa golü yok.
+Ölçüm: 400 draft maçı (FM havuzu) + eşit kadro (A–A) korner senaryoları.
+
+| | önce (0.4.1) | sonra (0.5.0) |
+|---|---|---|
+| takımın en çok şut çekeninin payı | %68 | %57 |
+| gollerde forvet / kanat / orta saha / stoper | %90 / %2 / %5 / %1 | %73 / %5 / %8 / %13 |
+| kale çizgisine 6 m'den yakın biten top sürüşü | %6,8 | %0 |
+| kötü ortadan dokunuşsuz korner | %92 | %0 (korner hep defansçıdan) |
+| kornerden kafa golü (eşit kadro) | %2,4 | %4,9 (güçlü kafa+orta / zayıf hava savunması %10,9, tersi %0,6) |
+
+Değişenler: hava topuna kimin gideceği ağırlıklı seçim (kafa², yakınlık; duran topta stoperler gelir); ara pasında koşucu ağırlıklı seçim (hız+pozisyon², kanatlar ×1,15) ve kanattan koşu içeri kıvrılır; kanat oyuncusu şuttan önce içeri kat eder; kanatta/ceza sahası önünde şut seçeneği arttı; top sürüşü ortada penaltı noktasında, kenarda çizgiye yakın durur, penaltı noktası civarında şut ağırlığı artar; kötü orta korner olacaksa en yakın defansçı uzaklaştırır; duran top ortası daha isabetli, duran toptan kafa vuruşu daha temiz (isabet ve kaleci aşamasında bonus — hepsi yetenekle ölçeklenir); kafa vuruşu yerden şut gibi bloklanmaz; bitiricilik eğimi 85 → 72, dönüşüm ×1,1; kanat taktiğinde çizgi koridorları daha çok aranır, "kanat atağı" sayımı ceza sahası içi pasları saymaz. Eşit kadro dengeli–dengeli ≈3,1 gol.
+
 ## Motor 0.4 · gol seviyesi ve plan dengesi (2026-11-23)
 
 Hedef (kullanıcı): eşit kadrolar, iki takım da dengeli → maç başına ~3 gol; açık oyunda 5–6, savunmacı maçta 1–2 gol olabilir; hiçbir hazır plan baskın değil.

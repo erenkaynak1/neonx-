@@ -6,10 +6,10 @@
 import { makeRng, prob, bForBase, combineTactics, weighted, hash, pickWeighted } from './core.mjs';
 import { FORMATIONS, zonePoint, PITCH_W, PITCH_L, COL_W, ROW_L } from './formations.mjs';
 
-export const ENGINE_VERSION = '0.4.1';
+export const ENGINE_VERSION = '0.5.0';
 
 // k: milli-logit per attribute point (14.1)
-const K = { duel: 85, air: 110, short: 54, long: 43, shot: 85, cross: 43 };
+const K = { duel: 85, air: 110, short: 54, long: 43, shot: 72, cross: 43 };   // 0.5: shot 85 → 72: finishing still decides, but less steeply (a modest finisher's chance is not near zero)
 // tactic point effects are converted with the duel k
 const PT = 85;
 
@@ -20,7 +20,8 @@ const REF = {
   crossFixed: 800, crossB: bForBase(3000),
   shotFixed: 850, shotInB: bForBase(3200), shotOutB: bForBase(2000), headB: bForBase(2600),
   // 0.4: conversion ×0.8 → equal teams, both balanced: ~3 goals a match (user target; open games 5–6, defensive 1–2)
-  goalB: bForBase(2240), goalHeadB: bForBase(1920), goalOneB: bForBase(3440), goalOutB: bForBase(1200),
+  // 0.5: ×1.1 with the flatter finishing slope (K.shot 72)
+  goalB: bForBase(2460), goalHeadB: bForBase(2110), goalOneB: bForBase(3700), goalOutB: bForBase(1320),
   penB: bForBase(7600), interceptB: bForBase(3800), blockB: bForBase(2000), crossBlockB: bForBase(2500),
   fkWallB: bForBase(2200), fkOnB: bForBase(3000), fkGoalB: bForBase(1760),
 };
@@ -295,7 +296,7 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     stats[side].shots++;
     log('shot', side, shooter, { shotType: type, row: z.row, col: z.col, dm: Math.trunc(d / 10) });
     // 1) block
-    if (type !== 'pen' && type !== 'one') {
+    if (type !== 'pen' && type !== 'one' && type !== 'head') {   // 0.5: a header is not blocked like a shot from the ground
       let blocker = null, bd = 1e9; for (const p of active(ds)) { if (p.mevki === 'GK') continue; const sd = segDist(p.cur, fromPt, goal); if (sd < 30 && sd < bd) { bd = sd; blocker = p; } }
       if (blocker) {
         const Sb = weighted(blocker.a, W.block), Ss = weighted(shooter.a, type === 'out' ? W.shotOut : W.shotIn);
@@ -310,6 +311,9 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     const [pressDef, pd] = nearest(ds, fromPt);
     let B = (type === 'out' ? REF.shotOutB : type === 'head' ? REF.headB : REF.shotInB) + Math.max(0, d - 110) * 4 + Math.max(0, angle - 100) * 3 + (pd < 20 ? 400 : 0);
     if (type === 'one') B -= 600;
+    // 0.5: a rehearsed set piece: the header is attacked with a run and a clean contact, from close in, hard for the keeper
+    const spHead = type === 'head' && st.spHead; st.spHead = false;
+    if (spHead) B -= 800;
     if (type === 'out' && tac(ds).line === 'low') B -= 400; // 0.4: a deep block leaves the edge of the box
     const pOn = prob(S, REF.shotFixed, K.shot, B); const r = rng.roll();
     if (r >= pOn) {
@@ -324,7 +328,7 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     // 4) keeper
     const gw = type === 'head' ? W.gkHead : type === 'one' ? W.gkOne : type === 'out' ? W.gkFar : d < 110 ? W.gkNear : W.gkFar;
     const Dk = weighted(gk.a, gw);
-    let Bg = (type === 'head' ? REF.goalHeadB : type === 'one' ? REF.goalOneB : type === 'out' ? REF.goalOutB : REF.goalB) + Math.max(0, d - 110) * 3;
+    let Bg = (type === 'head' ? REF.goalHeadB : type === 'one' ? REF.goalOneB : type === 'out' ? REF.goalOutB : REF.goalB) + Math.max(0, d - 110) * 3 - (spHead ? 680 : 0);
     const pG = prob(S + q, Dk, K.shot, Bg);
     stats[side].xg += Math.trunc((pOn * pG) / 10000);
     const r2 = rng.roll();
@@ -394,7 +398,11 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     const spot = toAbs(side, spotRel);
     // attackers / defenders in the box by aerial ability (4.5.9): set pieces bring the tall centre backs up
     const atkPool = active(side).filter(p => p !== crosser && p.mevki !== 'GK' && (setPiece || rel(side, p.cur).y > 4 * ROW_L));
-    const atk = atkPool.sort((a, b) => (dist(a.cur, spot) - b.a.hed * 3) - (dist(b.cur, spot) - a.a.hed * 3))[0];
+    // 0.5: who attacks the ball is a weighted pick (heading², nearness), not always the best header: the strikers
+    // still win most, but wingers, midfielders arriving and — at set pieces — the centre backs score their share
+    const aw = (p) => { const near = setPiece && p.mevki === 'CB' ? 1 : Math.max(0.15, 1 - dist(p.cur, spot) / 400); return Math.trunc(p.a.hed * p.a.hed * near * (setPiece && p.mevki === 'CB' ? 1.6 : 1)); };
+    const ranked = atkPool.map(p => [p, aw(p)]).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    const atk = ranked.length ? ranked[pickWeighted(rng, ranked.map(x => x[1]))][0] : null;
     const defs = active(ds).filter(p => p.mevki !== 'GK').sort((a, b) => dist(a.cur, spot) - dist(b.cur, spot));
     const df = defs[0];
     if (!atk) { log('clear', ds, df); return secondBall(ds, 'clear', spot); }
@@ -402,14 +410,14 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     const hDiff = atk.player.height - df.player.height;
     const pA = prob(weighted(atk.a, W.airAtk), weighted(df.a, W.air), K.air, -hDiff * 14);
     log('aerial', side, atk, { vs: df.player.id, p: pA });
-    if (rng.roll() < pA) { stats[side].aerialsWon++; duel(atk, df, pA); st.lastPasser = crosser; return shoot(side, atk, 'head', { x: spot.x, y: spot.y }); }
+    if (rng.roll() < pA) { stats[side].aerialsWon++; duel(atk, df, pA); st.lastPasser = crosser; st.spHead = setPiece; return shoot(side, atk, 'head', { x: spot.x, y: spot.y }); }
     duel(df, atk, 10000 - pA);
     log('clear', ds, df);
     return secondBall(ds, 'clear', spot);
   }
 
   function setPieceCross(side, taker, kind) {
-    const pAcc = prob(weighted(taker.a, W.cross), REF.crossFixed, K.cross, REF.crossB - 300);
+    const pAcc = prob(weighted(taker.a, W.cross), REF.crossFixed, K.cross, REF.crossB - 1100);   // 0.5: a dead-ball delivery reaches the box far more often
     if (rng.roll() >= pAcc) { log('cross_bad', side, taker, { kind }); return gkBall(opp(side)); }
     const spots = [{ x: 280, y: 990 }, { x: 340, y: 940 }, { x: 410, y: 975 }];
     return boxDuel(side, taker, spots[rng.int(3)], true);
@@ -428,7 +436,12 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     const pAcc = prob(S, REF.crossFixed, K.cross, REF.crossB + press + crossPts * PT);
     const r = rng.roll();
     advance(durOf(30, 50, 50, side));
-    if (r >= pAcc) { log('cross_bad', side, crosser, { p: pAcc }); const rr = rng.int(10); return rr < 4 ? corner(side) : rr < 7 ? gkBall(ds) : secondBall(ds, 'clear', toAbs(side, { x: 340, y: 950 })); }
+    if (r >= pAcc) {
+      log('cross_bad', side, crosser, { p: pAcc }); const rr = rng.int(10);
+      // 0.5: a corner only comes off a defender: the nearest one in the box heads / turns it behind
+      if (rr < 4) { const [cl] = nearest(ds, toAbs(side, { x: 340, y: 960 })); if (cl) log('clear', ds, cl); return corner(side); }
+      return rr < 7 ? gkBall(ds) : secondBall(ds, 'clear', toAbs(side, { x: 340, y: 950 }));
+    }
     stats[side].crossesOk++;
     const near = rel(side, crosser.cur).x < PITCH_W / 2;
     const spots = [{ x: near ? 290 : 390, y: 990 }, { x: 340, y: 935 }, { x: near ? 400 : 280, y: 975 }];
@@ -488,9 +501,10 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     let opts; // [name, base weight]
     if (z.row <= 3) opts = [['short', 56], ['long', 24], ['carry', 15], ['dribble', 5]];
     else if (z.row === 4) opts = [['short', 58], ['long', 6], ['through', 6], ['carry', 20], ['dribble', 8], ['shotOut', 2]];
-    else if (box) opts = [['shotIn', 10], ['short', 68], ['dribble', 22]];
-    else if (wing) opts = [['short', 40], ['dribble', 17], ['cross', 40], [z.row === 6 ? 'shotIn' : 'shotOut', 3]];
-    else opts = [['short', 64], ['dribble', 14], ['shotOut', 6], ['through', 16]];
+    // 0.5: through on goal around the penalty spot (a run stops there now): he shoots rather than walking it in
+    else if (box) opts = dist(h.cur, goalPt(side)) < 130 ? [['shotIn', 13], ['short', 66], ['dribble', 21]] : [['shotIn', 10], ['short', 68], ['dribble', 22]];
+    else if (wing) opts = [['short', 40], ['dribble', 17], ['cross', 40], [z.row === 6 ? 'shotIn' : 'shotOut', z.row === 6 ? 20 : 7]];   // 0.5: wide men cut in and shoot
+    else opts = [['short', 64], ['dribble', 14], ['shotOut', 9], ['through', 16]];
     if (h.mevki === 'GK') opts = [['short', 70], ['long', 30]];
     // 0.4.1: nobody shoots from more than 30 m (long shots came from 35–53 m); the carrier drives on instead
     if (dist(h.cur, goalPt(side)) > 300) opts = opts.map(([n, w]) => (n === 'shotOut' ? ['carry', w] : [n, w]));
@@ -542,7 +556,7 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
       const openW = cre > 0 ? 2 : cre < 0 ? 4 : 3;
       const fwdW = cre > 0 ? Math.trunc(fwd * 3 / 2) : cre < 0 ? Math.trunc(fwd / 2) : fwd;
       let w = 100 + open * openW + clamp(fwdW, -150, 300);
-      if (dirSide && onDirSide(dirSide, Math.sign(mr.x - PITCH_W / 2)) && Math.abs(mr.x - PITCH_W / 2) > COL_W / 2) w *= 2;
+      if (dirSide && onDirSide(dirSide, Math.sign(mr.x - PITCH_W / 2)) && Math.abs(mr.x - PITCH_W / 2) > COL_W / 2) w = Math.trunc(w * (Math.abs(mr.x - PITCH_W / 2) > COL_W * 3 / 2 ? 35 : 22) / 10);   // 0.5: the touchline lanes most of all
       if (dirSide === 'centre' && Math.abs(mr.x - PITCH_W / 2) <= COL_W) w *= 2;  // centre: the middle corridor
       // vision: better passers favour open, forward options (4.2)
       w = Math.trunc((w * (50 + h.a.vis)) / 100) + (open > 40 ? Math.trunc(h.a.vis) : 0);
@@ -592,7 +606,8 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     stats[side].passes++; if (kind === 'long') stats[side].longPasses++;
     advance(kind === 'long' ? durOf(30, 50, Math.trunc((d - 250) / 3), side) : durOf(20, 40, Math.trunc((d - 40) / 2.4), side));
     const from = { ...h.cur };
-    const zr = zoneOf(side, m.cur); if (zr.row >= 5) { if (zr.col >= 3) stats[side].rightCorridorAttacks++; else if (zr.col <= 1) stats[side].leftCorridorAttacks++; }
+    // a flank attack is the ball played into a wide lane of the final third from outside the box (0.5: passes inside the box no longer count)
+    const zr = zoneOf(side, m.cur); if (zr.row >= 5 && zoneOf(side, h.cur).row < 6) { if (zr.col >= 3) stats[side].rightCorridorAttacks++; else if (zr.col <= 1) stats[side].leftCorridorAttacks++; }
     if (rng.roll() >= pOk) {
       // inaccurate: nearest opponent to the target picks it up
       log('pass_bad', side, h, { to: m.player.id, kind, p: pOk }); rate(h, -Math.trunc(pOk / 2000));
@@ -626,7 +641,13 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
   function dribbleOrCarry(side, h, kind) {
     const ds = opp(side); const [d, dd] = nearest(ds, h.cur, st.beaten);
     const goal = goalPt(side);
-    const stepTo = (len) => { const gd = Math.max(1, dist(h.cur, goal)); const drift = rng.int(61) - 30; return { x: clamp(h.cur.x + Math.trunc(((goal.x - h.cur.x) * len) / gd) + drift, 10, PITCH_W - 10), y: clamp(h.cur.y + Math.trunc(((goal.y - h.cur.y) * len) / gd), 10, PITCH_L - 10) }; };
+    const stepTo = (len) => {
+      const gd = Math.max(1, dist(h.cur, goal)); const drift = rng.int(61) - 30;
+      const p = { x: clamp(h.cur.x + Math.trunc(((goal.x - h.cur.x) * len) / gd) + drift, 10, PITCH_W - 10), y: clamp(h.cur.y + Math.trunc(((goal.y - h.cur.y) * len) / gd), 10, PITCH_L - 10) };
+      // 0.5: nobody runs the ball into the six-yard box: centrally a run stops around the penalty spot, wide near the byline
+      const r = rel(side, p), lim = Math.abs(r.x - PITCH_W / 2) < 120 ? PITCH_L - 95 : PITCH_L - 25;
+      return r.y > lim ? toAbs(side, { x: r.x, y: lim }) : p;
+    };
     if (!d || dd > 50 && kind === 'carry') { advance(durOf(30, 60, 50, side)); h.cur = stepTo(100); st.ball = { ...h.cur }; log('carry', side, h); return; }
     stats[side].dribbles++;
     const second = active(ds).some(p => p !== d && p.mevki !== 'GK' && dist(p.cur, h.cur) < 60) ? 300 : 0;
@@ -650,7 +671,9 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     const hr = rel(side, h.cur);
     const runners = active(side).filter(m => m !== h && ['ST', 'LW', 'RW', 'AM', 'LM', 'RM'].includes(m.mevki) && rel(side, m.cur).y > hr.y);
     if (!runners.length) return pass(side, h, 'short');
-    const run = runners.sort((a, b) => b.a.pac + b.a.posn - (a.a.pac + a.a.posn))[0];
+    // 0.5: the runner is a weighted pick (pace + movement, squared), not always the quickest man
+    const rw = runners.map(m => { const v = m.a.pac + m.a.posn; return Math.trunc((v * v / 10) * (['LW', 'RW', 'LM', 'RM'].includes(m.mevki) ? 1.15 : 1)); });   // wide men run in behind too
+    const run = runners[pickWeighted(rng, rw)];
     // defensive line = second-last defender (5.6)
     const defY = active(ds).map(p => rel(side, p.cur).y).sort((a, b) => b - a);
     const lineY = defY[1] ?? PITCH_L;
@@ -663,7 +686,8 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
       if (e > 3) { stats[side].offsides++; log('offside', side, run, { by: e }); st.ball = toAbs(side, { x: runRel.x, y: lineY }); return freeKickRestart(ds); }
     }
     const S = weighted(h.a, { vis: 50, ...(dist(run.cur, h.cur) > 250 ? { lp: 50 } : { sp: 50 }) });
-    const target = toAbs(side, { x: runRel.x, y: clamp(lineY + 100, 0, PITCH_L - 60) });
+    // 0.5: a wide runner bends his run in towards goal
+    const target = toAbs(side, { x: runRel.x + Math.trunc(((PITCH_W / 2 - runRel.x) * 45) / 100), y: clamp(lineY + 100, 0, PITCH_L - 60) });
     const thief = interceptRun(side, h, h.cur, target, S, 'through');
     if (thief) { setPoss(ds, thief, thief.cur, 'intercept'); return; }
     // keeper rush vs high line (16.9)
@@ -740,7 +764,12 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
       case 'carry': case 'dribble': dribbleOrCarry(side, h, action); break;
       case 'cross': cross(side, h); break;
       case 'through': throughBall(side, h); break;
-      case 'shotIn': advance(durOf(20, 40, 50, side)); shoot(side, h, z.row === 6 ? 'in' : 'out', h.cur); break;
+      case 'shotIn': {
+        advance(durOf(20, 40, 50, side));
+        // 0.5: a wide man cuts inside before he shoots (he does not shoot from the byline)
+        if (z.col === 0 || z.col === 4) { h.cur = { x: h.cur.x + Math.trunc(((PITCH_W / 2 - h.cur.x) * 50) / 100), y: h.cur.y }; st.ball = { ...h.cur }; }
+        shoot(side, h, zoneOf(side, h.cur).row === 6 ? 'in' : 'out', h.cur); break;
+      }
       case 'shotOut': advance(durOf(20, 40, 50, side)); shoot(side, h, 'out', h.cur); break;
     }
   }

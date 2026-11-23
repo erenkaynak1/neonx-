@@ -13,6 +13,7 @@
 // Player roles are not used: behaviour follows the position the player plays (the user's decision).
 import { FORMATIONS, zonePoint } from '../../engine/formations.mjs?v=2';
 import { MX, MY, clamp, lerp, toRel, fromRel, onPitch, metres, GOAL_HALF, BOX } from './saha.mjs?v=2';
+import { speedOf } from './fizik.mjs?v=4';
 
 const DEF = new Set(['CB', 'LB', 'RB', 'LWB', 'RWB']), FULL = new Set(['LB', 'RB', 'LWB', 'RWB']);
 const WIDE = new Set(['LM', 'RM', 'LW', 'RW']), MID = new Set(['DM', 'CM', 'AM']);
@@ -91,13 +92,19 @@ function defend(W, P, side, out, ball) {
   if (P.poss !== null && P.poss !== side && !P.dead) {
     const first = cand[0];
     if (first && (first.d < range || ownHalf || first.forced)) {
-      // goal-side of the ball, a little inside so the carrier is shown towards the touchline
+      // a man running with the ball is met where he will be, not chased from behind: aim ahead of him (lead time from
+      // how far away the defender is), goal-side and a little inside so he is shown towards the touchline
+      const o = W.ball.owner, ob = o && W.bodies[o[0]]?.[o[1]];
+      const lead = (d) => (ob ? clamp(d / 7, 0, 1.1) : 0);
+      const ahead = (d) => ({ x: ball.x + (ob ? ob.vx * lead(d) : 0), y: ball.y + (ob ? ob.vy * lead(d) : 0) });
       const inside = (50 - toRel(side, ball).u) > 0 ? 1 : -1;
-      const p = { x: ball.x + (toGoal.x * 1.5 + (side === 0 ? inside : -inside) * 0.6) / MX, y: ball.y + (toGoal.y * 1.5) / MY };
+      const a1 = ahead(first.d);
+      const p = { x: a1.x + (toGoal.x * 1.5 + (side === 0 ? inside : -inside) * 0.6) / MX, y: a1.y + (toGoal.y * 1.5) / MY };
       out[first.i] = { ...p, mode: 'sprint' }; engaged.add(first.i);
       const second = cand.find((c) => !engaged.has(c.i));
-      if (second && nPress >= 2 && second.d < range + 12) {   // cover: behind the presser, on the line to goal
-        out[second.i] = { x: ball.x + (toGoal.x * 7) / MX, y: ball.y + (toGoal.y * 7) / MY, mode: 'run' }; engaged.add(second.i);
+      if (second && (nPress >= 2 || ob && speedOf(ob) > 4) && second.d < range + 12) {   // cover: behind the presser, on the line to goal (always when he is running at them)
+        const a2 = ahead(second.d);
+        out[second.i] = { x: a2.x + (toGoal.x * 6) / MX, y: a2.y + (toGoal.y * 6) / MY, mode: ob && speedOf(ob) > 4 ? 'sprint' : 'run' }; engaged.add(second.i);
       }
       if (nPress >= 3 && b.v > 40) {                          // high press: a third player jumps the nearest passing option
         const opp = W.bodies[1 - side];
