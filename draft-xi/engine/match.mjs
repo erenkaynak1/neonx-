@@ -6,7 +6,7 @@
 import { makeRng, prob, bForBase, combineTactics, weighted, hash, pickWeighted } from './core.mjs';
 import { FORMATIONS, zonePoint, PITCH_W, PITCH_L, COL_W, ROW_L } from './formations.mjs';
 
-export const ENGINE_VERSION = '0.3.1';
+export const ENGINE_VERSION = '0.4.0';
 
 // k: milli-logit per attribute point (14.1)
 const K = { duel: 85, air: 110, short: 54, long: 43, shot: 85, cross: 43 };
@@ -16,12 +16,13 @@ const PT = 85;
 // Reference difficulties (milli-logit). "Fixed" opponents are attribute 50/60/70 ×10.
 const REF = {
   shortFixed: 500, shortB: bForBase(8500), // 50 → 85 %
-  longFixed: 600, longB: bForBase(4500), // 60 → 45 %
+  longFixed: 600, longB: bForBase(4000), // 60 → 40 % (0.4: direct play was over-rewarded)
   crossFixed: 800, crossB: bForBase(3000),
   shotFixed: 850, shotInB: bForBase(3200), shotOutB: bForBase(2000), headB: bForBase(2600),
-  goalB: bForBase(2800), goalHeadB: bForBase(2400), goalOneB: bForBase(4300), goalOutB: bForBase(1500),
+  // 0.4: conversion ×0.8 → equal teams, both balanced: ~3 goals a match (user target; open games 5–6, defensive 1–2)
+  goalB: bForBase(2240), goalHeadB: bForBase(1920), goalOneB: bForBase(3440), goalOutB: bForBase(1200),
   penB: bForBase(7600), interceptB: bForBase(3800), blockB: bForBase(2000), crossBlockB: bForBase(2500),
-  fkWallB: bForBase(2200), fkOnB: bForBase(3000), fkGoalB: bForBase(2200),
+  fkWallB: bForBase(2200), fkOnB: bForBase(3000), fkGoalB: bForBase(1760),
 };
 
 const DEFAULT_TACTIC = { direction: 'balanced', passing: 'mixed', finishing: 'mixed', tempo: 'balanced', onWin: 'settled',
@@ -29,7 +30,7 @@ const DEFAULT_TACTIC = { direction: 'balanced', passing: 'mixed', finishing: 'mi
 
 // Attack direction: left (-1) / right (+1) / both wings ('wings') / balanced or centre (0). `onDirSide(T, xFromCentre)`
 // tells whether a lateral position lies in the chosen corridor(s).
-const CRE_PASS_B = 400, CRE_SAFE_B = 250, CRE_SHAPE_B = 350; // creativity: pass difficulty / defensive shape (milli-logit)
+const CRE_PASS_B = 250, CRE_SAFE_B = 250, CRE_SHAPE_B = 350; // creativity: pass difficulty / defensive shape (milli-logit)
 const dirOf = (T) => (T.direction === 'left' ? -1 : T.direction === 'right' ? 1 : T.direction === 'wings' ? 'wings' : T.direction === 'centre' ? 'centre' : 0);
 const onDirSide = (dir, dx) => (dir === 'wings' ? dx !== 0 : dir === 'centre' ? false : !!dir && Math.sign(dx) === dir);
 
@@ -158,7 +159,8 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
             if (dirSide === 'centre' && ['CM', 'AM'].includes(p.mevki)) base.y += ROW_L >> 1;  // centre: midfielders step up into the middle
             if (T.tempo === 'fast' && ['ST', 'LW', 'RW'].includes(p.mevki)) base.y = Math.max(base.y, 5 * ROW_L + 40);
           } else {
-            if (T.line === 'low') base.y -= ROW_L; else if (T.line === 'high') base.y += ROW_L;
+            // 0.4: a low block drops 10 m (was 17.5 m: it defended for free), a high line steps up 17.5 m
+            if (T.line === 'low') base.y -= 100; else if (T.line === 'high') base.y += ROW_L;
             // lateral shift towards the ball (4.5.2)
             const dx = ballRel.x - PITCH_W / 2; const dirB = Math.sign(dx);
             let f = 50; // percent of a column
@@ -210,15 +212,18 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
   const tacticPts = list => combineTactics(list);
   const weakFoot = pl => (pl.player.weakFoot < 5 && rng.int(4) === 0 ? (5 - pl.player.weakFoot) * 50 : 0); // ×10 units
   const durOf = (lo, hi, frac, side) => { const T = tac(side); const m = T.tempo === 'fast' ? 80 : T.tempo === 'patient' ? 125 : 100; return Math.trunc(((lo + Math.trunc(((hi - lo) * clamp(frac, 0, 100)) / 100)) * m) / 100); };
+  // line height in possession (0.4): in the opponent half a deep team has fewer players in support (harder passes,
+  // through balls easier to read), a high line keeps the team compact; without this the line was a free choice
+  const supportB = (side, pt) => { const T = tac(side); if (rel(side, pt).y < PITCH_L / 2) return 0; return T.line === 'low' ? 400 : T.line === 'high' ? -400 : 0; };
   function advance(dt) { st.lastDt = dt; t += dt; stats[st.poss].possession += dt; }
 
   function setPoss(side, holder, pt, how) {
     if (side !== st.poss) {
-      st.counter = tac(side).onWin === 'counter' ? 3 : 0;
+      st.counter = tac(side).onWin === 'counter' ? 2 : 0; // 0.4: two counter actions (was three)
       // creativity cost / benefit on the turnover: a free-playing team is caught out of shape more often (a counter even
-      // for a settled opponent, 1 in 2); a disciplined team is already back in shape (opponent's counter is shorter)
+      // for a settled opponent, 1 in 3); a disciplined team is already back in shape (opponent's counter is shorter)
       const loser = st.poss >= 0 ? tac(st.poss).creativity : 'balanced';
-      if (loser === 'high' && st.counter === 0 && rng.int(2) === 0) st.counter = 3;
+      if (loser === 'high' && st.counter === 0 && rng.int(3) === 0) st.counter = 3;
       if (loser === 'low' && st.counter > 0) st.counter = 1;
       st.chain = 0; stats[side].attacks++;
     }
@@ -229,8 +234,10 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
   // defender-side tactic points for a contest at a given pitch point
   function defPoints(ds, pt, kind) {
     const T = tac(ds); const z = zoneOf(opp(ds), pt); const wing = z.col === 0 || z.col === 4; const list = [];
-    if (T.closed === 'wings') list.push(wing ? 15 : -15); else if (T.closed === 'centre') list.push(wing ? -15 : 15);
-    if (kind === 'tackle' || kind === 'press') { if (T.tackling === 'hard') list.push(15); else if (T.tackling === 'careful') list.push(-15); }
+    // closed area (0.4): wing columns are 2 of 5 and see about a third of the contests, so ±15 / ±15 made closing the
+    // centre a free win; wings +20 / −10 and centre +10 / −20 are even on average and still beat the matching attack
+    if (T.closed === 'wings') list.push(wing ? 20 : -10); else if (T.closed === 'centre') list.push(wing ? -20 : 10);
+    if (kind === 'tackle' || kind === 'press') { if (T.tackling === 'hard') list.push(15); else if (T.tackling === 'careful') list.push(-10); }
     if (kind === 'press') { if (T.press === 'high') list.push(15); else if (T.press === 'low') list.push(-15); }
     return tacticPts(list);
   }
@@ -254,7 +261,8 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     if (dogso && (!inOwnBox || rng.int(4) === 0)) card = 'red';
     else if (dogso) card = def.yellow ? 'red' : 'yellow';
     if (!card && !dogso) {
-      let pY = st.counter > 0 || kind === 'race' ? 6000 : 1500;
+      // 0.4: a foul that stops a counter is booked 30 % of the time (was 60 %: counter teams got their opponents sent off)
+      let pY = kind === 'race' ? 6000 : st.counter > 0 ? 3000 : 1500;
       pY = Math.trunc((pY * (sert === 200 ? 160 : sert === 55 ? 60 : 100)) / 100); // card multiplier (16.10)
       if (sert === 200 && tacV < 55 && rng.roll() < 200) card = 'red';
       else if (rng.roll() < pY) card = def.yellow ? 'red' : 'yellow';
@@ -302,6 +310,7 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     const [pressDef, pd] = nearest(ds, fromPt);
     let B = (type === 'out' ? REF.shotOutB : type === 'head' ? REF.headB : REF.shotInB) + Math.max(0, d - 110) * 4 + Math.max(0, angle - 100) * 3 + (pd < 20 ? 400 : 0);
     if (type === 'one') B -= 600;
+    if (type === 'out' && tac(ds).line === 'low') B -= 400; // 0.4: a deep block leaves the edge of the box
     const pOn = prob(S, REF.shotFixed, K.shot, B); const r = rng.roll();
     if (r >= pOn) {
       const post = r < pOn + 180;
@@ -483,13 +492,23 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     else if (wing) opts = [['short', 40], ['dribble', 17], ['cross', 40], [z.row === 6 ? 'shotIn' : 'shotOut', 3]];
     else opts = [['short', 64], ['dribble', 14], ['shotOut', 6], ['through', 16]];
     if (h.mevki === 'GK') opts = [['short', 70], ['long', 30]];
-    const mult = { short: T.passing === 'short' ? 2 : 1, long: T.passing === 'long' ? 2 : 1, cross: T.finishing === 'cross' ? 2 : 1,
-      through: T.finishing === 'through' ? 2 : 1, shotOut: T.finishing === 'long' ? 2 : 1, dribble: T.finishing === 'dribble' ? 2 : 1, carry: 1, shotIn: 1 };
-    if (T.tempo === 'fast') { mult.through *= 2; mult.carry *= 2; }
-    // creativity: free play tries the risky, surprising options more; disciplined play keeps the ball simple
-    if (T.creativity === 'high') { mult.through *= 1.6; mult.dribble *= 1.6; mult.shotOut *= 1.4; mult.short *= 0.85; }
-    else if (T.creativity === 'low') { mult.through *= 0.6; mult.dribble *= 0.6; mult.shotOut *= 0.7; mult.short *= 1.25; }
-    if (st.counter > 0) { mult.through *= 2; mult.long *= 2; mult.carry *= 2; }
+    // frequency effects (0.4) combine like point effects (14.4): the strongest boost counts in full, the next at half,
+    // then a quarter …, capped at ×3; reducing factors multiply. (Fast tempo + through-ball finishing + a counter used to
+    // multiply the through ball by ×8.) Short passing: ×2 in build-up, ×1.2 in the final third (it crowded out shots).
+    const F = { short: [], long: [], cross: [], through: [], shotOut: [], dribble: [], carry: [], shotIn: [] };
+    if (T.passing === 'short') F.short.push(z.row >= 5 ? 1.2 : 2); else if (T.passing === 'long') F.long.push(2);
+    if (T.finishing === 'cross') F.cross.push(2); else if (T.finishing === 'through') F.through.push(2);
+    else if (T.finishing === 'long') F.shotOut.push(2); else if (T.finishing === 'dribble') F.dribble.push(2);
+    if (T.tempo === 'fast') { F.through.push(2); F.carry.push(2); }
+    if (T.creativity === 'high') { F.through.push(1.6); F.dribble.push(1.6); F.shotOut.push(1.4); F.short.push(0.85); }
+    else if (T.creativity === 'low') { F.through.push(0.6); F.dribble.push(0.6); F.shotOut.push(0.7); F.short.push(1.25); }
+    if (st.counter > 0) { F.through.push(1.5); F.long.push(1.5); F.carry.push(1.5); }
+    const mult = {};
+    for (const [n, fs] of Object.entries(F)) {
+      const up = fs.filter((f) => f > 1).sort((x, y) => y - x); let m = 1, w = 1;
+      for (const f of up) { m += (f - 1) * w; w *= 0.5; }
+      mult[n] = Math.min(3, m) * fs.filter((f) => f < 1).reduce((x, f) => x * f, 1);
+    }
     const abil = { short: h.a.sp, long: h.a.lp, cross: h.a.cro, through: h.a.vis, shotOut: h.a.lon, shotIn: h.a.fin, dribble: h.a.dri, carry: h.a.pac };
     // inverted winger: cuts inside to shoot (2.5)
     const inverted = (h.player.foot === 'L' && rel(side, h.cur).x > PITCH_W / 2) || (h.player.foot === 'R' && rel(side, h.cur).x < PITCH_W / 2);
@@ -537,7 +556,7 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
       const pts = defPoints(ds, p.cur, 'intercept');
       // a disciplined team keeps its shape without the ball: passing lanes are better covered
       const shape = tac(ds).creativity === 'low' ? CRE_SHAPE_B : 0;
-      const pI = Math.trunc((prob(weighted(p.a, W.intercept), S, K.duel, REF.interceptB - pts * PT - shape) * (100 - d)) / 100);
+      const pI = Math.trunc((prob(weighted(p.a, W.intercept), S, K.duel, REF.interceptB - pts * PT - shape - supportB(side, to) - (kindName === 'through' ? 300 : 0) /* 0.4: through balls are easier to read */) * (100 - d)) / 100);
       if (rng.roll() < pI) { duel(p, passer, pI); log('intercept', ds, p, { from: passer.player.id, kind: kindName }); return p; }
     }
     return null;
@@ -563,9 +582,10 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     const S = weighted(h.a, kind === 'long' ? W.long : W.short);
     // crowded receiving zone: each opponent within 8 m of the target makes the pass harder (situation → B, not D)
     const crowd = active(opp(side)).filter(o => o.mevki !== 'GK' && dist(o.cur, m.cur) < 80).length;
-    const B = (kind === 'long' ? REF.longB + Math.max(0, d - 300) * 2 : REF.shortB + Math.max(0, d - 100) * 3) + crowd * 260;
+    const B = (kind === 'long' ? REF.longB + Math.max(0, d - 300) * 2 : REF.shortB + Math.max(0, d - 100) * 3) + crowd * 260 + supportB(side, m.cur);
     // creativity: free play forces the ball into tighter windows (harder passes); disciplined play picks the safe one
-    const creB = tac(side).creativity === 'high' ? CRE_PASS_B : tac(side).creativity === 'low' ? -CRE_SAFE_B : 0;
+    // short passing (0.4): combination play is more accurate (it had a frequency effect and no benefit at all)
+    const creB = (tac(side).creativity === 'high' ? CRE_PASS_B : tac(side).creativity === 'low' ? -CRE_SAFE_B : 0) - (kind !== 'long' && tac(side).passing === 'short' ? 250 : 0);
     const pOk = prob(S, kind === 'long' ? REF.longFixed : REF.shortFixed, kind === 'long' ? K.long : K.short, B + creB);
     stats[side].passes++; if (kind === 'long') stats[side].longPasses++;
     advance(kind === 'long' ? durOf(30, 50, Math.trunc((d - 250) / 3), side) : durOf(20, 40, Math.trunc((d - 40) / 2.4), side));

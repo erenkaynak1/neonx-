@@ -14,6 +14,19 @@ Run the lab: `node scripts/draft_xi_lab.mjs 400` (add `--meta` for the meta hunt
 
 Not wired into the site yet; the live Draft XI still runs on `neon-xi-core.html`.
 
+## Motor 0.4 · gol seviyesi ve plan dengesi (2026-11-23)
+
+Hedef (kullanıcı): eşit kadrolar, iki takım da dengeli → maç başına ~3 gol; açık oyunda 5–6, savunmacı maçta 1–2 gol olabilir; hiçbir hazır plan baskın değil.
+Ölçüm: draft benzeri eşit kadrolarla 6×6 plan tablosu (her hücre iki yönde 240 maç).
+
+| | önce (0.3.1) | sonra (0.4.0) |
+|---|---|---|
+| dengeli – dengeli gol | 3,52 | 3,05 (1–2 gol %38, 3–4 %39, 5+ %19) |
+| otobüs – otobüs gol | 2,09 | 1,98 |
+| plan puanları (en düşük – en yüksek) | 1,10 – 1,70 | 1,34 – 1,51 |
+
+Değişenler: hat yüksekliğinin hücum karşılığı (alçak blok 10 m düşer, rakip yarı sahada destek az; yüksek hat paslarda derli toplu), alçak bloğa karşı uzaktan şut kolaylaşır; kapatılan alan +20/−10 ve +10/−20 (ortalamada eşit); sıklık çarpanları puan etkileri gibi birleşir (en fazla ×3); kısa pas daha isabetli ve son üçte birde şutu boğmuyor; kontra 2 aksiyon ×1,5, kontrayı kesen faulde sarı %30 (önce %60: kontra takımının rakibi maç başına 0,36 kırmızı görüyordu); uzun pas %40, ara pası okunmaya daha açık; serbest oyunun cezası hafifledi; temkinli müdahale −10; gole dönüşüm ×0,8.
+
 ## Oyuncu havuzu: Excel (2026-11-23)
 
 Oyunun kullandığı havuz **`data/eren-oyuncu-havuzu.xlsx`** dosyasıdır; `data/havuz-fm.mjs` ondan üretilir (Draft, Taktik, Maç ve İnceleme ekranları bunu okur).

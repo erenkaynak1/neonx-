@@ -2,7 +2,7 @@
 // goal replay + celebration. The engine computes the whole match first; this screen only plays it back.
 import { HAVUZ, HAVUZ_BY_ID } from '../data/havuz-fm.mjs?v=1';
 import { FORMATIONS } from '../engine/formations.mjs?v=2';
-import { simulateMatch } from '../engine/match.mjs?v=5';
+import { simulateMatch } from '../engine/match.mjs?v=6';
 import { createSpiker, dakika } from './spiker.mjs?v=3';
 
 const $ = (id) => document.getElementById(id);

@@ -3,7 +3,7 @@
 // opponent (16.13: easy / medium / hard) or two players on one phone. Ends on the tactics screen.
 import { HAVUZ, HAVUZ_BY_ID } from '../data/havuz-fm.mjs?v=1';
 import { FORMATIONS, zonePoint } from '../engine/formations.mjs?v=2';
-import { uygun, guc, kimya, MEVKI_GRUP, esc } from './ortak.mjs?v=2';
+import { uygun, guc, kimya, MEVKI_GRUP, esc } from './ortak.mjs?v=3';
 
 const $ = (id) => document.getElementById(id);
 const STYLE = { // medium/hard bot: a playing style chosen at the start (16.13) → attributes it values and its plan
