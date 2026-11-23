@@ -15,13 +15,13 @@ const PT = 85;
 
 // Reference difficulties (milli-logit). "Fixed" opponents are attribute 50/60/70 ×10.
 const REF = {
-  shortFixed: 500, shortB: bForBase(8500), // 50 → 85 %
+  shortFixed: 500, shortB: bForBase(8800), // 50 → 88 % (0.5: team pass accuracy ~77 % → ~82 %)
   longFixed: 600, longB: bForBase(4000), // 60 → 40 % (0.4: direct play was over-rewarded)
   crossFixed: 800, crossB: bForBase(3000),
   shotFixed: 850, shotInB: bForBase(3200), shotOutB: bForBase(2000), headB: bForBase(2600),
   // 0.4: conversion ×0.8 → equal teams, both balanced: ~3 goals a match (user target; open games 5–6, defensive 1–2)
   // 0.5: ×1.1 with the flatter finishing slope (K.shot 72)
-  goalB: bForBase(1780), goalHeadB: bForBase(2110), goalOneB: bForBase(2850), goalOutB: bForBase(1000),
+  goalB: bForBase(2250), goalHeadB: bForBase(2110), goalOneB: bForBase(3450), goalOutB: bForBase(1220),
   penB: bForBase(7600), interceptB: bForBase(3800), blockB: bForBase(2000), crossBlockB: bForBase(2500),
   fkWallB: bForBase(2200), fkOnB: bForBase(3000), fkGoalB: bForBase(1760),
 };
@@ -289,6 +289,11 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     log('reshape', side, top, { into: gone.slot });
   }
 
+  // defensive quality of a side: its back line and holding midfielders (tackling, marking, pace), ×10
+  const defQ = (side) => {
+    const v = active(side).filter(p => ['CB', 'LB', 'RB', 'LWB', 'RWB', 'DM'].includes(p.mevki)).map(p => weighted(p.a, { tac: 50, mar: 30, pac: 20 }));
+    return v.length ? Math.trunc(v.reduce((x, y) => x + y, 0) / v.length) : 850;
+  };
   // ---------- shots (5.5, 14.6) ----------
   function shoot(side, shooter, type, fromPt) {
     const ds = opp(side), gk = keeper(ds); const goal = goalPt(side);
@@ -315,7 +320,9 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     const spHead = type === 'head' && st.spHead; st.spHead = false;
     if (spHead) B -= 800;
     if (type === 'out' && tac(ds).line === 'low') B -= 400; // 0.4: a deep block leaves the edge of the box
-    const pOn = prob(S, REF.shotFixed, K.shot, B); const r = rng.roll();
+    // 0.5: accuracy against the defence in front of him, not a fixed bar: two equal teams of any level create and
+    // finish chances at a similar rate (average clubs scored half as much as star teams before)
+    const pOn = prob(S, REF.shotFixed + Math.trunc((defQ(ds) - 850) * 9 / 10), K.shot, B); const r = rng.roll();
     if (r >= pOn) {
       const post = r < pOn + 180;
       log(post ? 'post' : 'miss', side, shooter, { shotType: type, p: pOn, roll: r });
@@ -409,6 +416,9 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     stats[side].aerials++;
     const hDiff = atk.player.height - df.player.height;
     const pA = prob(weighted(atk.a, W.airAtk), weighted(df.a, W.air), K.air, -hDiff * 14);
+    // 0.5: the duel happens at the delivery spot: both men and the ball are there (the frame used to keep the attacker
+    // wherever he was, and the 2D screen sent the corner to him — into his own half)
+    st.ball = { ...spot }; atk.cur = { ...spot }; df.cur = toAbs(side, { x: rel(side, spot).x + 12, y: Math.min(PITCH_L - 15, rel(side, spot).y + 18) });
     log('aerial', side, atk, { vs: df.player.id, p: pA });
     if (rng.roll() < pA) { stats[side].aerialsWon++; duel(atk, df, pA); st.lastPasser = crosser; st.spHead = setPiece; return shoot(side, atk, 'head', { x: spot.x, y: spot.y }); }
     duel(df, atk, 10000 - pA);
@@ -499,12 +509,12 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     const z = zoneOf(side, h.cur); const T = tac(side);
     const wing = z.col === 0 || z.col === 4; const box = z.row === 6 && !wing;
     let opts; // [name, base weight]
-    if (z.row <= 3) opts = [['short', 56], ['long', 24], ['carry', 15], ['dribble', 5]];
-    else if (z.row === 4) opts = [['short', 58], ['long', 6], ['through', 6], ['carry', 20], ['dribble', 8], ['shotOut', 2]];
+    if (z.row <= 3) opts = [['short', 70], ['long', 14], ['carry', 13], ['dribble', 3]];   // 0.5: more passing, fewer take-ons (passes ~330 → real ~450 a team)
+    else if (z.row === 4) opts = [['short', 68], ['long', 5], ['through', 6], ['carry', 15], ['dribble', 4], ['shotOut', 2]];
     // 0.5: through on goal around the penalty spot (a run stops there now): he shoots rather than walking it in
-    else if (box) opts = dist(h.cur, goalPt(side)) < 130 ? [['shotIn', 13], ['short', 66], ['dribble', 21]] : [['shotIn', 10], ['short', 68], ['dribble', 22]];
-    else if (wing) opts = [['short', 40], ['dribble', 17], ['cross', 40], [z.row === 6 ? 'shotIn' : 'shotOut', z.row === 6 ? 20 : 7]];   // 0.5: wide men cut in and shoot
-    else opts = [['short', 64], ['dribble', 14], ['shotOut', 9], ['through', 16]];
+    else if (box) opts = dist(h.cur, goalPt(side)) < 130 ? [['shotIn', 13], ['short', 72], ['dribble', 12]] : [['shotIn', 10], ['short', 76], ['dribble', 12]];
+    else if (wing) opts = [['short', 48], ['dribble', 9], ['cross', 40], [z.row === 6 ? 'shotIn' : 'shotOut', z.row === 6 ? 20 : 7]];   // 0.5: wide men cut in and shoot
+    else opts = [['short', 72], ['dribble', 7], ['shotOut', 9], ['through', 16]];
     if (h.mevki === 'GK') opts = [['short', 70], ['long', 30]];
     // 0.4.1: nobody shoots from more than 30 m (long shots came from 35–53 m); the carrier drives on instead
     if (dist(h.cur, goalPt(side)) > 300) opts = opts.map(([n, w]) => (n === 'shotOut' ? ['carry', w] : [n, w]));
@@ -556,7 +566,7 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
       const openW = cre > 0 ? 2 : cre < 0 ? 4 : 3;
       const fwdW = cre > 0 ? Math.trunc(fwd * 3 / 2) : cre < 0 ? Math.trunc(fwd / 2) : fwd;
       let w = 100 + open * openW + clamp(fwdW, -150, 300);
-      if (dirSide && onDirSide(dirSide, Math.sign(mr.x - PITCH_W / 2)) && Math.abs(mr.x - PITCH_W / 2) > COL_W / 2) w = Math.trunc(w * (Math.abs(mr.x - PITCH_W / 2) > COL_W * 3 / 2 ? 35 : 22) / 10);   // 0.5: the touchline lanes most of all
+      if (dirSide && onDirSide(dirSide, Math.sign(mr.x - PITCH_W / 2)) && Math.abs(mr.x - PITCH_W / 2) > COL_W / 2) w = Math.trunc(w * (Math.abs(mr.x - PITCH_W / 2) > COL_W * 3 / 2 ? 45 : 26) / 10);   // 0.5: the touchline lanes most of all
       if (dirSide === 'centre' && Math.abs(mr.x - PITCH_W / 2) <= COL_W) w *= 2;  // centre: the middle corridor
       // vision: better passers favour open, forward options (4.2)
       w = Math.trunc((w * (50 + h.a.vis)) / 100) + (open > 40 ? Math.trunc(h.a.vis) : 0);
@@ -598,10 +608,12 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     const S = weighted(h.a, kind === 'long' ? W.long : W.short);
     // crowded receiving zone: each opponent within 8 m of the target makes the pass harder (situation → B, not D)
     const crowd = active(opp(side)).filter(o => o.mevki !== 'GK' && dist(o.cur, m.cur) < 80).length;
-    const B = (kind === 'long' ? REF.longB + Math.max(0, d - 300) * 2 : REF.shortB + Math.max(0, d - 100) * 3) + crowd * 260 + supportB(side, m.cur);
+    const B = (kind === 'long' ? REF.longB + Math.max(0, d - 300) * 2 : REF.shortB + Math.max(0, d - 100) * 3) + crowd * 260 + supportB(side, m.cur)
+      // 0.5: in the opponent's half a pass is played against their defence's quality, not a fixed bar
+      + (rel(side, m.cur).y > PITCH_L / 2 ? Math.trunc((defQ(opp(side)) - 850) * (kind === 'long' ? 4 : 6) / 10 * (kind === 'long' ? K.long : K.short) / 10) : 0);
     // creativity: free play forces the ball into tighter windows (harder passes); disciplined play picks the safe one
     // short passing (0.4): combination play is more accurate (it had a frequency effect and no benefit at all)
-    const creB = (tac(side).creativity === 'high' ? CRE_PASS_B : tac(side).creativity === 'low' ? -CRE_SAFE_B : 0) - (kind !== 'long' && tac(side).passing === 'short' ? 250 : 0);
+    const creB = (tac(side).creativity === 'high' ? CRE_PASS_B : tac(side).creativity === 'low' ? -CRE_SAFE_B : 0) - (kind !== 'long' && tac(side).passing === 'short' ? 120 : 0);   // 0.5: 250 → 120 (base short passing got more accurate)
     const pOk = prob(S, kind === 'long' ? REF.longFixed : REF.shortFixed, kind === 'long' ? K.long : K.short, B + creB);
     stats[side].passes++; if (kind === 'long') stats[side].longPasses++;
     advance(kind === 'long' ? durOf(30, 50, Math.trunc((d - 250) / 3), side) : durOf(20, 40, Math.trunc((d - 40) / 2.4), side));
@@ -642,13 +654,18 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     const ds = opp(side); const [d, dd] = nearest(ds, h.cur, st.beaten);
     const goal = goalPt(side);
     const stepTo = (len) => {
-      const gd = Math.max(1, dist(h.cur, goal)); const drift = rng.int(61) - 30;
+      const gd = Math.max(1, dist(h.cur, goal)); let drift = rng.int(61) - 30;
+      // 0.5: a wings plan carries the ball out towards the nearer touchline
+      if (dirOf(tac(side)) === 'wings') drift += (h.cur.x < PITCH_W / 2 ? -1 : 1) * 45;
       const p = { x: clamp(h.cur.x + Math.trunc(((goal.x - h.cur.x) * len) / gd) + drift, 10, PITCH_W - 10), y: clamp(h.cur.y + Math.trunc(((goal.y - h.cur.y) * len) / gd), 10, PITCH_L - 10) };
       // 0.5: nobody runs the ball into the six-yard box: centrally a run stops around the penalty spot, wide near the byline
       const r = rel(side, p), lim = Math.abs(r.x - PITCH_W / 2) < 120 ? PITCH_L - 95 : PITCH_L - 25;
       return r.y > lim ? toAbs(side, { x: r.x, y: lim }) : p;
     };
-    if (!d || dd > 50 && kind === 'carry') { advance(durOf(30, 60, 50, side)); h.cur = stepTo(100); st.ball = { ...h.cur }; log('carry', side, h); return; }
+    // 0.5: a carry is not a take-on: unless a defender is right on him (≤ 2.5 m) he runs with the ball, and only part of
+    // the time does a defender 2.5–5 m away step in (take-ons were 43 a team a match, about 16 in real football)
+    const engage = dd <= 25 || (dd <= 50 && rng.int(100) < 40);
+    if (!d || (kind === 'carry' && !engage)) { advance(durOf(30, 60, 50, side)); h.cur = stepTo(dd > 50 ? 100 : 60); st.ball = { ...h.cur }; log('carry', side, h); return; }
     stats[side].dribbles++;
     const second = active(ds).some(p => p !== d && p.mevki !== 'GK' && dist(p.cur, h.cur) < 60) ? 300 : 0;
     const pts = defPoints(ds, h.cur, 'tackle');

@@ -21,6 +21,15 @@ for (let seed = 1; seed <= 24; seed++) {
   for (let i = 1; i < H.length; i++) assert.ok(H[i].a > H[i - 1].b, 'highlights in order, no overlap');
   reelSecs += H.reduce((t, x) => t + 4 + (x.b - x.a + 1) * 2.2, 0);
 }
+// a club against itself: the away copies carry their own ids (ui/mac.mjs), so stats split correctly between the sides
+{
+  const twin = (sq) => ({ ...sq, name: sq.name + ' (2)', players: Object.fromEntries(Object.entries(sq.players).map(([s, p]) => [s, { ...p, id: p.id + '~2' }])) });
+  const r = simulateMatch({ home: squad('A'), away: twin(squad('A')), seed: 77, frames: true });
+  const S = buildState(r); const st = createStats(S); st.add(S.E.length - 1);
+  for (const s of [0, 1]) for (const k of ['goals', 'shots', 'onTarget', 'passes', 'corners', 'fouls']) assert.equal(st.T[s][k], r.stats[s][k], `mirror match side ${s} ${k}`);
+  const pos = st.T[0].possession / (st.T[0].possession + st.T[1].possession);
+  assert.ok(pos > 0.3 && pos < 0.7, 'mirror match: possession split ' + pos.toFixed(2));
+}
 const avg = reelSecs / 24;
 assert.ok(avg > 250 && avg < 800, `reel length in budget: ${avg.toFixed(0)}`);
 console.log(`draft xi match screen state ok · stats = engine in 24 matches · reel ≈ ${avg.toFixed(0)} match-seconds`);
