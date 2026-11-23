@@ -164,7 +164,7 @@ function onEvent(k, silent) {
   M.W.minute = ev.t / 600;
   const sh = M.recent.length ? M.recent.filter((x) => x === 0).length / M.recent.length : 0.5;
   $('baski').style.width = `${Math.round(sh * 100)}%`;
-  if (k % 6 === 0 || silent) renderStats();
+  if (k % 6 === 0 || silent || M.mode === 'text') renderStats();   // commentary only: the stats are on screen, keep them live
 }
 function scoreGoal(ev) {
   if (M.scored?.has(ev.t + ':' + ev.p)) return;
