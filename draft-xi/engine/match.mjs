@@ -62,6 +62,20 @@ const W = {
 function isqrt(n) { if (n <= 0) return 0; let x = n, y = (x + 1) >> 1; while (y < x) { x = y; y = (x + Math.trunc(n / x)) >> 1; } return x; }
 const dist = (a, b) => isqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
 const clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v);
+// Move a simulated player through a bounded physical step. Match time is in deciseconds;
+// positions are decimetres, and pace is converted to decimetres/second.
+function moveToward(p, target, dt, pace = p?.a?.pac ?? 70) {
+  if (!p || !target) return;
+  const dx = target.x - p.cur.x, dy = target.y - p.cur.y;
+  const d = isqrt(dx * dx + dy * dy);
+  if (!d) return;
+  const speed = 60 + Math.trunc((35 * clamp(pace, 1, 99)) / 99);
+  const step = Math.max(1, Math.trunc((speed * Math.max(0, dt)) / 10));
+  const n = Math.min(d, step);
+  p.cur = n >= d ? { x: target.x, y: target.y } : {
+    x: p.cur.x + Math.trunc((dx * n) / d), y: p.cur.y + Math.trunc((dy * n) / d),
+  };
+}
 
 /** distance from point p to segment a→b (decimetres) */
 function segDist(p, a, b) {
@@ -159,6 +173,11 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
             if (dirSide && onDirSide(dirSide, Math.sign(base.x - PITCH_W / 2)) && ['LB', 'RB', 'LWB', 'RWB', 'CM', 'LM', 'RM'].includes(p.mevki)) base.y += ROW_L >> 1;
             if (dirSide === 'centre' && ['CM', 'AM'].includes(p.mevki)) base.y += ROW_L >> 1;  // centre: midfielders step up into the middle
             if (T.tempo === 'fast' && ['ST', 'LW', 'RW'].includes(p.mevki)) base.y = Math.max(base.y, 5 * ROW_L + 40);
+            if (ballRel.y > PITCH_L * 0.62) {
+              if (p.mevki === 'AM') base.y += T.finishing === 'cross' ? ROW_L : Math.trunc(ROW_L * 0.7);
+              else if (p.mevki === 'CM' && Math.abs(base.x - ballRel.x) < COL_W * 1.25) base.y += Math.trunc(ROW_L * (T.tempo === 'fast' ? 0.8 : 0.45));
+              else if (T.finishing === 'cross' && ['LM', 'RM', 'LW', 'RW'].includes(p.mevki)) base.y += Math.trunc(ROW_L * 0.35);
+            }
           } else {
             // 0.4: a low block drops 10 m (was 17.5 m: it defended for free), a high line steps up 17.5 m
             if (T.line === 'low') base.y -= 100; else if (T.line === 'high') base.y += ROW_L;
@@ -201,7 +220,7 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
       const goal = toAbs(ds, { x: PITCH_W >> 1, y: 0 });
       const gx = pick.a.cur.x + Math.trunc((goal.x - pick.a.cur.x) * 15 / Math.max(1, dist(pick.a.cur, goal)));
       const gy = pick.a.cur.y + Math.trunc((goal.y - pick.a.cur.y) * 15 / Math.max(1, dist(pick.a.cur, goal)));
-      d.cur = { x: Math.trunc((d.cur.x + gx) / 2), y: Math.trunc((d.cur.y + gy) / 2) };
+      moveToward(d, { x: Math.trunc((d.cur.x + gx) / 2), y: Math.trunc((d.cur.y + gy) / 2) }, st.lastDt);
     }
   }
 
@@ -561,6 +580,10 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
       if (m.mevki === 'GK' && hr.y > PITCH_L / 2) continue;
       const [, od] = nearest(opp(side), m.cur);
       const open = clamp(od, 0, 100);
+      // Score the complete passing corridor, not only the receiver's destination.
+      const laneBlockers = active(opp(side)).filter(o => o.mevki !== 'GK' && o !== h).map(o => segDist(o.cur, h.cur, m.cur));
+      const laneClearance = laneBlockers.length ? Math.min(...laneBlockers) : 100;
+      const laneFactor = clamp(45 + Math.trunc(laneClearance * 1.1), 45, 155);
       let fwd = mr.y - hr.y; fwd = T.tempo === 'patient' ? Math.trunc(fwd / 2) : T.tempo === 'fast' ? fwd * 2 : fwd;
       // creativity: free play values forward runs over free space (riskier passes), disciplined play the opposite
       const openW = cre > 0 ? 2 : cre < 0 ? 4 : 3;
@@ -570,6 +593,9 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
       if (dirSide === 'centre' && Math.abs(mr.x - PITCH_W / 2) <= COL_W) w *= 2;  // centre: the middle corridor
       // vision: better passers favour open, forward options (4.2)
       w = Math.trunc((w * (50 + h.a.vis)) / 100) + (open > 40 ? Math.trunc(h.a.vis) : 0);
+      w = Math.trunc((w * laneFactor) / 100);
+      if (fwd > 35 && ['ST', 'LW', 'RW', 'AM', 'LM', 'RM'].includes(m.mevki)) w = Math.trunc(w * 1.12);
+      if (fwd < -35 && T.tempo === 'fast') w = Math.trunc(w * 0.82);
       out.push([m, Math.max(5, w)]);
     }
     return out;
@@ -665,7 +691,7 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     // 0.5: a carry is not a take-on: unless a defender is right on him (≤ 2.5 m) he runs with the ball, and only part of
     // the time does a defender 2.5–5 m away step in (take-ons were 43 a team a match, about 16 in real football)
     const engage = dd <= 25 || (dd <= 50 && rng.int(100) < 40);
-    if (!d || (kind === 'carry' && !engage)) { advance(durOf(30, 60, 50, side)); h.cur = stepTo(dd > 50 ? 100 : 60); st.ball = { ...h.cur }; log('carry', side, h); return; }
+    if (!d || (kind === 'carry' && !engage)) { const dt = durOf(30, 60, 50, side); advance(dt); moveToward(h, stepTo(dd > 50 ? 100 : 60), dt); st.ball = { ...h.cur }; log('carry', side, h); return; }
     stats[side].dribbles++;
     const second = active(ds).some(p => p !== d && p.mevki !== 'GK' && dist(p.cur, h.cur) < 60) ? 300 : 0;
     const pts = defPoints(ds, h.cur, 'tackle');
@@ -676,7 +702,7 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     if (rng.roll() < pW) {
       duel(h, d, pW);
       if (foulCheck(d, h, h.cur, 'tackle')) return;
-      stats[side].dribblesOk++; h.cur = stepTo(70); st.ball = { ...h.cur }; st.beaten = d; log('dribble', side, h, { past: d.player.id, p: pW });
+      stats[side].dribblesOk++; moveToward(h, stepTo(70), st.lastDt); st.ball = { ...h.cur }; st.beaten = d; log('dribble', side, h, { past: d.player.id, p: pW });
       // 0.5: past his man inside the box, close in: he shoots (the run stops at the penalty spot now, it is not walked in)
       const zz = zoneOf(side, h.cur);
       if (zz.row === 6 && zz.col >= 1 && zz.col <= 3 && dist(h.cur, goal) < 140) { advance(durOf(10, 20, 50, side)); shoot(side, h, 'in', h.cur); }
@@ -724,7 +750,7 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     if (rng.roll() < pR) {
       duel(run, chaser, pR);
       if (foulCheck(chaser, run, target, 'race')) return;
-      stats[side].throughsOk++; run.cur = target; st.ball = { ...target }; st.lastPasser = h;
+      stats[side].throughsOk++; moveToward(run, target, st.lastDt); st.ball = { ...run.cur }; st.lastPasser = h;
       log('through', side, h, { to: run.player.id, p: pR });
       return shoot(side, run, 'one', target);
     }
@@ -749,11 +775,16 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     const p = trigger ? (T.press === 'high' ? 7500 : T.press === 'low' ? 1500 : 4000) : (T.press === 'high' ? 3000 : T.press === 'low' ? 0 : 1000);
     if (rng.roll() >= p) return false;
     stats[ds].presses++;
-    d.cur = { x: Math.trunc((d.cur.x + h.cur.x) / 2), y: Math.trunc((d.cur.y + h.cur.y) / 2) };
+    const pressTarget = { x: Math.trunc((d.cur.x + h.cur.x) / 2), y: Math.trunc((d.cur.y + h.cur.y) / 2) };
     const second = T.press === 'high' ? 300 : 0;
     const pts = defPoints(ds, h.cur, 'press');
-    const pC = prob(weighted(h.a, W.control), weighted(d.a, W.tackler), K.duel, second + pts * PT);
-    advance(15);
+    const arrivalDt = 15;
+    const maxReach = Math.trunc(((60 + Math.trunc((35 * d.a.pac) / 99)) * arrivalDt) / 10);
+    const beyondReach = Math.max(0, dist(d.cur, pressTarget) - maxReach);
+    const reachPenalty = Math.min(4200, beyondReach * 35);
+    const pC = prob(weighted(h.a, W.control), weighted(d.a, W.tackler), K.duel, second + pts * PT + reachPenalty);
+    advance(arrivalDt);
+    moveToward(d, pressTarget, arrivalDt);
     if (rng.roll() < pC) { duel(h, d, pC); st.beaten = d; return foulCheck(d, h, h.cur, 'press'); } // a beaten presser leaves space behind him (6.2)
     duel(d, h, 10000 - pC);
     // pressing carries a foul risk even when the presser gets the ball: he arrives at speed (user decision 2026-11-20)

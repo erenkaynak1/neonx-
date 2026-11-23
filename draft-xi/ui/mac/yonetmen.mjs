@@ -49,8 +49,10 @@ export function createDirector(S, W, hooks) {
       if (!b) return;
       if (off.has(W.lineup[s][i].id)) { W.bodies[s][i] = null; return; }
       const q = f.p[s][i];
-      if (q && !kickoff) { b.x = b.px = b.tx = q.x; b.y = b.py = b.ty = q.y; }
-      b.vx = b.vy = 0; b.state = '';
+      // A highlight is a broadcast cut, not a licence to teleport players.
+      // Keep physical pose and momentum; the physics controller handles repositioning.
+      if (q && !kickoff) { b.tx = q.x; b.ty = q.y; }
+      b.state = '';
     });
     const prev = h.a > 0 ? S.holder[h.a - 1] : null;
     resetBall(kickoff ? { x: 50, y: 50 } : f.b);
@@ -60,15 +62,10 @@ export function createDirector(S, W, hooks) {
     // still under the dim of the cut: everybody steps into shape (kick-off formation, or the tactical shape around
     // the engine's positions), and the previous holder keeps the ball only if he is next to it
     updateTargets(W, ctl);
-    const k = kickoff ? 1 : 0.7;
-    for (const team of W.bodies) for (const b of team) if (b) { b.x = b.px = lerp(b.x, b.tx, k); b.y = b.py = lerp(b.y, b.ty, k); }
+    // No positional blend/snap at highlight boundaries; the fixed-step physics owns movement.
     // nobody starts from a standstill: each man is already moving the way the engine has him going
-    const f1 = S.F[Math.min(S.F.length - 1, h.a + 1)];
-    for (let s = 0; s < 2; s++) W.bodies[s].forEach((b, i) => {
-      const q = !kickoff && f1.p[s][i]; if (!b || !q) return;
-      const ex = (q.x - b.x) * MX, ey = (q.y - b.y) * MY, d = Math.hypot(ex, ey), v = Math.min(3.5, d * 0.8);
-      if (d > 0.3) { b.vx = (ex / d) * v / MX; b.vy = (ey / d) * v / MY; b.face = Math.atan2(ey, ex); }
-    });
+    // Do not inject a synthetic velocity from the next recorded frame. The physics
+    // integrator accelerates each player towards their target at their own pace and turn rate.
     const pk = kickoff ? id2(first.p) : prev && id2(prev), pb = pk && body(pk);
     if (pb && (kickoff || metres(pb, W.ball) < 2.5)) {
       if (kickoff) { pb.x = pb.px = 50; pb.y = pb.py = 50 + (first.team === 0 ? -0.8 : 0.8); pb.face = first.team === 0 ? Math.PI / 2 : -Math.PI / 2; }
