@@ -157,3 +157,5 @@ select{width:100%;min-height:44px;border-radius:10px;border:1px solid var(--line
   .ist-panel .panel-baslik{font-size:9.5px;letter-spacing:.14em;padding:8px 0 6px;gap:6px}
   .spiker-panel .panel-baslik{padding:9px 12px 6px}
 }
+.son-linkler{margin-top:14px;text-align:center;font-weight:700;letter-spacing:.06em}
+.son-linkler a{display:inline-flex;align-items:center;min-height:44px;padding:0 6px;color:inherit;opacity:.8}

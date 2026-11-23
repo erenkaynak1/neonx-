@@ -12,7 +12,7 @@ Headless match engine for the Draft XI rebuild. The design and every rule it imp
 
 Run the lab: `node scripts/draft_xi_lab.mjs 400` (add `--meta` for the meta hunter). Fast CI checks: `node scripts/test_draft_xi_engine.mjs`.
 
-Not wired into the site yet; the live Draft XI still runs on `neon-xi-core.html`.
+**Sitede yayında (2026-11-23):** ana menüdeki Draft XI (HEMEN BAŞLA, BOTA KARŞI, AYNI TELEFON) bu oyunu açar: `draft.html?mod=bot|iki` → `taktik.html` → `mac.html`. Klasik Draft XI (`neon-xi-core.html`) silinmedi: ONLINE ve TURNUVA modları ile ana menünün altındaki "Klasik Draft XI" bağlantısı onu açar; geri dönmek için `side-games/neon-home-v2.js` içindeki `single`/`bot` eylemlerini eski `clickTarget(...)` haline getirmek yeterli.
 
 ## Maç ekranı · 2D motor (2026-11-23)
 

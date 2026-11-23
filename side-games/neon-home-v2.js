@@ -11,12 +11,15 @@
   const UI=window.NEON_ARCADE_UI;
   const icon=name=>UI?.svg?UI.svg(name):"";
 
-  /* Draft XI entry modes and the quiz shelf. `href` is relative to ./side-games/. */
+  /* Draft XI entry modes and the quiz shelf. `href` is relative to ./side-games/.
+     The live Draft XI is the new game in ./draft-xi/ (draft → tactics → 2D match). Online and tournament still run on
+     the classic game (neon-xi-core), which stays in place and is also reachable from the "Klasik Draft XI" link. */
+  const DRAFT="./draft-xi/draft.html";
   const MODES=[
-    {action:"single",label:"TEK OYUNCULU",name:"Tek oyunculu",icon:"single"},
     {action:"bot",label:"BOTA KARŞI",name:"Bota karşı",icon:"bot"},
-    {action:"online",label:"ONLINE",name:"Online",icon:"online"},
-    {action:"tournament",label:"TURNUVA",name:"Turnuva modu, 4 veya 8 takım",icon:"tournament"}
+    {action:"local",label:"AYNI TELEFON",name:"Aynı telefonda iki kişi",icon:"single"},
+    {action:"online",label:"ONLINE",name:"Online (klasik Draft XI)",icon:"online"},
+    {action:"tournament",label:"TURNUVA",name:"Turnuva modu, 4 veya 8 takım (klasik Draft XI)",icon:"tournament"}
   ];
   const GAMES=[
     {href:"football-xox/index.html",name:"Futbol XOX",label:"FUTBOL XOX",tag:"KESİŞİM",art:"thumb-xox.webp"},
@@ -132,6 +135,7 @@ input,select{border-radius:8px!important}`;
         </section>
         <footer class="nxh-foot">
           <a class="nxh-link" href="./side-games/how-to-play.html" data-help="how">${icon("help")}Nasıl oynanır</a>
+          <button type="button" class="nxh-link" data-action="classic">${icon("single")}Klasik Draft XI</button>
           <a class="nxh-link" href="https://github.com/erenkaynak1/neonx-/issues/new" target="_blank" rel="noopener noreferrer" data-help="feedback">${icon("message")}Şikayet ve öneri</a>
         </footer>
       </div>
@@ -158,8 +162,10 @@ input,select{border-radius:8px!important}`;
     const scroller=stage.querySelector(".nxh-scroll"),nav=stage.querySelector(".nx-nav");
 
     const actions={
-      single:()=>clickTarget(single,status,"Tek Oyunculu"),
-      bot:()=>clickTarget(bot,status,"Bota Karşı"),
+      single:()=>{location.href=DRAFT+"?mod=bot"},
+      bot:()=>{location.href=DRAFT+"?mod=bot"},
+      local:()=>{location.href=DRAFT+"?mod=iki"},
+      classic:()=>clickTarget(single,status,"Klasik Draft XI"),
       online:()=>clickTarget(online,status,"Online"), // normally intercepted by the shared online chooser
       tournament:()=>clickTarget(tournament,status,"Turnuva"),
       settings:()=>clickTarget(settings,status,"Ayarlar"),

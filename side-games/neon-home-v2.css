@@ -116,6 +116,7 @@
 /* ---------- Help row ---------- */
 .nxh-foot{display:flex;flex-wrap:wrap;align-items:center;gap:var(--nxu-2) var(--nxu-5);margin-top:var(--nxu-6);padding-top:var(--nxu-4);border-top:1px solid var(--nxu-line)}
 .nxh .nxh-link{display:inline-flex;align-items:center;gap:8px;min-height:44px;color:var(--nxu-text-2);font-size:13px;transition:color var(--nxu-fast) ease}
+.nxh button.nxh-link{padding:0;border:0;background:none;font-family:inherit;cursor:pointer}
 .nxh-link svg{width:18px;height:18px;color:var(--nxu-text-3)}
 
 /* ---------- Navigation and status ---------- */
