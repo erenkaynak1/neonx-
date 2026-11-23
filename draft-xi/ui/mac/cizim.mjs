@@ -122,6 +122,10 @@ export function createRenderer(canvas, W, info) {
           const wob = Math.sin(age * 22 + i * 1.3) * 2.4 * k * k, bulge = out * depth * (1 + 0.35 * k * Math.sin((Math.PI * i) / 8));
           ctx.beginPath(); ctx.moveTo(gx + (gw * i) / 8, line); ctx.lineTo(gx + (gw * i) / 8 + wob, line + bulge); ctx.stroke();
         }
+      } else if (c.kind === 'oline') {
+        // offside line: across the pitch at the second-last defender
+        ctx.strokeStyle = '#ffd34d'; ctx.globalAlpha = 0.85 * Math.min(1, k * 2); ctx.lineWidth = 1.6; ctx.setLineDash([7, 5]);
+        ctx.beginPath(); ctx.moveTo(box.x, sy(c.y)); ctx.lineTo(box.x + box.w, sy(c.y)); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
       } else if (c.kind === 'ring') {
         // a duel: one thin ring that opens quickly and fades (ease-out), no flashing
         const e = 1 - (1 - age / (c.life || 0.9)) ** 3;

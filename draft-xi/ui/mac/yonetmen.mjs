@@ -11,7 +11,7 @@
 // and the distance, not from the log clock, and an outcome event is played inside its shot.
 import { MX, MY, clamp, lerp, metres, rng, GOAL_HALF, fromRel } from './saha.mjs?v=2';
 import { kick, giveBall, setState } from './fizik.mjs?v=4';
-import { updateTargets } from './taktik.mjs?v=2';
+import { updateTargets } from './taktik.mjs?v=3';
 
 const SPEED = { short: 13.5, long: 18, cross: 19, clear: 22, shot: 26, through: 15 }; // m/s along the path
 const OUTCOME = new Set(['miss', 'goal', 'save', 'post', 'block']);
@@ -62,6 +62,13 @@ export function createDirector(S, W, hooks) {
     updateTargets(W, ctl);
     const k = kickoff ? 1 : 0.7;
     for (const team of W.bodies) for (const b of team) if (b) { b.x = b.px = lerp(b.x, b.tx, k); b.y = b.py = lerp(b.y, b.ty, k); }
+    // nobody starts from a standstill: each man is already moving the way the engine has him going
+    const f1 = S.F[Math.min(S.F.length - 1, h.a + 1)];
+    for (let s = 0; s < 2; s++) W.bodies[s].forEach((b, i) => {
+      const q = !kickoff && f1.p[s][i]; if (!b || !q) return;
+      const ex = (q.x - b.x) * MX, ey = (q.y - b.y) * MY, d = Math.hypot(ex, ey), v = Math.min(3.5, d * 0.8);
+      if (d > 0.3) { b.vx = (ex / d) * v / MX; b.vy = (ey / d) * v / MY; b.face = Math.atan2(ey, ex); }
+    });
     const pk = kickoff ? id2(first.p) : prev && id2(prev), pb = pk && body(pk);
     if (pb && (kickoff || metres(pb, W.ball) < 2.5)) {
       if (kickoff) { pb.x = pb.px = 50; pb.y = pb.py = 50 + (first.team === 0 ? -0.8 : 0.8); pb.face = first.team === 0 ? Math.PI / 2 : -Math.PI / 2; }
@@ -120,7 +127,7 @@ export function createDirector(S, W, hooks) {
     const to = fN.b;
     const actor = id2(e.p);
     const nextE = S.E[k + 1];
-    ctl.carryFast = false; ctl.claim = null; ctl.poss = S.poss[k]; ctl.receiver = null; ctl.runner = null; ctl.presser = null; ctl.dead = false; ctl.gate = null; ctl.carryTo = null;
+    ctl.carryFast = false; ctl.claim = null; ctl.trap = null; ctl.poss = S.poss[k]; ctl.receiver = null; ctl.runner = null; ctl.presser = null; ctl.dead = false; ctl.gate = null; ctl.carryTo = null;
     // a set piece lasts until it is taken: a corner until the delivery, a free kick at goal / penalty until the shot
     if (ctl.set) {
       const keep = (ctl.set.kind === 'corner' && ['cross', 'cross_bad', 'corner_short'].includes(e.type))
@@ -135,7 +142,7 @@ export function createDirector(S, W, hooks) {
       const dist = metres(W.ball, dest);
       let dur = clamp(dist / speed, kind === 'air' ? 0.7 : 0.35, 2.8);
       // a ball met in the air hangs long enough for the men going for it to get there
-      if (meet) for (const m of meet) { const b = m && body(m); if (b) dur = Math.max(dur, Math.min(3.4, metres(b, dest) / (b.top * 0.75) + 0.6)); }   // from a standing start, braking at the end
+      if (meet) for (const m of meet) { const b = m && body(m); if (b) dur = Math.max(dur, Math.min(4.5, metres(b, dest) / (b.top * 0.75) + 0.6)); }   // from a standing start, braking at the end
       const rcv = receiverId && id2(receiverId);
       if (rcv) ctl.receiver = { side: rcv[0], i: rcv[1], at: { ...dest } };
       if (kicker) setState(body(kicker), 'kick', 0.25);
@@ -157,7 +164,7 @@ export function createDirector(S, W, hooks) {
     const HEAD_Z = 2.3;
     // a late runner still gets his head on it (as it drops) once he is there
     const headerWhenThere = () => (!actor || !body(actor) || metres(body(actor), W.ball) < 1.6 ? header()
-      : waitUntil(() => metres(body(actor), W.ball) < 1.6, () => header(), actor, 1.5));
+      : waitUntil(() => metres(body(actor), W.ball) < 1.6, () => header(), actor, 6));
     ctl.afterFlight = null;
     let dur = 0.4;
     switch (e.type) {
@@ -294,7 +301,30 @@ export function createDirector(S, W, hooks) {
         dur = e.card ? 2.0 : 1.3;
         break;
       }
-      case 'offside': ctl.dead = true; if (W.ball.state === 'held') { W.ball.state = 'dead'; W.ball.owner = null; } hooks.cue({ kind: 'offside' }); dur = 1.3; break;
+      case 'offside': {
+        // the engine's offside is a through ball to a runner who went too early: show exactly that — the runner is past
+        // the second-last defender when the ball is played, the line is drawn, then the flag
+        const att = e.team, def = 1 - att, passer = W.ball.owner || ctl.holder;
+        const whistle = () => { ctl.dead = true; if (W.ball.state === 'held') { W.ball.state = 'dead'; W.ball.owner = null; } hooks.cue({ kind: 'offside' }); };
+        if (!actor || !body(actor) || !passer || !body(passer) || passer[0] !== att) { whistle(); dur = 1.3; break; }
+        const lineNow = () => { const vs = W.bodies[def].map((b) => (b ? rel(att, b).v : null)).filter((v) => v != null).sort((a, b) => b - a); return vs[1] ?? 90; };
+        const ru = clamp(rel(att, body(actor)).u, 12, 88);
+        // the back line holds and steps up a metre (the trap): it does not drop with the runner
+        ctl.trap = { side: def, att, v: lineNow() - 1 };
+        const spot = fromRel(att, ru, Math.min(96, ctl.trap.v + 3 + R() * 2));
+        ctl.receiver = { side: actor[0], i: actor[1], at: spot };
+        dur = waitUntil(() => rel(att, body(actor)).v > lineNow() + 1.5, () => touch(passer, () => {
+          const line = lineNow();
+          hooks.cue({ kind: 'oline', y: fromRel(att, 50, line).y });
+          const rr = rel(att, body(actor));   // played into his run, a few metres ahead of where he is now
+          globalThis.__offLog?.push({ line: line.toFixed(1), runnerV: rr.v.toFixed(1), who: W.lineup[actor[0]][actor[1]].mevki });
+          kick(W.ball, fromRel(att, clamp(rr.u, 6, 94), Math.min(97, rr.v + 6)), 0.9, 'ground');
+          setState(body(passer), 'kick', 0.25); ctl.holder = null;
+          later(whistle, 0.45);
+          return 1.5;
+        }), null, Math.min(8, metres(body(actor), spot) / (body(actor).top * 0.75) + 1));   // no gate key: he runs to his spot, not to the ball
+        break;
+      }
       case 'fk_wall': dur = touch(actor, () => shot(k, 'wall')); break;
       case 'shot': {
         // the shot is taken where the engine has the shooter (its distance matches the engine's own): if the ball is
@@ -492,6 +522,13 @@ export function createDirector(S, W, hooks) {
         const p = f0.p[s][i], q = f1.p[s][i] || p;
         if (!p || W.lineup[s][i].mevki === 'GK') return;
         b.tx = lerp(b.tx, lerp(p.x, q.x, u), ENGINE_BLEND); b.ty = lerp(b.ty, lerp(p.y, q.y, u), ENGINE_BLEND);
+      });
+    }
+    if (ctl.trap) {
+      const { side, att, v } = ctl.trap;
+      W.bodies[side].forEach((b, i) => {
+        if (!b || W.lineup[side][i].mevki === 'GK' || rel(att, b).v < v - 6) return;
+        const t = fromRel(att, rel(att, { x: b.tx, y: b.ty }).u, v); b.tx = t.x; b.ty = t.y; b.mode = 'run';
       });
     }
     drive();
