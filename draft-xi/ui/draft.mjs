@@ -42,6 +42,8 @@ function start() {
   render(); botMaybe();
 }
 $('basla').addEventListener('click', start);
+// opened from the NEON XI home: ?mod=bot (against the bot) or ?mod=iki (two players on one phone) preselects the mode
+{ const want = new URLSearchParams(location.search).get('mod'); document.querySelector(`[data-mod="${want}"]`)?.click(); }
 
 // ── draft order (snake: 1-2, 2-1, …) ──
 const round = () => Math.floor(S.pick / 2);

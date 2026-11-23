@@ -9,13 +9,14 @@ const js=read('side-games/neon-home-v2.js'),css=read('side-games/neon-home-v2.cs
 new Function(js);
 
 // Every existing entry point is still wired.
-for(const action of ['single','bot','online','tournament','settings','home','profile','notifications','friends','lobby','play','leaderboard']){
+for(const action of ['single','bot','local','classic','online','tournament','settings','home','profile','notifications','friends','lobby','play','leaderboard']){
   assert(new RegExp('\\n\\s+'+action+':\\(\\)=>').test(js),'Home action missing: '+action);
 }
 for(const [id,why] of [['singleModeBtn','single player'],['botModeBtn','vs bot'],['onlineModeBtn','online']])assert(js.includes('getElementById("'+id+'")'),'Legacy '+why+' entry not forwarded');
 assert(js.includes('.neonHomeQuickRow button')&&js.includes('[data-open-neon-settings]'),'Tournament/settings must forward to the legacy controls');
 assert(js.includes('legacy.inert=true')&&js.includes('while(home.firstChild)legacy.append(home.firstChild)'),'Legacy home must be kept, hidden and inert');
-for(const mode of ['single','bot','online','tournament'])assert(js.includes('{action:"'+mode+'"'),'Draft XI mode missing from the hero: '+mode);
+for(const mode of ['bot','local','online','tournament'])assert(js.includes('{action:"'+mode+'"'),'Draft XI mode missing from the hero: '+mode);
+assert(js.includes('const DRAFT="./draft-xi/draft.html"')&&require('node:fs').existsSync(path.join(root,'draft-xi/draft.html')),'Draft XI must open the new game');
 
 // Game shelf: every link resolves and every thumbnail is a real image asset at the shared size.
 const games=[...js.matchAll(/\{href:"([^"]+)",name:"([^"]+)",label:"[^"]+",tag:"[^"]+",art:"([^"]+)"\}/g)].map(m=>({href:m[1],name:m[2],art:m[3]}));

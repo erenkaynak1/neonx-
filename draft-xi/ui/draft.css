@@ -102,3 +102,5 @@ h2{font:800 15px/1 system-ui;letter-spacing:.16em;color:var(--mut);margin:0 0 8p
   .tur-no{display:none}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.kur .geri{display:inline-flex;align-items:center;min-height:44px;margin-bottom:6px;color:inherit;opacity:.75;font-weight:700;letter-spacing:.08em;text-decoration:none}
+.kur .geri:hover{opacity:1}

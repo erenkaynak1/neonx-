@@ -59,9 +59,10 @@ h2{font:800 12px/1 system-ui;letter-spacing:.18em;color:var(--mut);margin:18px 2
 .ust-etiket{display:block;font:700 11px/1 "Barlow Condensed",system-ui;letter-spacing:.3em;color:var(--tk);margin-bottom:3px}
 .plan-ekran h1{font:italic 800 30px/1 "Barlow Condensed",system-ui;letter-spacing:.01em}
 .p-ust{margin-bottom:12px}
-.p-izgara{display:grid;grid-template-columns:minmax(300px,460px) minmax(0,1fr);gap:18px;align-items:start}
-.p-saha{position:relative;margin:0}
-.p-saha svg{display:block;width:100%;height:auto;max-height:calc(100dvh - 190px);border-radius:16px;border:1px solid rgba(255,255,255,.1);background:#0f3d20}
+.p-izgara{display:grid;grid-template-columns:auto minmax(0,1fr);gap:22px;align-items:start}
+.p-saha{position:relative;margin:0 auto;width:fit-content}
+/* the pitch is a preview, not the page: a compact, fixed-ratio card (68 × 105) */
+.p-saha svg{display:block;width:auto;height:min(58dvh,520px);aspect-ratio:68/105;border-radius:16px;border:1px solid rgba(255,255,255,.1);background:#0f3d20}
 .p-etiket{position:absolute;left:12px;bottom:12px;padding:6px 10px;border-radius:999px;background:rgba(5,9,8,.75);font:700 12px/1 "Barlow Condensed",system-ui;letter-spacing:.14em;color:var(--tk)}
 .nokta{transition:transform .45s ease}
 .p-baslik{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:8px}
@@ -79,7 +80,7 @@ h2{font:800 12px/1 system-ui;letter-spacing:.18em;color:var(--mut);margin:18px 2
 @media (max-width:1000px){.planlar{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media (max-width:760px){
   .p-izgara{grid-template-columns:1fr;gap:12px}
-  .p-saha svg{max-height:none}
+  .p-saha svg{height:min(36dvh,300px)}
   .planlar{display:flex;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}
   .plan{flex:0 0 132px}
   .izgara{grid-template-columns:1fr}
