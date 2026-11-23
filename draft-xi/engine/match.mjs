@@ -534,6 +534,21 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     else if (box) opts = dist(h.cur, goalPt(side)) < 130 ? [['shotIn', 13], ['short', 72], ['dribble', 12]] : [['shotIn', 10], ['short', 76], ['dribble', 12]];
     else if (wing) opts = [['short', 48], ['dribble', 9], ['cross', 40], [z.row === 6 ? 'shotIn' : 'shotOut', z.row === 6 ? 20 : 7]];   // 0.5: wide men cut in and shoot
     else opts = [['short', 72], ['dribble', 7], ['shotOut', 9], ['through', 16]];
+    if (box && h.mevki !== 'GK') {
+      const ownThreat = weighted(h.a, { fin: 55, posn: 20, ft: 15, lon: 10 });
+      const mateThreats = active(side).filter(p => p !== h && p.mevki !== 'GK' && dist(p.cur, h.cur) < 180)
+        .map(p => {
+          const pz = zoneOf(side, p.cur);
+          const [, cover] = nearest(opp(side), p.cur);
+          const quality = weighted(p.a, { fin: 55, posn: 20, ft: 15, lon: 10 });
+          return pz.row === 6 && pz.col >= 1 && pz.col <= 3 ? quality + Math.min(80, cover) : 0;
+        });
+      const bestMate = mateThreats.length ? Math.max(...mateThreats) : 0;
+      // A crowded carrier should slip the ball to a better-placed finisher instead of
+      // forcing every final action through the same striker.
+      if (bestMate > ownThreat + 65) opts = opts.map(([n, w]) => n === 'short' ? [n, w + 14] : n === 'shotIn' ? [n, Math.max(3, w - 4)] : [n, w]);
+      else if (ownThreat > bestMate + 55) opts = opts.map(([n, w]) => n === 'shotIn' ? [n, w + 5] : [n, w]);
+    }
     if (h.mevki === 'GK') opts = [['short', 70], ['long', 30]];
     // 0.4.1: nobody shoots from more than 30 m (long shots came from 35–53 m); the carrier drives on instead
     if (dist(h.cur, goalPt(side)) > 300) opts = opts.map(([n, w]) => (n === 'shotOut' ? ['carry', w] : [n, w]));
@@ -752,7 +767,7 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
       if (foulCheck(chaser, run, target, 'race')) return;
       stats[side].throughsOk++; moveToward(run, target, st.lastDt); st.ball = { ...run.cur }; st.lastPasser = h;
       log('through', side, h, { to: run.player.id, p: pR });
-      return shoot(side, run, 'one', target);
+      return shoot(side, run, 'one', run.cur);
     }
     duel(chaser, run, 10000 - pR);
     log('chase_lost', ds, chaser, { on: run.player.id });
