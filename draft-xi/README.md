@@ -26,13 +26,13 @@ Sorunlar (kullanıcı): şutları hep aynı oyuncu çekiyor; top sürüşü kale
 
 | | önce (0.4.1) | sonra (0.5.0) |
 |---|---|---|
-| takımın en çok şut çekeninin payı | %68 | %57 |
-| gollerde forvet / kanat / orta saha / stoper | %90 / %2 / %5 / %1 | %73 / %5 / %8 / %13 |
+| takımın en çok şut çekeninin payı | %68 | %58 |
+| gollerde forvet / kanat / orta saha / stoper | %90 / %2 / %5 / %1 | %76 / %4 / %7 / %13 |
 | kale çizgisine 6 m'den yakın biten top sürüşü | %6,8 | %0 |
 | kötü ortadan dokunuşsuz korner | %92 | %0 (korner hep defansçıdan) |
-| kornerden kafa golü (eşit kadro) | %2,4 | %4,9 (güçlü kafa+orta / zayıf hava savunması %10,9, tersi %0,6) |
+| kornerden kafa golü (eşit kadro) | %2,4 | %4,8 (güçlü kafa+orta / zayıf hava savunması ≈%11, tersi <%1) |
 
-Değişenler: hava topuna kimin gideceği ağırlıklı seçim (kafa², yakınlık; duran topta stoperler gelir); ara pasında koşucu ağırlıklı seçim (hız+pozisyon², kanatlar ×1,15) ve kanattan koşu içeri kıvrılır; kanat oyuncusu şuttan önce içeri kat eder; kanatta/ceza sahası önünde şut seçeneği arttı; top sürüşü ortada penaltı noktasında, kenarda çizgiye yakın durur, penaltı noktası civarında şut ağırlığı artar; kötü orta korner olacaksa en yakın defansçı uzaklaştırır; duran top ortası daha isabetli, duran toptan kafa vuruşu daha temiz (isabet ve kaleci aşamasında bonus — hepsi yetenekle ölçeklenir); kafa vuruşu yerden şut gibi bloklanmaz; bitiricilik eğimi 85 → 72, dönüşüm ×1,1; kanat taktiğinde çizgi koridorları daha çok aranır, "kanat atağı" sayımı ceza sahası içi pasları saymaz. Eşit kadro dengeli–dengeli ≈3,1 gol.
+Değişenler: hava topuna kimin gideceği ağırlıklı seçim (kafa², yakınlık; duran topta stoperler gelir); ara pasında koşucu ağırlıklı seçim (hız+pozisyon², kanatlar ×1,15) ve kanattan koşu içeri kıvrılır; kanat oyuncusu şuttan önce içeri kat eder; kanatta/ceza sahası önünde şut seçeneği arttı; top sürüşü ortada penaltı noktasında, kenarda çizgiye yakın durur, penaltı noktası civarında şut ağırlığı artar, ceza sahasında adamını geçen yakın mesafeden vurur; kötü orta korner olacaksa en yakın defansçı uzaklaştırır; duran top ortası daha isabetli, duran toptan kafa vuruşu daha temiz (isabet ve kaleci aşamasında bonus — hepsi yetenekle ölçeklenir); kafa vuruşu yerden şut gibi bloklanmaz; bitiricilik eğimi 85 → 72, dönüşüm tabanı yeniden ayarlandı (kafa hariç biraz düşük, kafa ×1,1); kanat taktiğinde çizgi koridorları daha çok aranır, "kanat atağı" sayımı ceza sahası içi pasları saymaz. Eşit kadro ≈3,3 gol, draft maçları ≈3,2, gerçek kulüp 11'leri ≈1,9–2,3.
 
 ## Motor 0.4 · gol seviyesi ve plan dengesi (2026-11-23)
 

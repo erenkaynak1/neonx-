@@ -21,7 +21,7 @@ const REF = {
   shotFixed: 850, shotInB: bForBase(3200), shotOutB: bForBase(2000), headB: bForBase(2600),
   // 0.4: conversion ×0.8 → equal teams, both balanced: ~3 goals a match (user target; open games 5–6, defensive 1–2)
   // 0.5: ×1.1 with the flatter finishing slope (K.shot 72)
-  goalB: bForBase(2460), goalHeadB: bForBase(2110), goalOneB: bForBase(3700), goalOutB: bForBase(1320),
+  goalB: bForBase(1780), goalHeadB: bForBase(2110), goalOneB: bForBase(2850), goalOutB: bForBase(1000),
   penB: bForBase(7600), interceptB: bForBase(3800), blockB: bForBase(2000), crossBlockB: bForBase(2500),
   fkWallB: bForBase(2200), fkOnB: bForBase(3000), fkGoalB: bForBase(1760),
 };
@@ -659,7 +659,11 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     if (rng.roll() < pW) {
       duel(h, d, pW);
       if (foulCheck(d, h, h.cur, 'tackle')) return;
-      stats[side].dribblesOk++; h.cur = stepTo(70); st.ball = { ...h.cur }; st.beaten = d; log('dribble', side, h, { past: d.player.id, p: pW }); return;
+      stats[side].dribblesOk++; h.cur = stepTo(70); st.ball = { ...h.cur }; st.beaten = d; log('dribble', side, h, { past: d.player.id, p: pW });
+      // 0.5: past his man inside the box, close in: he shoots (the run stops at the penalty spot now, it is not walked in)
+      const zz = zoneOf(side, h.cur);
+      if (zz.row === 6 && zz.col >= 1 && zz.col <= 3 && dist(h.cur, goal) < 140) { advance(durOf(10, 20, 50, side)); shoot(side, h, 'in', h.cur); }
+      return;
     }
     duel(d, h, 10000 - pW);
     log('tackle', ds, d, { on: h.player.id, p: pW });
