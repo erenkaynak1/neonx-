@@ -1,7 +1,7 @@
 // Draft XI — tactics screen between the draft and the match (design doc 9.3: formation, settings and numbers only,
 // no advice). One-tap plans fill every setting; each setting is fine-tuned with chips. The selected option shows the
 // relevant attributes of our and the opponent's players in the match-up it sets up; the pitch draws what the focused setting changes. Bots keep the plan of their draft style.
-import { HAVUZ_BY_ID } from '../data/havuz.mjs?v=3';
+import { HAVUZ_BY_ID } from '../data/havuz-fm.mjs?v=1';
 import { FORMATIONS, zonePoint, PITCH_W, PITCH_L, COL_W } from '../engine/formations.mjs?v=2';
 import { TAKTIK, PLANLAR, planTaktik, hangiPlan, esc } from './ortak.mjs?v=2';
 
