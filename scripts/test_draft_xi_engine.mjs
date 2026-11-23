@@ -56,9 +56,7 @@ assert.ok(shots / N > 10 && shots / N < 45, `shots per match in a broad band: ${
   const acc = (s) => s.passesOk / s.passes;
   assert.ok(avg({ creativity: 'low' }, acc) > avg({ creativity: 'high' }, acc), 'disciplined passes are safer');
   const wide = (s) => s.rightCorridorAttacks + s.leftCorridorAttacks;
-  const wingsAvg = avg({ direction: 'wings' }, wide), balancedAvg = avg({}, wide);
-  console.log('WIDE_DIRECTION_DIAGNOSTIC', { wingsAvg, balancedAvg });
-  assert.ok(wingsAvg > balancedAvg * 1.1, 'wings: more attacks down both flanks');
+  assert.ok(avg({ direction: 'wings' }, wide) > avg({}, wide) * 1.1, 'wings: more attacks down both flanks');
   assert.ok(avg({ direction: 'centre' }, wide) !== avg({}, wide), 'centre differs from balanced');
 }
 console.log(`draft xi engine ok · v${ENGINE_VERSION} · ${(goals / N).toFixed(2)} goals, ${(shots / N).toFixed(1)} shots per match`);
