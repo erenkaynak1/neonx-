@@ -96,3 +96,21 @@ select{width:100%;min-height:44px;border-radius:10px;border:1px solid var(--line
 .puan b{font-variant-numeric:tabular-nums}.puan.motm{color:var(--yel)}
 @media (max-width:640px){.son-grid{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* viewing modes */
+.izle-sec{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
+.izle-sec button{display:grid;gap:3px;text-align:left;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--s1);cursor:pointer}
+.izle-sec button b{font:800 14px/1.15 system-ui;letter-spacing:.04em}
+.izle-sec button span{color:var(--mut);font-size:12px;line-height:1.35}
+.izle-sec button small{color:var(--a);font:700 11px/1 system-ui;letter-spacing:.08em}
+.izle-sec button[aria-pressed="true"]{border-color:var(--a);box-shadow:0 0 0 1px var(--a) inset}
+.izle-sec button[aria-pressed="true"] b{color:var(--a)}
+.izle-sec.buyuk{grid-template-columns:1fr;gap:10px}
+.izle-sec.buyuk button{padding:18px 16px;min-height:84px}
+.izle-sec.buyuk button b{font-size:18px}
+@media (max-width:520px){.izle-sec{grid-template-columns:1fr}}
+/* commentary only: no pitch, commentary and stats side by side */
+.mac.yalniz-spiker .saha-panel{display:none}
+.mac.yalniz-spiker .paneller{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr)}
+.mac.yalniz-spiker #spiker li{font-size:15.5px}
+@media (max-width:899px){.mac.yalniz-spiker .paneller{grid-template-columns:1fr;grid-template-rows:1fr}}

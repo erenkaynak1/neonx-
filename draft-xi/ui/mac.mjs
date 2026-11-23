@@ -19,6 +19,20 @@ const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const Q = new URLSearchParams(location.search);
 const FAST = Q.has('hizli') ? 12 : 1;                 // test aid: ?hizli plays 12× faster
 const RATE = { 1: 1.6, 2: 3.0 };                     // match seconds per real second inside a highlight
+const TEXT_RATE = { 1: 60, 2: 120 };                 // commentary only: match seconds per real second (≈ 1.5 min a match)
+// viewing modes: commentary only, key moments, long highlights
+const MODES = {
+  spiker: { ad: 'SADECE SPİKER', alt: 'Saha yok: dakika dakika anlatım ve canlı istatistik.', sure: '≈ 1,5 dk' },
+  onemli: { ad: 'ÖNEMLİ ANLAR', alt: 'Goller, pozisyonlar ve kritik anlar sahada oynanır.', sure: '≈ 4 dk', budget: 560, lead: 6 },
+  uzun: { ad: 'UZUN ÖZET', alt: 'Daha çok pozisyon, her atak kuruluşundan itibaren.', sure: '≈ 7 dk', budget: 1250, lead: 10 },
+};
+let izle = 'onemli';
+try { if (MODES[localStorage.getItem('nxDraftIzle')]) izle = localStorage.getItem('nxDraftIzle'); } catch { /* default */ }
+if (MODES[Q.get('izle')]) izle = Q.get('izle'); // test aid
+const modeButtons = (sel) => Object.entries(MODES).map(([id, m]) => `<button type="button" data-izle="${id}" aria-pressed="${sel === id}"><b>${m.ad}</b><span>${m.alt}</span><small>${m.sure}</small></button>`).join('');
+function drawModes() { $('izleSec').innerHTML = modeButtons(izle); }
+drawModes();
+$('izleSec').addEventListener('click', (e) => { const b = e.target.closest('[data-izle]'); if (!b) return; izle = b.dataset.izle; try { localStorage.setItem('nxDraftIzle', izle); } catch { /* ignore */ } drawModes(); });
 
 // ── setup ──────────────────────────────────────────────────────────────────────────────────────────
 const clubs = {};
@@ -81,7 +95,7 @@ function start(given) {
   const komik = $('komik').checked;
   try { localStorage.setItem('nxDraftKomik', komik ? '1' : '0'); } catch { /* ignore */ }
   M = { r, S, W, seed, short, names: S.names, stats: createStats(S), spiker: createSpiker(r, short, S.names, { jokes: komik, seed }),
-    reel: highlights(S, { budget: 560 }), hi: -1, mode: 'cut', cutT: 0, cutFrom: 0, playing: true, speed: 1, score: [0, 0],
+    view: izle, reel: izle === 'spiker' ? [] : highlights(S, { budget: MODES[izle].budget, lead: MODES[izle].lead }), hi: -1, tt: 0, mode: 'cut', cutT: 0, cutFrom: 0, playing: true, speed: 1, score: [0, 0],
     acc: 0, last: performance.now(), dim: 0, recent: [], shown: -1 };
   M.render = createRenderer($('saha'), W, {
     number: (s, i) => String(NUM[S.lineup[s][i].slot] ?? ''),
@@ -97,6 +111,8 @@ function start(given) {
   window.__draftMac = M; // inspection aid for tests
   M.render.resize();
   renderStats();
+  $('mac').classList.toggle('yalniz-spiker', izle === 'spiker');
+  if (izle === 'spiker') { M.mode = 'text'; requestAnimationFrame(loop); return; }
   if (Number(Q.get('an')) > 0) M.hi = Math.min(M.reel.length - 1, Number(Q.get('an'))) - 1; // test aid: ?an=N starts at highlight N
   nextHighlight();
   requestAnimationFrame(loop);
@@ -194,6 +210,20 @@ function loop(now) {
   if (!M || $('mac').hidden) return;
   const real = Math.min(0.1, (now - M.last) / 1000);
   M.last = now;
+  if (M.playing && M.mode === 'text') {
+    // commentary only: the clock runs, every event is told as it happens
+    M.tt += real * TEXT_RATE[M.speed] * FAST;
+    const E = M.S.E;
+    let k = M.shown + 1;
+    while (k < E.length && E[k].t / 10 <= M.tt) {
+      if (E[k].type === 'goal') onGoal(k); else onEvent(k, false);
+      k++;
+    }
+    if (M.mode === 'text') $('dk').textContent = dakika(Math.min(M.tt * 10, E[E.length - 1].t));
+    if (k >= E.length) { finish(); return; }
+    requestAnimationFrame(loop);
+    return;
+  }
   if (M.playing) {
     if (M.mode === 'cut') {
       M.cutT += real * FAST;
@@ -216,7 +246,7 @@ function loop(now) {
       }
     }
   }
-  M.render.draw(M.mode === 'play' ? Math.min(1, M.acc / DT) : 1);
+  if (M.mode !== 'text') M.render.draw(M.mode === 'play' ? Math.min(1, M.acc / DT) : 1);
   requestAnimationFrame(loop);
 }
 
@@ -264,4 +294,21 @@ $('tekrarOyna').addEventListener('click', () => {
   if (Q.has('draft')) { location.href = './draft.html'; return; }
   $('son').hidden = true; $('kur').hidden = false; M = null;
 });
-{ const d = fromDraft(); if (d) { $('tekrarOyna').textContent = 'YENİ DRAFT'; start(d); } }
+// coming from the draft: ask how to watch, then kick off
+{
+  const d = fromDraft();
+  if (d) {
+    $('tekrarOyna').textContent = 'YENİ DRAFT';
+    if (Q.get('izle')) start(d);
+    else {
+      $('kur').hidden = true; $('izleme').hidden = false;
+      $('izlemeAlt').textContent = `${d.home.name} – ${d.away.name}`;
+      $('izleBuyuk').innerHTML = modeButtons(izle);
+      $('izleBuyuk').addEventListener('click', (e) => {
+        const b = e.target.closest('[data-izle]'); if (!b) return;
+        izle = b.dataset.izle; try { localStorage.setItem('nxDraftIzle', izle); } catch { /* ignore */ }
+        $('izleme').hidden = true; start(d);
+      });
+    }
+  }
+}
