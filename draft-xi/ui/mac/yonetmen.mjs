@@ -101,13 +101,17 @@ export function createDirector(S, W, hooks) {
       if (['foul', 'offside', 'corner', 'half_time', 'full_time', 'goal', 'miss', 'post'].includes(x.type)) break;
       const key = TOUCHER[x.type] && id2(x[TOUCHER[x.type]]);
       if (!key) continue;
-      const q = S.F[j].p[key[0]][key[1]], b = S.F[j].b;
+      // the engine logs each event after it happened: a mover (carry, dribble) was where the previous frame has him
+      const fr = ['carry', 'dribble'].includes(x.type) ? S.F[j - 1] : S.F[j];
+      const q = fr.p[key[0]][key[1]], b = fr.b;
       if (q) return metres(q, b) < 3 ? { ...b } : { ...q };
     }
     return fallback || { ...(S.F[k + 1] || S.F[k]).b };
   }
-  // where receiver `id` is at the next frame (passes go to the man, not to an old ball position)
-  const atNext = (k, id) => { const w = id2(id); const q = w && (S.F[k + 1] || S.F[k]).p[w[0]][w[1]]; return q ? { ...q } : landing(k); };
+  // where player `id` is in event k's own frame (the engine writes the frame after the event: a pass's receiver,
+  // a carrier at the end of his run, a shooter where he shoots from)
+  const atNow = (k, id) => { const w = id2(id); const q = w && S.F[k].p[w[0]][w[1]]; return q ? { ...q } : landing(k); };
+  const atNext = atNow;
 
   // ── event → action ──
   function begin(k) {
@@ -116,7 +120,7 @@ export function createDirector(S, W, hooks) {
     const to = fN.b;
     const actor = id2(e.p);
     const nextE = S.E[k + 1];
-    ctl.claim = null; ctl.poss = S.poss[k]; ctl.receiver = null; ctl.runner = null; ctl.presser = null; ctl.dead = false; ctl.gate = null; ctl.carryTo = null;
+    ctl.carryFast = false; ctl.claim = null; ctl.poss = S.poss[k]; ctl.receiver = null; ctl.runner = null; ctl.presser = null; ctl.dead = false; ctl.gate = null; ctl.carryTo = null;
     // a set piece lasts until it is taken: a corner until the delivery, a free kick at goal / penalty until the shot
     if (ctl.set) {
       const keep = (ctl.set.kind === 'corner' && ['cross', 'cross_bad', 'corner_short'].includes(e.type))
@@ -166,9 +170,9 @@ export function createDirector(S, W, hooks) {
         }
         break;
       }
-      case 'pass': dur = e.kind === 'long' ? flight(actor, 'air', SPEED.long, 4 + R() * 3, e.to, atNext(k, e.to)) : flight(actor, 'ground', SPEED.short, 0, e.to, atNext(k, e.to)); break;
+      case 'pass': dur = e.kind === 'long' ? flight(actor, 'air', SPEED.long, 7 + R() * 5, e.to, atNext(k, e.to)) : flight(actor, 'ground', SPEED.short, 0, e.to, atNext(k, e.to)); break;
       case 'corner_short': ctl.set = null; dur = flight(actor, 'ground', SPEED.short, 0, nextE?.p, landing(k)); break;
-      case 'pass_bad': dur = e.kind === 'long' ? flight(actor, 'air', SPEED.long, 4, null, landing(k)) : flight(actor, 'ground', SPEED.short, 0, null, landing(k)); break;
+      case 'pass_bad': dur = e.kind === 'long' ? flight(actor, 'air', SPEED.long, 7, null, landing(k)) : flight(actor, 'ground', SPEED.short, 0, null, landing(k)); break;
       case 'through': {
         const rc = id2(e.to);
         if (rc) ctl.runner = Object.assign([rc[0], rc[1]], { at: { ...to } });
@@ -186,8 +190,9 @@ export function createDirector(S, W, hooks) {
       case 'carry': case 'dribble': {
         if (actor && !owns(actor)) claim(actor);
         ctl.holder = actor;
-        ctl.carryTo = { ...to };
-        dur = clamp(metres(W.ball, to) / 6.2, e.type === 'dribble' ? 1.2 : 0.8, 3.2);
+        const runTo = atNow(k, e.p);
+        ctl.carryTo = { ...runTo };
+        dur = clamp(metres(W.ball, runTo) / 6.2, e.type === 'dribble' ? 1.2 : 0.8, 3.2);
         if (e.type === 'dribble') { const d = id2(e.past); if (d) { ctl.presser = d; later(() => setState(body(d), 'beaten', 0.8), dur * 0.45); } }
         break;
       }
@@ -222,7 +227,7 @@ export function createDirector(S, W, hooks) {
           if (!kicker) { const side = S.poss[k - 1] ?? 0; let bd = 1e9; W.bodies[side].forEach((b, i) => { if (b) { const d = metres(b, W.ball); if (d < bd) { bd = d; kicker = [side, i]; } } }); }
           if (actor) ctl.receiver = { side: actor[0], i: actor[1], at: { ...spot } };
           if (loser && body(loser)) { body(loser).tx = spot.x; body(loser).ty = spot.y; }
-          dur = flight(kicker, 'air', SPEED.long, 8, null, spot, () => {});
+          dur = flight(kicker, 'air', SPEED.long, 11, null, spot, () => {});
           ctl.afterFlight = () => touchLoose(actor, () => header());
           break;
         }
@@ -238,11 +243,11 @@ export function createDirector(S, W, hooks) {
         });
         break;
       }
-      case 'clear': dur = flight(actor, 'air', SPEED.clear, 7, null, nextE?.type === 'corner' ? outBehind(1 - e.team, W.ball.x) : landing(k)); break;
+      case 'clear': dur = flight(actor, 'air', SPEED.clear, 12, null, nextE?.type === 'corner' ? outBehind(1 - e.team, W.ball.x) : landing(k)); break;
       case 'cross': case 'cross_bad': {
         const tgt = nextE && ['aerial', 'shot'].includes(nextE.type) ? nextE.p : null;
         const dest = e.type === 'cross_bad' && nextE?.type === 'corner' ? outBehind(e.team, W.ball.x < 50 ? 70 + R() * 15 : 15 + R() * 15) : landing(k);
-        dur = flight(actor, 'air', SPEED.cross, 3.5 + R() * 2, tgt, dest);
+        dur = flight(actor, 'air', SPEED.cross, 5 + R() * 3, tgt, dest);
         break;
       }
       case 'cross_block': {
@@ -275,7 +280,17 @@ export function createDirector(S, W, hooks) {
       }
       case 'offside': ctl.dead = true; if (W.ball.state === 'held') { W.ball.state = 'dead'; W.ball.owner = null; } hooks.cue({ kind: 'offside' }); dur = 1.3; break;
       case 'fk_wall': dur = touch(actor, () => shot(k, 'wall')); break;
-      case 'shot': dur = touch(actor, () => shot(k, nextE?.type || 'miss')); break;
+      case 'shot': {
+        // the shot is taken where the engine has the shooter (its distance matches the engine's own): if the ball is
+        // not there yet he takes it there first
+        const from = atNow(k, e.p);
+        const go = () => shot(k, nextE?.type || 'miss');
+        if (actor && metres(W.ball, from) > 2.5 && W.ball.state !== 'flight') {
+          claim(actor); ctl.carryTo = { ...from }; ctl.carryFast = true;   // drives into the shooting position at pace
+          dur = waitUntil(() => owns(actor) && metres(body(actor), from) < 1.5, () => { ctl.carryTo = null; ctl.carryFast = false; return touch(actor, go) ?? 0.3; }, actor, 10);
+        } else dur = touch(actor, go);
+        break;
+      }
       case 'goal': case 'miss': case 'save': case 'post': case 'block':
         // a direct free kick or penalty (no 'shot' event before it)
         if (e.type === 'goal' || e.shotType === 'fk' || e.kind === 'fk' || e.kind === 'penalty') {
@@ -442,7 +457,7 @@ export function createDirector(S, W, hooks) {
     const go = (key, p, mode = 'sprint') => { const b = body(key); if (b) { b.tx = p.x; b.ty = p.y; b.mode = mode; } };
     if (ctl.claim && W.ball.state !== 'flight') go(ctl.claim, W.ball);
     if (ctl.gate?.key && !owns(ctl.gate.key)) go(ctl.gate.key, W.ball.state === 'flight' && W.ball.flight ? { x: W.ball.flight.tx, y: W.ball.flight.ty } : W.ball);
-    if (ctl.carryTo && W.ball.owner && body(W.ball.owner)) go(W.ball.owner, ctl.carryTo, ctl.set ? 'jog' : 'run');
+    if (ctl.carryTo && W.ball.owner && body(W.ball.owner)) go(W.ball.owner, ctl.carryTo, ctl.set ? 'jog' : ctl.carryFast ? 'sprint' : 'run');
     if (ctl.gate?.key && owns(ctl.gate.key) && ctl.carryTo) go(ctl.gate.key, ctl.carryTo, 'jog');
   }
 
