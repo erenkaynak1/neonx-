@@ -16,7 +16,7 @@ Not wired into the site yet; the live Draft XI still runs on `neon-xi-core.html`
 
 ## Oyuncu havuzu: Excel (2026-11-23)
 
-Oyunun kullandığı havuz **`data/draft-xi-oyuncu-havuzu.xlsx`** dosyasıdır; `data/havuz-fm.mjs` ondan üretilir (Draft, Taktik, Maç ve İnceleme ekranları bunu okur).
+Oyunun kullandığı havuz **`data/eren-oyuncu-havuzu.xlsx`** dosyasıdır; `data/havuz-fm.mjs` ondan üretilir (Draft, Taktik, Maç ve İnceleme ekranları bunu okur).
 
 - Düzenleme: Excel'de puan, mevki, kulüp, yaş vb. değiştir, satır ekle/sil, sonra `python3 scripts/draft_xi_havuz_excel_oku.py`. Hatalı hücre (1–99 dışı puan, bilinmeyen mevki, tekrar eden isim) varsa dosya yazılmaz, hatalar listelenir.
 - Kontrol: `python3 scripts/draft_xi_havuz_excel_oku.py --check` (CI'da çalışır) + `node scripts/test_draft_xi_pool_fm.mjs`.

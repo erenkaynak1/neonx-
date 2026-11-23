@@ -1,4 +1,4 @@
-// ÜRETİLMİŞ DOSYA — elle düzenleme. Kaynak: draft-xi/data/draft-xi-oyuncu-havuzu.xlsx (1888 oyuncu).
+// ÜRETİLMİŞ DOSYA — elle düzenleme. Kaynak: draft-xi/data/eren-oyuncu-havuzu.xlsx (1888 oyuncu).
 // Üretici: scripts/draft_xi_havuz_excel_oku.py. Excel'i düzenleyip betiği çalıştır.
 // Değerler kullanıcının FM özellik listelerinden v2 ölçeğine (1–99) kalibre edildi.
 // Sırası: [id, ad, mevkiler, ayak, zayıf ayak, boy, ülke, kulüp, lig, eski kulüpler, yaş, özellikler[14], kaleci[4]|null, değer kaynağı, tahmini alanlar]

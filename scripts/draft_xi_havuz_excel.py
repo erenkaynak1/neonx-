@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Draft XI havuzunu (draft-xi/data/havuz-fm.mjs) okunur Excel dosyasına yazar.
-Kullanım: python3 scripts/draft_xi_havuz_excel.py   → draft-xi/data/draft-xi-oyuncu-havuzu.xlsx
+Kullanım: python3 scripts/draft_xi_havuz_excel.py   → draft-xi/data/eren-oyuncu-havuzu.xlsx
 Excel'de düzeltme yapıldıktan sonra oyuna geri almak için: scripts/draft_xi_havuz_excel_oku.py"""
 import json, collections, pathlib, subprocess, sys
 from openpyxl import Workbook
@@ -10,7 +10,7 @@ from openpyxl.utils import get_column_letter as L
 from openpyxl.comments import Comment
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-OUTFILE = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / 'draft-xi/data/draft-xi-oyuncu-havuzu.xlsx'
+OUTFILE = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / 'draft-xi/data/eren-oyuncu-havuzu.xlsx'
 P = json.loads(subprocess.check_output(['node', '-e', "import('./draft-xi/data/havuz-fm.mjs').then(m=>process.stdout.write(JSON.stringify(m.HAVUZ)))"], cwd=ROOT))
 for i, p in enumerate(P):
     p['_sira'] = i

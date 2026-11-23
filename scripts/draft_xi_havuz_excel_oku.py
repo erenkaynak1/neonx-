@@ -2,7 +2,7 @@
 """Draft XI oyuncu havuzu Excel dosyasını oyunun veri dosyasına çevirir.
 
 Kullanım: python3 scripts/draft_xi_havuz_excel_oku.py [excel] [--check]
-  excel    varsayılan draft-xi/data/draft-xi-oyuncu-havuzu.xlsx
+  excel    varsayılan draft-xi/data/eren-oyuncu-havuzu.xlsx
   --check  dosya yazmaz; havuz-fm.mjs Excel ile aynı değilse hata verir
 
 Çıktı: draft-xi/data/havuz-fm.mjs (oyunun okuduğu havuz) ve draft-xi/data/fm-kaynak/havuz-fm.csv
@@ -13,7 +13,7 @@ from openpyxl import load_workbook
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 args = [a for a in sys.argv[1:] if not a.startswith('--')]
 CHECK = '--check' in sys.argv
-SRC = pathlib.Path(args[0]) if args else ROOT / 'draft-xi/data/draft-xi-oyuncu-havuzu.xlsx'
+SRC = pathlib.Path(args[0]) if args else ROOT / 'draft-xi/data/eren-oyuncu-havuzu.xlsx'
 MJS = ROOT / 'draft-xi/data/havuz-fm.mjs'
 CSV = ROOT / 'draft-xi/data/fm-kaynak/havuz-fm.csv'
 
@@ -111,7 +111,7 @@ rows.sort(key=lambda q: q['sira'])
 lines = ['  ' + json.dumps([q['id'], q['name'], q['positions'], q['foot'], q['wf'], q['h'], q['nation'], q['club'], q['league'],
                             q['former'], q['age'], q['a'], q['g'], KAYNAK, q['tah']], ensure_ascii=False) for q in rows]
 today = datetime.date.today().isoformat()
-out = f"""// ÜRETİLMİŞ DOSYA — elle düzenleme. Kaynak: draft-xi/data/draft-xi-oyuncu-havuzu.xlsx ({len(rows)} oyuncu).
+out = f"""// ÜRETİLMİŞ DOSYA — elle düzenleme. Kaynak: draft-xi/data/eren-oyuncu-havuzu.xlsx ({len(rows)} oyuncu).
 // Üretici: scripts/draft_xi_havuz_excel_oku.py. Excel'i düzenleyip betiği çalıştır.
 // Değerler kullanıcının FM özellik listelerinden v2 ölçeğine (1–99) kalibre edildi.
 // Sırası: [id, ad, mevkiler, ayak, zayıf ayak, boy, ülke, kulüp, lig, eski kulüpler, yaş, özellikler[14], kaleci[4]|null, değer kaynağı, tahmini alanlar]
