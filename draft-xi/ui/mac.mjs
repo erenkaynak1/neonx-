@@ -255,10 +255,10 @@ function statRows(T) {
   const p = T[0].possession + T[1].possession || 1;
   const pct = (a, b) => (b ? `${Math.round((a / b) * 100)}%` : '–');
   const rows = [
-    ['Topa sahip olma', `${Math.round((T[0].possession / p) * 100)}%`, `${Math.round((T[1].possession / p) * 100)}%`, T[0].possession, T[1].possession],
+    ['Topla oynama', `${Math.round((T[0].possession / p) * 100)}%`, `${Math.round((T[1].possession / p) * 100)}%`, T[0].possession, T[1].possession],
     ['Şut', T[0].shots, T[1].shots], ['İsabetli şut', T[0].onTarget, T[1].onTarget],
     ['Pas', T[0].passes, T[1].passes], ['Pas isabeti', pct(T[0].passesOk, T[0].passes), pct(T[1].passesOk, T[1].passes), T[0].passesOk, T[1].passesOk],
-    ['Başarılı çalım', T[0].dribbles, T[1].dribbles], ['Top kazanma', T[0].wins, T[1].wins], ['Top kaybı', T[0].losses, T[1].losses],
+    ['Başarılı çalım', T[0].dribbles, T[1].dribbles], ['Top kazanma', T[0].wins, T[1].wins],
     ['Kurtarış', T[0].saves, T[1].saves], ['Korner', T[0].corners, T[1].corners], ['Ofsayt', T[0].offsides, T[1].offsides],
     ['Faul', T[0].fouls, T[1].fouls], ['Kart', T[0].yellows + T[0].reds, T[1].yellows + T[1].reds],
   ];

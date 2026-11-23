@@ -16,7 +16,7 @@ export function createRenderer(canvas, W, info) {
     cw = Math.max(200, r.width); ch = Math.max(240, r.height);
     canvas.width = Math.round(cw * dpr); canvas.height = Math.round(ch * dpr);
     // fit a 68 × 105 pitch (plus a margin for the goals) into the canvas
-    const m = 14, aspect = 68 / 105;
+    const m = cw < 330 ? 6 : 14, aspect = 68 / 105;   // small pitch panels (phones) waste less space
     let h = ch - m * 2, w = h * aspect;
     if (w > cw - m * 2) { w = cw - m * 2; h = w / aspect; }
     box = { x: (cw - w) / 2, y: (ch - h) / 2, w, h };
