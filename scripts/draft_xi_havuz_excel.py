@@ -199,6 +199,22 @@ for r, n in enumerate(DIS, 2):
         ds.cell(r, c, v).font = F()
 ds.column_dimensions['A'].width = 5; ds.column_dimensions['B'].width = 26; ds.column_dimensions['C'].width = 58
 
+# corrections log (scripts/draft_xi_havuz_duzelt.py): every change made on top of the FM lists, with the reason
+DUZ_PATH = ROOT / 'draft-xi/data/fm-kaynak/duzeltmeler.json'
+DUZ = json.load(open(DUZ_PATH, encoding='utf-8')) if DUZ_PATH.exists() else []
+if DUZ:
+    dz = wb.create_sheet('Düzeltmeler')
+    for i, h in enumerate(['Oyuncu', 'Alan', 'Eski', 'Yeni', 'Neden', 'Kaynak', 'Tarih'], 1):
+        x = dz.cell(1, i, h); x.fill = HDR_FILL; x.font = F(bold=True, color='FFFFFF')
+    order = {'Yeni oyuncu': 0, 'Kulüp': 1, 'Mevki': 2}
+    for r, d in enumerate(sorted(DUZ, key=lambda d: (order.get(d['alan'], 3), d['alan'], d['oyuncu'])), 2):
+        for c, v in enumerate([d['oyuncu'], d['alan'], d['eski'], d['yeni'], d['neden'], d['kaynak'], d.get('tarih', '')], 1):
+            x = dz.cell(r, c, v); x.font = F(); x.border = BORDER
+            if r % 2 == 1: x.fill = ZEBRA
+    for col, w in zip('ABCDEFG', (24, 16, 14, 18, 70, 30, 11)):
+        dz.column_dimensions[col].width = w
+    dz.freeze_panes = 'A2'; dz.auto_filter.ref = f'A1:G{len(DUZ) + 1}'
+
 # info sheet
 info.sheet_view.showGridLines = False
 info.column_dimensions['A'].width = 2; info.column_dimensions['B'].width = 22; info.column_dimensions['C'].width = 26; info.column_dimensions['D'].width = 52
@@ -208,6 +224,8 @@ info.cell(r, 2, 'Gönderdiğin FM özellik listelerinden oyunun kendi 1–99 öl
 rows = [('Toplam oyuncu', f"=COUNTA({SO}!B3:B{last1})+COUNTA({KL}!B3:B{last2})"),
         ('Saha oyuncusu', f"=COUNTA({SO}!B3:B{last1})"), ('Kaleci', f"=COUNTA({KL}!B3:B{last2})"),
         ('Kulüp', f"=COUNTA(Kulüpler!A2:A{len(clubs) + 1})"), ('Dışarıda kalan', f"=COUNTA('Dışarıda Kalanlar'!B2:B{len(DIS) + 1})")]
+if DUZ:
+    rows.append(('Düzeltme', f"=COUNTA(Düzeltmeler!A2:A{len(DUZ) + 1})"))
 for k, v in rows:
     info.cell(r, 2, k).font = F(bold=True); x = info.cell(r, 3, v); x.font = F(); x.alignment = Alignment(horizontal='left'); r += 1
 r += 1
@@ -231,6 +249,7 @@ r += 1
 for t in ('Notlar',
           '• Değerler FM 5–100 ölçeğinden, ortak oyuncular üzerinden oyunun 1–99 ölçeğine kalibre edildi.',
           '• Kulüp, yaş, boy, ülke: Transfermarkt ana verisi ve mevcut havuzdan.',
+          '• Mantık hataları açık verilerle ve tutarlılık kurallarıyla düzeltildi; her değişiklik ve nedeni "Düzeltmeler" sayfasında.',
           '• Kalecilerin saha özellikleri (bitiricilik vb.) oyunda kullanılmadığı için bu tabloda yok.',
           '• Bir sütun başlığının üzerine gelince hangi FM özelliğinden geldiğini gösteren not çıkar.',
           '',
