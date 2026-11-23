@@ -10,7 +10,7 @@
 // Several engine events can share one timestamp (cross → header → miss); durations therefore come from the action
 // and the distance, not from the log clock, and an outcome event is played inside its shot.
 import { MX, MY, clamp, lerp, metres, rng, GOAL_HALF, fromRel } from './saha.mjs?v=2';
-import { kick, giveBall, setState } from './fizik.mjs?v=3';
+import { kick, giveBall, setState } from './fizik.mjs?v=4';
 import { updateTargets } from './taktik.mjs?v=2';
 
 const SPEED = { short: 13.5, long: 18, cross: 19, clear: 22, shot: 26, through: 15 }; // m/s along the path
@@ -131,13 +131,15 @@ export function createDirector(S, W, hooks) {
     ctl.setFresh = false;
     ctl.celebrate = null;
     // a kicked ball: the kicker must be on it; returns the beat length once the ball is on its way
-    const flight = (kicker, kind, speed, h = 0, receiverId = null, dest = to, end = null) => touch(kicker, () => {
+    const flight = (kicker, kind, speed, h = 0, receiverId = null, dest = to, end = null, z1 = 0, meet = null) => touch(kicker, () => {
       const dist = metres(W.ball, dest);
-      const dur = clamp(dist / speed, kind === 'air' ? 0.7 : 0.35, 2.8);
+      let dur = clamp(dist / speed, kind === 'air' ? 0.7 : 0.35, 2.8);
+      // a ball met in the air hangs long enough for the men going for it to get there
+      if (meet) for (const m of meet) { const b = m && body(m); if (b) dur = Math.max(dur, Math.min(3.4, metres(b, dest) / (b.top * 0.75) + 0.6)); }   // from a standing start, braking at the end
       const rcv = receiverId && id2(receiverId);
       if (rcv) ctl.receiver = { side: rcv[0], i: rcv[1], at: { ...dest } };
       if (kicker) setState(body(kicker), 'kick', 0.25);
-      kick(W.ball, dest, dur, kind, h, () => { if (rcv) claim(rcv); end?.(); });
+      kick(W.ball, dest, dur, kind, h, () => { if (rcv) claim(rcv); end?.(); }, z1);
       ctl.holder = null;
       return dur + (rcv ? 0.25 : 0.1);
     });
@@ -145,10 +147,17 @@ export function createDirector(S, W, hooks) {
     const header = () => {
       const loser = id2(e.vs), land = nextE && nextE.type !== 'shot' ? landing(k) : null;
       [actor, loser].forEach((x) => setState(body(x), 'jump', 0.55));
+      ctl.inAir = false;
       if (land && actor) { const hd = clamp(metres(W.ball, land) / 12, 0.4, 1.4); kick(W.ball, land, hd, 'air', 1.4); return hd + 0.1; }
+      if (nextE?.type === 'shot' && nextE.shotType === 'head') { ctl.headerShot = true; return 0.02; }   // heads it at goal
       if (actor) giveBall(W.ball, actor);
       return 0.45;
     };
+    // the delivery is met in the air: a cross / corner / long ball flies to the duel and arrives at head height
+    const HEAD_Z = 2.3;
+    // a late runner still gets his head on it (as it drops) once he is there
+    const headerWhenThere = () => (!actor || !body(actor) || metres(body(actor), W.ball) < 1.6 ? header()
+      : waitUntil(() => metres(body(actor), W.ball) < 1.6, () => header(), actor, 1.5));
     ctl.afterFlight = null;
     let dur = 0.4;
     switch (e.type) {
@@ -227,11 +236,12 @@ export function createDirector(S, W, hooks) {
           if (!kicker) { const side = S.poss[k - 1] ?? 0; let bd = 1e9; W.bodies[side].forEach((b, i) => { if (b) { const d = metres(b, W.ball); if (d < bd) { bd = d; kicker = [side, i]; } } }); }
           if (actor) ctl.receiver = { side: actor[0], i: actor[1], at: { ...spot } };
           if (loser && body(loser)) { body(loser).tx = spot.x; body(loser).ty = spot.y; }
-          dur = flight(kicker, 'air', SPEED.long, 11, null, spot, () => {});
-          ctl.afterFlight = () => touchLoose(actor, () => header());
+          const fromCorner = ['corner', 'foul'].includes(S.E[k - 1]?.type);
+          dur = flight(kicker, 'air', fromCorner ? SPEED.cross : SPEED.long, fromCorner ? 6 + R() * 2 : 11, null, spot, () => {}, HEAD_Z, [actor]);
+          ctl.afterFlight = () => headerWhenThere();
           break;
         }
-        dur = touchLoose(actor, () => header());
+        dur = ctl.inAir ? headerWhenThere() : touchLoose(actor, () => header());
         break;
       }
       case 'aerial_unused': {
@@ -245,9 +255,11 @@ export function createDirector(S, W, hooks) {
       }
       case 'clear': dur = flight(actor, 'air', SPEED.clear, 12, null, nextE?.type === 'corner' ? outBehind(1 - e.team, W.ball.x) : landing(k)); break;
       case 'cross': case 'cross_bad': {
-        const tgt = nextE && ['aerial', 'shot'].includes(nextE.type) ? nextE.p : null;
-        const dest = e.type === 'cross_bad' && nextE?.type === 'corner' ? outBehind(e.team, W.ball.x < 50 ? 70 + R() * 15 : 15 + R() * 15) : landing(k);
-        dur = flight(actor, 'air', SPEED.cross, 5 + R() * 3, tgt, dest);
+        const duel = e.type === 'cross' && nextE?.type === 'aerial';
+        const tgt = !duel && nextE && ['aerial', 'shot'].includes(nextE.type) ? nextE.p : null;
+        const dest = e.type === 'cross_bad' && nextE?.type === 'corner' ? outBehind(e.team, W.ball.x < 50 ? 70 + R() * 15 : 15 + R() * 15) : duel ? atNow(k + 1, nextE.p) : landing(k);
+        if (duel) { const w = id2(nextE.p), l = id2(nextE.vs); if (w) ctl.receiver = { side: w[0], i: w[1], at: { ...dest } }; if (l && body(l)) { body(l).tx = dest.x; body(l).ty = dest.y; } }
+        dur = flight(actor, 'air', SPEED.cross, 5 + R() * 3, tgt, dest, duel ? () => { ctl.inAir = true; } : null, duel ? HEAD_Z : 0, duel ? [id2(nextE.p)] : null);
         break;
       }
       case 'cross_block': {
@@ -266,7 +278,11 @@ export function createDirector(S, W, hooks) {
         ctl.set = { kind: 'corner', side: e.team, at, taker: actor };
         // the ball has gone out over the goal line: a new ball at the corner flag, the taker runs over to it
         resetBall(at, true);
-        dur = actor && body(actor) ? waitUntil(() => metres(body(actor), at) < 1.2, () => { placeAt(at, actor); return 1.6; }, actor, 9) : 2.2;
+        // whoever wins the header (often a centre back come up) takes his place in the box before it is taken
+        const hw = nextE?.type === 'aerial' && id2(nextE.p);
+        if (hw && body(hw)) ctl.receiver = { side: hw[0], i: hw[1], at: atNow(k + 1, nextE.p) };
+        const ready = () => !hw || !body(hw) || metres(body(hw), ctl.receiver?.at || body(hw)) < 4;
+        dur = actor && body(actor) ? waitUntil(() => metres(body(actor), at) < 1.2 && ready(), () => { placeAt(at, actor); return 1.6; }, actor, 10) : 2.2;
         break;
       }
       case 'keeper_rush': if (actor) { ctl.presser = actor; claim(actor); } dur = 0.8; break;
@@ -285,6 +301,7 @@ export function createDirector(S, W, hooks) {
         // not there yet he takes it there first
         const from = atNow(k, e.p);
         const go = () => shot(k, nextE?.type || 'miss');
+        if (ctl.headerShot) { ctl.headerShot = false; dur = go(); break; }
         if (actor && metres(W.ball, from) > 2.5 && W.ball.state !== 'flight') {
           claim(actor); ctl.carryTo = { ...from }; ctl.carryFast = true;   // drives into the shooting position at pace
           dur = waitUntil(() => owns(actor) && metres(body(actor), from) < 1.5, () => { ctl.carryTo = null; ctl.carryFast = false; return touch(actor, go) ?? 0.3; }, actor, 10);
@@ -366,7 +383,7 @@ export function createDirector(S, W, hooks) {
     const g = gk && body(gk);
     const goalY = att === 0 ? 100 : 0, inY = att === 0 ? 101.6 : -1.6, lineY = att === 0 ? 99.2 : 0.8;
     const head = e.shotType === 'head';
-    let tx, ty = goalY, h = head ? 0.8 : 0.6;
+    let tx, ty = goalY, h = head ? 0.25 : 0.6;   // a header starts high (where it was met) and goes down
     const side = R() < 0.5 ? -1 : 1;
     const est = clamp(metres(W.ball, { x: 50, y: goalY }) / (head ? 14 : SPEED.shot), 0.25, 1.3);
     const reachU = (1.4 + 4.2 * est) / MX;                       // how far the keeper can get across in that time

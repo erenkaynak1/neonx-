@@ -10,6 +10,10 @@ export function createRenderer(canvas, W, info) {
   const ctx = canvas.getContext('2d');
   let dpr = 1, cw = 0, ch = 0, pitch = null, box = { x: 0, y: 0, w: 1, h: 1 };
   const cues = [];   // short-lived drawings: pass lines, net ripple, flashes
+  // broadcast camera: the whole pitch while the ball is played about; a measured zoom towards the goal for crosses,
+  // corners, shots and goals. It eases in and out (never jumps) and only changes the view, never a position.
+  const cam = { x: 50, y: 50, z: 1 };
+  let camT = 0;
   function resize() {
     const r = canvas.getBoundingClientRect();
     dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -74,13 +78,30 @@ export function createRenderer(canvas, W, info) {
 
   function cue(c) { cues.push({ ...c, t0: performance.now() }); }
 
+  function camera(now) {
+    const dt = camT ? Math.min(0.1, (now - camT) / 1000) : 0; camT = now;
+    const f = info.focus || null;
+    const tz = f ? f.z : 1, tx = f ? f.x : 50, ty = f ? f.y : 50;
+    const k = 1 - Math.exp(-dt * (f ? 1.8 : 1.3));          // ease: in a little quicker than out
+    cam.z += (tz - cam.z) * k; cam.x += (tx - cam.x) * k * 1.4; cam.y += (ty - cam.y) * k * 1.4;
+    // keep the view on the pitch: centre of the view in screen pixels, clamped so no empty space opens up
+    const z = cam.z, hw = cw / (2 * z), hh = ch / (2 * z);
+    let fx = sx(cam.x), fy = sy(cam.y);
+    const gm = unit() * 2.8, x0 = box.x - 6, x1 = box.x + box.w + 6, y0 = box.y - gm, y1 = box.y + box.h + gm;   // the goals stay in view
+    fx = x1 - x0 > 2 * hw ? Math.min(x1 - hw, Math.max(x0 + hw, fx)) : cw / 2;
+    fy = y1 - y0 > 2 * hh ? Math.min(y1 - hh, Math.max(y0 + hh, fy)) : ch / 2;
+    if (z < 1.001) { fx = cw / 2; fy = ch / 2; }
+    return { z, ox: cw / 2 - fx * z, oy: ch / 2 - fy * z };
+  }
+
   function draw(alpha) {
     if (!pitch) resize();
+    const now = performance.now(), u = unit();
+    const V = camera(now);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(pitch, 0, 0);
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const now = performance.now(), u = unit();
+    ctx.setTransform(dpr * V.z, 0, 0, dpr * V.z, dpr * V.ox, dpr * V.oy);
+    ctx.drawImage(pitch, 0, 0, cw, ch);
     // short-lived cues under the players
     for (let n = cues.length - 1; n >= 0; n--) {
       const c = cues[n], age = (now - c.t0) / 1000;
@@ -206,8 +227,9 @@ export function createRenderer(canvas, W, info) {
       ctx.fillStyle = '#fff'; ctx.fillText(info.name(ball.owner), x, y);
     }
     // dimming during a cut between highlights
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     if (info.dim > 0) { ctx.fillStyle = `rgba(7,11,10,${info.dim})`; ctx.fillRect(0, 0, cw, ch); }
   }
   new ResizeObserver(() => resize()).observe(canvas);
-  return { draw, cue, resize, toScreen: (p) => ({ x: sx(p.x), y: sy(p.y) }) };
+  return { draw, cue, resize, toScreen: (p) => ({ x: sx(p.x), y: sy(p.y) }), get zoom() { return cam.z; }, get cam() { return { ...cam }; } };
 }
