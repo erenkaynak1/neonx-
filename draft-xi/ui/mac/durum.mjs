@@ -83,7 +83,7 @@ export function createStats(S) {
 // Each highlight starts a few moves before its key event (inside the same attack) so the build-up is visible.
 const OUT_CAUSE = new Set(['cross_bad', 'cross_block', 'save', 'block', 'clear', 'miss']);
 const WEIGHT = { goal: 100, save: 40, post: 45, miss: 28, block: 22, through: 14, corner: 10, offside: 6, keeper_rush: 12 };
-export function highlights(S, { budget = 300 } = {}) {
+export function highlights(S, { budget = 300, lead = 6 } = {}) {
   const { E, chain } = S;
   const cand = [];
   E.forEach((e, k) => {
@@ -100,7 +100,7 @@ export function highlights(S, { budget = 300 } = {}) {
     // start: up to 6 events earlier inside the same attack; a very short attack also shows how the ball was won
     let a = anchor;
     const wall = (x) => ['half_time', 'goal', 'full_time'].includes(x.type) || (x.type === 'possession' && x.how === 'kickoff');
-    while (a > 0 && anchor - a < 6 && chain[a - 1] === chain[anchor] && !wall(E[a - 1]) && !wall(E[a])) a--;
+    while (a > 0 && anchor - a < lead && chain[a - 1] === chain[anchor] && !wall(E[a - 1]) && !wall(E[a])) a--;
     if (anchor - a < 2) while (a > 0 && anchor - a < 3 && !wall(E[a - 1]) && !wall(E[a])) a--;
     // end: the outcome and what follows it (a goal keeps the celebration and stops before the kick-off)
     let b = k;

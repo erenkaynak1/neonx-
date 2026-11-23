@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Draft XI · Maç</title>
 <meta name="robots" content="noindex">
-<link rel="stylesheet" href="./ui/mac.css?v=5">
+<link rel="stylesheet" href="./ui/mac.css?v=6">
 </head>
 <body>
 <main id="app">
@@ -16,8 +16,15 @@
       <div class="takim a"><b>EV SAHİBİ</b><select id="kA" aria-label="Ev sahibi kulüp"></select><select id="pA" aria-label="Ev sahibi plan"></select></div>
       <div class="takim b"><b>DEPLASMAN</b><select id="kB" aria-label="Deplasman kulübü"></select><select id="pB" aria-label="Deplasman planı"></select></div>
     </div>
+    <div class="izle-sec" role="radiogroup" aria-label="İzleme şekli" id="izleSec"></div>
     <label class="ayar"><input type="checkbox" id="komik" checked> Komik yorumlar</label>
     <button id="basla" class="go" type="button">MAÇA BAŞLA</button>
+  </section>
+
+  <section id="izleme" class="kur" hidden aria-labelledby="izlemeBaslik">
+    <h1 id="izlemeBaslik">MAÇI NASIL <span>İZLEMEK</span> İSTERSİN?</h1>
+    <p class="note" id="izlemeAlt"></p>
+    <div class="izle-sec buyuk" role="group" aria-label="İzleme şekli" id="izleBuyuk"></div>
   </section>
 
   <section id="mac" class="mac" hidden aria-label="Maç">
@@ -53,6 +60,6 @@
     <button id="tekrarOyna" class="go" type="button">YENİ MAÇ</button>
   </section>
 </main>
-<script type="module" src="./ui/mac.mjs?v=12"></script>
+<script type="module" src="./ui/mac.mjs?v=13"></script>
 </body>
 </html>
