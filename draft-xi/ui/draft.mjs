@@ -16,11 +16,17 @@ let S = null;
 // ── setup ──
 let mod = 'bot', zor = 'orta';
 $('dizilis').innerHTML = FORMS.map((f) => `<option${f === '4-3-3' ? ' selected' : ''}>${f}</option>`).join('');
-document.querySelectorAll('[data-mod]').forEach((b) => b.addEventListener('click', () => {
-  mod = b.dataset.mod;
-  document.querySelectorAll('[data-mod]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-  $('zorlukSatiri').hidden = mod !== 'bot';
-}));
+// mode list → settings sheet (the shared NEON XI menu: .sgm in side-games/sidegame-skin-v2.css)
+function openMode(m) {
+  mod = m;
+  $('ayarBaslik').textContent = m === 'bot' ? 'BOTA KARŞI' : 'AYNI TELEFON';
+  $('zorlukSatiri').hidden = m !== 'bot';
+  $('ayarNot').textContent = m === 'bot' ? 'Bot, draft başında bir oyun tarzı seçer ve ona göre oyuncu toplar. Diziliş draft sırasında da değiştirilebilir.' : 'Seçim sırası gelen oyuncuya telefonu verin. Diziliş draft sırasında da değiştirilebilir.';
+  $('modlar').hidden = true; $('nasil').hidden = true; $('ayar').hidden = false;
+  $('basla').focus({ preventScroll: true });
+}
+document.querySelectorAll('[data-mod]').forEach((b) => b.addEventListener('click', () => openMode(b.dataset.mod)));
+$('geri').addEventListener('click', () => { $('ayar').hidden = true; $('modlar').hidden = false; $('nasil').hidden = false; });
 document.querySelectorAll('[data-zor]').forEach((b) => b.addEventListener('click', () => {
   zor = b.dataset.zor;
   document.querySelectorAll('[data-zor]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
@@ -43,7 +49,7 @@ function start() {
 }
 $('basla').addEventListener('click', start);
 // opened from the NEON XI home: ?mod=bot (against the bot) or ?mod=iki (two players on one phone) preselects the mode
-{ const want = new URLSearchParams(location.search).get('mod'); document.querySelector(`[data-mod="${want}"]`)?.click(); }
+{ const want = new URLSearchParams(location.search).get('mod'); if (want === 'bot' || want === 'iki') openMode(want); }
 
 // ── draft order (snake: 1-2, 2-1, …) ──
 const round = () => Math.floor(S.pick / 2);
@@ -184,7 +190,7 @@ function poolList() {
   ps = ps.map((p) => ({ p, g: guc(p), r: rankOf(p), fit: !!bestSlot(t, p) })).sort((a, b) => (b.fit - a.fit) || (b.r - a.r)).slice(0, 150);
   if (!ps.length) return '<li class="bos">Oyuncu yok.</li>';
   return ps.map(({ p, g, fit }) => `<li class="oy${fit ? '' : ' uymaz'}${S.selected === p.id ? ' secili' : ''}" data-id="${esc(p.id)}" role="button" tabindex="0" aria-disabled="${!fit}">
-    <span class="g">${g}</span><span class="n"><b>${esc(p.name)}</b><small>${esc(p.club)} · ${p.age} · ${p.foot === 'L' ? 'Sol' : 'Sağ'} ayak</small></span>
+    <span class="g${g >= 93 ? " t1" : g >= 88 ? " t2" : ""}">${g}</span><span class="n"><b>${esc(p.name)}</b><small>${esc(p.club)} · ${p.age} · ${p.foot === 'L' ? 'Sol' : 'Sağ'} ayak</small></span>
     <span class="m">${p.positions.map((m) => `<i>${m}</i>`).join('')}</span></li>`).join('');
 }
 
