@@ -6,7 +6,7 @@
 import { makeRng, prob, bForBase, combineTactics, weighted, hash, pickWeighted } from './core.mjs';
 import { FORMATIONS, zonePoint, PITCH_W, PITCH_L, COL_W, ROW_L } from './formations.mjs';
 
-export const ENGINE_VERSION = '0.6.1';
+export const ENGINE_VERSION = '0.6.2';
 
 // k: milli-logit per attribute point (14.1)
 const K = { duel: 85, air: 110, short: 54, long: 43, shot: 72, cross: 43 };   // 0.5: shot 85 → 72: finishing still decides, but less steeply (a modest finisher's chance is not near zero)
@@ -643,7 +643,11 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
       const wideTarget = Math.abs(mr.x - PITCH_W / 2) > COL_W / 2;
       // A wings plan must favour both wide outlets. The one-sided plans discourage their opposite lane;
       // applying that penalty to 'wings' accidentally suppressed every flank pass.
-      if (dirSide === 'wings' && wideTarget) w = Math.trunc(w * 1.4);
+      if (dirSide === 'wings' && hr.y >= 3 * ROW_L) {
+        // In the attacking half, a wings plan must create a real preference for wide outlets,
+        // not a small global nudge that gets washed out by openness and lane-clearance weights.
+        w = Math.trunc(w * (wideTarget ? 2.2 : 0.72));
+      } else if (dirSide === 'wings' && wideTarget) w = Math.trunc(w * 1.4);
       else if (dirSide && dirSide !== 'wings' && onDirSide(dirSide, Math.sign(mr.x - PITCH_W / 2)) && wideTarget) w = Math.trunc(w * (Math.abs(mr.x - PITCH_W / 2) > COL_W * 3 / 2 ? 45 : 26) / 10);
       if (dirSide === 'centre' && Math.abs(mr.x - PITCH_W / 2) <= COL_W) w *= 2;  // centre: the middle corridor
       // vision: better passers favour open, forward options (4.2)
