@@ -18,10 +18,10 @@ const REF = {
   shortFixed: 500, shortB: bForBase(8800), // 50 → 88 % (0.5: team pass accuracy ~77 % → ~82 %)
   longFixed: 600, longB: bForBase(4000), // 60 → 40 % (0.4: direct play was over-rewarded)
   crossFixed: 800, crossB: bForBase(3000),
-  shotFixed: 850, shotInB: bForBase(3200), shotOutB: bForBase(2000), headB: bForBase(2600),
+  shotFixed: 850, shotInB: bForBase(3200), shotOutB: bForBase(3000), headB: bForBase(2600),
   // 0.4: conversion ×0.8 → equal teams, both balanced: ~3 goals a match (user target; open games 5–6, defensive 1–2)
   // 0.5: ×1.1 with the flatter finishing slope (K.shot 72)
-  goalB: bForBase(2250), goalHeadB: bForBase(2110), goalOneB: bForBase(3450), goalOutB: bForBase(1220),
+  goalB: bForBase(2650), goalHeadB: bForBase(2110), goalOneB: bForBase(3450), goalOutB: bForBase(2500),
   penB: bForBase(7600), interceptB: bForBase(3800), blockB: bForBase(2000), crossBlockB: bForBase(2500),
   fkWallB: bForBase(2200), fkOnB: bForBase(3000), fkGoalB: bForBase(1760),
 };
@@ -524,11 +524,12 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     const wing = z.col === 0 || z.col === 4; const box = z.row === 6 && !wing;
     let opts; // [name, base weight]
     if (z.row <= 3) opts = [['short', 70], ['long', 14], ['carry', 13], ['dribble', 3]];   // 0.5: more passing, fewer take-ons (passes ~330 → real ~450 a team)
-    else if (z.row === 4) opts = [['short', 68], ['long', 5], ['through', 6], ['carry', 15], ['dribble', 4], ['shotOut', 2]];
+    else if (z.row === 4) opts = [['short', 68], ['long', 5], ['through', 4], ['carry', 15], ['dribble', 4], ['shotOut', 4]];
     // 0.5: through on goal around the penalty spot (a run stops there now): he shoots rather than walking it in
-    else if (box) opts = dist(h.cur, goalPt(side)) < 130 ? [['shotIn', 13], ['short', 72], ['dribble', 12]] : [['shotIn', 10], ['short', 76], ['dribble', 12]];
-    else if (wing) opts = [['short', 48], ['dribble', 9], ['cross', 40], [z.row === 6 ? 'shotIn' : 'shotOut', z.row === 6 ? 20 : 7]];   // 0.5: wide men cut in and shoot
-    else opts = [['short', 72], ['dribble', 7], ['shotOut', 9], ['through', 16]];
+    else if (box) opts = dist(h.cur, goalPt(side)) < 130 ? [['shotIn', 10], ['short', 75], ['dribble', 12]] : [['shotIn', 7], ['short', 79], ['dribble', 12]];   // 0.5: shot weights ×0.75 (shots were ~14.5 a team, real ~12.5)
+    else if (wing) opts = [['short', 52], ['dribble', 9], ['cross', 32], [z.row === 6 ? 'shotIn' : 'shotOut', z.row === 6 ? 15 : 10]];   // 0.5: wide men cut in and shoot; fewer automatic crosses
+    // 0.5: the edge of the box: shots from distance are a real share of football (~35 % of shots), through balls rarer
+    else opts = [['short', 64], ['dribble', 7], ['shotOut', 40], ['through', 9]];
     if (h.mevki === 'GK') opts = [['short', 70], ['long', 30]];
     // 0.4.1: nobody shoots from more than 30 m (long shots came from 35–53 m); the carrier drives on instead
     if (dist(h.cur, goalPt(side)) > 300) opts = opts.map(([n, w]) => (n === 'shotOut' ? ['carry', w] : [n, w]));
@@ -625,7 +626,8 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     const B = (kind === 'long' ? REF.longB + Math.max(0, d - 300) * 2 : REF.shortB + Math.max(0, d - 100) * 3) + crowd * 260 + supportB(side, m.cur)
       // 0.5: in the opponent's half a pass is played against their defence's quality, not a fixed bar
       + (rel(side, m.cur).y > PITCH_L / 2 ? Math.trunc((defQ(opp(side)) - 850) * (kind === 'long' ? 4 : 6) / 10 * (kind === 'long' ? K.long : K.short) / 10) : 0)
-      + closedB(side, m.cur) - (st.counter > 0 ? 250 : 0);   // 0.5: a counter runs into a defence out of shape
+      + closedB(side, m.cur) - (st.counter > 0 ? 250 : 0)   // 0.5: a counter runs into a defence out of shape
+      + (rel(side, m.cur).y >= 5 * ROW_L ? 200 : 0);   // 0.5: the last 30 m are the most crowded part of the pitch
     // creativity: free play forces the ball into tighter windows (harder passes); disciplined play picks the safe one
     // short passing (0.4): combination play is more accurate (it had a frequency effect and no benefit at all)
     const creB = (tac(side).creativity === 'high' ? CRE_PASS_B : tac(side).creativity === 'low' ? -CRE_SAFE_B : 0) - (kind !== 'long' && tac(side).passing === 'short' ? 120 : 0);   // 0.5: 250 → 120 (base short passing got more accurate)

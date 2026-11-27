@@ -45,6 +45,13 @@ export function updateTargets(W, P) {
     W.bodies[side].forEach((b, i) => {
       const o = out[i];
       if (!o || !b) return;
+      // people, not a rigid block: each player in shape drifts a little on his own slow rhythm (the back line much less,
+      // so it stays a line); players in the action (sprinting / free) and set pieces are left exactly where they are sent
+      if (!P.set && !P.celebrate && !o.free && o.mode !== 'sprint' && W.lineup[side][i].mevki !== 'GK') {
+        const t = W.time || 0, ph = (side * 11 + i) * 1.7, back = DEF.has(W.lineup[side][i].mevki);
+        o.x += (Math.sin(t * (0.23 + (i % 4) * 0.04) + ph) * (back ? 0.9 : 1.8)) / MX;
+        o.y += (Math.cos(t * (0.19 + (i % 3) * 0.05) + ph * 0.7) * (back ? 0.4 : 1.4)) / MY;
+      }
       const p = onPitch(o, o.free ? -1 : 0.8);
       b.tx = p.x; b.ty = p.y;
       b.mode = o.mode || paceFor(b, p);

@@ -11,7 +11,7 @@
 // and the distance, not from the log clock, and an outcome event is played inside its shot.
 import { MX, MY, clamp, lerp, metres, rng, GOAL_HALF, fromRel } from './saha.mjs?v=2';
 import { kick, giveBall, setState } from './fizik.mjs?v=4';
-import { updateTargets } from './taktik.mjs?v=3';
+import { updateTargets } from './taktik.mjs?v=4';
 
 const SPEED = { short: 13.5, long: 18, cross: 19, clear: 22, shot: 26, through: 15 }; // m/s along the path
 const OUTCOME = new Set(['miss', 'goal', 'save', 'post', 'block']);

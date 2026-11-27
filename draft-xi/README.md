@@ -19,6 +19,18 @@ Run the lab: `node scripts/draft_xi_lab.mjs 400` (add `--meta` for the meta hunt
 `ui/mac.mjs` + `ui/mac/` beş katman (kullanıcının 2D maç motoru istemi): **durum** (olay kaydından oyun durumu, takım/oyuncu istatistikleri, önemli anlar), **taktik** (diziliş + taktik ayarlarından her oyuncunun hedefi: düz savunma çizgisi, bloğun topa kayması, pres + kademe + pas yolu kapatma, son üçte birde markaj; hücumda stoperlerin açılması, kanat genişliği, bindiren bek, pas üçgenleri, savunma arkasına koşu, ortada ceza sahası doldurma; duran toplar ve gol sevinci), **fizik** (oyuncu hız/ivme Hız'dan, yorgunluk; top yerden/havadan/şut/yuvarlanma; sabit 50 Hz), **yönetmen** (motor olayı → aksiyon: pas, orta, şut + kaleci, müdahale, faul, duran top), **çizim** (canvas, adımlar arası ara değer). Sonucu motor belirler; ekran onu oynatır. Oyuncu görevleri kullanılmaz (davranış mevkiden).
 Kurallar: top yalnızca bir oyuncu dokununca hareket eder (vuran topa koşar, kafa topunu kazanan vurur, sahipsiz topa koşulur, kurtarış kalecinin erişiminde); top bir sonraki oyuncunun motordaki konumuna gider; oyundaki ölü top atışı kullanan oyuncuca noktaya taşınır, oyun dışına çıkan top yerine yeni top konur; korner her zaman topun çizgiyi geçmesiyle başlar; santralar (maç başı, ikinci yarı) iki yarıda dizilişle; devre arasında taraflar değişir. İzleme şekilleri: **Sadece spiker** (saha yok, ~1,5 dk), **Önemli anlar** (~4 dk), **Uzun özet** (~7 dk, daha uzun atak kuruluşları); hızlı maç kurulumunda ve draft→maç geçişinde seçilir, son seçim hatırlanır (`?izle=spiker|onemli|uzun`). Önemli anlar tam oynanır (1x: maç saniyesi ×1,6, ölü top hazırlığı hızlı), aralarda saat ilerler; maç 1x'te ~2,5–4 dk. Test yardımcıları: `?tohum=N`, `?an=N`, `?hizli`. CI: `scripts/test_draft_xi_mac.mjs` (istatistikler = motor, goller özette).
 
+## Seyir gerçekçiliği (2026-11-27)
+
+Ölçüm (ekranda kare kare 22 oyuncu): ani geri dönüş ve hız aşımı yok, üst üste binme %0,2, top oyundayken donup kalma %0,7 — hareket fiziği sağlam. Kalıplaşma motordaki şut dağılımındaydı (300 maç, gerçek futbol ≈ değerleri):
+
+| şut türü | önce | sonra | gerçek |
+|---|---|---|---|
+| ceza sahası dışı | %5 (dönüşüm %1) | %20 (dönüşüm %2–3) | %35–40 (%3–4) |
+| ara pasıyla karşı karşıya | %11 | %7 | %5–7 |
+| oyun içi orta → kafa | %17 | %14 | %10–12 |
+
+Değişenler: ceza sahası önünde uzaktan şut seçeneği belirgin arttı (isabet tabanı %20 → %30, gole dönüşüm gerçekçi), ara pası ve otomatik orta azaldı, şut ağırlıkları ×0,75 (takım başı şut ~14,5 → ~13), son 30 m'de pas biraz zor; gol seviyesi korunarak dönüşüm yeniden ayarlandı (eşit kadro ≈3,1, draft ≈3,2, kornerden kafa golü ≈%5). Ekranda: şekildeki her oyuncu kendine özgü yavaş bir ritimle hafifçe kayar (savunma hattı daha az), takım tek parça bir blok gibi hareket etmez. Saha: koyu çim, neon lime çizgiler (parlama + parlak çekirdek), camgöbeği kaleler.
+
 ## Online (2026-11-27)
 
 Draft XI online 1v1: ana menüdeki ONLINE ya da draft girişindeki ONLINE modu sosyal sistemin seçicisini açar (arkadaşlarınla parti / rastgele rakip). Mod kimliği `draftxi` (sosyal katmanın bütün listelerinde kayıtlı; klasik oyun `draft` olarak "Draft XI (Klasik)" adıyla duruyor), oda `rooms/DX-<kod>` (ortak Firebase oda köprüsü `side-games/career-twin/firebase-peer-shim-v1.js`).
