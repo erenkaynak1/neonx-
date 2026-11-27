@@ -161,3 +161,17 @@ select{width:100%;min-height:44px;border-radius:10px;border:1px solid var(--line
 .son-linkler a{display:inline-flex;align-items:center;min-height:44px;padding:0 6px;color:inherit;opacity:.8}
 .izleme-durum{margin-top:10px;padding:10px 12px;border-radius:12px;border:1px solid rgba(186,255,24,.3);background:rgba(186,255,24,.06);color:#dcff72;font-weight:600}
 .izle-sec button[aria-pressed="true"]{border-color:#baff18;box-shadow:0 0 0 1px #baff18 inset}
+/* post-match analysis */
+.son-analiz{margin:14px 0;padding:16px;border-radius:16px;border:1px solid rgba(255,255,255,.09);background:linear-gradient(180deg,rgba(23,29,35,.9),rgba(12,16,20,.94))}
+.son-analiz h3{display:flex;align-items:center;gap:8px;margin:0 0 8px;font:800 14px/1 "Barlow Condensed",system-ui;letter-spacing:.16em}
+.son-analiz h3::before{content:"";width:4px;height:1em;border-radius:2px;background:#baff18;box-shadow:0 0 10px rgba(186,255,24,.6)}
+.an-baslik{margin:0 0 12px;font-weight:600;line-height:1.45}
+.an-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.an-taraf > b{display:block;margin-bottom:8px;font:italic 800 17px/1 "Barlow Condensed",system-ui;text-transform:uppercase}
+.an-taraf.a > b{color:#baff18}.an-taraf.b > b{color:#00eaff}
+.an-taraf ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.an-taraf li{display:grid;grid-template-columns:22px minmax(0,1fr);gap:8px;font-size:13.5px;line-height:1.45;color:#d7dee4}
+.an-taraf li i{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;font-style:normal;font-weight:800;font-size:12px}
+.an-taraf li.iyi i{background:rgba(49,255,118,.15);color:#31ff76}.an-taraf li.kotu i{background:rgba(255,107,125,.15);color:#ff6b7d}.an-taraf li.not i{background:rgba(255,255,255,.08);color:#aab6c0}
+.an-bos{margin:0;color:#8693a0;font-size:13px}
+@media (max-width:640px){.an-grid{grid-template-columns:1fr}}
