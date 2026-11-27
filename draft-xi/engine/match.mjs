@@ -171,6 +171,12 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
             if (ballRel.y < PITCH_L / 2) { base.y -= ROW_L; if (p.mevki === 'ST') base.y = Math.max(base.y, 4 * ROW_L); }
             else if (ballRel.y > 4 * ROW_L && ['CM', 'DM', 'AM', 'LB', 'RB', 'LWB', 'RWB'].includes(p.mevki)) base.y += ROW_L >> 1;
             if (dirSide && onDirSide(dirSide, Math.sign(base.x - PITCH_W / 2)) && ['LB', 'RB', 'LWB', 'RWB', 'CM', 'LM', 'RM'].includes(p.mevki)) base.y += ROW_L >> 1;
+            // A wings plan changes the team's actual shape: wide attackers and wing-backs hold the touchline lanes,
+            // creating reachable wide passing options instead of merely changing the action weights.
+            if (dirSide === 'wings' && ['LW', 'RW', 'LM', 'RM', 'LB', 'RB', 'LWB', 'RWB'].includes(p.mevki)) {
+              const outward = base.x < PITCH_W / 2 ? -1 : 1;
+              base.x += outward * Math.trunc(COL_W * 0.35);
+            }
             if (dirSide === 'centre' && ['CM', 'AM'].includes(p.mevki)) base.y += ROW_L >> 1;  // centre: midfielders step up into the middle
             if (T.tempo === 'fast' && ['ST', 'LW', 'RW'].includes(p.mevki)) base.y = Math.max(base.y, 5 * ROW_L + 40);
             if (ballRel.y > PITCH_L * 0.62) {
