@@ -640,7 +640,11 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
       const openW = cre > 0 ? 2 : cre < 0 ? 4 : 3;
       const fwdW = cre > 0 ? Math.trunc(fwd * 3 / 2) : cre < 0 ? Math.trunc(fwd / 2) : fwd;
       let w = 100 + open * openW + clamp(fwdW, -150, 300);
-      if (dirSide && onDirSide(dirSide, Math.sign(mr.x - PITCH_W / 2)) && Math.abs(mr.x - PITCH_W / 2) > COL_W / 2) w = Math.trunc(w * (Math.abs(mr.x - PITCH_W / 2) > COL_W * 3 / 2 ? 45 : 26) / 10);   // 0.5: the touchline lanes most of all
+      const wideTarget = Math.abs(mr.x - PITCH_W / 2) > COL_W / 2;
+      // A wings plan must favour both wide outlets. The one-sided plans discourage their opposite lane;
+      // applying that penalty to 'wings' accidentally suppressed every flank pass.
+      if (dirSide === 'wings' && wideTarget) w = Math.trunc(w * 1.4);
+      else if (dirSide && dirSide !== 'wings' && onDirSide(dirSide, Math.sign(mr.x - PITCH_W / 2)) && wideTarget) w = Math.trunc(w * (Math.abs(mr.x - PITCH_W / 2) > COL_W * 3 / 2 ? 45 : 26) / 10);
       if (dirSide === 'centre' && Math.abs(mr.x - PITCH_W / 2) <= COL_W) w *= 2;  // centre: the middle corridor
       // vision: better passers favour open, forward options (4.2)
       w = Math.trunc((w * (50 + h.a.vis)) / 100) + (open > 40 ? Math.trunc(h.a.vis) : 0);
