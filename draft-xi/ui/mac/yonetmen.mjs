@@ -49,8 +49,10 @@ export function createDirector(S, W, hooks) {
       if (!b) return;
       if (off.has(W.lineup[s][i].id)) { W.bodies[s][i] = null; return; }
       const q = f.p[s][i];
-      if (q && !kickoff) { b.x = b.px = b.tx = q.x; b.y = b.py = b.ty = q.y; }
-      b.vx = b.vy = 0; b.state = '';
+      // A highlight cut must not teleport a player or erase their momentum.
+      // The fixed-step physics controller moves each body towards its new target.
+      if (q && !kickoff) { b.tx = q.x; b.ty = q.y; }
+      b.state = '';
     });
     const prev = h.a > 0 ? S.holder[h.a - 1] : null;
     resetBall(kickoff ? { x: 50, y: 50 } : f.b);
@@ -60,15 +62,8 @@ export function createDirector(S, W, hooks) {
     // still under the dim of the cut: everybody steps into shape (kick-off formation, or the tactical shape around
     // the engine's positions), and the previous holder keeps the ball only if he is next to it
     updateTargets(W, ctl);
-    const k = kickoff ? 1 : 0.7;
-    for (const team of W.bodies) for (const b of team) if (b) { b.x = b.px = lerp(b.x, b.tx, k); b.y = b.py = lerp(b.y, b.ty, k); }
-    // nobody starts from a standstill: each man is already moving the way the engine has him going
-    const f1 = S.F[Math.min(S.F.length - 1, h.a + 1)];
-    for (let s = 0; s < 2; s++) W.bodies[s].forEach((b, i) => {
-      const q = !kickoff && f1.p[s][i]; if (!b || !q) return;
-      const ex = (q.x - b.x) * MX, ey = (q.y - b.y) * MY, d = Math.hypot(ex, ey), v = Math.min(3.5, d * 0.8);
-      if (d > 0.3) { b.vx = (ex / d) * v / MX; b.vy = (ey / d) * v / MY; b.face = Math.atan2(ey, ex); }
-    });
+    // No positional blend or synthetic velocity at highlight boundaries.
+    // The fixed-step physics integrator owns repositioning, acceleration and turn rate.
     const pk = kickoff ? id2(first.p) : prev && id2(prev), pb = pk && body(pk);
     if (pb && (kickoff || metres(pb, W.ball) < 2.5)) {
       if (kickoff) { pb.x = pb.px = 50; pb.y = pb.py = 50 + (first.team === 0 ? -0.8 : 0.8); pb.face = first.team === 0 ? Math.PI / 2 : -Math.PI / 2; }
@@ -478,12 +473,19 @@ export function createDirector(S, W, hooks) {
     bt += dt; tick += dt;
     for (let n = timers.length - 1; n >= 0; n--) if (timers[n].at <= bt) { const t = timers.splice(n, 1)[0]; t.fn(); }
     if (ctl.gate) {
-      const g = ctl.gate;
-      if (g.cond() || bt > g.until) {
-        if (!g.cond()) globalThis.__gateLog?.push({ ev: S.E[W.k].type, who: g.key && W.lineup[g.key[0]][g.key[1]].mevki, d: g.key && body(g.key) ? metres(body(g.key), W.ball).toFixed(1) : null, ball: W.ball.state }); // test aid
+      const gate = ctl.gate;
+      const ready = gate.cond();
+      const expired = bt > gate.until;
+      if (ready || expired) {
         ctl.gate = null;
-        const d = g.then();
-        if (ctl.gate == null) beatDur = typeof d === 'number' ? bt + d : bt + 0.3;
+        if (ready) {
+          const d = gate.then();
+          if (ctl.gate == null) beatDur = typeof d === 'number' ? bt + d : bt + 0.3;
+        } else {
+          // A timeout is not a successful touch or duel. Never award possession or kick here.
+          globalThis.__gateLog?.push({ ev: S.E[W.k].type, who: gate.key && W.lineup[gate.key[0]][gate.key[1]].mevki, d: gate.key && body(gate.key) ? metres(body(gate.key), W.ball).toFixed(1) : null, ball: W.ball.state });
+          beatDur = bt + 0.25;
+        }
       }
     }
     if (ctl.claim) {
