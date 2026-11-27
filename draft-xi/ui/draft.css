@@ -209,3 +209,11 @@ body.sg-skin .sgm-sheet .sgm-field+.sgm-field{margin-top:14px}
 /* the site's bottom bar belongs to the menu; during the draft the pool needs the whole height */
 body.dx:has(#draft:not([hidden])) .nx-arcade-footer{display:none!important}
 body.dx.nx-arcade-has-footer:has(#draft:not([hidden])){padding-bottom:0!important}
+
+/* the overall rating is not shown in the draft (attributes are): the badge is the main position, coloured by group */
+.oy .g,.kart-g{font-size:16px;letter-spacing:.06em}
+.kart-g{font-size:24px}
+.gr-KL{color:#ffd34d;border-color:rgba(255,211,77,.45)!important}
+.gr-DEF{color:#9adfff;border-color:rgba(154,223,255,.4)!important}
+.gr-OS{color:#dcff72;border-color:rgba(220,255,114,.4)!important}
+.gr-FOR{color:#ff9aa7;border-color:rgba(255,154,167,.45)!important}

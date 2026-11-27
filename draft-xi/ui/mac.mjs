@@ -12,7 +12,7 @@ import { makeBody, makeBall, stepBody, stepBall, DT } from './mac/fizik.mjs?v=4'
 import { basePositions } from './mac/taktik.mjs?v=3';
 import { fromRel } from './mac/saha.mjs?v=2';
 import { createDirector } from './mac/yonetmen.mjs?v=4';
-import { createRenderer } from './mac/cizim.mjs?v=5';
+import { createRenderer } from './mac/cizim.mjs?v=6';
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
