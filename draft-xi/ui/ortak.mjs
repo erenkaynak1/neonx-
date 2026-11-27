@@ -47,6 +47,15 @@ export function kimya(formation, players) {
   return out;
 }
 
+// attribute labels (full and 3-letter) — draft card, pool rows and the tactics screen
+export const ATTR_AD = { fin: 'Bitiricilik', lon: 'Uzaktan şut', hed: 'Kafa', posn: 'Pozisyon alma', dri: 'Çalım', ft: 'İlk dokunuş', sp: 'Kısa pas', lp: 'Uzun pas',
+  cro: 'Orta', vis: 'Vizyon', tac: 'Top kapma', mar: 'Markaj', pac: 'Hız', str: 'Güç', ref: 'Refleks', gpos: 'Kaleci pozisyonu', ghd: 'Kaleci hava', one: 'Bire bir' };
+export const ATTR_KISA = { fin: 'BİT', lon: 'UZK', hed: 'KAF', posn: 'POZ', dri: 'ÇLM', ft: 'İLK', sp: 'KPS', lp: 'UPS', cro: 'ORT', vis: 'VİZ', tac: 'KAP', mar: 'MRK', pac: 'HIZ', str: 'GÜÇ',
+  ref: 'REF', gpos: 'KPO', ghd: 'KHV', one: 'BİR' };
+/** the four attributes that matter most for a main position (pool rows) */
+export const ANA_OZELLIK = { GK: ['ref', 'gpos', 'one', 'ghd'], CB: ['tac', 'mar', 'hed', 'str'], LB: ['pac', 'tac', 'cro', 'mar'], RB: ['pac', 'tac', 'cro', 'mar'],
+  LWB: ['pac', 'cro', 'tac', 'dri'], RWB: ['pac', 'cro', 'tac', 'dri'], DM: ['tac', 'mar', 'sp', 'str'], CM: ['sp', 'vis', 'dri', 'tac'], AM: ['vis', 'sp', 'dri', 'lon'],
+  LM: ['pac', 'cro', 'dri', 'sp'], RM: ['pac', 'cro', 'dri', 'sp'], LW: ['pac', 'dri', 'cro', 'fin'], RW: ['pac', 'dri', 'cro', 'fin'], ST: ['fin', 'posn', 'pac', 'hed'] };
 export const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 // ── tactics (design doc 16.2): options, what each does in the engine (facts only, no advice), one-tap plans ──

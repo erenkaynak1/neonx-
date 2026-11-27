@@ -3,12 +3,11 @@
 // relevant attributes of our and the opponent's players in the match-up it sets up; the pitch draws what the focused setting changes. Bots keep the plan of their draft style.
 import { HAVUZ_BY_ID } from '../data/havuz-fm.mjs?v=1';
 import { FORMATIONS, zonePoint, PITCH_W, PITCH_L, COL_W } from '../engine/formations.mjs?v=2';
-import { TAKTIK, PLANLAR, planTaktik, hangiPlan, esc } from './ortak.mjs?v=3';
+import { TAKTIK, PLANLAR, planTaktik, hangiPlan, esc, ATTR_AD } from './ortak.mjs?v=4';
 
 const $ = (id) => document.getElementById(id);
 const NS = 'http://www.w3.org/2000/svg';
-const ATTR = { pac: 'Hız', dri: 'Çalım', cro: 'Orta', tac: 'Top kapma', mar: 'Markaj', str: 'Güç', sp: 'Kısa pas', lp: 'Uzun pas',
-  vis: 'Vizyon', ft: 'İlk dokunuş', hed: 'Kafa', fin: 'Bitiricilik', posn: 'Pozisyon alma', lon: 'Uzaktan şut', ref: 'Refleks', ghd: 'Kaleci hava' };
+const ATTR = ATTR_AD;
 
 // ── data from the draft ──
 let D = null;
