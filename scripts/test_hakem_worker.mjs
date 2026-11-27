@@ -95,7 +95,7 @@ assert.equal((await worker.fetch(new Request('https://h/', { method: 'POST', hea
 
 // Durum sayfası: anahtarın varlığını söyler, kendisini asla göstermez.
 const durum = await (await worker.fetch(new Request('https://h/', { method: 'GET' }), env)).json();
-assert.deepEqual(durum, { hakem: 'NEON Hakem', anahtar: true, model: 'gemini-3-flash', modeller: ['gemini-3-flash', 'gemini-3.1-flash-preview', 'gemini-2.0-flash-lite'] });
+assert.deepEqual(durum, { hakem: 'NEON Hakem', anahtar: true, deepseek: false, gemini: true, model: 'gemini-3-flash', modeller: ['gemini-3-flash', 'gemini-3.1-flash-preview', 'gemini-2.0-flash-lite'] });
 assert.equal((await (await worker.fetch(new Request('https://h/', { method: 'GET' }), {})).json()).anahtar, false);
 assert.ok(!JSON.stringify(durum).includes('test-key'));
 
@@ -129,4 +129,38 @@ globalThis.fetch = async (url) => String(url).includes('securetoken') ? new Resp
 const rHata = await istek({ konu: konu.id, taraflar }, { token: await jeton({ sub: 'u6' }) });
 assert.equal(rHata.status, 502);
 assert.deepEqual(await rHata.json(), { hata: 'hakem cevap vermedi', durum: 400, detay: 'API key not valid' });
+
+// DeepSeek: anahtar tanımlıysa önce o kullanılır (Bearer başlık, JSON modu, şema talimatta); hata verirse Gemini'ye düşer.
+let dsIstek = null, dsDurum = 200, gmCagri = 0;
+const dsKarar = { kazanan: 'Taraf 1', ozet: 'x', maddeler: [], soygun: { madde: 'a', neden: 'b' }, hata: { madde: 'a', neden: 'b' } };
+globalThis.fetch = async (url, opt) => {
+  url = String(url);
+  if (url.includes('securetoken')) return new Response(JSON.stringify({ keys: [jwk] }));
+  if (url.startsWith('https://api.deepseek.com/')) {
+    dsIstek = { url, opt, body: JSON.parse(opt.body) };
+    if (dsDurum !== 200) return new Response(JSON.stringify({ error: { message: 'Insufficient Balance' } }), { status: dsDurum });
+    return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(dsKarar) } }] }));
+  }
+  if (url.includes('generativelanguage.googleapis.com') && url.includes('/models?')) return new Response(JSON.stringify({ models: [{ name: 'models/gemini-3-flash', supportedGenerationMethods: ['generateContent'] }] }));
+  if (url.includes('generativelanguage.googleapis.com')) { gmCagri++; return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: JSON.stringify(dsKarar) }] } }] })); }
+  throw new Error('beklenmeyen ağ isteği: ' + url);
+};
+const dsEnv = { DEEPSEEK_API_KEY: 'ds-key' };
+const dsIste = (e, sub) => jeton({ sub }).then((tok) => worker.fetch(new Request('https://hakem.example/', { method: 'POST', headers: { origin: ORIGIN, 'content-type': 'application/json', authorization: 'Bearer ' + tok }, body: JSON.stringify({ konu: konu.id, taraflar }) }), e));
+const rDs = await dsIste(dsEnv, 'd1');
+assert.equal(rDs.status, 200);
+const jDs = await rDs.json();
+assert.equal(jDs.saglayici, 'deepseek'); assert.deepEqual(jDs.karar, dsKarar);
+assert.equal(dsIstek.opt.headers.authorization, 'Bearer ds-key'); assert.ok(!dsIstek.url.includes('ds-key'));
+assert.equal(dsIstek.body.model, 'deepseek-chat'); assert.deepEqual(dsIstek.body.response_format, { type: 'json_object' });
+assert.ok(dsIstek.body.messages[0].content.includes('NEON Hakem') && dsIstek.body.messages[0].content.includes('JSON'));
+assert.ok(dsIstek.body.messages[1].content.startsWith(`KONU: ${konu.baslik}`));
+dsDurum = 402;
+const rDsHata = await dsIste(dsEnv, 'd2');
+assert.equal(rDsHata.status, 502, 'yalnız DeepSeek varken hatası bildirilir');
+assert.equal((await rDsHata.json()).detay, 'Insufficient Balance');
+const rYedek = await dsIste({ DEEPSEEK_API_KEY: 'ds-key', GEMINI_API_KEY: 'test-key' }, 'd3');
+assert.equal(rYedek.status, 200, 'DeepSeek hata verirse Gemini devralır'); assert.equal(gmCagri, 1);
+const dsDurumSayfasi = await (await worker.fetch(new Request('https://h/', { method: 'GET' }), dsEnv)).json();
+assert.equal(dsDurumSayfasi.deepseek, true); assert.equal(dsDurumSayfasi.model, 'deepseek-chat'); assert.ok(!JSON.stringify(dsDurumSayfasi).includes('ds-key'));
 console.log('hakem worker ✓');

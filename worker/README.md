@@ -1,5 +1,7 @@
 # NEON Hakem — kurulum (Google AI Studio + Cloudflare Worker)
 
+> **DeepSeek (2026-11-27):** Worker artık DeepSeek ile de çalışır. Cloudflare → `neonxi-hakem` → Settings → Variables and Secrets → **Secret** türünde `DEEPSEEK_API_KEY` tanımlıysa hakem önce DeepSeek'i (`deepseek-chat`, isteğe bağlı `DEEPSEEK_MODEL` ile değişir) kullanır. DeepSeek hata verirse ve `GEMINI_API_KEY` de tanımlıysa Gemini devralır. İkisinden biri yeterlidir. Worker adresini tarayıcıda açınca `"deepseek": true` görünmelidir (anahtarın kendisi asla gösterilmez). Bakiye biterse DeepSeek 402 döner; hata mesajı oyunda "hakem cevap vermedi" olarak görünür.
+
 Açık Artırma'nın yapay zekâ hakemi bu Worker üzerinden Gemini'ye bağlanır. API anahtarı yalnızca Cloudflare'da gizli değişken olarak durur: oyunun koduna, depoya ya da sohbete **asla** yazılmaz.
 
 ## 1. Google AI Studio'dan API anahtarı
