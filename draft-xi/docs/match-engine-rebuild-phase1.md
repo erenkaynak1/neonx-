@@ -42,6 +42,34 @@ The previous director also contained highlight-boundary position snaps and synth
 - Ensure the director never silently moves a free ball to a player.
 - Verify that ball ownership changes only through a logged/physical touch or a documented restart.
 
+## Phase 1 source-audit findings
+
+### Coordinate and ownership writes
+
+The director audit found these categories:
+
+- **Highlight transition:** the director places the ball at the first recorded frame of the next selected highlight. This is an intentional presentation cut because unshown match time is skipped; it is not evidence of a continuous physical trajectory. It must remain hidden by the cut/dim transition and must not be mistaken for a live touch.
+- **Kick-off and set pieces:** centre-spot placement, corner placement, restart placement, and the taker's final placement are documented restart operations.
+- **Physical ball actions:** passes, shots, crosses, headers, deflections, and rebounds use the ball-flight integrator. Ownership is normally granted through the proximity-checked `claim` helper or a documented restart.
+- **Player contact/restart positioning:** the kick-off taker is placed at the centre spot; other players are moved by tactical targets and the fixed-step body integrator.
+
+### Corrected gate-timeout defect
+
+The director's wait gates were previously treated as successful when their timeout expired: the code called the success callback even when the player had not reached the ball. This could award possession after an unreachable tackle, or allow a pass/shot to start without the kicker reaching the ball. That is a direct source of visually impossible outcomes.
+
+The Phase 1 branch now:
+- evaluates the gate condition once per step;
+- calls the success callback only when the condition is actually true;
+- on timeout, records the failed gate for the existing test hook and ends the presentation beat without awarding possession or starting the action.
+
+This is a safety correction to the existing event playback, not a conversion to a continuous simulation. A timed-out event can still leave the precomputed event log and what was visibly played out of sync; the later continuous-state work must remove that architectural mismatch rather than hide it.
+
+### Remaining source-level risks
+
+- Event outcomes are still precomputed in `engine/match.mjs`; the director still stages those outcomes instead of allowing physical state to decide them.
+- A highlight cut resets the ball to the next recorded frame while player bodies travel toward new tactical targets. That is acceptable only as a deliberate, visually hidden skip in time, not as uninterrupted match simulation.
+- The existing gate timeout values are still per-action fallbacks. Runtime review must measure how often they expire across multiple seeds and confirm that skipped actions do not create confusing follow-on sequences.
+
 ## Phase 2 — Continuous match state
 
 Introduce a single authoritative match state updated at a fixed simulation tick. The state must own:
