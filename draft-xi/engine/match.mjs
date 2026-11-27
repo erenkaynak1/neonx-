@@ -21,7 +21,7 @@ const REF = {
   shotFixed: 850, shotInB: bForBase(3200), shotOutB: bForBase(3000), headB: bForBase(2600),
   // 0.4: conversion ×0.8 → equal teams, both balanced: ~3 goals a match (user target; open games 5–6, defensive 1–2)
   // 0.5: ×1.1 with the flatter finishing slope (K.shot 72)
-  goalB: bForBase(2720), goalHeadB: bForBase(2110), goalOneB: bForBase(3450), goalOutB: bForBase(2500),
+  goalB: bForBase(2880), goalHeadB: bForBase(2110), goalOneB: bForBase(3450), goalOutB: bForBase(2500),
   penB: bForBase(7600), interceptB: bForBase(3800), blockB: bForBase(2000), crossBlockB: bForBase(2500),
   fkWallB: bForBase(2200), fkOnB: bForBase(3000), fkGoalB: bForBase(1760),
 };
@@ -142,6 +142,8 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
   const opp = side => 1 - side;
   const rel = (side, abs) => toRel(side, abs);
 
+  // candidate offsets (dm, team-relative) an attacker checks when looking for space
+  const BOSLUK_ADIM = [[0, 0], [60, 0], [-60, 0], [0, 60], [0, -40], [45, 45], [-45, 45], [40, -30], [-40, -30]];
   // ---------- positioning (4.5, 15.2, 16.5) ----------
   function layout() {
     for (const team of teams) {
@@ -175,6 +177,19 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
         const pull = d < 150 ? 30 : d < 300 ? 10 : 0;
         if (pull) { base.x += Math.trunc(((ballRel.x - base.x) * pull) / 100); base.y += Math.trunc(((ballRel.y - base.y) * pull) / 100); }
         base.x = clamp(base.x, 10, PITCH_W - 10); base.y = clamp(base.y, 10, PITCH_L - 10);
+        // Patch 3 — finding space: in the opponent's half an attacker without the ball does not stand on his shape point,
+        // he takes the nearby spot (≤ 6 m) furthest from defenders, leaning forward (a run into space / off the shoulder)
+        if (has && p !== st.holder && p.mevki !== 'GK' && ballRel.y > PITCH_L / 2 - 100) {
+          const defs = active(opp(s)).filter((o) => o.mevki !== 'GK' && o.cur);
+          let best = null, bestV = -1e9;
+          for (const [dx, dy] of BOSLUK_ADIM) {
+            const c = { x: clamp(base.x + dx, 10, PITCH_W - 10), y: clamp(base.y + dy, 10, PITCH_L - 15) }, ca = toAbs(s, c);
+            let free = 160; for (const o of defs) free = Math.min(free, dist(o.cur, ca));
+            const v = free + dy * 0.35 - Math.hypot(dx, dy) * 0.25;
+            if (v > bestV) { bestV = v; best = c; }
+          }
+          base.x = best.x; base.y = best.y;
+        }
         const target = toAbs(s, base);
         if (!p.cur) { p.cur = target; continue; }
         // speed-limited movement: 6–9.5 m/s from Hız (16.5 / 4.5.10)
