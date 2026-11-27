@@ -7,6 +7,7 @@ import { simulateMatch } from '../engine/match.mjs?v=8';
 import { createSpiker, dakika } from './spiker.mjs?v=3';
 import { PLANLAR, planTaktik } from './ortak.mjs?v=4';
 import { connectRoom, reportResult } from './online.mjs?v=1';
+import { maçAnalizi } from './analiz.mjs?v=1';
 import { buildState, createStats, highlights } from './mac/durum.mjs?v=2';
 import { makeBody, makeBall, stepBody, stepBall, DT } from './mac/fizik.mjs?v=4';
 import { basePositions } from './mac/taktik.mjs?v=3';
@@ -309,6 +310,12 @@ function finish() {
   for (let k = M.shown + 1; k < M.S.E.length; k++) if (M.S.E[k].type === 'goal') scoreGoal(M.S.E[k]);
   const r = M.r, P = M.stats.P;
   $('sonSkor').innerHTML = `<span class="a">${esc(M.names[0])}</span><strong>${r.score[0]} – ${r.score[1]}</strong><span class="b">${esc(M.names[1])}</span>`;
+  // post-match analysis: cause → effect from the engine's own numbers and both tactics
+  try {
+    const an = maçAnalizi(r, M.names, (id) => M.short(id)), ikon = { iyi: '✓', kotu: '✕', not: '•' };
+    $('sonAnaliz').innerHTML = `<h3>MAÇ ANALİZİ</h3><p class="an-baslik">${esc(an.baslik)}</p><div class="an-grid">${an.taraf.map((list, s) => `<div class="an-taraf ${s ? 'b' : 'a'}"><b>${esc(M.names[s])}</b>
+      ${list.length ? `<ul>${list.map((x) => `<li class="${x.ton}"><i aria-hidden="true">${ikon[x.ton]}</i><span>${esc(x.metin)}</span></li>`).join('')}</ul>` : '<p class="an-bos">Planın belirgin bir artısı ya da eksisi öne çıkmadı.</p>'}</div>`).join('')}</div>`;
+  } catch (e) { console.warn('analiz', e); $('sonAnaliz').innerHTML = ''; }
   $('sonIst').innerHTML = `<h2>İSTATİSTİK</h2>${statRows(M.stats.T)}`;
   const all = r.ratings.flatMap((list, side) => list.map((x) => ({ ...x, side }))).sort((a, b) => b.rating - a.rating);
   const line = (x) => { const s = P[x.id] || {}; const bits = [s.goals ? `${s.goals} gol` : '', s.assists ? `${s.assists} asist` : '', s.shots ? `${s.shots} şut` : '', s.passes ? `pas %${Math.round(((s.passesOk || 0) / s.passes) * 100)}` : '', s.wins ? `${s.wins} top kazanma` : '', s.saves ? `${s.saves} kurtarış` : ''].filter(Boolean).join(' · '); return bits; };

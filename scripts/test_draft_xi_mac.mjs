@@ -4,6 +4,8 @@ import assert from 'node:assert/strict';
 import { simulateMatch } from '../draft-xi/engine/match.mjs';
 import { SQUADS, BY_ID } from '../draft-xi/engine/sample-players.mjs';
 import { buildState, createStats, highlights } from '../draft-xi/ui/mac/durum.mjs';
+import { maçAnalizi } from '../draft-xi/ui/analiz.mjs';
+import { PLANLAR, planTaktik } from '../draft-xi/ui/ortak.mjs';
 
 const squad = (k) => ({ name: SQUADS[k].name, formation: SQUADS[k].formation, players: Object.fromEntries(Object.entries(SQUADS[k].slots).map(([s, id]) => [s, BY_ID[id]])) });
 const pairs = [['A', 'B'], ['C', 'D'], ['A', 'D'], ['B', 'C']];
@@ -29,6 +31,18 @@ for (let seed = 1; seed <= 24; seed++) {
   for (const s of [0, 1]) for (const k of ['goals', 'shots', 'onTarget', 'passes', 'corners', 'fouls']) assert.equal(st.T[s][k], r.stats[s][k], `mirror match side ${s} ${k}`);
   const pos = st.T[0].possession / (st.T[0].possession + st.T[1].possession);
   assert.ok(pos > 0.3 && pos < 0.7, 'mirror match: possession split ' + pos.toFixed(2));
+}
+// post-match analysis: sentences come from this match's numbers (no NaN / undefined), most sides get some
+{
+  let items = 0, sides = 0;
+  for (let i = 0; i < 24; i++) {
+    const r = simulateMatch({ home: squad('A'), away: squad('B'), seed: 400 + i, tacticHome: planTaktik(PLANLAR[i % 6][0]), tacticAway: planTaktik(PLANLAR[(i * 5 + 1) % 6][0]) });
+    const an = maçAnalizi(r, ['Ev', 'Dep']);
+    const text = an.baslik + an.taraf.flat().map((x) => x.metin).join(' ');
+    assert.ok(!/NaN|undefined|null/.test(text), 'analysis text is clean: ' + text);
+    an.taraf.forEach((t) => { sides++; items += t.length; assert.ok(t.length <= 5); });
+  }
+  assert.ok(items / sides >= 2, 'analysis: at least two points per side on average');
 }
 const avg = reelSecs / 24;
 assert.ok(avg > 250 && avg < 800, `reel length in budget: ${avg.toFixed(0)}`);
