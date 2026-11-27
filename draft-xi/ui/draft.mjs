@@ -178,12 +178,12 @@ function teamPanel(t) {
     const yeni = S.last && S.last.t === t && S.last.slot === slot;
     return `<div class="slot${p ? ' dolu' : ''}${hedef ? ' hedef' : ''}${yeni ? ' yeni' : ''}"
       ${hedef ? `role="button" tabindex="0" data-yer="${slot}" aria-label="${esc(sel.name)} → ${esc(label)}"` : ''} title="${esc(label)}">
-      <span class="mv">${mevki}</span>${p ? `<span class="ad">${esc(p.name.split(' ').slice(-1)[0])}</span><span class="kim">${guc(p, mevki)} · K${chem[slot] ?? 0}</span>` : '<span class="ad bos-ad">—</span>'}</div>`;
+      <span class="mv">${mevki}</span>${p ? `<span class="ad">${esc(p.name.split(' ').slice(-1)[0])}</span><span class="kim">Kimya ${chem[slot] ?? 0}</span>` : '<span class="ad bos-ad">—</span>'}</div>`;
   };
   const slots = lines.slice().reverse().map((ln) => `<div class="hat">${ln.map(card).join('')}</div>`).join('');
   return `<div class="${cls}" style="display:contents">
     <div class="th ${cls}"><b>${esc(tm.name)}</b>${canEdit ? `<select data-dizilis="${t}" aria-label="Diziliş">${FORMS.map((f) => `<option${f === tm.formation ? ' selected' : ''}>${f}</option>`).join('')}</select>` : `<span class="tur-no">${tm.formation}</span>`}</div>
-    <div class="ozet"><span>Kadro <b>${count}/11</b></span><span>Ort. güç <b>${avgG}</b></span><span>Kimya <b>${avgChem}</b></span></div>
+    <div class="ozet"><span>Kadro <b>${count}/11</b></span><span>Kimya <b>${avgChem}</b></span></div>
     <div class="saha ${cls}">${slots}</div></div>`;
 }
 
@@ -201,7 +201,7 @@ function poolList() {
   ps = ps.map((p) => ({ p, g: guc(p), r: rankOf(p), fit: !!bestSlot(t, p) })).sort((a, b) => (b.fit - a.fit) || (b.r - a.r)).slice(0, 150);
   if (!ps.length) return '<li class="bos">Oyuncu yok.</li>';
   return ps.map(({ p, g, fit }) => `<li class="oy${fit ? '' : ' uymaz'}${S.selected === p.id ? ' secili' : ''}" data-id="${esc(p.id)}" role="button" tabindex="0" aria-disabled="${!fit}">
-    <span class="g${g >= 93 ? " t1" : g >= 88 ? " t2" : ""}">${g}</span><span class="n"><b>${esc(p.name)}</b><small>${esc(p.club)} · ${p.age} · ${p.foot === 'L' ? 'Sol' : 'Sağ'} ayak</small>
+    <span class="g gr-${MEVKI_GRUP[p.positions[0]]}">${p.positions[0]}</span><span class="n"><b>${esc(p.name)}</b><small>${esc(p.club)} · ${p.age} · ${p.foot === 'L' ? 'Sol' : 'Sağ'} ayak</small>
     <span class="oz">${(ANA_OZELLIK[p.positions[0]] || []).map((k) => `<span class="${seviye(p.attrs[k])}"><em>${ATTR_KISA[k]}</em>${p.attrs[k]}</span>`).join('')}</span></span>
     <span class="m">${p.positions.map((m) => `<i>${m}</i>`).join('')}</span></li>`).join('');
 }
@@ -222,11 +222,11 @@ function kartAc(id) {
       <span>${ATTR_AD[k]}</span><b>${p.attrs[k]}</b><i style="--w:${p.attrs[k]}%;--d:${i * 40}ms"></i></div>`).join('')}</div>`).join('');
   $('kart').innerHTML = `<div class="kart-ic ${t === 0 ? 'a' : 'b'}" role="dialog" aria-modal="true" aria-labelledby="kartAd">
     <button type="button" class="kart-x" data-kapat aria-label="Kapat">×</button>
-    <div class="kart-bas"><span class="kart-g g${g >= 93 ? ' t1' : g >= 88 ? ' t2' : ''}">${g}</span>
+    <div class="kart-bas"><span class="kart-g gr-${MEVKI_GRUP[p.positions[0]]}">${p.positions[0]}</span>
       <div><h3 id="kartAd">${esc(p.name)}</h3><p>${esc(p.club)} · ${esc(p.league)}</p>
       <p class="kart-m">${p.positions.map((m) => `<i>${m}</i>`).join('')}<span>${esc(p.nation)} · ${p.age} yaş · ${p.height || '—'} cm · ${p.foot === 'L' ? 'Sol' : 'Sağ'} ayak (zayıf ${p.weakFoot || '—'}/5)</span></p></div></div>
     <div class="kart-gr">${grup}</div>
-    <div class="kart-alt">${b ? `<p class="kart-yer">Takımına <b>${b.mevki}</b> olarak girer · güç <b>${guc(p, b.mevki)}</b></p>` : `<p class="kart-yer yok">Takımında bu oyuncuya uyan boş yer yok.</p>`}
+    <div class="kart-alt">${b ? `<p class="kart-yer">Takımına <b>${b.mevki}</b> olarak girer</p>` : `<p class="kart-yer yok">Takımında bu oyuncuya uyan boş yer yok.</p>`}
       ${bag.length ? `<p class="kart-bag">Kimya bağı: ${bag.map(({ o, ortak }) => `<b>${esc(o.name.split(' ').slice(-1)[0])}</b> (${ortak.join(', ')})`).join(' · ')}</p>` : ''}
       <button type="button" class="kart-al" data-al="${esc(p.id)}" ${b && benim ? '' : 'disabled'}>${benim ? 'KADROYA AL' : NET.on ? 'SIRA RAKİPTE' : 'SIRA BOTTA'}</button></div></div>`;
   $('kart').hidden = false;
@@ -240,7 +240,7 @@ let bildirimH = null;
 function bildir(t, p, target) {
   const el = $('bildirim'); if (!el) return;
   el.className = 'dx-bildirim ' + (t === 0 ? 'a' : 'b');
-  el.innerHTML = `<b>${target.mevki}</b><span>${esc(p.name)}</span><em>${guc(p, target.mevki)}</em>`;
+  el.innerHTML = `<b>${target.mevki}</b><span>${esc(p.name)}</span>`;
   el.hidden = false; void el.offsetWidth; el.classList.add('gor');
   clearTimeout(bildirimH); bildirimH = setTimeout(() => { el.classList.remove('gor'); setTimeout(() => { el.hidden = true; }, 260); }, 1500);
 }

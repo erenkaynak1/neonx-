@@ -33,45 +33,65 @@ export function createRenderer(canvas, W, info) {
   const sx0 = (x) => box.x + (x / 100) * box.w, sy0 = (y) => box.y + ((100 - y) / 100) * box.h; // the pitch itself (symmetric)
   const unit = () => box.w / 68;                            // pixels per metre
 
+  // NEON XI pitch: dark turf with soft mowing bands and a light pool in the middle, every line drawn twice — a lime
+  // glow under a bright core — so the markings read as neon tubes
+  let logo = null;
+  { const im = new Image(); im.onload = () => { logo = im; pitch = drawPitch(); }; im.src = new URL('../../../assets/ui/logo-neon-xi.svg', import.meta.url).href; }
   function drawPitch() {
-    const sx = sx0, sy = sy0;
+    const sx = sx0, sy = sy0, u = unit();
     const c = document.createElement('canvas');
     c.width = canvas.width; c.height = canvas.height;
     const g = c.getContext('2d');
     g.scale(dpr, dpr);
     g.clearRect(0, 0, cw, ch);
-    g.shadowColor = 'rgba(186,255,24,.25)'; g.shadowBlur = 18; g.fillStyle = '#0e3119'; g.fillRect(box.x, box.y, box.w, box.h); g.shadowBlur = 0;
-    for (let i = 0; i < 12; i++) { g.fillStyle = i % 2 ? '#0e3119' : '#11391d'; g.fillRect(box.x, box.y + (i * box.h) / 12, box.w, box.h / 12 + 0.5); }
-    g.strokeStyle = 'rgba(236,255,228,.55)'; g.lineWidth = Math.max(1.2, unit() * 0.14);
-    g.strokeRect(box.x, box.y, box.w, box.h);
-    g.beginPath(); g.moveTo(box.x, sy(50)); g.lineTo(box.x + box.w, sy(50)); g.stroke();
-    g.beginPath(); g.arc(sx(50), sy(50), 9.15 * unit(), 0, Math.PI * 2); g.stroke();
-    dot(g, sx(50), sy(50), unit() * 0.35);
+    // turf
+    g.save();
+    g.shadowColor = 'rgba(186,255,24,.35)'; g.shadowBlur = 24; g.fillStyle = '#071a10'; g.fillRect(box.x, box.y, box.w, box.h); g.shadowBlur = 0;
+    g.beginPath(); g.rect(box.x, box.y, box.w, box.h); g.clip();
+    const pool = g.createRadialGradient(sx(50), sy(50), 0, sx(50), sy(50), box.h * 0.62);
+    pool.addColorStop(0, '#11402a'); pool.addColorStop(0.55, '#0b2c1a'); pool.addColorStop(1, '#051309');
+    g.fillStyle = pool; g.fillRect(box.x, box.y, box.w, box.h);
+    for (let i = 0; i < 14; i++) if (i % 2) { g.fillStyle = 'rgba(186,255,24,.035)'; g.fillRect(box.x, box.y + (i * box.h) / 14, box.w, box.h / 14 + 0.5); }
+    g.strokeStyle = 'rgba(255,255,255,.018)'; g.lineWidth = 1;                    // fine turf grain
+    for (let x = box.x; x < box.x + box.w; x += Math.max(3, u * 0.9)) { g.beginPath(); g.moveTo(x, box.y); g.lineTo(x, box.y + box.h); g.stroke(); }
+    if (logo) { const lw = box.w * 0.34, lh = lw * (logo.height / logo.width || 0.22); g.globalAlpha = 0.07; g.drawImage(logo, sx(50) - lw / 2, sy(50) - lh / 2, lw, lh); g.globalAlpha = 1; }
+    const vig = g.createRadialGradient(sx(50), sy(50), box.h * 0.35, sx(50), sy(50), box.h * 0.75);
+    vig.addColorStop(0, 'rgba(0,0,0,0)'); vig.addColorStop(1, 'rgba(0,0,0,.35)');
+    g.fillStyle = vig; g.fillRect(box.x, box.y, box.w, box.h);
+    g.restore();
+    // markings as one path, stroked twice
+    const lines = () => {
+      g.beginPath();
+      g.rect(box.x, box.y, box.w, box.h);
+      g.moveTo(box.x, sy(50)); g.lineTo(box.x + box.w, sy(50));
+      g.moveTo(sx(50) + 9.15 * u, sy(50)); g.arc(sx(50), sy(50), 9.15 * u, 0, Math.PI * 2);
+      for (const end of [0, 100]) {
+        const bx = sx(50 - BOX.halfW), bw = (2 * BOX.halfW / 100) * box.w;
+        g.rect(bx, end === 0 ? sy(BOX.depth) : sy(100), bw, (BOX.depth / 100) * box.h);
+        const sxx = sx(50 - BOX.sixHalfW), sw = (2 * BOX.sixHalfW / 100) * box.w;
+        g.rect(sxx, end === 0 ? sy(BOX.sixDepth) : sy(100), sw, (BOX.sixDepth / 100) * box.h);
+        const s = end === 0 ? 1 : -1, cy = sy(end + s * BOX.spot), r = 9.15 * u;
+        const ang = Math.acos(Math.min(1, ((BOX.depth - BOX.spot) * MY) / 9.15));
+        const a0 = end === 0 ? -Math.PI / 2 - ang : Math.PI / 2 - ang;
+        g.moveTo(sx(50) + Math.cos(a0) * r, cy + Math.sin(a0) * r); g.arc(sx(50), cy, r, a0, a0 + 2 * ang);
+      }
+      for (const [x, y, a0] of [[0, 0, -Math.PI / 2], [100, 0, Math.PI], [0, 100, 0], [100, 100, Math.PI / 2]]) { g.moveTo(sx(x) + Math.cos(a0) * u, sy(y) + Math.sin(a0) * u); g.arc(sx(x), sy(y), u, a0, a0 + Math.PI / 2); }
+    };
+    const w = Math.max(1.2, u * 0.15);
+    lines(); g.strokeStyle = 'rgba(186,255,24,.55)'; g.lineWidth = w * 2.6; g.shadowColor = 'rgba(186,255,24,.9)'; g.shadowBlur = 12; g.stroke();
+    lines(); g.shadowBlur = 0; g.strokeStyle = 'rgba(240,255,214,.95)'; g.lineWidth = w; g.stroke();
+    const spot = (x, y, r) => { g.fillStyle = '#f0ffd6'; g.shadowColor = 'rgba(186,255,24,.9)'; g.shadowBlur = 8; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); g.shadowBlur = 0; };
+    spot(sx(50), sy(50), u * 0.38);
     for (const end of [0, 100]) {
       const s = end === 0 ? 1 : -1;
-      const bx = sx(50 - BOX.halfW), bw = (2 * BOX.halfW / 100) * box.w;
-      g.strokeRect(bx, end === 0 ? sy(BOX.depth) : sy(100), bw, (BOX.depth / 100) * box.h);
-      const sxx = sx(50 - BOX.sixHalfW), sw = (2 * BOX.sixHalfW / 100) * box.w;
-      g.strokeRect(sxx, end === 0 ? sy(BOX.sixDepth) : sy(100), sw, (BOX.sixDepth / 100) * box.h);
-      dot(g, sx(50), sy(end + s * BOX.spot), unit() * 0.3);
-      // the D
-      g.beginPath();
-      const cy = sy(end + s * BOX.spot), r = 9.15 * unit();
-      const ang = Math.acos(Math.min(1, ((BOX.depth - BOX.spot) * MY) / 9.15));
-      if (end === 0) g.arc(sx(50), cy, r, -Math.PI / 2 - ang, -Math.PI / 2 + ang); else g.arc(sx(50), cy, r, Math.PI / 2 - ang, Math.PI / 2 + ang);
-      g.stroke();
-      // goal and net
-      const gx = sx(50 - GOAL_HALF), gw = (2 * GOAL_HALF / 100) * box.w, depth = 2 * unit();
-      g.fillStyle = 'rgba(236,255,228,.10)';
-      const gy = end === 0 ? sy(0) : sy(100) - depth;
-      g.fillRect(gx, gy, gw, depth);
-      g.strokeStyle = 'rgba(236,255,228,.85)'; g.strokeRect(gx, gy, gw, depth);
-      g.strokeStyle = 'rgba(236,255,228,.18)'; g.lineWidth = 1;
+      spot(sx(50), sy(end + s * BOX.spot), u * 0.32);
+      // goal and net (cyan frame, so the goals stand apart from the lines)
+      const gx = sx(50 - GOAL_HALF), gw = (2 * GOAL_HALF / 100) * box.w, depth = 2 * u, gy = end === 0 ? sy(0) : sy(100) - depth;
+      g.fillStyle = 'rgba(0,234,255,.10)'; g.fillRect(gx, gy, gw, depth);
+      g.strokeStyle = 'rgba(0,234,255,.22)'; g.lineWidth = 1;
       for (let i = 1; i < 8; i++) { g.beginPath(); g.moveTo(gx + (gw * i) / 8, gy); g.lineTo(gx + (gw * i) / 8, gy + depth); g.stroke(); }
-      g.strokeStyle = 'rgba(236,255,228,.55)'; g.lineWidth = Math.max(1.2, unit() * 0.14);
+      g.strokeStyle = '#bff8ff'; g.lineWidth = w * 1.3; g.shadowColor = 'rgba(0,234,255,.95)'; g.shadowBlur = 10; g.strokeRect(gx, gy, gw, depth); g.shadowBlur = 0;
     }
-    // corner arcs
-    for (const [x, y, a0] of [[0, 0, -Math.PI / 2], [100, 0, Math.PI], [0, 100, 0], [100, 100, Math.PI / 2]]) { g.beginPath(); g.arc(sx(x), sy(y), unit(), a0, a0 + Math.PI / 2); g.stroke(); }
     return c;
   }
   const dot = (g, x, y, r) => { g.fillStyle = 'rgba(236,255,228,.7)'; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); };
