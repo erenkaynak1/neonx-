@@ -90,6 +90,7 @@ function defend(W, P, side, out, ball) {
     const v = DEF.has(m) ? lineV : m === 'DM' ? lineV + 6.5 : base.v > 52 || m === 'ST' ? fwdV : midV;
     let u = cu + (base.u - 50) * (DEF.has(m) ? width + 0.06 : width);
     if (FULL.has(m) && Math.sign(base.u - 50) === Math.sign(b.u - 50) && Math.abs(b.u - 50) > 25) u = lerp(u, b.u, 0.35); // full-back steps out to the winger
+    else if (Math.sign(base.u - 50) !== Math.sign(b.u - 50) && Math.abs(b.u - 50) > 22) u = lerp(u, 50, DEF.has(m) ? 0.3 : 0.2); // Patch 4: weak side tucks in (the far full-back / winger cover the centre, not the touchline)
     out[i] = { ...fromRel(side, u, v) };
   });
   // pressure, cover and press triggers

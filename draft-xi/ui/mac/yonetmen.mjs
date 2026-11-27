@@ -11,11 +11,11 @@
 // and the distance, not from the log clock, and an outcome event is played inside its shot.
 import { MX, MY, clamp, lerp, metres, rng, GOAL_HALF, fromRel } from './saha.mjs?v=2';
 import { kick, giveBall, setState } from './fizik.mjs?v=5';
-import { updateTargets } from './taktik.mjs?v=5';
+import { updateTargets } from './taktik.mjs?v=6';
 
 const SPEED = { short: 13.5, long: 18, cross: 19, clear: 22, shot: 26, through: 15 }; // m/s along the path
 const OUTCOME = new Set(['miss', 'goal', 'save', 'post', 'block']);
-const ENGINE_BLEND = 0.3; // share of the engine's own off-ball positions in every target (simulation stays the source)
+const ENGINE_BLEND = 0.55; // Patch 2: share of the engine's own off-ball positions (its marking and space-finding) in every target — what the engine read is what you see
 const REACH = 1.1;        // metres: a player at the ball can play it
 const inPlay = (p) => p.x >= 0 && p.x <= 100 && p.y >= 0 && p.y <= 100;
 

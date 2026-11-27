@@ -3,16 +3,16 @@
 // match first; this screen plays its highlights in full with physical movement, and runs the clock between them.
 import { HAVUZ, HAVUZ_BY_ID } from '../data/havuz-fm.mjs?v=1';
 import { FORMATIONS } from '../engine/formations.mjs?v=2';
-import { simulateMatch } from '../engine/match.mjs?v=10';
+import { simulateMatch } from '../engine/match.mjs?v=11';
 import { createSpiker, dakika } from './spiker.mjs?v=3';
 import { PLANLAR, planTaktik } from './ortak.mjs?v=4';
 import { connectRoom, reportResult } from './online.mjs?v=1';
 import { maçAnalizi } from './analiz.mjs?v=1';
 import { buildState, createStats, highlights } from './mac/durum.mjs?v=2';
 import { makeBody, makeBall, stepBody, stepBall, DT } from './mac/fizik.mjs?v=5';
-import { basePositions } from './mac/taktik.mjs?v=5';
+import { basePositions } from './mac/taktik.mjs?v=6';
 import { fromRel } from './mac/saha.mjs?v=2';
-import { createDirector } from './mac/yonetmen.mjs?v=6';
+import { createDirector } from './mac/yonetmen.mjs?v=7';
 import { createRenderer } from './mac/cizim.mjs?v=7';
 
 const $ = (id) => document.getElementById(id);
