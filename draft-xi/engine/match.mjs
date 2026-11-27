@@ -21,7 +21,7 @@ const REF = {
   shotFixed: 850, shotInB: bForBase(3200), shotOutB: bForBase(3000), headB: bForBase(2600),
   // 0.4: conversion ×0.8 → equal teams, both balanced: ~3 goals a match (user target; open games 5–6, defensive 1–2)
   // 0.5: ×1.1 with the flatter finishing slope (K.shot 72)
-  goalB: bForBase(2650), goalHeadB: bForBase(2110), goalOneB: bForBase(3450), goalOutB: bForBase(2500),
+  goalB: bForBase(2720), goalHeadB: bForBase(2110), goalOneB: bForBase(3450), goalOutB: bForBase(2500),
   penB: bForBase(7600), interceptB: bForBase(3800), blockB: bForBase(2000), crossBlockB: bForBase(2500),
   fkWallB: bForBase(2200), fkOnB: bForBase(3000), fkGoalB: bForBase(1760),
 };
@@ -550,6 +550,7 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
       for (const f of up) { m += (f - 1) * w; w *= 0.5; }
       mult[n] = Math.min(3, m) * fs.filter((f) => f < 1).reduce((x, f) => x * f, 1);
     }
+    const [, presD] = nearest(opp(side), h.cur), pres = presD <= 25 ? 'yakin' : presD >= 80 ? 'serbest' : 'orta';
     const abil = { short: h.a.sp, long: h.a.lp, cross: h.a.cro, through: h.a.vis, shotOut: h.a.lon, shotIn: h.a.fin, dribble: h.a.dri, carry: h.a.pac };
     // inverted winger: cuts inside to shoot (2.5)
     const inverted = (h.player.foot === 'L' && rel(side, h.cur).x > PITCH_W / 2) || (h.player.foot === 'R' && rel(side, h.cur).x < PITCH_W / 2);
@@ -558,6 +559,10 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
       if (wing && inverted && (n === 'shotOut' || n === 'shotIn' || n === 'through')) v = Math.trunc(v * 13 / 10);
       if (wing && inverted && n === 'cross') v = Math.trunc(v * 8 / 10);
       if (wing && !inverted && n === 'cross') v = Math.trunc(v * 12 / 10);
+      // Patch 1 — pressure on the ball: a man closed down (≤ 2.5 m) cannot run with it or set himself for a shot, he
+      // plays it or takes his man on; a man with time (≥ 8 m free) carries into the space and shoots from distance
+      if (pres === 'yakin') v = Math.trunc(v * ({ carry: 0.55, shotOut: 0.7, shotIn: 0.85, dribble: 1.3, through: 1.1 }[n] ?? 1));
+      else if (pres === 'serbest') v = Math.trunc(v * ({ carry: 1.3, shotOut: 1.15, through: 1.15, dribble: 0.7 }[n] ?? 1));
       return v;
     });
     return opts[pickWeighted(rng, weights)][0];
@@ -573,6 +578,10 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
       const d = dist(m.cur, h.cur); const mr = rel(side, m.cur);
       if (kind === 'short' && (d < 40 || d > 280)) continue;
       if (kind === 'long' && (d < 250 || d > 550)) continue;
+      // Patch 1 — passing lane: an opponent standing on the line of the pass makes that option much less attractive
+      // (the choice ignored lanes before; only the outcome did — so blocked passes were chosen and cut out)
+      let lane = 1e9; for (const o of active(opp(side))) if (o.mevki !== 'GK') lane = Math.min(lane, segDist(o.cur, h.cur, m.cur));
+      const laneF = lane < 15 ? 0.4 : lane < 30 ? 0.7 : lane < 50 ? 0.9 : 1;
       if (m.mevki === 'GK' && hr.y > PITCH_L / 2) continue;
       const [, od] = nearest(opp(side), m.cur);
       const open = clamp(od, 0, 100);
@@ -581,11 +590,14 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
       const openW = cre > 0 ? 2 : cre < 0 ? 4 : 3;
       const fwdW = cre > 0 ? Math.trunc(fwd * 3 / 2) : cre < 0 ? Math.trunc(fwd / 2) : fwd;
       let w = 100 + open * openW + clamp(fwdW, -150, 300);
-      if (dirSide && onDirSide(dirSide, Math.sign(mr.x - PITCH_W / 2)) && Math.abs(mr.x - PITCH_W / 2) > COL_W / 2) w = Math.trunc(w * (Math.abs(mr.x - PITCH_W / 2) > COL_W * 3 / 2 ? 45 : 26) / 10);   // 0.5: the touchline lanes most of all
+      if (dirSide && onDirSide(dirSide, Math.sign(mr.x - PITCH_W / 2)) && Math.abs(mr.x - PITCH_W / 2) > COL_W / 2) w = Math.trunc(w * (Math.abs(mr.x - PITCH_W / 2) > COL_W * 3 / 2 ? 55 : 30) / 10);   // 0.5: the touchline lanes most of all
       if (dirSide === 'centre' && Math.abs(mr.x - PITCH_W / 2) <= COL_W) w *= 2;  // centre: the middle corridor
       // vision: better passers favour open, forward options (4.2)
       w = Math.trunc((w * (50 + h.a.vis)) / 100) + (open > 40 ? Math.trunc(h.a.vis) : 0);
-      out.push([m, Math.max(5, w)]);
+      // a plan that asks for a corridor still plays into it when the lane is tight (the lane does not count there)
+      const istenen = dirSide && dirSide !== 'centre' && onDirSide(dirSide, Math.sign(mr.x - PITCH_W / 2)) && Math.abs(mr.x - PITCH_W / 2) > COL_W / 2;
+      // … and a wings plan commits fewer men centrally, so its central lanes are more crowded (lane counts twice)
+      out.push([m, Math.max(5, Math.trunc(w * (istenen ? 1 : dirSide === 'wings' ? laneF * laneF : laneF)))]);
     }
     return out;
   }

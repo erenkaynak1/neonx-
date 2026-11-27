@@ -3,17 +3,17 @@
 // match first; this screen plays its highlights in full with physical movement, and runs the clock between them.
 import { HAVUZ, HAVUZ_BY_ID } from '../data/havuz-fm.mjs?v=1';
 import { FORMATIONS } from '../engine/formations.mjs?v=2';
-import { simulateMatch } from '../engine/match.mjs?v=9';
+import { simulateMatch } from '../engine/match.mjs?v=10';
 import { createSpiker, dakika } from './spiker.mjs?v=3';
 import { PLANLAR, planTaktik } from './ortak.mjs?v=4';
 import { connectRoom, reportResult } from './online.mjs?v=1';
 import { maçAnalizi } from './analiz.mjs?v=1';
 import { buildState, createStats, highlights } from './mac/durum.mjs?v=2';
-import { makeBody, makeBall, stepBody, stepBall, DT } from './mac/fizik.mjs?v=4';
-import { basePositions } from './mac/taktik.mjs?v=4';
+import { makeBody, makeBall, stepBody, stepBall, DT } from './mac/fizik.mjs?v=5';
+import { basePositions } from './mac/taktik.mjs?v=5';
 import { fromRel } from './mac/saha.mjs?v=2';
-import { createDirector } from './mac/yonetmen.mjs?v=5';
-import { createRenderer } from './mac/cizim.mjs?v=6';
+import { createDirector } from './mac/yonetmen.mjs?v=6';
+import { createRenderer } from './mac/cizim.mjs?v=7';
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -143,7 +143,11 @@ function nextHighlight() {
 // the cut happens while the pitch is darkest: the players are already in the next highlight's positions when it clears
 function simulate(real) {
   const mode = M.mode;
-  M.acc += real * RATE[M.speed] * FAST * (M.dir.hurry ? 2.6 : 1);   // dead time runs faster
+  // dead time runs faster — but the game speed eases up and back down (≈0.7 s) instead of jumping ×2.6 at once:
+  // the whole pitch suddenly speeding up and slowing down read as players surging and stalling
+  M.hiz = M.hiz ?? 1;
+  M.hiz += ((M.dir.hurry ? 1.8 : 1) - M.hiz) * (1 - Math.exp(-real / 0.7));
+  M.acc += real * RATE[M.speed] * FAST * M.hiz;
   let n = 0;
   while (M.acc >= DT && n < 400) {
     M.acc -= DT; n++;

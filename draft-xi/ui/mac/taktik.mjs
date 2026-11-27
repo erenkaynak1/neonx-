@@ -13,7 +13,7 @@
 // Player roles are not used: behaviour follows the position the player plays (the user's decision).
 import { FORMATIONS, zonePoint } from '../../engine/formations.mjs?v=2';
 import { MX, MY, clamp, lerp, toRel, fromRel, onPitch, metres, GOAL_HALF, BOX } from './saha.mjs?v=2';
-import { speedOf } from './fizik.mjs?v=4';
+import { speedOf } from './fizik.mjs?v=5';
 
 const DEF = new Set(['CB', 'LB', 'RB', 'LWB', 'RWB']), FULL = new Set(['LB', 'RB', 'LWB', 'RWB']);
 const WIDE = new Set(['LM', 'RM', 'LW', 'RW']), MID = new Set(['DM', 'CM', 'AM']);
@@ -61,9 +61,14 @@ export function updateTargets(W, P) {
 }
 
 // pace from the distance to cover: no sprinting to stand in shape
+// hysteresis: stay at the current pace unless the distance is clearly past the next threshold (no flicker at a boundary)
 function paceFor(b, p) {
   const d = Math.hypot((p.x - b.x) * MX, (p.y - b.y) * MY);
-  return d > 16 ? 'sprint' : d > 7 ? 'run' : d > 2.5 ? 'jog' : 'walk';
+  const want = d > 16 ? 'sprint' : d > 7 ? 'run' : d > 2.5 ? 'jog' : 'walk';
+  const lv = { walk: 0, jog: 1, run: 2, sprint: 3 }, cur = b.mode in lv ? b.mode : 'jog';
+  if (Math.abs(lv[want] - lv[cur]) !== 1) return want;
+  const edge = { 'walk-jog': 2.5, 'jog-run': 7, 'run-sprint': 16 }[lv[want] > lv[cur] ? `${cur}-${want}` : `${want}-${cur}`];
+  return Math.abs(d - edge) < 1.5 ? cur : want;
 }
 
 // ── without the ball ──
