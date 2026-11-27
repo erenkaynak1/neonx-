@@ -4,7 +4,8 @@ import {getDatabase,get,onValue,ref,remove,runTransaction,serverTimestamp,set,up
 
 const CONFIG={apiKey:'AIzaSyBLpXHGGTHXykKrnu8_Hv1i71oc3tpTNvY',authDomain:'neonxi.firebaseapp.com',databaseURL:'https://neonxi-default-rtdb.europe-west1.firebasedatabase.app',projectId:'neonxi',storageBucket:'neonxi.firebasestorage.app',messagingSenderId:'667191549799',appId:'1:667191549799:web:1e40feacbee09ed7f3d9c2'};
 const MODES={
-  draft:{label:'NEON XI Draft',path:'index.html',code:'alpha6',min:2,max:2,roomPath:code=>`rooms/${code}`},
+  draftxi:{label:'Draft XI',path:'draft-xi/draft.html',code:'numeric4',min:2,max:2,roomPath:code=>`rooms/DX-${code}`},
+  draft:{label:'Draft XI (Klasik)',path:'index.html',code:'alpha6',min:2,max:2,roomPath:code=>`rooms/${code}`},
   xox:{label:'Futbol XOX',path:'side-games/football-xox/index.html',code:'numeric4',min:2,max:2,roomPath:code=>`rooms/XOX-${code}`},
   twin:{label:'Kariyer İkizi',path:'side-games/career-twin/index.html',code:'numeric4',min:2,max:2,roomPath:code=>`rooms/CT-${code}`},
   imposter:{label:'Futbol Imposter',path:'side-games/futbol-imposter.html',code:'alpha5',min:3,max:12,roomPath:code=>`rooms/IMP-${code}`},
@@ -160,6 +161,7 @@ function roomReady(mode,room,user,code){
   if(mode==='en11')return room.gameType==='en11'&&room.status!=='closed'&&room.hostUid===user.uid;
   if(mode==='fethet')return room.gameType==='fethet'&&room.status!=='closed'&&room.hostUid===user.uid;
   if(mode==='auction')return room.gameType==='auction'&&room.status!=='closed'&&room.hostUid===user.uid;
+  if(mode==='draftxi')return room.gameType==='draftxi'&&room.status!=='closed'&&room.hostUid===user.uid;
   if(mode==='imposter')return room.game_type==='futbol-imposter'&&room.status!=='closed'&&String(room.room_code||'')===String(code);
   if(mode==='xox')return room.game_type==='football-xox'&&room.status!=='closed'&&String(room.room_code||'')===String(code);
   if(mode==='reverse')return room.game_type==='reverse-xi'&&room.status!=='closed'&&room.hostUid===user.uid&&String(room.room_code||'')===String(code);

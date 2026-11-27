@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Draft XI · Maç</title>
 <meta name="robots" content="noindex">
-<link rel="stylesheet" href="./ui/mac.css?v=12">
+<link rel="stylesheet" href="./ui/mac.css?v=13">
 </head>
 <body>
 <main id="app">
@@ -24,6 +24,7 @@
   <section id="izleme" class="kur" hidden aria-labelledby="izlemeBaslik">
     <h1 id="izlemeBaslik">MAÇI NASIL <span>İZLEMEK</span> İSTERSİN?</h1>
     <p class="note" id="izlemeAlt"></p>
+    <p class="note izleme-durum" id="izlemeDurum" hidden role="status" aria-live="polite"></p>
     <div class="izle-sec buyuk" role="group" aria-label="İzleme şekli" id="izleBuyuk"></div>
   </section>
 
@@ -61,6 +62,9 @@
     <p class="son-linkler"><a href="./draft.html">YENİ DRAFT</a> · <a href="../index.html">ANA MENÜ</a></p>
   </section>
 </main>
-<script type="module" src="./ui/mac.mjs?v=21"></script>
+<script src="../side-games/career-twin/firebase-peer-shim-v1.js?v=20261127-dx" data-game-type="draftxi" data-prefix="neonxi-draftxi-" data-room-prefix="DX-"></script>
+<script type="module" src="./ui/mac.mjs?v=22"></script>
+<script type="module" src="../social/neon-social.js?v=20261127-dx"></script>
+<script type="module" src="../social/party-rally-v1.js?v=20261127-dx"></script>
 </body>
 </html>

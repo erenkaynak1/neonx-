@@ -6,6 +6,7 @@ import { FORMATIONS } from '../engine/formations.mjs?v=2';
 import { simulateMatch } from '../engine/match.mjs?v=8';
 import { createSpiker, dakika } from './spiker.mjs?v=3';
 import { PLANLAR, planTaktik } from './ortak.mjs?v=4';
+import { connectRoom, reportResult } from './online.mjs?v=1';
 import { buildState, createStats, highlights } from './mac/durum.mjs?v=2';
 import { makeBody, makeBall, stepBody, stepBall, DT } from './mac/fizik.mjs?v=4';
 import { basePositions } from './mac/taktik.mjs?v=3';
@@ -65,7 +66,7 @@ function fromDraft() {
     const sq = (t) => ({ name: t.name, formation: t.formation, players: Object.fromEntries(Object.entries(t.slots).map(([s, id]) => [s, HAVUZ_BY_ID[id]])) });
     const home = sq(d.home), away = sq(d.away);
     if (Object.values(home.players).some((p) => !p) || Object.values(away.players).some((p) => !p)) return null;
-    return { home, away, tacA: d.home.tactic || planTaktik(d.home.plan), tacB: d.away.tactic || planTaktik(d.away.plan) };
+    return { home, away, tacA: d.home.tactic || planTaktik(d.home.plan), tacB: d.away.tactic || planTaktik(d.away.plan), online: d.online || null };
   } catch { return null; }
 }
 // classic shirt numbers by slot
@@ -83,7 +84,7 @@ function start(given) {
   const homeIds = new Set(Object.values(home.players).map((p) => p.id));
   if (Object.values(away.players).some((p) => homeIds.has(p.id))) away = { ...away, players: Object.fromEntries(Object.entries(away.players).map(([s, p]) => [s, homeIds.has(p.id) ? { ...p, id: p.id + TWIN } : p])) };
   const fixed = Number(Q.get('tohum'));
-  const seed = fixed > 0 ? fixed : (Date.now() % 100000) + 1;
+  const seed = given?.seed || (fixed > 0 ? fixed : (Date.now() % 100000) + 1);   // online: the host's seed, so both phones play the same match
   const r = simulateMatch({ home, away, seed, tacticHome: given?.tacA || planTaktik($('pA').value), tacticAway: given?.tacB || planTaktik($('pB').value), frames: true });
   const S = buildState(r);
   const short = (id) => { const n = byId(id)?.name || id; const parts = n.split(' '); return parts.length > 1 && n.length > 13 ? parts.slice(-1)[0] : n; };
@@ -102,7 +103,7 @@ function start(given) {
   try { localStorage.setItem('nxDraftKomik', komik ? '1' : '0'); } catch { /* ignore */ }
   M = { r, S, W, seed, short, names: S.names, stats: createStats(S), spiker: createSpiker(r, short, S.names, { jokes: komik, seed }),
     view: izle, reel: izle === 'spiker' ? [] : highlights(S, { budget: MODES[izle].budget, lead: MODES[izle].lead }), hi: -1, tt: 0, mode: 'cut', cutT: 0, cutFrom: 0, playing: true, speed: 1, score: [0, 0],
-    acc: 0, last: performance.now(), dim: 0, recent: [], shown: -1 };
+    acc: 0, last: performance.now(), dim: 0, recent: [], shown: -1, online: given?.online || null, reported: false };
   M.render = createRenderer($('saha'), W, {
     number: (s, i) => String(NUM[S.lineup[s][i].slot] ?? ''),
     name: ([s, i]) => short(S.lineup[s][i].id),
@@ -303,6 +304,7 @@ const renderStats = () => { $('ist').innerHTML = statRows(M.stats.T); };
 function finish() {
   if (!M) return;
   M.playing = false;
+  if (M.online && !M.reported) { M.reported = true; const me = M.online.me; reportResult(M.online, M.r.score[me], M.r.score[1 - me]); }
   M.stats.add(M.S.E.length - 1);
   for (let k = M.shown + 1; k < M.S.E.length; k++) if (M.S.E[k].type === 'goal') scoreGoal(M.S.E[k]);
   const r = M.r, P = M.stats.P;
@@ -322,7 +324,7 @@ $('hiz').addEventListener('click', () => { M.speed = M.speed === 1 ? 2 : 1; $('h
 $('atla').addEventListener('click', finish);
 $('istAc').addEventListener('click', () => { const open = $('istPanel').classList.toggle('acik'); $('istAc').setAttribute('aria-expanded', String(open)); renderStats(); });
 $('tekrarOyna').addEventListener('click', () => {
-  if (Q.has('draft')) { location.href = './draft.html'; return; }
+  if (Q.has('draft')) { location.href = M?.online ? '../index.html' : './draft.html'; return; }
   $('son').hidden = true; $('kur').hidden = false; M = null;
 });
 // coming from the draft: ask how to watch, then kick off
@@ -330,7 +332,35 @@ $('tekrarOyna').addEventListener('click', () => {
   const d = fromDraft();
   if (d) {
     $('tekrarOyna').textContent = 'YENİ DRAFT';
-    if (Q.get('izle')) start(d);
+    // online: both tactics and one seed are agreed through the room first (host decides), then each phone plays the
+    // same match from the deterministic engine at its own pace
+    let hazir = !d.online, secilen = null;
+    const basla = () => { if (!hazir || !secilen) return; $('izleme').hidden = true; start({ ...d, seed: d.seed }); };
+    if (d.online) {
+      const o = d.online, me = o.me, myTac = me === 0 ? d.tacA : d.tacB;
+      const durum = (t) => { $('izlemeDurum').hidden = !t; $('izlemeDurum').textContent = t || ''; };
+      durum('Rakibin taktiğini bitirmesi bekleniyor…');
+      let other = null, gitti = false;
+      const room = connectRoom(o, {
+        onOpen() { if (me === 1) { const yolla = () => { if (hazir) return; room.send({ c: 'tac', tac: myTac }); setTimeout(yolla, 3000); }; yolla(); } },
+        onData(m) {
+          if (me === 0 && m.c === 'tac' && m.tac && typeof m.tac === 'object') {
+            other = m.tac;
+            if (!d.seed) d.seed = (Date.now() % 100000) + 1;
+            d.tacB = other;
+            room.send({ c: 'go', seed: d.seed, tacA: d.tacA, tacB: d.tacB });
+            hazir = true; durum(''); basla();
+          } else if (me === 1 && m.c === 'go' && Number(m.seed) > 0 && !hazir) {
+            d.seed = Number(m.seed); d.tacA = m.tacA; d.tacB = m.tacB;
+            hazir = true; durum(''); basla();
+          }
+        },
+        onLost(t) { if (hazir || gitti) return; gitti = true; durum(`${t} Ana menüden yeniden deneyebilirsin.`); },
+      });
+      window.addEventListener('pagehide', () => room.close());
+      $('tekrarOyna').textContent = 'ANA MENÜ';
+    }
+    if (Q.get('izle') && !d.online) start(d);
     else {
       $('kur').hidden = true; $('izleme').hidden = false;
       $('izlemeAlt').textContent = `${d.home.name} – ${d.away.name}`;
@@ -338,7 +368,9 @@ $('tekrarOyna').addEventListener('click', () => {
       $('izleBuyuk').addEventListener('click', (e) => {
         const b = e.target.closest('[data-izle]'); if (!b) return;
         izle = b.dataset.izle; try { localStorage.setItem('nxDraftIzle', izle); } catch { /* ignore */ }
-        $('izleme').hidden = true; start(d);
+        secilen = izle;
+        if (!hazir) { b.closest('#izleBuyuk').querySelectorAll('[data-izle]').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); return; }
+        basla();
       });
     }
   }

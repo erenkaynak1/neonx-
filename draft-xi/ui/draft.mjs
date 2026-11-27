@@ -2,6 +2,7 @@
 // search, every pick must fit an empty position (2.4), formation changeable during the draft, auto pick, bot
 // opponent (16.13: easy / medium / hard) or two players on one phone. Ends on the tactics screen.
 import { HAVUZ, HAVUZ_BY_ID } from '../data/havuz-fm.mjs?v=1';
+import { autoFromUrl, connectRoom, clearOnline } from './online.mjs?v=1';
 import { FORMATIONS, zonePoint } from '../engine/formations.mjs?v=2';
 import { uygun, guc, kimya, MEVKI_GRUP, esc, ATTR_AD, ATTR_KISA, ANA_OZELLIK } from './ortak.mjs?v=4';
 
@@ -15,13 +16,14 @@ let S = null;
 
 // ── setup ──
 let mod = 'bot', zor = 'orta';
-$('dizilis').innerHTML = FORMS.map((f) => `<option${f === '4-3-3' ? ' selected' : ''}>${f}</option>`).join('');
+// everyone starts on 4-3-3; the shape is changed in the team panel during the draft (it is not asked up front)
+const START_FORM = '4-3-3';
 // mode list → settings sheet (the shared NEON XI menu: .sgm in side-games/sidegame-skin-v2.css)
 function openMode(m) {
   mod = m;
   $('ayarBaslik').textContent = m === 'bot' ? 'BOTA KARŞI' : 'AYNI TELEFON';
   $('zorlukSatiri').hidden = m !== 'bot';
-  $('ayarNot').textContent = m === 'bot' ? 'Bot, draft başında bir oyun tarzı seçer ve ona göre oyuncu toplar. Diziliş draft sırasında da değiştirilebilir.' : 'Seçim sırası gelen oyuncuya telefonu verin. Diziliş draft sırasında da değiştirilebilir.';
+  $('ayarNot').textContent = m === 'bot' ? 'Bot, draft başında bir oyun tarzı seçer ve ona göre oyuncu toplar. Takımın 4-3-3 ile başlar; dizilişi draft sırasında takım panelinden değiştirebilirsin.' : 'Seçim sırası gelen oyuncuya telefonu verin. İki takım da 4-3-3 ile başlar; diziliş draft sırasında değiştirilebilir.';
   $('modlar').hidden = true; $('nasil').hidden = true; $('ayar').hidden = false;
   $('basla').focus({ preventScroll: true });
 }
@@ -32,22 +34,27 @@ document.querySelectorAll('[data-zor]').forEach((b) => b.addEventListener('click
   document.querySelectorAll('[data-zor]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
 }));
 
-function start() {
+function start(o = {}) {
   const styleKeys = Object.keys(STYLE);
+  if (o.names) mod = 'online';
   S = {
     mod, zor, pick: 0, selected: null, filter: 'Tümü', query: '', tab: 'havuz',
     teams: [
-      { name: mod === 'bot' ? 'Senin takımın' : 'Oyuncu 1', formation: $('dizilis').value, slots: {} },
-      { name: mod === 'bot' ? `Bot (${{ kolay: 'Kolay', orta: 'Orta', zor: 'Zor' }[zor]})` : 'Oyuncu 2', formation: FORMS[Math.floor(Math.random() * 6)], slots: {} },
+      { name: o.names?.[0] || (mod === 'bot' ? 'Senin takımın' : 'Oyuncu 1'), formation: START_FORM, slots: {} },
+      { name: o.names?.[1] || (mod === 'bot' ? `Bot (${{ kolay: 'Kolay', orta: 'Orta', zor: 'Zor' }[zor]})` : 'Oyuncu 2'), formation: mod === 'bot' ? FORMS[Math.floor(Math.random() * 6)] : START_FORM, slots: {} },
     ],
     style: styleKeys[Math.floor(Math.random() * styleKeys.length)],
     taken: new Set(),
   };
-  if (mod === 'iki') S.teams[1].formation = $('dizilis').value;
   $('kur').hidden = true; $('draft').hidden = false; S.listeAnim = true;
-  render(); botMaybe();
+  render(); botMaybe(); saat();
 }
-$('basla').addEventListener('click', start);
+$('basla').addEventListener('click', () => start());
+// ONLINE: the shared NEON XI chooser (play with friends / random opponent) → lobby → back here with ?nxAuto=1
+document.querySelector('[data-online]')?.addEventListener('click', () => {
+  if (window.NEON_ARCADE_UI?.openChoice) window.NEON_ARCADE_UI.openChoice('draftxi');
+  else alert('Online bağlantı yükleniyor, birazdan tekrar dene.');
+});
 // opened from the NEON XI home: ?mod=bot (against the bot) or ?mod=iki (two players on one phone) preselects the mode
 { const want = new URLSearchParams(location.search).get('mod'); if (want === 'bot' || want === 'iki') openMode(want); }
 
@@ -55,6 +62,7 @@ $('basla').addEventListener('click', start);
 const round = () => Math.floor(S.pick / 2);
 const cur = () => (round() % 2 === 0 ? S.pick % 2 : 1 - (S.pick % 2));
 const isBot = (t) => S.mod === 'bot' && t === 1;
+const mine = (t) => !NET.on || t === NET.me;   // online: only your own team is yours to pick for
 const done = () => S.pick >= 22;
 
 function emptySlots(t) {
@@ -78,9 +86,10 @@ function place(t, id, slot) {
   S.pick++;
   kartKapat();
   bildir(t, p, target);
+  if (NET.on && NET.host) NET.send({ c: 'pick', id, slot: target.slot, n: S.pick - 1 });
   try { navigator.vibrate?.(20); } catch { /* ignore */ }
   if (done()) return finish();
-  render(); botMaybe();
+  render(); botMaybe(); saat();
   return true;
 }
 
@@ -152,7 +161,7 @@ function teamPanel(t) {
   const count = Object.keys(tm.slots).length;
   const avgChem = count ? (Object.values(chem).reduce((a, b) => a + b, 0) / count).toFixed(1) : '0.0';
   const avgG = count ? Math.round(Object.entries(tm.slots).reduce((n, [s, id]) => n + guc(HAVUZ_BY_ID[id], FORMATIONS[tm.formation].find((x) => x[0] === s)[2]), 0) / count) : 0;
-  const canEdit = !isBot(t);
+  const canEdit = !isBot(t) && mine(t);
   // formation as lines (GK, then the formation's own numbers, e.g. 4-2-3-1): the template lists slots line by line
   // from the own goal, so cut it into lines of those sizes, left → right inside a line. Rows are flexbox, so cards never overlap.
   const tpl = FORMATIONS[tm.formation];
@@ -204,7 +213,7 @@ const GRUPLAR = [['HÜCUM', ['fin', 'lon', 'hed', 'posn']], ['TEKNİK', ['dri', 
 const GK_GRUPLAR = [['KALECİLİK', ['ref', 'gpos', 'ghd', 'one']], ['OYUN KURMA', ['sp', 'lp', 'ft', 'vis']], ['FİZİK', ['pac', 'str']]];
 function kartAc(id) {
   const p = HAVUZ_BY_ID[id]; if (!p || !S) return;
-  const t = cur(), tm = S.teams[t], benim = !isBot(t), b = bestSlot(t, p), g = guc(p);
+  const t = cur(), tm = S.teams[t], benim = !isBot(t) && mine(t), b = bestSlot(t, p), g = guc(p);
   const bag = Object.entries(tm.slots).map(([, oid]) => HAVUZ_BY_ID[oid]).map((o) => {
     const ortak = [o.nation === p.nation && 'ülke', o.club === p.club && 'kulüp', o.league === p.league && 'lig', (o.former || []).some((c) => c === p.club || (p.former || []).includes(c)) && 'eski takım'].filter(Boolean);
     return ortak.length ? { o, ortak } : null;
@@ -219,7 +228,7 @@ function kartAc(id) {
     <div class="kart-gr">${grup}</div>
     <div class="kart-alt">${b ? `<p class="kart-yer">Takımına <b>${b.mevki}</b> olarak girer · güç <b>${guc(p, b.mevki)}</b></p>` : `<p class="kart-yer yok">Takımında bu oyuncuya uyan boş yer yok.</p>`}
       ${bag.length ? `<p class="kart-bag">Kimya bağı: ${bag.map(({ o, ortak }) => `<b>${esc(o.name.split(' ').slice(-1)[0])}</b> (${ortak.join(', ')})`).join(' · ')}</p>` : ''}
-      <button type="button" class="kart-al" data-al="${esc(p.id)}" ${b && benim ? '' : 'disabled'}>${benim ? 'KADROYA AL' : 'SIRA BOTTA'}</button></div></div>`;
+      <button type="button" class="kart-al" data-al="${esc(p.id)}" ${b && benim ? '' : 'disabled'}>${benim ? 'KADROYA AL' : NET.on ? 'SIRA RAKİPTE' : 'SIRA BOTTA'}</button></div></div>`;
   $('kart').hidden = false;
   requestAnimationFrame(() => $('kart').classList.add('acik'));
   $('kart').querySelector('.kart-al:not(:disabled), .kart-x')?.focus({ preventScroll: true });
@@ -243,10 +252,10 @@ function render() {
   const siraKey = `${S.pick}:${t}`;
   $('sira').className = 'sira ' + (t === 0 ? 'a' : 'b') + (S.siraKey !== siraKey ? ' gel' : '');
   S.siraKey = siraKey;
-  $('sira').innerHTML = done() ? 'Draft tamam' : isBot(t) ? `${esc(who)} seçiyor<span class="dusun" aria-hidden="true"><i></i><i></i><i></i></span><small>Bot düşünüyor</small>`
-    : `Sıra: ${esc(who)}<small>${S.selected ? 'Sahada parlayan yere dokun ya da listeden başka oyuncu seç' : 'Bir oyuncu seç: en uygun boş yere yerleşir'}</small>`;
+  $('sira').innerHTML = done() ? 'Draft tamam' : (isBot(t) || !mine(t)) ? `${esc(who)} seçiyor<span class="dusun" aria-hidden="true"><i></i><i></i><i></i></span><small>${NET.on ? `Rakibin seçiyor<span id="saatEl">${saatYazi()}</span>` : 'Bot düşünüyor'}</small>`
+    : `Sıra: ${NET.on ? 'SENDE' : esc(who)}<small>${S.bekliyor ? 'Seçimin iletiliyor…' : S.selected ? 'Sahada parlayan yere dokun ya da listeden başka oyuncu seç' : 'Bir oyuncu seç: en uygun boş yere yerleşir'}<span id="saatEl">${saatYazi()}</span></small>`;
   $('turNo').textContent = `Tur ${Math.min(11, round() + 1)}/11`;
-  $('otomatik').disabled = done() || isBot(t);
+  $('otomatik').disabled = done() || isBot(t) || !mine(t) || !!S.bekliyor;
   $('panelA').innerHTML = teamPanel(0);
   $('panelB').innerHTML = teamPanel(1);
   $('cipler').innerHTML = FILTERS.map((f) => `<button type="button" data-filtre="${f}" aria-pressed="${S.filter === f}">${f === 'Uygun' ? 'Boş yerime uyan' : f}</button>`).join('');
@@ -269,10 +278,10 @@ $('liste').addEventListener('click', (e) => {
 // "KADROYA AL" on the card: straight in when only one kind of slot fits, else glow the slots on the pitch
 function al(id) {
   const t = cur(), p = HAVUZ_BY_ID[id];
-  if (!S || isBot(t) || !bestSlot(t, p)) return;
+  if (!S || isBot(t) || !mine(t) || !bestSlot(t, p)) return;
   const fits = emptySlots(t).filter(({ mevki }) => uygun(p, mevki));
   const kinds = new Set(fits.map((f) => f.mevki));
-  if (kinds.size === 1) { place(t, id); return; }                     // only one kind of slot: place at once
+  if (kinds.size === 1) { sec(t, id); return; }                       // only one kind of slot: place at once
   kartKapat();
   S.selected = id; S.tab = t === 0 ? 'A' : 'B'; render();              // several: let the user choose on the pitch
 }
@@ -282,25 +291,126 @@ document.addEventListener('click', (e) => {
 });
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') kartKapat(); });
 $('liste').addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.closest('.oy')) e.target.click(); });
+/** a pick made on this phone: offline straight in; online the host applies it, the guest asks the host */
+function sec(t, id, slot) {
+  if (!mine(t)) return false;
+  if (NET.on && !NET.host) { NET.send({ c: 'try', id, slot: slot || null, n: S.pick }); S.selected = null; kartKapat(); bekle(true); return true; }
+  return place(t, id, slot);
+}
 document.addEventListener('click', (e) => {
   const y = e.target.closest('[data-yer]'); if (!y || !S?.selected) return;
-  place(cur(), S.selected, y.dataset.yer);
+  sec(cur(), S.selected, y.dataset.yer);
 });
 document.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.closest?.('[data-yer]')) e.target.click(); });
 document.addEventListener('change', (e) => {
   const sel = e.target.closest('[data-dizilis]'); if (!sel) return;
   const t = Number(sel.dataset.dizilis), old = S.teams[t].formation;
+  if (!mine(t)) { sel.value = old; return; }
   if (!changeFormation(t, sel.value)) { alert('Seçtiğin oyuncular bu dizilişe sığmıyor. Başka bir diziliş dene.'); sel.value = old; return; }
+  if (NET.on) NET.send({ c: 'form', t, f: sel.value });
   S.last = null; render();
 });
 $('cipler').addEventListener('click', (e) => { const b = e.target.closest('[data-filtre]'); if (!b) return; S.filter = b.dataset.filtre; S.listeAnim = true; render(); });
 $('ara').addEventListener('input', (e) => { S.query = e.target.value; $('liste').innerHTML = poolList(); });
 document.querySelectorAll('[data-sekme]').forEach((b) => b.addEventListener('click', () => { S.tab = b.dataset.sekme; render(); }));
-$('otomatik').addEventListener('click', () => { const t = cur(); const c = choose(t, 'orta'); if (c) place(t, c.p.id, c.slot); });
+$('otomatik').addEventListener('click', () => { const t = cur(); if (!mine(t)) return; const c = choose(t, 'orta'); if (c) sec(t, c.p.id, c.slot); });
 
 // ── end: the tactics screen (bot keeps the plan of its draft style), then the match ──
 function finish() {
-  const data = { mod: S.mod, home: { ...S.teams[0], bot: false }, away: { ...S.teams[1], bot: isBot(1), plan: STYLE[S.style].plan } };
+  const data = { mod: S.mod, home: { ...S.teams[0], bot: false }, away: { ...S.teams[1], bot: isBot(1), plan: STYLE[S.style].plan },
+    online: NET.on ? { ...NET.info, me: NET.me } : null };
   try { sessionStorage.setItem('draftxi-mac', JSON.stringify(data)); } catch { /* the tactics screen shows a link back */ }
-  location.href = './taktik.html';
+  if (!NET.on) { location.href = './taktik.html'; return; }
+  NET.bitti = true; clearTimeout(NET.saatH);
+  render();
+  setTimeout(() => { NET.room?.close(); location.href = './taktik.html'; }, 900);   // let the last pick reach the other phone
+}
+
+// ── online (host authoritative) ──
+const PICK_SURE = 45;   // seconds per pick online; the host auto-picks when it runs out
+const NET = { on: false, host: false, me: 0, info: null, room: null, send() {}, started: false, bitti: false, saatH: 0, saatBas: 0 };
+const saatYazi = () => (NET.on && NET.started && !done() ? ` · ${Math.max(0, PICK_SURE - Math.floor((Date.now() - NET.saatBas) / 1000))} sn` : '');
+function saat() {
+  if (!NET.on || !S || done()) return;
+  NET.saatBas = Date.now(); clearInterval(NET.saatI);
+  NET.saatI = setInterval(() => { if (!S || done()) { clearInterval(NET.saatI); return; } const el = $('saatEl'); if (el) el.textContent = saatYazi(); }, 1000);
+  clearTimeout(NET.saatH);
+  if (NET.host) {
+    const n = S.pick;
+    NET.saatH = setTimeout(() => { if (!S || done() || S.pick !== n) return; const t = cur(); const c = choose(t, 'orta'); if (c) place(t, c.p.id, c.slot); }, PICK_SURE * 1000 + (cur() === 1 ? 1500 : 0));
+  }
+}
+function bekle(on) { S.bekliyor = on; render(); }
+function oda(liste, not, hata = false) {
+  $('modlar').hidden = true; $('nasil').hidden = true; $('ayar').hidden = true; $('oda').hidden = false;
+  $('odaBaslik').textContent = hata ? 'BAĞLANTI SORUNU' : 'MAÇ ODASI';
+  $('odaListe').innerHTML = liste.map((x, i) => `<li class="${x ? 'in' : ''}"><i></i><b>${x ? esc(x) : 'bekleniyor…'}</b>${i === 0 ? '<small>KURUCU</small>' : ''}</li>`).join('');
+  $('odaNot').textContent = not; $('odaGeri').hidden = !hata;
+}
+function koptu(text) {
+  if (NET.bitti) return;
+  clearTimeout(NET.saatH); clearInterval(NET.saatI);
+  if (!NET.started) { oda([NET.info.name, null], text, true); return; }
+  $('draft').hidden = true; $('kur').hidden = false;
+  oda([S.teams[0].name, S.teams[1].name], `${text} Draft yarıda kaldı.`, true);
+}
+$('odaGeri').addEventListener('click', () => { NET.room?.close(); clearOnline(); location.href = '../index.html'; });
+function hostData(m) {
+  if (m.c === 'hello') {
+    if (NET.started) { NET.send({ c: 'start', names: S.teams.map((x) => x.name), state: durum() }); return; }   // repeat (lost reply / reconnect)
+    NET.started = true;
+    const names = [NET.info.name, String(m.name || 'Rakip').replace(/[\u0000-\u001f<>]/g, '').slice(0, 16) || 'Rakip'];
+    NET.info.opponent = NET.info.opponent || String(m.uid || '').slice(0, 64);
+    start({ names });
+    NET.send({ c: 'start', names, state: durum() });
+    return;
+  }
+  if (!NET.started || !S) return;
+  if (m.c === 'try') {
+    if (cur() !== 1 || m.n !== S.pick || !HAVUZ_BY_ID[m.id] || S.taken.has(m.id) || !place(1, m.id, m.slot || undefined)) NET.send({ c: 'nope', state: durum() });
+    return;
+  }
+  if (m.c === 'form' && m.t === 1 && FORMS.includes(m.f)) { if (changeFormation(1, m.f)) { S.last = null; render(); } NET.send({ c: 'state', state: durum() }); }
+}
+// the whole draft state, so a guest that missed something is put right
+const durum = () => ({ pick: S.pick, forms: S.teams.map((x) => x.formation), slots: S.teams.map((x) => x.slots) });
+function uygulaDurum(st) {
+  if (!st || !S) return;
+  S.pick = st.pick; S.teams.forEach((x, i) => { x.formation = st.forms[i]; x.slots = { ...st.slots[i] }; });
+  S.taken = new Set(S.teams.flatMap((x) => Object.values(x.slots)));
+  S.bekliyor = false;
+  if (done()) { finish(); return; }
+  render(); saat();
+}
+function guestData(m) {
+  if (m.c === 'start') {
+    if (!NET.started) { NET.started = true; start({ names: m.names }); }
+    uygulaDurum(m.state); return;
+  }
+  if (!NET.started || !S) return;
+  if (m.c === 'pick') {
+    if (m.n === S.pick && HAVUZ_BY_ID[m.id]) { S.bekliyor = false; place(cur(), m.id, m.slot); }
+    else if (m.n > S.pick) NET.send({ c: 'hello', name: NET.info.name, uid: NET.info.uid });   // missed one: ask for the state
+    return;
+  }
+  if (m.c === 'nope') { uygulaDurum(m.state); return; }
+  if (m.c === 'state') { uygulaDurum(m.state); return; }
+  if (m.c === 'form' && m.t === 0 && FORMS.includes(m.f)) { if (changeFormation(0, m.f)) { S.last = null; render(); } }
+}
+{
+  const info = autoFromUrl();
+  if (info) {
+    Object.assign(NET, { on: true, host: info.role === 'host', me: info.me, info });
+    oda(NET.host ? [info.name, null] : ['Maçı kuran', info.name], NET.host ? 'Rakibin bekleniyor…' : 'Maç odasına bağlanılıyor…');
+    NET.room = connectRoom(info, {
+      onOpen() {
+        if (NET.host) return;
+        const hello = () => { if (NET.started || NET.bitti) return; NET.send({ c: 'hello', name: info.name, uid: info.uid }); setTimeout(hello, 3000); };
+        hello();
+      },
+      onData: (m) => (NET.host ? hostData(m) : guestData(m)),
+      onLost: koptu,
+    }, 60000);
+    NET.send = (m) => NET.room.send(m);
+  }
 }

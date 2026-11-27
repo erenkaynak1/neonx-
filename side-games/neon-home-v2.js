@@ -18,7 +18,7 @@
   const MODES=[
     {action:"bot",label:"BOTA KARŞI",name:"Bota karşı",icon:"bot"},
     {action:"local",label:"AYNI TELEFON",name:"Aynı telefonda iki kişi",icon:"single"},
-    {action:"online",label:"ONLINE",name:"Online (klasik Draft XI)",icon:"online"},
+    {action:"online",label:"ONLINE",name:"Online",icon:"online"},
     {action:"tournament",label:"TURNUVA",name:"Turnuva modu, 4 veya 8 takım (klasik Draft XI)",icon:"tournament"}
   ];
   const GAMES=[
@@ -166,7 +166,7 @@ input,select{border-radius:8px!important}`;
       bot:()=>{location.href=DRAFT+"?mod=bot"},
       local:()=>{location.href=DRAFT+"?mod=iki"},
       classic:()=>clickTarget(single,status,"Klasik Draft XI"),
-      online:()=>clickTarget(online,status,"Online"), // normally intercepted by the shared online chooser
+      online:()=>{if(UI?.openChoice)UI.openChoice("draftxi");else clickTarget(online,status,"Online")}, // the new Draft XI online (friends / random)
       tournament:()=>clickTarget(tournament,status,"Turnuva"),
       settings:()=>clickTarget(settings,status,"Ayarlar"),
       home:()=>scroller.scrollTo({top:0,behavior:"smooth"}),

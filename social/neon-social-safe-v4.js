@@ -3,7 +3,8 @@ import {getAuth,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.
 import {getDatabase,get,onDisconnect,onValue,ref,remove,runTransaction,set,update} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js';
 
 const MODES={
-  draft:{label:'NEON XI Draft',path:'index.html',players:2},
+  draftxi:{label:'Draft XI',path:'draft-xi/draft.html',players:2},
+  draft:{label:'Draft XI (Klasik)',path:'index.html',players:2},
   xox:{label:'Futbol XOX',path:'side-games/football-xox/index.html',players:2},
   twin:{label:'Kariyer İkizi',path:'side-games/career-twin/index.html',players:2},
   imposter:{label:'Futbol Imposter',path:'side-games/futbol-imposter.html',players:3},
@@ -15,10 +16,10 @@ const MODES={
 };
 // Two-player games share social/matchQueues/{mode} with neon-social.js, so a player searching from the home
 // screen and one searching from a game page land in the same queue.
-const LEGACY_MATCH_MODES=new Set(['draft','xox','twin','reverse','en11','fethet','auction']);
+const LEGACY_MATCH_MODES=new Set(['draftxi','draft','xox','twin','reverse','en11','fethet','auction']);
 // Random game shares one queue with neon-social.js (queuePath('random') = social/universalQueuesV2/random);
 // the pair completer picks the game for both.
-const RANDOM_GAMES=['draft','xox','twin','en11','fethet','auction'];
+const RANDOM_GAMES=['draftxi','xox','twin','en11','fethet','auction'];
 const base=new URL('../',import.meta.url);
 const state={
   auth:null,db:null,user:null,
@@ -93,7 +94,7 @@ function bindNotifications(user){
 }
 // Internal transport id for the match room; players never see or type it. Each game validates its own
 // format (XOX, Career Twin, EN 11, Saha Fethi and Açık Artırma take four digits), so the id must be made for the game that will open.
-const NUMERIC_ROOM_GAMES=new Set(['xox','twin','en11','fethet','auction']);
+const NUMERIC_ROOM_GAMES=new Set(['draftxi','xox','twin','en11','fethet','auction']);
 function code(game){return NUMERIC_ROOM_GAMES.has(game)?String(Math.floor(1000+Math.random()*9000)):[...Array(6)].map(()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*32)]).join('')}
 function targetUrl(mode,data,me){
   const c=MODES[mode];if(!c)return null;

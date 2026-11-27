@@ -159,3 +159,5 @@ select{width:100%;min-height:44px;border-radius:10px;border:1px solid var(--line
 }
 .son-linkler{margin-top:14px;text-align:center;font-weight:700;letter-spacing:.06em}
 .son-linkler a{display:inline-flex;align-items:center;min-height:44px;padding:0 6px;color:inherit;opacity:.8}
+.izleme-durum{margin-top:10px;padding:10px 12px;border-radius:12px;border:1px solid rgba(186,255,24,.3);background:rgba(186,255,24,.06);color:#dcff72;font-weight:600}
+.izle-sec button[aria-pressed="true"]{border-color:#baff18;box-shadow:0 0 0 1px #baff18 inset}
