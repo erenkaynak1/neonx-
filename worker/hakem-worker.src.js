@@ -1,9 +1,12 @@
-// NEON XI — Açık Artırma yapay zekâ hakem: Cloudflare Worker (Gemini aracı sunucusu).
+// NEON XI — Açık Artırma yapay zekâ hakem: Cloudflare Worker (DeepSeek / Gemini aracı sunucusu).
 // Bu dosya şablondur; Cloudflare'a yapıştırılan dosya `worker/hakem-worker.js`, `node scripts/build_hakem_worker.mjs`
 // ile konu listesi ve hakem talimatı içine gömülerek üretilir. Elle düzenleme yapma, şablonu düzenleyip yeniden üret.
 //
 // Gizli değişkenler (Cloudflare → Worker → Settings → Variables and Secrets):
-//   GEMINI_API_KEY  (Secret, zorunlu)  Google AI Studio API anahtarı. Koda ya da sohbete asla yazılmaz.
+//   DEEPSEEK_API_KEY (Secret, isteğe bağlı) DeepSeek API anahtarı. Tanımlıysa hakem önce DeepSeek'i kullanır.
+//   DEEPSEEK_MODEL   (Text, isteğe bağlı)   Varsayılan deepseek-chat.
+//   GEMINI_API_KEY  (Secret, isteğe bağlı)  Google AI Studio API anahtarı; DeepSeek yoksa ya da hata verirse kullanılır.
+//   En az biri tanımlı olmalı. Anahtarlar koda ya da sohbete asla yazılmaz.
 //   GEMINI_MODEL    (Text, isteğe bağlı) Belirli bir model zorlamak için. Boşsa Worker, anahtarın erişebildiği modelleri
 //                   Google'dan sorup en yeni hızlı (flash) modeli seçer; model kaldırılırsa sıradakine geçer.
 //
@@ -24,6 +27,8 @@ const ORIGINS = ['https://erenkaynak1.github.io'];
 const LIMIT = { pencereMs: 10 * 60 * 1000, istek: 8 };
 const BUTCE = 20, SECIM = 5;
 const GEMINI = 'https://generativelanguage.googleapis.com/v1beta';
+const DEEPSEEK = 'https://api.deepseek.com/chat/completions';
+const DEEPSEEK_SURE_MS = 45000;
 const YEDEK_MODEL = 'gemini-flash-latest';
 const MODEL_SURE_MS = 18000; // tek modele en fazla bu kadar beklenir; sonra sıradaki denenir
 const TOPLAM_SURE_MS = 80000; // bütün denemeler için üst sınır (oyun 100 sn bekler)
@@ -134,11 +139,12 @@ export default {
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors(origin) });
     if (request.method === 'GET') {
       const modeller = env.GEMINI_API_KEY ? await uygunModeller(env) : [];
-      return json({ hakem: 'NEON Hakem', anahtar: !!env.GEMINI_API_KEY, model: env.GEMINI_MODEL || modeller[0] || YEDEK_MODEL, modeller: modeller.slice(0, 6) }, 200, origin);
+      return json({ hakem: 'NEON Hakem', anahtar: !!(env.DEEPSEEK_API_KEY || env.GEMINI_API_KEY), deepseek: !!env.DEEPSEEK_API_KEY, gemini: !!env.GEMINI_API_KEY,
+        model: env.DEEPSEEK_API_KEY ? (env.DEEPSEEK_MODEL || 'deepseek-chat') : env.GEMINI_MODEL || modeller[0] || YEDEK_MODEL, modeller: modeller.slice(0, 6) }, 200, origin);
     }
     if (request.method !== 'POST') return json({ hata: 'yalnızca POST' }, 405, origin);
     if (!izinli(origin)) return json({ hata: 'izin yok' }, 403, origin);
-    if (!env.GEMINI_API_KEY) return json({ hata: 'hakem ayarlanmadı' }, 503, origin);
+    if (!env.GEMINI_API_KEY && !env.DEEPSEEK_API_KEY) return json({ hata: 'hakem ayarlanmadı' }, 503, origin);
 
     const token = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
     let uid = null;
@@ -157,6 +163,37 @@ export default {
     // Karakter: listeden id ile seçilir (serbest metin yok). Kurgusal bir tiptir, gerçek bir kişi değildir.
     const stil = HAKEM_STILLERI[body.hakem] || '';
     const talimat = stil ? `${HAKEM_TALIMATI}\n\nKARAKTER\n- ${stil}\n- Kurgusal bir karaktersin; gerçek bir kişi olduğunu ya da gerçek kişilerin adına konuştuğunu asla söyleme.` : HAKEM_TALIMATI;
+    // DeepSeek önce: OpenAI uyumlu uç; şema desteklemediği için şema talimata yazılır ve JSON modu istenir
+    if (env.DEEPSEEK_API_KEY) {
+      try {
+        const r = await fetch(DEEPSEEK, {
+          method: 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${env.DEEPSEEK_API_KEY}` },
+          body: JSON.stringify({
+            model: env.DEEPSEEK_MODEL || 'deepseek-chat', temperature: 0.9, response_format: { type: 'json_object' },
+            messages: [
+              { role: 'system', content: `${talimat}\n\nÇIKTI\n- Yalnızca geçerli bir JSON nesnesi döndür, başka metin yazma. JSON şu şemaya uymalı:\n${JSON.stringify(HAKEM_SEMASI)}` },
+              { role: 'user', content: istek.metin },
+            ],
+          }),
+          signal: AbortSignal.timeout(DEEPSEEK_SURE_MS),
+        });
+        if (r.ok) {
+          const veri = await r.json();
+          const metin = veri?.choices?.[0]?.message?.content || '';
+          try { return json({ sira: istek.sira, karar: JSON.parse(metin), saglayici: 'deepseek' }, 200, origin); }
+          catch { console.log('NEON Hakem: DeepSeek bozuk cevap', metin.slice(0, 200)); }
+        } else {
+          let detay = '';
+          try { detay = String((await r.json())?.error?.message || '').slice(0, 240); } catch {}
+          console.log('NEON Hakem: DeepSeek hatası', r.status, detay);
+          if (!env.GEMINI_API_KEY) return json({ hata: 'hakem cevap vermedi', durum: r.status, detay }, 502, origin);
+        }
+      } catch (e) {
+        console.log('NEON Hakem: DeepSeek zaman aşımı', e?.name || '');
+        if (!env.GEMINI_API_KEY) return json({ hata: 'hakem zaman aşımı', durum: 504 }, 504, origin);
+      }
+      if (!env.GEMINI_API_KEY) return json({ hata: 'hakem cevabı bozuk' }, 502, origin);
+    }
     const govde = (dusunme) => JSON.stringify({
       systemInstruction: { parts: [{ text: talimat }] },
       contents: [{ role: 'user', parts: [{ text: istek.metin }] }],
