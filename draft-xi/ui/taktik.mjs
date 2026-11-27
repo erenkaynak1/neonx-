@@ -228,11 +228,15 @@ function planNoktalar(xi, id, T) {
   const shift = T.line === 'low' ? -110 : T.line === 'high' ? 120 : 0;
   return xi.map((x) => {
     const p = deep ? x.def : x.pos;
-    let y = p.y;
+    // full-backs stay in the back four on the plan picture (the possession template has them level with the midfield,
+    // which reads as wingers); they step up a little, and only the wing plan sends them on the overlap below
+    const fb = ['LB', 'RB', 'LWB', 'RWB'].includes(x.mevki) && !deep;
+    let y = fb ? x.def.y + Math.trunc((x.pos.y - x.def.y) * 0.25) : p.y;
     if (x.mevki !== 'GK') {
       const back = DEFN.includes(x.mevki) || x.mevki === 'DM';
       y += back ? shift : Math.trunc(shift * 0.6);
       if (id === 'kanat' && ['LB', 'RB', 'LWB', 'RWB'].includes(x.mevki)) { // overlap: up the flank, just behind the wide man
+        y = Math.max(y, x.def.y + Math.trunc((x.pos.y - x.def.y) * 0.6) + shift);
         const side = Math.sign(p.x - PITCH_W / 2), wide = xi.filter((o) => o !== x && o.mevki !== 'GK' && Math.sign(o.pos.x - PITCH_W / 2) === side && Math.abs(o.pos.x - PITCH_W / 2) > 150 && o.pos.y > p.y);
         const cap = wide.length ? Math.min(...wide.map((o) => o.pos.y)) - 150 : y + 230;
         y = Math.max(y, Math.min(y + 230, cap));
