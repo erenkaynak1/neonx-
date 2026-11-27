@@ -20,14 +20,24 @@ export function makeBody({ x, y, pac = 70, age = 26, gk = false }) {
 export function stepBody(b, dt, minute) {
   b.px = b.x; b.py = b.y;
   const tired = 1 - 0.10 * (minute / 90) * (b.age >= 31 ? 1.35 : 1);
-  const ex = (b.tx - b.x) * MX, ey = (b.ty - b.y) * MY, d = Math.hypot(ex, ey);
-  const cap = (b.mode === 'sprint' ? b.top : Math.min(b.top, MODE_SPEED[b.mode] || 4)) * tired;
+  // the target the body steers to glides after the tactical target (≈0.3 s), so a target that jumps every retarget
+  // tick does not make the player brake and surge again (stop-go); a far jump (a teleport under the cut) is taken at once
+  if (b.sx == null || Math.hypot((b.tx - b.sx) * MX, (b.ty - b.sy) * MY) > 25) { b.sx = b.tx; b.sy = b.ty; }
+  const kT = 1 - Math.exp(-dt / 0.3);
+  b.sx += (b.tx - b.sx) * kT; b.sy += (b.ty - b.sy) * kT;
+  const ex = (b.sx - b.x) * MX, ey = (b.sy - b.y) * MY, d = Math.hypot(ex, ey);
+  // the speed ceiling follows the chosen pace smoothly (≈2.5 m/s² up, 3.5 m/s² down): a change of pace is a few strides,
+  // not a jump — players no longer surge and stall when their pace flips between jog and run
+  const capT = (b.mode === 'sprint' ? b.top : Math.min(b.top, MODE_SPEED[b.mode] || 4)) * tired;
+  if (b.capS == null) b.capS = capT;
+  b.capS += clamp(capT - b.capS, -3.5 * dt, 2.5 * dt);
+  const cap = b.capS;
   let vd = d < 0.12 ? 0 : Math.min(cap, d / 0.5);              // arrive: slow down over the last half second
   const dx = d > 1e-6 ? (ex / d) * vd : 0, dy = d > 1e-6 ? (ey / d) * vd : 0;
   let cx = b.vx * MX, cy = b.vy * MY;
   let ax = dx - cx, ay = dy - cy;
   const braking = dx * cx + dy * cy < 0 || vd < Math.hypot(cx, cy);
-  const amax = b.acc * (MODE_ACC[b.mode] || 1) * (braking ? 1.7 : 1) * dt;
+  const amax = b.acc * (MODE_ACC[b.mode] || 1) * (braking ? 1.35 : 1) * dt;
   const a = Math.hypot(ax, ay);
   if (a > amax) { ax *= amax / a; ay *= amax / a; }
   cx += ax; cy += ay;

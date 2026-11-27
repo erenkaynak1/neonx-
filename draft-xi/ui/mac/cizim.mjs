@@ -46,7 +46,7 @@ export function createRenderer(canvas, W, info) {
     g.clearRect(0, 0, cw, ch);
     // turf
     g.save();
-    g.shadowColor = 'rgba(186,255,24,.35)'; g.shadowBlur = 24; g.fillStyle = '#071a10'; g.fillRect(box.x, box.y, box.w, box.h); g.shadowBlur = 0;
+    g.shadowColor = 'rgba(220,245,255,.22)'; g.shadowBlur = 24; g.fillStyle = '#071a10'; g.fillRect(box.x, box.y, box.w, box.h); g.shadowBlur = 0;
     g.beginPath(); g.rect(box.x, box.y, box.w, box.h); g.clip();
     const pool = g.createRadialGradient(sx(50), sy(50), 0, sx(50), sy(50), box.h * 0.62);
     pool.addColorStop(0, '#11402a'); pool.addColorStop(0.55, '#0b2c1a'); pool.addColorStop(1, '#051309');
@@ -78,9 +78,10 @@ export function createRenderer(canvas, W, info) {
       for (const [x, y, a0] of [[0, 0, -Math.PI / 2], [100, 0, Math.PI], [0, 100, 0], [100, 100, Math.PI / 2]]) { g.moveTo(sx(x) + Math.cos(a0) * u, sy(y) + Math.sin(a0) * u); g.arc(sx(x), sy(y), u, a0, a0 + Math.PI / 2); }
     };
     const w = Math.max(1.2, u * 0.15);
-    lines(); g.strokeStyle = 'rgba(186,255,24,.55)'; g.lineWidth = w * 2.6; g.shadowColor = 'rgba(186,255,24,.9)'; g.shadowBlur = 12; g.stroke();
-    lines(); g.shadowBlur = 0; g.strokeStyle = 'rgba(240,255,214,.95)'; g.lineWidth = w; g.stroke();
-    const spot = (x, y, r) => { g.fillStyle = '#f0ffd6'; g.shadowColor = 'rgba(186,255,24,.9)'; g.shadowBlur = 8; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); g.shadowBlur = 0; };
+    // neon white tubes: a soft white halo under a bright white core
+    lines(); g.strokeStyle = 'rgba(225,245,255,.42)'; g.lineWidth = w * 2.8; g.shadowColor = 'rgba(235,250,255,.95)'; g.shadowBlur = 14; g.stroke();
+    lines(); g.shadowBlur = 4; g.shadowColor = 'rgba(255,255,255,.9)'; g.strokeStyle = '#ffffff'; g.lineWidth = w; g.stroke(); g.shadowBlur = 0;
+    const spot = (x, y, r) => { g.fillStyle = '#ffffff'; g.shadowColor = 'rgba(235,250,255,.95)'; g.shadowBlur = 8; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); g.shadowBlur = 0; };
     spot(sx(50), sy(50), u * 0.38);
     for (const end of [0, 100]) {
       const s = end === 0 ? 1 : -1;
