@@ -99,3 +99,32 @@ h2::before{content:"";width:4px;height:1em;border-radius:2px;background:var(--tk
   .yan.rakip{text-align:left}.yan.rakip .vals{justify-content:flex-start}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ── İNCE AYAR (fine tuning) — same language as the plan screen ── */
+#ince .planlar{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+#ince .plan{flex:0 0 auto;min-width:150px;min-height:56px;padding:9px 14px;border-radius:14px}
+#ince .plan small{font-size:11.5px}
+#ince .plan[aria-pressed="true"]{background:color-mix(in srgb,var(--tk) 10%,transparent);box-shadow:0 0 18px color-mix(in srgb,var(--tk) 15%,transparent)}
+#ince .izgara{grid-template-columns:auto minmax(0,1fr);gap:22px;margin-top:16px}
+#ince .saha-kutu{position:sticky;top:12px;width:fit-content;margin:0 auto;padding:0;background:none;z-index:2}
+#ince .saha-kutu svg{width:auto;height:min(64dvh,560px);aspect-ratio:68/105;max-height:none}
+#ince .saha-kutu figcaption{margin-top:8px;font:700 12px/1.2 var(--disp);letter-spacing:.12em;text-transform:uppercase;color:var(--mut)}
+#ince .ayarlar h2:first-child{margin-top:2px}
+#ince .kart{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+#ince .ayar{display:flex;flex-direction:column;gap:2px;padding:14px 14px 12px}
+#ince .ayar.odak{border-color:color-mix(in srgb,var(--tk) 60%,transparent);background:linear-gradient(180deg,color-mix(in srgb,var(--tk) 7%,rgba(23,29,35,.92)),rgba(12,16,20,.94));box-shadow:0 0 22px color-mix(in srgb,var(--tk) 12%,transparent),0 10px 24px rgba(0,0,0,.3)}
+#ince .ayar.odak .ayar-ust b{color:var(--tk)}
+#ince .cipler{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px;padding:4px;border:1px solid var(--line);border-radius:12px;background:rgba(5,7,8,.55)}
+#ince .cip{flex:1 1 auto;justify-content:center;min-height:38px;padding:0 10px;border:0;border-radius:9px;background:transparent;font-size:13.5px}
+#ince .cip:hover{color:var(--fg)}
+#ince .cip[aria-pressed="true"]{background:var(--tk);color:#0b1005;box-shadow:0 0 14px color-mix(in srgb,var(--tk) 28%,transparent)}
+#ince .etki{margin-top:9px;font-size:12.5px;line-height:1.4}
+#ince .sayi{margin-top:auto;padding-top:10px}
+@media (max-width:760px){
+  #ince .izgara{grid-template-columns:1fr;gap:12px}
+  #ince .saha-kutu{position:static;width:100%;padding:0;background:none;display:flex;flex-direction:column;align-items:center}
+  #ince .saha-kutu svg{height:min(38dvh,320px)}
+  #ince .saha-kutu figcaption{margin-top:6px}
+  #ince .kart{grid-template-columns:1fr}
+  #ince .plan{min-width:132px}
+}

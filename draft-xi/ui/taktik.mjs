@@ -140,8 +140,8 @@ function ciz() {
   const t = order[step], T = tac[t], xi = TEAMS[t].xi, svg = $('saha');
   svg.innerHTML = '';
   const s = TAKTIK.find((x) => x.k === focus), topsuz = s.grup === 'TOPSUZ';
-  const line = 'rgba(232,255,228,.25)';
-  for (let i = 0; i < 6; i++) el('rect', { x: 0, y: i * 175, width: PITCH_W, height: 175, fill: i % 2 ? '#0b2414' : '#0d2a17' }, svg);
+  const line = 'rgba(236,255,228,.32)';
+  for (let i = 0; i < 6; i++) el('rect', { x: 0, y: i * 175, width: PITCH_W, height: 175, fill: i % 2 ? '#11391d' : '#0e3119' }, svg);
   el('rect', { x: 4, y: 4, width: PITCH_W - 8, height: PITCH_L - 8, fill: 'none', stroke: line, 'stroke-width': 3 }, svg);
   el('line', { x1: 0, y1: PITCH_L / 2, x2: PITCH_W, y2: PITCH_L / 2, stroke: line, 'stroke-width': 3 }, svg);
   el('circle', { cx: PITCH_W / 2, cy: PITCH_L / 2, r: 91, fill: 'none', stroke: line, 'stroke-width': 3 }, svg);
@@ -152,8 +152,12 @@ function ciz() {
   }
   const fx = el('g', {}, svg), pl = el('g', {}, svg);
   const shift = topsuz ? (T.line === 'low' ? -175 : T.line === 'high' ? 175 : 0) : 0;
-  const pts = xi.map((x) => { const p = topsuz ? x.def : x.pos; return { x, X: p.x, Yv: Y(x.mevki === 'GK' ? p.y : Math.max(60, p.y + shift)) }; });
-  const A = 'var(--tk)', ylw = '#ffd34d';
+  const pts = xi.map((x) => {
+    const p = topsuz ? x.def : x.pos, fb = !topsuz && ['LB', 'RB', 'LWB', 'RWB'].includes(x.mevki);
+    const y = fb ? x.def.y + Math.trunc((x.pos.y - x.def.y) * (T.direction === 'wings' ? 0.6 : 0.25)) : p.y;
+    return { x, X: p.x, Yv: Y(x.mevki === 'GK' ? p.y : Math.max(60, y + shift)) };
+  });
+  const A = 'var(--tk)', ylw = t ? '#9adfff' : '#dcff72';
   const arrow = (x1, y1, x2, y2, c = ylw, w = 8, dash) => {
     el('line', { x1, y1, x2, y2, stroke: c, 'stroke-width': w, 'stroke-linecap': 'round', ...(dash ? { 'stroke-dasharray': dash } : {}), opacity: 0.85 }, fx);
     const a = Math.atan2(y2 - y1, x2 - x1), h = 28;
@@ -204,9 +208,10 @@ function ciz() {
   }
   for (const { x, X, Yv } of pts) {
     const g = el('g', {}, pl);
-    el('circle', { cx: X, cy: Yv, r: 26, fill: '#070b0a', stroke: A, 'stroke-width': 5 }, g);
-    const m = el('text', { x: X, y: Yv + 9, 'text-anchor': 'middle', fill: '#e8efe9', 'font-size': 23, 'font-weight': 800 }, g); m.textContent = x.mevki;
-    const n = el('text', { x: X, y: Yv + 58, 'text-anchor': 'middle', fill: '#e8efe9', 'font-size': 23, 'font-weight': 700, stroke: '#070b0a', 'stroke-width': 6, 'paint-order': 'stroke' }, g);
+    el('circle', { cx: X, cy: Yv, r: 34, fill: A, opacity: 0.16 }, g);
+    el('circle', { cx: X, cy: Yv, r: 25, fill: '#050708', stroke: A, 'stroke-width': 5 }, g);
+    const m = el('text', { x: X, y: Yv + 8, 'text-anchor': 'middle', fill: '#f3f6f8', 'font-size': 21, 'font-weight': 800, 'font-family': 'Barlow Condensed, sans-serif', 'letter-spacing': 1 }, g); m.textContent = x.mevki;
+    const n = el('text', { x: X, y: Yv + 58, 'text-anchor': 'middle', fill: '#f3f6f8', 'font-size': 23, 'font-weight': 700, 'font-family': 'Barlow, sans-serif', stroke: '#050708', 'stroke-width': 6, 'paint-order': 'stroke' }, g);
     const sn = x.p.name.split(' ').slice(-1)[0]; n.textContent = sn.length > 9 ? sn.slice(0, 8) + '.' : sn;
   }
   $('sahaEtiket').textContent = `${s.ad}: ${s.o.find((o) => o[0] === v)[1]} · ${topsuz ? 'top rakipteyken' : 'top bizdeyken'}`;
