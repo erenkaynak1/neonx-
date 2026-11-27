@@ -6,8 +6,8 @@ import {getApp,getApps} from 'https://www.gstatic.com/firebasejs/12.16.0/firebas
 import {getAuth,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js';
 import {getDatabase,onValue,ref,runTransaction,set} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js';
 
-const GAMES=['xox','twin','auction','draft'];
-const LABELS={xox:'Futbol XOX',twin:'Kariyer İkizi',auction:'Açık Artırma',draft:'NEON XI Draft'};
+const GAMES=['xox','twin','auction','draftxi'];
+const LABELS={xox:'Futbol XOX',twin:'Kariyer İkizi',auction:'Açık Artırma',draftxi:'Draft XI',draft:'Draft XI (Klasik)'};
 const POINTS={wins:3,draws:1,losses:0};
 const NEXT_DELAY_MS=6000;
 const q=new URLSearchParams(location.search);

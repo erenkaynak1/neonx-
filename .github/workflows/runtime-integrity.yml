@@ -51,7 +51,7 @@ jobs:
       - name: Draft XI v2 engine (determinism, event log, sanity)
         run: node scripts/test_draft_xi_engine.mjs
       - name: Draft XI match screen state (stats = engine, goals in the reel)
-        run: node scripts/test_draft_xi_mac.mjs
+        run: node scripts/test_draft_xi_mac.mjs && node scripts/test_draft_xi_online.cjs
       - name: Draft XI v2 player pool (built file up to date, engine-ready, random squads)
         run: node scripts/build_draft_xi_pool.mjs --check && node scripts/test_draft_xi_pool.mjs 120
       - name: Draft XI Excel player pool (havuz-fm.mjs matches the Excel, engine-ready)

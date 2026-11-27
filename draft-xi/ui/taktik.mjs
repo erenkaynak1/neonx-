@@ -100,7 +100,7 @@ function sayilar(k, v, t) {
 }
 
 // ── state ──
-const order = [0, 1].filter((t) => !TEAMS[t].bot);
+const order = D?.online ? [D.online.me] : [0, 1].filter((t) => !TEAMS[t].bot);   // online: each phone sets its own team
 let step = 0, focus = 'direction', view = 'plan';
 const tac = TEAMS.map((tm) => (tm.bot ? planTaktik(tm.plan || 'dengeli') : planTaktik('dengeli')));
 

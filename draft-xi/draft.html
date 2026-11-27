@@ -4,8 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Draft XI · Draft</title>
+<link rel="stylesheet" href="../side-games/neon-arcade-ui-v1.css?v=20261120-genel-ux1">
 <link rel="stylesheet" href="../side-games/sidegame-skin-v2.css?v=20261120-genel-ux1">
-<link rel="stylesheet" href="./ui/draft.css?v=9">
+<link rel="stylesheet" href="./ui/draft.css?v=11">
 </head>
 <body class="sg-skin dx">
 <main>
@@ -18,7 +19,7 @@
       <div class="sgm-grid">
         <button type="button" class="sgm-mode" data-mod="bot" aria-label="BOTA KARŞI. Sırayla sen ve bot seçersiniz"><span class="sgm-mode-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="5" y="8" width="14" height="11" rx="3"/><path d="M12 8V4.5M9.5 13h.01M14.5 13h.01M10 16h4M2.5 12.5v3M21.5 12.5v3"/></svg></span><span class="sgm-mode-copy"><strong>BOTA KARŞI</strong><small>Sırayla sen ve bot seçersiniz</small></span><span class="sgm-mode-arrow"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m9 5 7 7-7 7"/></svg></span></button>
         <button type="button" class="sgm-mode" data-mod="iki" aria-label="AYNI TELEFON. Telefonu sırayla elden ele verin"><span class="sgm-mode-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M10 5h4M11 18.5h2"/></svg></span><span class="sgm-mode-copy"><strong>AYNI TELEFON</strong><small>Telefonu sırayla elden ele verin</small></span><span class="sgm-mode-arrow"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m9 5 7 7-7 7"/></svg></span></button>
-        <button type="button" class="sgm-mode" disabled aria-label="ONLINE. Arkadaşınla çevrimiçi draft"><span class="sgm-mode-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.6 2.3 3.8 5.1 3.8 8.5s-1.2 6.2-3.8 8.5c-2.6-2.3-3.8-5.1-3.8-8.5s1.2-6.2 3.8-8.5Z"/></svg></span><span class="sgm-mode-copy"><strong>ONLINE</strong><small>Arkadaşınla çevrimiçi draft</small></span><span class="sgm-soon">YAKINDA</span></button>
+        <button type="button" class="sgm-mode" data-online aria-label="ONLINE. Arkadaşınla ya da rastgele bir rakiple"><span class="sgm-mode-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.6 2.3 3.8 5.1 3.8 8.5s-1.2 6.2-3.8 8.5c-2.6-2.3-3.8-5.1-3.8-8.5s1.2-6.2 3.8-8.5Z"/></svg></span><span class="sgm-mode-copy"><strong>ONLINE</strong><small>Arkadaşınla ya da rastgele bir rakiple</small></span><span class="sgm-mode-arrow"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m9 5 7 7-7 7"/></svg></span></button>
       </div>
     </section>
     <section class="sgm-panel" id="ayar" hidden aria-labelledby="ayarBaslik">
@@ -32,9 +33,16 @@
             <button type="button" data-zor="zor" aria-pressed="false">ZOR</button>
           </div>
         </div>
-        <div class="sgm-field"><label for="dizilis">DİZİLİŞİN</label><select id="dizilis" class="dx-select"></select></div>
         <button id="basla" class="sgm-btn primary" type="button">DRAFT'A BAŞLA</button>
-        <p class="sgm-note" id="ayarNot">Diziliş draft sırasında da değiştirilebilir.</p>
+        <p class="sgm-note" id="ayarNot"></p>
+      </div>
+    </section>
+    <section class="sgm-panel" id="oda" hidden aria-labelledby="odaBaslik">
+      <h2 class="sgm-heading" id="odaBaslik">MAÇ ODASI</h2>
+      <div class="sgm-sheet">
+        <ul class="dx-oda" id="odaListe"></ul>
+        <p class="sgm-note" id="odaNot">Maç odasına bağlanılıyor…</p>
+        <button type="button" class="sgm-btn" id="odaGeri" hidden>MENÜYE DÖN</button>
       </div>
     </section>
     <section class="sgm-how" id="nasil" aria-label="Nasıl oynanır"><div class="sgm-how-badge" aria-hidden="true">?</div><div><h3>NASIL OYNANIR?</h3><p>Yılan sırasıyla (1-2, 2-1 …) 11 oyuncu seçersiniz; her oyuncu yalnızca oynayabildiği bir mevkiye konur. Aynı ülke, kulüp ya da ligden yakın mevkideki oyuncular kimyayı artırır. Sonra planını seç ve maçı izle.</p></div></section>
@@ -68,6 +76,11 @@
   <div id="kart" class="dx-kart" hidden></div>
   <div id="bildirim" class="dx-bildirim" hidden role="status" aria-live="polite"></div>
 </main>
-<script type="module" src="./ui/draft.mjs?v=10"></script>
+<script src="../side-games/career-twin/firebase-peer-shim-v1.js?v=20261127-dx" data-game-type="draftxi" data-prefix="neonxi-draftxi-" data-room-prefix="DX-"></script>
+<script type="module" src="./ui/draft.mjs?v=11"></script>
+<script type="module" src="../social/party-match-broker-v1.js?v=20261127-dx"></script>
+<script type="module" src="../social/neon-social.js?v=20261127-dx"></script>
+<script type="module" src="../social/party-ready-notify-v1.js?v=20261127-dx"></script>
+<script src="../side-games/neon-arcade-ui-v1.js?v=20261127-dx"></script>
 </body>
 </html>

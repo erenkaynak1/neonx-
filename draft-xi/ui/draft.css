@@ -195,3 +195,17 @@ body.sg-skin .sgm-sheet .sgm-field+.sgm-field{margin-top:14px}
   .dx-bildirim{top:calc(62px + env(safe-area-inset-top))}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* online room (inside the shared .sgm sheet) */
+.dx-oda{list-style:none;margin:0 0 4px;padding:0;display:grid;gap:8px}
+.dx-oda li{display:flex;align-items:center;gap:10px;min-height:48px;padding:0 14px;border:1px dashed var(--line2);border-radius:12px;background:#0a0d10;color:var(--faint)}
+.dx-oda li i{width:10px;height:10px;border-radius:50%;background:var(--s3)}
+.dx-oda li b{font:700 15px/1 var(--body)}
+.dx-oda li small{margin-left:auto;font:800 11px/1 var(--disp);letter-spacing:.14em;color:var(--mut)}
+.dx-oda li.in{border-style:solid;border-color:rgba(186,255,24,.35);color:var(--fg)}
+.dx-oda li.in i{background:var(--a);box-shadow:0 0 10px rgba(186,255,24,.6)}
+.dx-oda li:not(.in) i{animation:dxNokta 1.2s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.dx-oda li i{animation:none!important}}
+/* the site's bottom bar belongs to the menu; during the draft the pool needs the whole height */
+body.dx:has(#draft:not([hidden])) .nx-arcade-footer{display:none!important}
+body.dx.nx-arcade-has-footer:has(#draft:not([hidden])){padding-bottom:0!important}
