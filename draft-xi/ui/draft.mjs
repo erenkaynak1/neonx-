@@ -3,7 +3,7 @@
 // opponent (16.13: easy / medium / hard) or two players on one phone. Ends on the tactics screen.
 import { HAVUZ, HAVUZ_BY_ID } from '../data/havuz-fm.mjs?v=1';
 import { FORMATIONS, zonePoint } from '../engine/formations.mjs?v=2';
-import { uygun, guc, kimya, MEVKI_GRUP, esc } from './ortak.mjs?v=3';
+import { uygun, guc, kimya, MEVKI_GRUP, esc, ATTR_AD, ATTR_KISA, ANA_OZELLIK } from './ortak.mjs?v=4';
 
 const $ = (id) => document.getElementById(id);
 const STYLE = { // medium/hard bot: a playing style chosen at the start (16.13) → attributes it values and its plan
@@ -44,7 +44,7 @@ function start() {
     taken: new Set(),
   };
   if (mod === 'iki') S.teams[1].formation = $('dizilis').value;
-  $('kur').hidden = true; $('draft').hidden = false;
+  $('kur').hidden = true; $('draft').hidden = false; S.listeAnim = true;
   render(); botMaybe();
 }
 $('basla').addEventListener('click', start);
@@ -76,6 +76,8 @@ function place(t, id, slot) {
   S.last = { t, slot: target.slot };
   S.selected = null;
   S.pick++;
+  kartKapat();
+  bildir(t, p, target);
   try { navigator.vibrate?.(20); } catch { /* ignore */ }
   if (done()) return finish();
   render(); botMaybe();
@@ -190,16 +192,58 @@ function poolList() {
   ps = ps.map((p) => ({ p, g: guc(p), r: rankOf(p), fit: !!bestSlot(t, p) })).sort((a, b) => (b.fit - a.fit) || (b.r - a.r)).slice(0, 150);
   if (!ps.length) return '<li class="bos">Oyuncu yok.</li>';
   return ps.map(({ p, g, fit }) => `<li class="oy${fit ? '' : ' uymaz'}${S.selected === p.id ? ' secili' : ''}" data-id="${esc(p.id)}" role="button" tabindex="0" aria-disabled="${!fit}">
-    <span class="g${g >= 93 ? " t1" : g >= 88 ? " t2" : ""}">${g}</span><span class="n"><b>${esc(p.name)}</b><small>${esc(p.club)} · ${p.age} · ${p.foot === 'L' ? 'Sol' : 'Sağ'} ayak</small></span>
+    <span class="g${g >= 93 ? " t1" : g >= 88 ? " t2" : ""}">${g}</span><span class="n"><b>${esc(p.name)}</b><small>${esc(p.club)} · ${p.age} · ${p.foot === 'L' ? 'Sol' : 'Sağ'} ayak</small>
+    <span class="oz">${(ANA_OZELLIK[p.positions[0]] || []).map((k) => `<span class="${seviye(p.attrs[k])}"><em>${ATTR_KISA[k]}</em>${p.attrs[k]}</span>`).join('')}</span></span>
     <span class="m">${p.positions.map((m) => `<i>${m}</i>`).join('')}</span></li>`).join('');
+}
+
+const seviye = (v) => (v >= 85 ? 'v1' : v >= 75 ? 'v2' : v >= 65 ? 'v3' : 'v4');
+
+// ── player card: every attribute, where he fits, chemistry links with the team on the clock ──
+const GRUPLAR = [['HÜCUM', ['fin', 'lon', 'hed', 'posn']], ['TEKNİK', ['dri', 'ft', 'sp', 'lp', 'cro', 'vis']], ['SAVUNMA', ['tac', 'mar']], ['FİZİK', ['pac', 'str']]];
+const GK_GRUPLAR = [['KALECİLİK', ['ref', 'gpos', 'ghd', 'one']], ['OYUN KURMA', ['sp', 'lp', 'ft', 'vis']], ['FİZİK', ['pac', 'str']]];
+function kartAc(id) {
+  const p = HAVUZ_BY_ID[id]; if (!p || !S) return;
+  const t = cur(), tm = S.teams[t], benim = !isBot(t), b = bestSlot(t, p), g = guc(p);
+  const bag = Object.entries(tm.slots).map(([, oid]) => HAVUZ_BY_ID[oid]).map((o) => {
+    const ortak = [o.nation === p.nation && 'ülke', o.club === p.club && 'kulüp', o.league === p.league && 'lig', (o.former || []).some((c) => c === p.club || (p.former || []).includes(c)) && 'eski takım'].filter(Boolean);
+    return ortak.length ? { o, ortak } : null;
+  }).filter(Boolean);
+  const grup = (p.positions[0] === 'GK' ? GK_GRUPLAR : GRUPLAR).map(([ad, ks]) => `<div class="kg"><h4>${ad}</h4>${ks.map((k, i) => `<div class="kb ${seviye(p.attrs[k])}">
+      <span>${ATTR_AD[k]}</span><b>${p.attrs[k]}</b><i style="--w:${p.attrs[k]}%;--d:${i * 40}ms"></i></div>`).join('')}</div>`).join('');
+  $('kart').innerHTML = `<div class="kart-ic ${t === 0 ? 'a' : 'b'}" role="dialog" aria-modal="true" aria-labelledby="kartAd">
+    <button type="button" class="kart-x" data-kapat aria-label="Kapat">×</button>
+    <div class="kart-bas"><span class="kart-g g${g >= 93 ? ' t1' : g >= 88 ? ' t2' : ''}">${g}</span>
+      <div><h3 id="kartAd">${esc(p.name)}</h3><p>${esc(p.club)} · ${esc(p.league)}</p>
+      <p class="kart-m">${p.positions.map((m) => `<i>${m}</i>`).join('')}<span>${esc(p.nation)} · ${p.age} yaş · ${p.height || '—'} cm · ${p.foot === 'L' ? 'Sol' : 'Sağ'} ayak (zayıf ${p.weakFoot || '—'}/5)</span></p></div></div>
+    <div class="kart-gr">${grup}</div>
+    <div class="kart-alt">${b ? `<p class="kart-yer">Takımına <b>${b.mevki}</b> olarak girer · güç <b>${guc(p, b.mevki)}</b></p>` : `<p class="kart-yer yok">Takımında bu oyuncuya uyan boş yer yok.</p>`}
+      ${bag.length ? `<p class="kart-bag">Kimya bağı: ${bag.map(({ o, ortak }) => `<b>${esc(o.name.split(' ').slice(-1)[0])}</b> (${ortak.join(', ')})`).join(' · ')}</p>` : ''}
+      <button type="button" class="kart-al" data-al="${esc(p.id)}" ${b && benim ? '' : 'disabled'}>${benim ? 'KADROYA AL' : 'SIRA BOTTA'}</button></div></div>`;
+  $('kart').hidden = false;
+  requestAnimationFrame(() => $('kart').classList.add('acik'));
+  $('kart').querySelector('.kart-al:not(:disabled), .kart-x')?.focus({ preventScroll: true });
+}
+function kartKapat() { const k = $('kart'); if (!k || k.hidden) return; k.classList.remove('acik'); k.hidden = true; }
+
+// ── pick banner: who went where (slides in, team colour) ──
+let bildirimH = null;
+function bildir(t, p, target) {
+  const el = $('bildirim'); if (!el) return;
+  el.className = 'dx-bildirim ' + (t === 0 ? 'a' : 'b');
+  el.innerHTML = `<b>${target.mevki}</b><span>${esc(p.name)}</span><em>${guc(p, target.mevki)}</em>`;
+  el.hidden = false; void el.offsetWidth; el.classList.add('gor');
+  clearTimeout(bildirimH); bildirimH = setTimeout(() => { el.classList.remove('gor'); setTimeout(() => { el.hidden = true; }, 260); }, 1500);
 }
 
 function render() {
   if (!S) return;
   const t = cur();
   const who = S.teams[t].name;
-  $('sira').className = 'sira ' + (t === 0 ? 'a' : 'b');
-  $('sira').innerHTML = done() ? 'Draft tamam' : isBot(t) ? `${esc(who)} seçiyor…<small>Bot düşünüyor</small>`
+  const siraKey = `${S.pick}:${t}`;
+  $('sira').className = 'sira ' + (t === 0 ? 'a' : 'b') + (S.siraKey !== siraKey ? ' gel' : '');
+  S.siraKey = siraKey;
+  $('sira').innerHTML = done() ? 'Draft tamam' : isBot(t) ? `${esc(who)} seçiyor<span class="dusun" aria-hidden="true"><i></i><i></i><i></i></span><small>Bot düşünüyor</small>`
     : `Sıra: ${esc(who)}<small>${S.selected ? 'Sahada parlayan yere dokun ya da listeden başka oyuncu seç' : 'Bir oyuncu seç: en uygun boş yere yerleşir'}</small>`;
   $('turNo').textContent = `Tur ${Math.min(11, round() + 1)}/11`;
   $('otomatik').disabled = done() || isBot(t);
@@ -207,6 +251,7 @@ function render() {
   $('panelB').innerHTML = teamPanel(1);
   $('cipler').innerHTML = FILTERS.map((f) => `<button type="button" data-filtre="${f}" aria-pressed="${S.filter === f}">${f === 'Uygun' ? 'Boş yerime uyan' : f}</button>`).join('');
   $('liste').innerHTML = poolList();
+  $('liste').classList.toggle('gir', !!S.listeAnim); S.listeAnim = false;
   // phone tabs: follow the team whose turn it is unless the user is browsing the pool
   document.querySelectorAll('[data-sekme]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.sekme === S.tab)));
   $('panelA').classList.toggle('acik', S.tab === 'A');
@@ -218,14 +263,24 @@ function render() {
 
 // ── interaction ──
 $('liste').addEventListener('click', (e) => {
-  const li = e.target.closest('.oy'); if (!li || !S || isBot(cur())) return;
-  const id = li.dataset.id, t = cur(), p = HAVUZ_BY_ID[id];
-  if (!bestSlot(t, p)) return;
+  const li = e.target.closest('.oy'); if (!li || !S) return;
+  kartAc(li.dataset.id);
+});
+// "KADROYA AL" on the card: straight in when only one kind of slot fits, else glow the slots on the pitch
+function al(id) {
+  const t = cur(), p = HAVUZ_BY_ID[id];
+  if (!S || isBot(t) || !bestSlot(t, p)) return;
   const fits = emptySlots(t).filter(({ mevki }) => uygun(p, mevki));
   const kinds = new Set(fits.map((f) => f.mevki));
   if (kinds.size === 1) { place(t, id); return; }                     // only one kind of slot: place at once
+  kartKapat();
   S.selected = id; S.tab = t === 0 ? 'A' : 'B'; render();              // several: let the user choose on the pitch
+}
+document.addEventListener('click', (e) => {
+  if (e.target.closest('[data-al]')) { al(e.target.closest('[data-al]').dataset.al); return; }
+  if (e.target.closest('[data-kapat]') || e.target.id === 'kart') kartKapat();
 });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') kartKapat(); });
 $('liste').addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.closest('.oy')) e.target.click(); });
 document.addEventListener('click', (e) => {
   const y = e.target.closest('[data-yer]'); if (!y || !S?.selected) return;
@@ -238,7 +293,7 @@ document.addEventListener('change', (e) => {
   if (!changeFormation(t, sel.value)) { alert('Seçtiğin oyuncular bu dizilişe sığmıyor. Başka bir diziliş dene.'); sel.value = old; return; }
   S.last = null; render();
 });
-$('cipler').addEventListener('click', (e) => { const b = e.target.closest('[data-filtre]'); if (!b) return; S.filter = b.dataset.filtre; render(); });
+$('cipler').addEventListener('click', (e) => { const b = e.target.closest('[data-filtre]'); if (!b) return; S.filter = b.dataset.filtre; S.listeAnim = true; render(); });
 $('ara').addEventListener('input', (e) => { S.query = e.target.value; $('liste').innerHTML = poolList(); });
 document.querySelectorAll('[data-sekme]').forEach((b) => b.addEventListener('click', () => { S.tab = b.dataset.sekme; render(); }));
 $('otomatik').addEventListener('click', () => { const t = cur(); const c = choose(t, 'orta'); if (c) place(t, c.p.id, c.slot); });
