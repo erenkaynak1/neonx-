@@ -479,11 +479,19 @@ export function createDirector(S, W, hooks) {
     for (let n = timers.length - 1; n >= 0; n--) if (timers[n].at <= bt) { const t = timers.splice(n, 1)[0]; t.fn(); }
     if (ctl.gate) {
       const g = ctl.gate;
-      if (g.cond() || bt > g.until) {
-        if (!g.cond()) globalThis.__gateLog?.push({ ev: S.E[W.k].type, who: g.key && W.lineup[g.key[0]][g.key[1]].mevki, d: g.key && body(g.key) ? metres(body(g.key), W.ball).toFixed(1) : null, ball: W.ball.state }); // test aid
+      const ready = g.cond();
+      const expired = bt > g.until;
+      if (ready || expired) {
         ctl.gate = null;
-        const d = g.then();
-        if (ctl.gate == null) beatDur = typeof d === 'number' ? bt + d : bt + 0.3;
+        if (ready) {
+          const d = g.then();
+          if (ctl.gate == null) beatDur = typeof d === 'number' ? bt + d : bt + 0.3;
+        } else {
+          // A timeout is not a successful touch or duel. Do not award possession or
+          // start a kick when the required player never reached the ball.
+          globalThis.__gateLog?.push({ ev: S.E[W.k].type, who: g.key && W.lineup[g.key[0]][g.key[1]].mevki, d: g.key && body(g.key) ? metres(body(g.key), W.ball).toFixed(1) : null, ball: W.ball.state });
+          beatDur = bt + 0.25;
+        }
       }
     }
     if (ctl.claim) {
