@@ -1,46 +1,53 @@
-:root{--bg:#070b0a;--s1:#0f1418;--s2:#141a20;--line:rgba(255,255,255,.09);--fg:#e8efe9;--mut:#9aa79f;--a:#baff18;--b:#2fe0ff;--red:#ff6b7d;--yel:#ffd34d;--tk:var(--a)}
+/* Draft XI — tactics screen in the NEON XI design language (tokens as in side-games/sidegame-skin-v2.css, which this
+   page also loads for the self-hosted Barlow faces and the page background) */
+:root{--bg:#050708;--s1:#10151a;--s2:#171d23;--s3:#212931;--line:rgba(255,255,255,.08);--line2:rgba(255,255,255,.16);--fg:#f3f6f8;--mut:#aab6c0;--a:#baff18;--b:#00eaff;--red:#ff6b7d;--yel:#ffd34d;--tk:var(--a);
+  --card:linear-gradient(180deg,rgba(23,29,35,.9),rgba(12,16,20,.94));--disp:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;--body:"Barlow",system-ui,sans-serif}
 body[data-taraf="b"]{--tk:var(--b)}
 *{box-sizing:border-box}
 html,body{min-height:100%}
-body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.45 var(--body)}
+body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse 70% 38% at 50% -8%,color-mix(in srgb,var(--tk) 9%,transparent),transparent 70%)}
 button{font:inherit;color:inherit}
 button:focus-visible{outline:2px solid var(--tk);outline-offset:2px}
 [hidden]{display:none!important}
-h1{font:800 22px/1.15 system-ui;margin:0;letter-spacing:.02em}h1 span{color:var(--tk)}
-h2{font:800 12px/1 system-ui;letter-spacing:.18em;color:var(--mut);margin:18px 2px 8px}
+h1{font:italic 800 30px/1 var(--disp);margin:0;letter-spacing:.01em;text-transform:uppercase}h1 span{color:var(--tk);text-shadow:0 0 14px color-mix(in srgb,var(--tk) 35%,transparent)}
+h2{display:flex;align-items:center;gap:9px;font:800 14px/1 var(--disp);letter-spacing:.16em;color:var(--fg);margin:20px 2px 10px}
+h2::before{content:"";width:4px;height:1em;border-radius:2px;background:var(--tk);box-shadow:0 0 10px color-mix(in srgb,var(--tk) 60%,transparent)}
 
-.yok{max-width:560px;margin:0 auto;padding:40px 16px;display:grid;gap:14px}
+.yok{max-width:480px;margin:12vh auto 0;padding:28px 22px;display:grid;gap:16px;text-align:center;border:1px solid var(--line);border-radius:20px;background:var(--card);box-shadow:0 18px 40px rgba(0,0,0,.45)}
+.yok h1{font-size:40px}
+.dx-logo{display:block;width:120px;margin:0 auto 4px}.dx-logo img{display:block;width:100%;height:auto}
 .yok p{color:var(--mut);margin:0}
-.go{display:block;width:100%;min-height:54px;border:0;border-radius:12px;background:var(--tk);color:#0a0f02;font:800 17px/54px system-ui;letter-spacing:.12em;text-align:center;text-decoration:none;cursor:pointer}
+.go{display:block;width:100%;min-height:54px;border:0;border-radius:12px;background:var(--tk);color:#0a0f02;box-shadow:0 0 22px color-mix(in srgb,var(--tk) 25%,transparent);font:800 19px/54px var(--disp);letter-spacing:.12em;text-align:center;text-decoration:none;cursor:pointer}
 
 .ekran{max-width:1240px;margin:0 auto;padding:14px 16px 96px}
 .ust{display:flex;justify-content:space-between;gap:12px;align-items:flex-end;margin-bottom:12px}
 .alt{margin:4px 0 0;color:var(--mut);font-size:13px}
 
 .planlar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
-.plan{display:grid;gap:3px;align-content:start;text-align:left;padding:10px 12px;min-height:64px;border-radius:12px;border:1px solid var(--line);background:var(--s1);cursor:pointer}
-.plan b{font:800 13.5px/1.15 system-ui;letter-spacing:.03em}
+.plan{display:grid;gap:3px;align-content:start;text-align:left;padding:10px 12px;min-height:64px;border-radius:12px;border:1px solid var(--line);background:var(--card);cursor:pointer}
+.plan b{font:800 16px/1.1 var(--disp);letter-spacing:.03em}
 .plan small{color:var(--mut);font-size:11.5px;line-height:1.3}
 .plan[aria-pressed="true"]{border-color:var(--tk);box-shadow:0 0 0 1px var(--tk) inset}.plan[aria-pressed="true"] b{color:var(--tk)}
 .plan.ozel{border-color:var(--yel);cursor:default}.plan.ozel b{color:var(--yel)}
 
 .izgara{display:grid;grid-template-columns:minmax(260px,380px) minmax(0,1fr);gap:16px;margin-top:14px;align-items:start}
 .saha-kutu{margin:0;position:sticky;top:12px}
-.saha-kutu svg{display:block;width:100%;height:auto;max-height:calc(100dvh - 70px);border-radius:12px;border:1px solid rgba(232,255,228,.2)}
+.saha-kutu svg{display:block;width:100%;height:auto;max-height:calc(100dvh - 70px);border-radius:16px;border:1px solid color-mix(in srgb,var(--tk) 25%,transparent);box-shadow:0 14px 30px rgba(0,0,0,.4)}
 .saha-kutu figcaption{margin-top:6px;color:var(--mut);font-size:12.5px;text-align:center}
 
 .ayarlar h2:first-child{margin-top:0}
 .kart{display:grid;gap:8px}
-.ayar{padding:12px;border-radius:14px;background:var(--s1);border:1px solid var(--line);cursor:pointer}
+.ayar{padding:14px;border-radius:16px;background:var(--card);border:1px solid var(--line);box-shadow:0 10px 24px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.04);cursor:pointer}
 .ayar.odak{border-color:rgba(255,211,77,.55);background:linear-gradient(0deg,rgba(255,211,77,.035),rgba(255,211,77,.035)),var(--s1)}
-.ayar-ust b{font:800 14px/1.2 system-ui;letter-spacing:.03em}
+.ayar-ust b{font:800 17px/1.1 var(--disp);letter-spacing:.05em;text-transform:uppercase}
 .cipler{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.cip{display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--s2);color:var(--mut);font:700 13px system-ui;cursor:pointer}
+.cip{display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:0 14px;border-radius:999px;border:1px solid var(--line2);background:var(--s2);color:var(--mut);font:800 14px/1 var(--disp);letter-spacing:.06em;cursor:pointer}
 .cip[aria-pressed="true"]{border-color:var(--tk);color:var(--fg);background:color-mix(in srgb,var(--tk) 14%,var(--s2))}
 .etki{margin:8px 0 0;color:var(--mut);font-size:12.5px}
 .sayi{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;align-items:stretch;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
 .yan{display:grid;gap:6px;align-content:start;min-width:0}
-.yan em{font:800 10.5px/1 system-ui;font-style:normal;letter-spacing:.16em;color:var(--tk)}
+.yan em{font:800 11px/1 var(--disp);font-style:normal;letter-spacing:.16em;color:var(--tk)}
 .yan.rakip em{color:var(--mut)}
 .yan.rakip{text-align:right}
 .g{min-width:0}
@@ -51,29 +58,31 @@ h2{font:800 12px/1 system-ui;letter-spacing:.18em;color:var(--mut);margin:18px 2
 
 .alt-bar{position:fixed;left:0;right:0;bottom:0;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(transparent,var(--bg) 30%)}
 .alt-tuslar{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:8px;max-width:620px;margin:0 auto}
-.ikincil{min-height:54px;border-radius:12px;border:1px solid rgba(255,255,255,.16);background:#141a20;font:700 16px/1 "Barlow Condensed",system-ui;letter-spacing:.1em;cursor:pointer}
+.ikincil{min-height:54px;border-radius:12px;border:1px solid var(--line2);background:var(--card);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);font:700 16px/1 "Barlow Condensed",system-ui;letter-spacing:.1em;cursor:pointer}
 .alt-tuslar .go{font-family:"Barlow Condensed",system-ui;font-size:19px}
 
 /* plan screen */
 .plan-ekran{font-family:Barlow,system-ui,sans-serif}
 .ust-etiket{display:block;font:700 11px/1 "Barlow Condensed",system-ui;letter-spacing:.3em;color:var(--tk);margin-bottom:3px}
 .plan-ekran h1{font:italic 800 30px/1 "Barlow Condensed",system-ui;letter-spacing:.01em}
-.p-ust{margin-bottom:12px}
+.p-ust{display:flex;align-items:center;gap:16px;margin-bottom:14px}
+.p-ust .dx-logo{margin:0;width:104px;flex:0 0 auto}
+@media (max-width:760px){.p-ust .dx-logo{width:78px}}
 .p-izgara{display:grid;grid-template-columns:auto minmax(0,1fr);gap:22px;align-items:start}
 .p-saha{position:relative;margin:0 auto;width:fit-content}
 /* the pitch is a preview, not the page: a compact, fixed-ratio card (68 × 105) */
-.p-saha svg{display:block;width:auto;height:min(58dvh,520px);aspect-ratio:68/105;border-radius:16px;border:1px solid rgba(255,255,255,.1);background:#0f3d20}
+.p-saha svg{display:block;width:auto;height:min(58dvh,520px);aspect-ratio:68/105;border-radius:16px;border:1px solid color-mix(in srgb,var(--tk) 28%,transparent);box-shadow:0 14px 30px rgba(0,0,0,.42);background:#0f3d20}
 .p-etiket{position:absolute;left:12px;bottom:12px;padding:6px 10px;border-radius:999px;background:rgba(5,9,8,.75);font:700 12px/1 "Barlow Condensed",system-ui;letter-spacing:.14em;color:var(--tk)}
 .nokta{transition:transform .45s ease}
 .p-baslik{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:8px}
 .p-baslik span{font:700 13px/1 "Barlow Condensed",system-ui;letter-spacing:.2em;color:#aab6c0}
 .p-baslik small{font-size:12px;color:#8693a0}
 .p-kartlar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-.pk{display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-height:70px;padding:11px 12px;border-radius:12px;text-align:left;border:1px solid rgba(255,255,255,.09);background:#0f1418;cursor:pointer;transition:border-color .2s,background .2s,box-shadow .2s}
+.pk{display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-height:70px;padding:12px 14px;border-radius:14px;text-align:left;border:1px solid var(--line);background:var(--card);box-shadow:0 8px 20px rgba(0,0,0,.25);cursor:pointer;transition:border-color .2s,background .2s,box-shadow .2s}
 .pk b{font:800 18px/1.05 "Barlow Condensed",system-ui;letter-spacing:.02em}
 .pk small{font-size:12px;line-height:1.3;color:#aab6c0}
 .pk[aria-pressed="true"]{border:1.5px solid var(--tk);background:color-mix(in srgb,var(--tk) 10%,transparent);box-shadow:0 0 18px color-mix(in srgb,var(--tk) 15%,transparent)}
-.p-ozet{display:flex;flex-direction:column;gap:6px;margin-top:10px;padding:12px 14px;border-radius:12px;background:#0f1418;border:1px solid rgba(255,255,255,.08);font-size:14px;line-height:1.4}
+.p-ozet{display:flex;flex-direction:column;gap:6px;margin-top:10px;padding:14px 16px;border-radius:14px;background:var(--card);border:1px solid var(--line);font-size:14px;line-height:1.4}
 .p-ozet em{font:700 11px/1 "Barlow Condensed",system-ui;font-style:normal;letter-spacing:.2em;color:#8693a0}
 .p-ozet .risk{font-size:13px;color:#ff9aa7}
 
