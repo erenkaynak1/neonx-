@@ -417,12 +417,12 @@
     const box = document.createElement('div'); box.appendChild(t.content); return box.innerHTML;
   }
   const online = () => NET.role !== 'off';
-  const snap = () => ({ owner: S.owner, phase: S.phase, round: S.round || 0, turnIdx: S.turnIdx ?? -1,
+  const snap = () => ({ owner: S.owner, phase: S.phase, round: S.round || 0, grab: S.grab || 0, turnIdx: S.turnIdx ?? -1,
     players: S.players.map(({ id, name, base, towers, alive }) => ({ id, name, base, towers, alive })) });
   function applySnap(st) {
     if (!st || !Array.isArray(st.players)) return;
     const owner = {}; S.map.regions.forEach(r => { const o = st.owner?.[r.id]; owner[r.id] = Number.isInteger(o) && o >= 0 && o < 4 ? o : null; });
-    S.owner = owner; S.phase = ['grab', 'battle', 'over'].includes(st.phase) ? st.phase : S.phase; S.round = Number(st.round) || 0;
+    S.owner = owner; S.phase = ['grab', 'battle', 'over'].includes(st.phase) ? st.phase : S.phase; S.round = Number(st.round) || 0; S.grab = Number(st.grab) || 0;   // the settlement counter (YERLEŞME 2/4) on every phone, not only the host's
     S.turnIdx = Number.isInteger(st.turnIdx) && st.turnIdx >= 0 ? st.turnIdx : null;
     S.players = st.players.slice(0, 4).map((p, i) => ({ id: i, name: cleanName(p.name), color: COLORS[i], base: S.byId[p.base] ? p.base : null,
       towers: Math.max(0, Math.min(TOWERS, Number(p.towers) || 0)), alive: p.alive !== false, kind: i === S.me ? 'local' : 'remote' }));
