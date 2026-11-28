@@ -6,7 +6,7 @@
 // same move list on the same starting state. Timeouts are decided by the host only.
 // The AI judge is called through the Worker in HAKEM_URL. Until it exists the players pick the winner themselves
 // (same phone: one tap; online: both vote, a disagreement is a draw) — never a silent random verdict.
-import { KONULAR } from './konular.mjs';
+import { KONULAR } from './konular.mjs?v=20261128';
 import { yeniOyun, hamle, secenekler, oynanabilir, harcanan, BUTCE, SECIM, MADDE } from './oyun.mjs';
 import { hakemCevabi } from './hakem.mjs';
 import { hakemSec, pikselSVG } from './hakemler.mjs';
