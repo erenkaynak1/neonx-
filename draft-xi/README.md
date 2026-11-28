@@ -12,6 +12,8 @@ Headless match engine for the Draft XI rebuild. The design and every rule it imp
 
 Run the lab: `node scripts/draft_xi_lab.mjs 400` (add `--meta` for the meta hunter). Fast CI checks: `node scripts/test_draft_xi_engine.mjs`.
 
+**Turnuva (2026-11-28):** `draft.html?mod=turnuva` → 4 ya da 8 takımlı yılan draft (sen + botlar) → `turnuva.html` eleme ağacı. Kendi maçın taktik ve maç ekranından geçer, diğer maçlar aynı motorla `ui/turnuva-ortak.mjs` içinde oynanır; beraberlik penaltılarla biter. Ana menüdeki TURNUVA bunu açar.
+
 **Sitede yayında (2026-11-23):** ana menüdeki Draft XI (HEMEN BAŞLA, BOTA KARŞI, AYNI TELEFON) bu oyunu açar: `draft.html?mod=bot|iki` → `taktik.html` → `mac.html`. Klasik Draft XI (`neon-xi-core.html`) silinmedi: ONLINE ve TURNUVA modları ile ana menünün altındaki "Klasik Draft XI" bağlantısı onu açar; geri dönmek için `side-games/neon-home-v2.js` içindeki `single`/`bot` eylemlerini eski `clickTarget(...)` haline getirmek yeterli.
 
 ## Maç ekranı · 2D motor (2026-11-23)

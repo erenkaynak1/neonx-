@@ -3,7 +3,7 @@
 // match first; this screen plays its highlights in full with physical movement, and runs the clock between them.
 import { HAVUZ, HAVUZ_BY_ID } from '../data/havuz-fm.mjs?v=1';
 import { FORMATIONS } from '../engine/formations.mjs?v=2';
-import { simulateMatch } from '../engine/match.mjs?v=11';
+import { simulateMatch } from '../engine/match.mjs?v=12';
 import { createSpiker, dakika } from './spiker.mjs?v=3';
 import { PLANLAR, planTaktik } from './ortak.mjs?v=4';
 import { connectRoom, reportResult } from './online.mjs?v=1';
@@ -67,7 +67,7 @@ function fromDraft() {
     const sq = (t) => ({ name: t.name, formation: t.formation, players: Object.fromEntries(Object.entries(t.slots).map(([s, id]) => [s, HAVUZ_BY_ID[id]])) });
     const home = sq(d.home), away = sq(d.away);
     if (Object.values(home.players).some((p) => !p) || Object.values(away.players).some((p) => !p)) return null;
-    return { home, away, tacA: d.home.tactic || planTaktik(d.home.plan), tacB: d.away.tactic || planTaktik(d.away.plan), online: d.online || null };
+    return { home, away, tacA: d.home.tactic || planTaktik(d.home.plan), tacB: d.away.tactic || planTaktik(d.away.plan), online: d.online || null, turnuva: d.turnuva || null, seed: d.turnuva?.seed || undefined };
   } catch { return null; }
 }
 // classic shirt numbers by slot
@@ -104,7 +104,7 @@ function start(given) {
   try { localStorage.setItem('nxDraftKomik', komik ? '1' : '0'); } catch { /* ignore */ }
   M = { r, S, W, seed, short, names: S.names, stats: createStats(S), spiker: createSpiker(r, short, S.names, { jokes: komik, seed }),
     view: izle, reel: izle === 'spiker' ? [] : highlights(S, { budget: MODES[izle].budget, lead: MODES[izle].lead }), hi: -1, tt: 0, mode: 'cut', cutT: 0, cutFrom: 0, playing: true, speed: 1, score: [0, 0],
-    acc: 0, last: performance.now(), dim: 0, recent: [], shown: -1, online: given?.online || null, reported: false };
+    acc: 0, last: performance.now(), dim: 0, recent: [], shown: -1, online: given?.online || null, turnuva: given?.turnuva || null, reported: false };
   M.render = createRenderer($('saha'), W, {
     number: (s, i) => String(NUM[S.lineup[s][i].slot] ?? ''),
     name: ([s, i]) => short(S.lineup[s][i].id),
@@ -309,6 +309,10 @@ const renderStats = () => { $('ist').innerHTML = statRows(M.stats.T); };
 function finish() {
   if (!M) return;
   M.playing = false;
+  if (M.turnuva && !M.reported) {   // tournament: hand the score to the bracket page (it settles a draw on penalties)
+    M.reported = true;
+    try { sessionStorage.setItem('draftxi-turnuva-sonuc', JSON.stringify({ ...M.turnuva, skor: M.r.score })); } catch { /* the bracket page replays the match from its seed */ }
+  }
   if (M.online && !M.reported) { M.reported = true; const me = M.online.me; reportResult(M.online, M.r.score[me], M.r.score[1 - me]); }
   M.stats.add(M.S.E.length - 1);
   for (let k = M.shown + 1; k < M.S.E.length; k++) if (M.S.E[k].type === 'goal') scoreGoal(M.S.E[k]);
@@ -335,14 +339,14 @@ $('hiz').addEventListener('click', () => { M.speed = M.speed === 1 ? 2 : 1; $('h
 $('atla').addEventListener('click', finish);
 $('istAc').addEventListener('click', () => { const open = $('istPanel').classList.toggle('acik'); $('istAc').setAttribute('aria-expanded', String(open)); renderStats(); });
 $('tekrarOyna').addEventListener('click', () => {
-  if (Q.has('draft')) { location.href = M?.online ? '../index.html' : './draft.html'; return; }
+  if (Q.has('draft')) { location.href = M?.turnuva ? './turnuva.html' : M?.online ? '../index.html' : './draft.html'; return; }
   $('son').hidden = true; $('kur').hidden = false; M = null;
 });
 // coming from the draft: ask how to watch, then kick off
 {
   const d = fromDraft();
   if (d) {
-    $('tekrarOyna').textContent = 'YENİ DRAFT';
+    $('tekrarOyna').textContent = d.turnuva ? 'TURNUVAYA DÖN' : 'YENİ DRAFT';
     // online: both tactics and one seed are agreed through the room first (host decides), then each phone plays the
     // same match from the deterministic engine at its own pace
     let hazir = !d.online, secilen = null;
