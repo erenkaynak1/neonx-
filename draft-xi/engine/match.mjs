@@ -358,7 +358,7 @@ export function simulateMatch({ home, away, seed = 1, tacticHome, tacticAway, lo
     // 4) keeper
     const gw = type === 'head' ? W.gkHead : type === 'one' ? W.gkOne : type === 'out' ? W.gkFar : d < 110 ? W.gkNear : W.gkFar;
     const Dk = weighted(gk.a, gw);
-    let Bg = (type === 'head' ? REF.goalHeadB : type === 'one' ? REF.goalOneB : type === 'out' ? REF.goalOutB : REF.goalB) + Math.max(0, d - 110) * 3 - (spHead ? 680 : 0);
+    let Bg = (type === 'head' ? REF.goalHeadB : type === 'one' ? REF.goalOneB : type === 'out' ? REF.goalOutB : REF.goalB) + Math.max(0, d - 110) * 3 - (spHead ? 400 : 0);
     const pG = prob(S + q, Dk, K.shot, Bg);
     stats[side].xg += Math.trunc((pOn * pG) / 10000);
     const r2 = rng.roll();

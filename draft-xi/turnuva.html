@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Draft XI · Turnuva</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="./ui/turnuva.css?v=1">
+</head>
+<body>
+<main class="tv">
+  <header class="tv-ust">
+    <a class="tv-logo" href="../index.html" aria-label="NEON XI ana menüsüne dön"><img src="../assets/ui/logo-neon-xi.svg" alt="NEON XI"></a>
+    <h1>DRAFT XI · <span>TURNUVA</span></h1>
+  </header>
+  <section id="yok" class="tv-kart" hidden>
+    <p>Devam eden bir turnuva yok.</p>
+    <a class="tv-btn" href="./draft.html?mod=turnuva">TURNUVA BAŞLAT</a>
+  </section>
+  <section id="ekran" hidden>
+    <div class="tv-durum" id="durum" aria-live="polite"></div>
+    <div class="tv-son" id="son" hidden></div>
+    <div class="tv-aksiyon" id="aksiyon"></div>
+    <div class="tv-agac" id="agac" aria-label="Turnuva ağacı"></div>
+    <div class="tv-sonuclar" id="sonuclar"></div>
+  </section>
+</main>
+<script type="module" src="./ui/turnuva.mjs?v=2"></script>
+</body>
+</html>

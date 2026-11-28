@@ -5,6 +5,7 @@ import { HAVUZ, HAVUZ_BY_ID } from '../data/havuz-fm.mjs?v=1';
 import { autoFromUrl, connectRoom, clearOnline } from './online.mjs?v=1';
 import { FORMATIONS, zonePoint } from '../engine/formations.mjs?v=2';
 import { uygun, guc, kimya, MEVKI_GRUP, esc, ATTR_AD, ATTR_KISA, ANA_OZELLIK } from './ortak.mjs?v=4';
+import { BOT_ADLARI } from './turnuva-ortak.mjs?v=2';
 
 const $ = (id) => document.getElementById(id);
 const STYLE = { // medium/hard bot: a playing style chosen at the start (16.13) → attributes it values and its plan
@@ -15,35 +16,47 @@ const FORMS = Object.keys(FORMATIONS);
 let S = null;
 
 // ── setup ──
-let mod = 'bot', zor = 'orta';
+let mod = 'bot', zor = 'orta', boy = 8;   // boy: number of teams in a tournament (4 or 8)
 // everyone starts on 4-3-3; the shape is changed in the team panel during the draft (it is not asked up front)
 const START_FORM = '4-3-3';
 // mode list → settings sheet (the shared NEON XI menu: .sgm in side-games/sidegame-skin-v2.css)
 function openMode(m) {
   mod = m;
-  $('ayarBaslik').textContent = m === 'bot' ? 'BOTA KARŞI' : 'AYNI TELEFON';
-  $('zorlukSatiri').hidden = m !== 'bot';
-  $('ayarNot').textContent = m === 'bot' ? 'Bot, draft başında bir oyun tarzı seçer ve ona göre oyuncu toplar. Takımın 4-3-3 ile başlar; dizilişi draft sırasında takım panelinden değiştirebilirsin.' : 'Seçim sırası gelen oyuncuya telefonu verin. İki takım da 4-3-3 ile başlar; diziliş draft sırasında değiştirilebilir.';
+  $('ayarBaslik').textContent = { bot: 'BOTA KARŞI', iki: 'AYNI TELEFON', turnuva: 'TURNUVA' }[m];
+  $('zorlukSatiri').hidden = m === 'iki';
+  $('boySatiri').hidden = m !== 'turnuva';
+  $('ayarNot').textContent = m === 'bot' ? 'Bot, draft başında bir oyun tarzı seçer ve ona göre oyuncu toplar. Takımın 4-3-3 ile başlar; dizilişi draft sırasında takım panelinden değiştirebilirsin.'
+    : m === 'turnuva' ? 'Sen ve botlar aynı havuzdan yılan sırasıyla seçersiniz; her bot kendi oyun tarzıyla kadro kurar. Sonra eleme usulü turnuva: kendi maçlarını izlersin, diğerleri aynı motorla oynanır. Berabere biten maç penaltılarla biter.'
+    : 'Seçim sırası gelen oyuncuya telefonu verin. İki takım da 4-3-3 ile başlar; diziliş draft sırasında değiştirilebilir.';
   $('modlar').hidden = true; $('nasil').hidden = true; $('ayar').hidden = false;
   $('basla').focus({ preventScroll: true });
 }
 document.querySelectorAll('[data-mod]').forEach((b) => b.addEventListener('click', () => openMode(b.dataset.mod)));
 $('geri').addEventListener('click', () => { $('ayar').hidden = true; $('modlar').hidden = false; $('nasil').hidden = false; });
+document.querySelectorAll('[data-boy]').forEach((b) => b.addEventListener('click', () => {
+  boy = Number(b.dataset.boy);
+  document.querySelectorAll('[data-boy]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+}));
 document.querySelectorAll('[data-zor]').forEach((b) => b.addEventListener('click', () => {
   zor = b.dataset.zor;
   document.querySelectorAll('[data-zor]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
 }));
 
 function start(o = {}) {
-  const styleKeys = Object.keys(STYLE);
+  const styleKeys = Object.keys(STYLE), pickStyle = () => styleKeys[Math.floor(Math.random() * styleKeys.length)];
   if (o.names) mod = 'online';
+  const teams = [
+    { name: o.names?.[0] || (mod === 'bot' || mod === 'turnuva' ? 'Senin takımın' : 'Oyuncu 1'), formation: START_FORM, slots: {} },
+    { name: o.names?.[1] || (mod === 'bot' ? `Bot (${{ kolay: 'Kolay', orta: 'Orta', zor: 'Zor' }[zor]})` : 'Oyuncu 2'), formation: mod === 'bot' ? FORMS[Math.floor(Math.random() * 6)] : START_FORM, slots: {} },
+  ];
+  if (mod === 'turnuva') {   // you + (boy-1) bots, each with its own name, shape and style
+    const adlar = BOT_ADLARI.slice().sort(() => Math.random() - 0.5);
+    teams.length = 1;
+    for (let i = 1; i < boy; i++) teams.push({ name: adlar[i - 1], formation: FORMS[Math.floor(Math.random() * 6)], slots: {} });
+  }
   S = {
     mod, zor, pick: 0, selected: null, filter: 'Tümü', query: '', tab: 'havuz',
-    teams: [
-      { name: o.names?.[0] || (mod === 'bot' ? 'Senin takımın' : 'Oyuncu 1'), formation: START_FORM, slots: {} },
-      { name: o.names?.[1] || (mod === 'bot' ? `Bot (${{ kolay: 'Kolay', orta: 'Orta', zor: 'Zor' }[zor]})` : 'Oyuncu 2'), formation: mod === 'bot' ? FORMS[Math.floor(Math.random() * 6)] : START_FORM, slots: {} },
-    ],
-    style: styleKeys[Math.floor(Math.random() * styleKeys.length)],
+    teams, style: pickStyle(), styles: teams.map(pickStyle), lastBot: 1,
     taken: new Set(),
   };
   $('kur').hidden = true; $('draft').hidden = false; S.listeAnim = true;
@@ -56,14 +69,17 @@ document.querySelector('[data-online]')?.addEventListener('click', () => {
   else alert('Online bağlantı yükleniyor, birazdan tekrar dene.');
 });
 // opened from the NEON XI home: ?mod=bot (against the bot) or ?mod=iki (two players on one phone) preselects the mode
-{ const want = new URLSearchParams(location.search).get('mod'); if (want === 'bot' || want === 'iki') openMode(want); }
+{ const want = new URLSearchParams(location.search).get('mod'); if (want === 'bot' || want === 'iki' || want === 'turnuva') openMode(want); }
 
-// ── draft order (snake: 1-2, 2-1, …) ──
-const round = () => Math.floor(S.pick / 2);
-const cur = () => (round() % 2 === 0 ? S.pick % 2 : 1 - (S.pick % 2));
-const isBot = (t) => S.mod === 'bot' && t === 1;
+// ── draft order (snake: 1-2-…-N, N-…-2-1, …) ──
+const NT = () => S.teams.length;
+const round = () => Math.floor(S.pick / NT());
+const cur = () => (round() % 2 === 0 ? S.pick % NT() : NT() - 1 - (S.pick % NT()));
+const isBot = (t) => (S.mod === 'bot' && t === 1) || (S.mod === 'turnuva' && t !== 0);
 const mine = (t) => !NET.on || t === NET.me;   // online: only your own team is yours to pick for
-const done = () => S.pick >= 22;
+const done = () => S.pick >= 11 * NT();
+// the second team panel: the opponent (tournament: the bot on the clock, or the last bot that picked)
+const ikinci = () => (S.mod !== 'turnuva' ? 1 : cur() !== 0 && !done() ? cur() : S.lastBot);
 
 function emptySlots(t) {
   return FORMATIONS[S.teams[t].formation].filter(([slot]) => !S.teams[t].slots[slot]).map(([slot, , mevki]) => ({ slot, mevki }));
@@ -82,6 +98,7 @@ function place(t, id, slot) {
   S.teams[t].slots[target.slot] = id;
   S.taken.add(id);
   S.last = { t, slot: target.slot };
+  if (S.mod === 'turnuva' && t !== 0) S.lastBot = t;
   S.selected = null;
   S.pick++;
   kartKapat();
@@ -128,11 +145,11 @@ function choose(t, level) {
   const cs = candidates(t);
   if (!cs.length) return null;
   if (level === 'kolay') { const top = cs.slice(0, 10); return top[Math.floor(Math.random() * top.length)]; }
-  const st = STYLE[S.style];
+  const st = STYLE[S.styles?.[t] || S.style];
   // hard: aim at the opponent's weakest flank (slow full-backs → value pace on the wings)
   let paceBias = 0;
   if (level === 'zor') {
-    const opp = S.teams[1 - t];
+    const opp = S.teams[t === 0 ? 1 : 0];
     const backs = FORMATIONS[opp.formation].filter(([s, , m]) => ['LB', 'RB', 'LWB', 'RWB'].includes(m) && opp.slots[s]).map(([s]) => HAVUZ_BY_ID[opp.slots[s]].attrs.pac);
     if (backs.length && backs.reduce((a, b) => a + b, 0) / backs.length < 78) paceBias = 0.25;
   }
@@ -147,14 +164,15 @@ function botMaybe() {
   if (done() || !isBot(cur())) return;
   setTimeout(() => {
     if (!S || done() || !isBot(cur())) return;
-    const c = choose(1, S.zor);
-    if (c) place(1, c.p.id, c.slot);
-  }, 650);
+    const t = cur(), c = choose(t, S.zor);
+    if (c) place(t, c.p.id, c.slot);
+  }, S.mod === 'turnuva' ? 240 : 650);
 }
 
 // ── rendering ──
 function teamPanel(t) {
   const tm = S.teams[t], cls = t === 0 ? 'a' : 'b';
+  const pickOf = S.mod === 'turnuva' ? `<span class="tur-no">${t + 1}/${NT()}</span>` : '';
   const players = Object.fromEntries(Object.entries(tm.slots).map(([s, id]) => [s, HAVUZ_BY_ID[id]]));
   const chem = kimya(tm.formation, players);
   const sel = S.selected && cur() === t ? HAVUZ_BY_ID[S.selected] : null;
@@ -182,7 +200,7 @@ function teamPanel(t) {
   };
   const slots = lines.slice().reverse().map((ln) => `<div class="hat">${ln.map(card).join('')}</div>`).join('');
   return `<div class="${cls}" style="display:contents">
-    <div class="th ${cls}"><b>${esc(tm.name)}</b>${canEdit ? `<select data-dizilis="${t}" aria-label="Diziliş">${FORMS.map((f) => `<option${f === tm.formation ? ' selected' : ''}>${f}</option>`).join('')}</select>` : `<span class="tur-no">${tm.formation}</span>`}</div>
+    <div class="th ${cls}"><b>${esc(tm.name)}</b>${pickOf}${canEdit ? `<select data-dizilis="${t}" aria-label="Diziliş">${FORMS.map((f) => `<option${f === tm.formation ? ' selected' : ''}>${f}</option>`).join('')}</select>` : `<span class="tur-no">${tm.formation}</span>`}</div>
     <div class="ozet"><span>Kadro <b>${count}/11</b></span><span>Kimya <b>${avgChem}</b></span></div>
     <div class="saha ${cls}">${slots}</div></div>`;
 }
@@ -252,12 +270,12 @@ function render() {
   const siraKey = `${S.pick}:${t}`;
   $('sira').className = 'sira ' + (t === 0 ? 'a' : 'b') + (S.siraKey !== siraKey ? ' gel' : '');
   S.siraKey = siraKey;
-  $('sira').innerHTML = done() ? 'Draft tamam' : (isBot(t) || !mine(t)) ? `${esc(who)} seçiyor<span class="dusun" aria-hidden="true"><i></i><i></i><i></i></span><small>${NET.on ? `Rakibin seçiyor<span id="saatEl">${saatYazi()}</span>` : 'Bot düşünüyor'}</small>`
+  $('sira').innerHTML = done() ? 'Draft tamam' : (isBot(t) || !mine(t)) ? `${esc(who)} seçiyor<span class="dusun" aria-hidden="true"><i></i><i></i><i></i></span><small>${NET.on ? `Rakibin seçiyor<span id="saatEl">${saatYazi()}</span>` : S.mod === 'turnuva' ? `Sıradaki seçimin: ${siradaki()}` : 'Bot düşünüyor'}</small>`
     : `Sıra: ${NET.on ? 'SENDE' : esc(who)}<small>${S.bekliyor ? 'Seçimin iletiliyor…' : S.selected ? 'Sahada parlayan yere dokun ya da listeden başka oyuncu seç' : 'Bir oyuncu seç: en uygun boş yere yerleşir'}<span id="saatEl">${saatYazi()}</span></small>`;
   $('turNo').textContent = `Tur ${Math.min(11, round() + 1)}/11`;
   $('otomatik').disabled = done() || isBot(t) || !mine(t) || !!S.bekliyor;
   $('panelA').innerHTML = teamPanel(0);
-  $('panelB').innerHTML = teamPanel(1);
+  $('panelB').innerHTML = teamPanel(ikinci());
   $('cipler').innerHTML = FILTERS.map((f) => `<button type="button" data-filtre="${f}" aria-pressed="${S.filter === f}">${f === 'Uygun' ? 'Boş yerime uyan' : f}</button>`).join('');
   $('liste').innerHTML = poolList();
   $('liste').classList.toggle('gir', !!S.listeAnim); S.listeAnim = false;
@@ -267,7 +285,7 @@ function render() {
   $('panelB').classList.toggle('acik', S.tab === 'B');
   $('panelHavuz').classList.toggle('acik', S.tab === 'havuz');
   document.querySelectorAll('[data-sekme="A"]').forEach((b) => { b.textContent = S.teams[0].name; });
-  document.querySelectorAll('[data-sekme="B"]').forEach((b) => { b.textContent = S.teams[1].name; });
+  document.querySelectorAll('[data-sekme="B"]').forEach((b) => { b.textContent = S.mod === 'turnuva' ? 'Rakipler' : S.teams[1].name; });
 }
 
 // ── interaction ──
@@ -315,8 +333,16 @@ $('ara').addEventListener('input', (e) => { S.query = e.target.value; $('liste')
 document.querySelectorAll('[data-sekme]').forEach((b) => b.addEventListener('click', () => { S.tab = b.dataset.sekme; render(); }));
 $('otomatik').addEventListener('click', () => { const t = cur(); if (!mine(t)) return; const c = choose(t, 'orta'); if (c) sec(t, c.p.id, c.slot); });
 
+// tournament: how many picks until your turn
+function siradaki() { for (let k = 1; k <= 2 * NT(); k++) { const p = S.pick + k, r = Math.floor(p / NT()), c = r % 2 === 0 ? p % NT() : NT() - 1 - (p % NT()); if (c === 0) return k === 1 ? 'hemen sonra' : `${k} seçim sonra`; } return '—'; }
+
 // ── end: the tactics screen (bot keeps the plan of its draft style), then the match ──
 function finish() {
+  if (S.mod === 'turnuva') {   // the bracket page takes over: every team with its bot plan, the player's team first
+    const turnuva = { zor: S.zor, teams: S.teams.map((tm, i) => ({ ...tm, bot: i !== 0, plan: i ? STYLE[S.styles[i]].plan : undefined })) };
+    try { sessionStorage.setItem('draftxi-turnuva-yeni', JSON.stringify(turnuva)); } catch { /* the bracket page shows a link back */ }
+    location.href = './turnuva.html?yeni=1'; return;
+  }
   const data = { mod: S.mod, home: { ...S.teams[0], bot: false }, away: { ...S.teams[1], bot: isBot(1), plan: STYLE[S.style].plan },
     online: NET.on ? { ...NET.info, me: NET.me } : null };
   try { sessionStorage.setItem('draftxi-mac', JSON.stringify(data)); } catch { /* the tactics screen shows a link back */ }

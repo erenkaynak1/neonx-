@@ -19,7 +19,7 @@
     {action:"bot",label:"BOTA KARŞI",name:"Bota karşı",icon:"bot"},
     {action:"local",label:"AYNI TELEFON",name:"Aynı telefonda iki kişi",icon:"single"},
     {action:"online",label:"ONLINE",name:"Online",icon:"online"},
-    {action:"tournament",label:"TURNUVA",name:"Turnuva modu, 4 veya 8 takım (klasik Draft XI)",icon:"tournament"}
+    {action:"tournament",label:"TURNUVA",name:"Turnuva modu, 4 veya 8 takım",icon:"tournament"}
   ];
   const GAMES=[
     {href:"football-xox/index.html",name:"Futbol XOX",label:"FUTBOL XOX",tag:"KESİŞİM",art:"thumb-xox.webp"},
@@ -167,7 +167,7 @@ input,select{border-radius:8px!important}`;
       local:()=>{location.href=DRAFT+"?mod=iki"},
       classic:()=>clickTarget(single,status,"Klasik Draft XI"),
       online:()=>{if(UI?.openChoice)UI.openChoice("draftxi");else clickTarget(online,status,"Online")}, // the new Draft XI online (friends / random)
-      tournament:()=>clickTarget(tournament,status,"Turnuva"),
+      tournament:()=>{location.href=DRAFT+"?mod=turnuva"}, // the new Draft XI tournament (draft vs bots → knockout bracket)
       settings:()=>clickTarget(settings,status,"Ayarlar"),
       home:()=>scroller.scrollTo({top:0,behavior:"smooth"}),
       profile:()=>window.NEON_SOCIAL?.profile?openSocial("play",status,()=>frameSheet("profile")):openSocial("friends",status,()=>frameSheet("profile")),

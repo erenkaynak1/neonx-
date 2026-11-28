@@ -1,0 +1,49 @@
+:root{--bg:#070b0a;--s1:#0f1418;--s2:#141a20;--line:rgba(255,255,255,.09);--fg:#e8efe9;--mut:#9aa79f;--a:#baff18;--b:#2fe0ff;--red:#ff6b7d;--yel:#ffd34d}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{margin:0;background:radial-gradient(120% 60% at 50% -10%,rgba(186,255,24,.08),transparent 60%),var(--bg);color:var(--fg);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+button{font:inherit;color:inherit}
+button:focus-visible,a:focus-visible{outline:2px solid var(--a);outline-offset:2px}
+[hidden]{display:none!important}
+
+.tv{max-width:980px;margin:0 auto;padding:14px 16px 48px}
+.tv-ust{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.tv-logo{display:block;width:84px}.tv-logo img{display:block;width:100%;height:auto}
+.tv-ust h1{font:800 22px/1.1 system-ui;letter-spacing:.04em;margin:0}.tv-ust h1 span{color:var(--a)}
+.tv-kart{padding:18px;border-radius:14px;background:var(--s1);border:1px solid var(--line)}
+
+.tv-durum{font-size:15px;color:var(--fg);margin:2px 0 12px}.tv-durum b{color:var(--b)}
+.tv-aksiyon{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px}
+.tv-btn{display:inline-flex;align-items:center;justify-content:center;min-height:50px;padding:0 22px;border:0;border-radius:12px;background:var(--a);color:#0a0f02;font:800 16px system-ui;letter-spacing:.1em;text-decoration:none;cursor:pointer;box-shadow:0 0 24px rgba(186,255,24,.25)}
+.tv-btn.ikincil{background:transparent;color:var(--fg);border:1px solid var(--line);box-shadow:none}
+
+/* last round */
+.tv-son{padding:14px 16px;border-radius:14px;background:var(--s1);border:1px solid var(--line);margin-bottom:14px;animation:gir .45s ease both}
+.tv-son h2{font:800 12px/1 system-ui;letter-spacing:.18em;color:var(--mut);margin:0 0 10px}
+.tv-sonuc{font:900 26px/1 system-ui;letter-spacing:.06em;margin:0 0 6px}
+.tv-sonuc.iyi{color:var(--a);text-shadow:0 0 18px rgba(186,255,24,.45)}.tv-sonuc.kotu{color:var(--red)}
+.tv-skor{margin:0 0 8px;font-size:16px}.tv-skor b{font-size:20px;margin:0 8px;font-variant-numeric:tabular-nums}.tv-skor small{color:var(--mut);font-size:13px}
+.tv-pen{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;align-items:center;font-size:13px;color:var(--mut);margin-bottom:8px}
+.tv-pen .dz i{font-style:normal;margin-right:4px;font-size:15px}.tv-pen .gol{color:var(--a)}.tv-pen .kacti{color:var(--red)}
+.tv-diger{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:4px;font-size:13px;color:var(--mut)}
+.tv-diger li{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px}.tv-diger li span:last-child{text-align:right}
+.tv-diger b{color:var(--fg);font-variant-numeric:tabular-nums}.tv-diger small{color:var(--mut)}
+
+/* bracket */
+.tv-agac{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(200px,1fr);gap:14px;overflow-x:auto;padding-bottom:6px}
+.tv-tur{display:flex;flex-direction:column}
+.tv-tur h2{font:800 11px/1 system-ui;letter-spacing:.18em;color:var(--mut);margin:0 0 8px}
+.tv-tur-ic{flex:1;display:flex;flex-direction:column;justify-content:space-around;gap:10px}
+.tv-mac{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 8px;padding:10px 12px;border-radius:12px;background:var(--s1);border:1px solid var(--line);font-size:14px}
+.tv-mac.benim{border-color:rgba(186,255,24,.45);box-shadow:0 0 16px rgba(186,255,24,.12)}
+.tv-mac.bos{color:var(--mut);grid-template-columns:1fr}
+.tv-mac .tk{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tv-mac .tk.sen{color:var(--a);font-weight:700}
+.tv-mac .tk.kazandi{font-weight:800}.tv-mac .tk.elendi{color:var(--mut);text-decoration:line-through;text-decoration-color:rgba(255,255,255,.25)}
+.tv-mac .sk{font-variant-numeric:tabular-nums;text-align:right}
+.tv-mac .pen{grid-column:1/-1;color:var(--yel);font-size:11px;letter-spacing:.04em}
+.tv-kupa{display:grid;justify-items:center;gap:6px;padding:16px;border-radius:14px;background:linear-gradient(160deg,rgba(255,211,77,.16),var(--s1));border:1px solid rgba(255,211,77,.4);font-size:34px;animation:gir .6s ease both}
+.tv-kupa b{font-size:15px;color:var(--yel)}.tv-kupa.sen b{color:var(--a)}
+@keyframes gir{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.tv-son,.tv-kupa{animation:none}}
+@media (max-width:640px){.tv-agac{grid-auto-flow:row;grid-auto-columns:auto}.tv-tur-ic{gap:8px}.tv-ust h1{font-size:18px}}

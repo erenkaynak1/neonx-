@@ -102,7 +102,7 @@ function sayilar(k, v, t) {
 // ── state ──
 const order = D?.online ? [D.online.me] : [0, 1].filter((t) => !TEAMS[t].bot);   // online: each phone sets its own team
 let step = 0, focus = 'direction', view = 'plan';
-const tac = TEAMS.map((tm) => (tm.bot ? planTaktik(tm.plan || 'dengeli') : planTaktik('dengeli')));
+const tac = TEAMS.map((tm) => (tm.bot ? planTaktik(tm.plan || 'dengeli') : tm.tactic ? { ...tm.tactic } : planTaktik('dengeli')));   // tournament: your last tactic carries over
 
 function render() {
   const t = order[step], tm = TEAMS[t], T = tac[t], plan = hangiPlan(T);
