@@ -100,6 +100,7 @@ function place(t, id, slot) {
   S.last = { t, slot: target.slot };
   if (S.mod === 'turnuva' && t !== 0) S.lastBot = t;
   S.selected = null;
+  if (!isBot(t) && mine(t)) S.tab = 'havuz';   // after your pick (also after choosing the slot on the pitch) back to the pool
   S.pick++;
   kartKapat();
   bildir(t, p, target);

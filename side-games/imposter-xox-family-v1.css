@@ -15,8 +15,8 @@ body{
 }
 body::before{
   content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
-  background:url('./football-xox/assets/xox-stadium-wireframe-v1.svg') center top/cover no-repeat;
-  filter:saturate(1.06) brightness(.65)
+  background:radial-gradient(90% 40% at 50% 0%,rgba(186,255,24,.10),transparent 70%),linear-gradient(180deg,rgba(3,8,7,.72),rgba(3,8,7,.90) 45%,#030807 92%),url('./football-xox/assets/xox-stadium-approved-v3.webp') center top/cover no-repeat;
+  filter:none;transform:none
 }
 body::after{
   content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
@@ -240,3 +240,24 @@ body[data-nx-imp-screen="menu"] .nx-arcade-footer{background:#080d12}
   .nx-imp-logo-art::after{animation:none;opacity:0}
   .nx-imp-mode,.screen .btn{transition:none!important}
 }
+/* Single-phone setup on the shared NEON XI sheet (body.sg-skin while state.screen = local-setup) */
+body.sg-skin[data-nx-imp-screen="local-setup"] .nx-imp-setup{padding:0;background:none;border:0;box-shadow:none}
+body.sg-skin[data-nx-imp-screen="local-setup"] .nx-imp-setup::before,body.sg-skin[data-nx-imp-screen="local-setup"] .nx-imp-setup::after{display:none}
+body.sg-skin[data-nx-imp-screen="local-setup"] .sidegames-return{display:none!important}
+body.sg-skin .nx-imp-stepper{display:grid;grid-template-columns:52px minmax(0,1fr) 52px;align-items:center;gap:10px;margin-top:8px}
+body.sg-skin .nx-imp-stepper button{height:52px;border-radius:12px;border:1px solid var(--sg-line-2);background:var(--sg-tile);color:var(--sg-ink);font:700 26px/1 var(--sg-display);cursor:pointer;transition:background .15s,border-color .15s}
+body.sg-skin .nx-imp-stepper button:hover:not(:disabled){border-color:var(--sg-lime);color:var(--sg-lime)}
+body.sg-skin .nx-imp-stepper button:disabled{opacity:.35;cursor:default}
+body.sg-skin .nx-imp-stepper output{display:block;text-align:center;font:800 40px/1 var(--sg-display);color:var(--sg-lime);text-shadow:0 0 18px rgba(186,255,24,.35);font-variant-numeric:tabular-nums}
+body.sg-skin .nx-imp-count small{display:block;margin-top:6px;color:var(--sg-faint);font-size:12px;text-align:center}
+body.sg-skin .nx-imp-name-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:8px}
+body.sg-skin .nx-imp-name{position:relative;display:block;margin:0}
+body.sg-skin .nx-imp-name b{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:22px;height:22px;border-radius:7px;display:grid;place-items:center;background:rgba(186,255,24,.12);color:var(--sg-lime);font:700 13px/1 var(--sg-display);pointer-events:none}
+body.sg-skin .sgm .nx-imp-name input{width:100%;height:46px;padding:0 10px 0 40px!important;border-radius:12px;border:1px solid var(--sg-line-2);background:var(--sg-tile);color:var(--sg-ink);font:500 15px var(--sg-body);outline:none;transition:border-color .15s,box-shadow .15s}
+body.sg-skin .nx-imp-name input::placeholder{color:var(--sg-faint)}
+body.sg-skin .nx-imp-name input:focus{border-color:var(--sg-lime);box-shadow:0 0 0 3px rgba(186,255,24,.15)}
+body.sg-skin .nx-imp-setup .sgm-btn.primary{width:100%;margin-top:16px}
+@media (max-width:340px){body.sg-skin .nx-imp-name-grid{grid-template-columns:1fr}}
+body.sg-skin[data-nx-imp-screen="local-setup"]{background:var(--sg-bg)!important}
+body.sg-skin[data-nx-imp-screen="local-setup"]::before,body.sg-skin[data-nx-imp-screen="local-setup"]::after{display:none!important}
+body.sg-skin[data-nx-imp-screen="local-setup"] .app{width:100%;max-width:none;padding:0;margin:0}

@@ -101,8 +101,8 @@ body[data-ct-screen="game"]{
 }
 body[data-ct-screen="game"]::before{
   content:"";position:fixed;inset:0;z-index:0;pointer-events:none;display:block;
-  background:url('../football-xox/assets/xox-stadium-wireframe-v1.svg') center top/cover no-repeat;
-  filter:saturate(1.08) brightness(.66);transform:none
+  background:radial-gradient(90% 40% at 50% 0%,rgba(186,255,24,.10),transparent 70%),linear-gradient(180deg,rgba(3,8,7,.72),rgba(3,8,7,.90) 45%,#030807 92%),url('../football-xox/assets/xox-stadium-approved-v3.webp') center top/cover no-repeat;
+  filter:none;transform:none
 }
 body[data-ct-screen="game"]::after{
   content:"";position:fixed;inset:0;z-index:0;pointer-events:none;display:block;

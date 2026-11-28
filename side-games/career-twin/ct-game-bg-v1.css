@@ -1,0 +1,17 @@
+/* Career Twin game screen backdrop: the same night stadium as the NEON XI menus (dimmed, lime glow from the top)
+   instead of the shared HUD's grid floor and scanlines. Loaded after sidegame-play-v3.css; panels are unchanged. */
+html body[data-ct-screen="game"]{background:#030807!important}
+html body[data-ct-screen="game"]::before{
+  content:""!important;position:fixed!important;inset:0!important;z-index:0!important;pointer-events:none!important;display:block!important;
+  background:
+    radial-gradient(90% 38% at 50% 0%,rgba(186,255,24,.12),transparent 70%),
+    linear-gradient(180deg,rgba(3,8,7,.55),rgba(3,8,7,.82) 40%,rgba(3,8,7,.94) 80%),
+    url('../football-xox/assets/xox-stadium-approved-v3.webp') center top/cover no-repeat!important;
+  filter:none!important;transform:none!important;opacity:1!important
+}
+html body[data-ct-screen="game"]::after{
+  content:""!important;position:fixed!important;inset:0!important;z-index:0!important;pointer-events:none!important;display:block!important;
+  background:linear-gradient(90deg,rgba(0,0,0,.55),transparent 14%,transparent 86%,rgba(0,0,0,.55))!important
+}
+html body[data-ct-screen="game"] .app{background:transparent!important;z-index:1!important}
+html body[data-ct-screen="game"] .app::before,html body[data-ct-screen="game"] .app::after{display:none!important;animation:none!important}
