@@ -120,14 +120,14 @@ class FirebasePeer extends Emitter{
   async _sendEnvelope(remoteId,kind,payload){
     if(this.destroyed||!this._ctx||!this._actionsRef)throw new Error('room-not-ready');
     const actionRef=this._ctx.push(this._actionsRef);
-    await this._ctx.set(actionRef,{kind,from:this.id,to:String(remoteId),payload:payload??null,createdAt:this._ctx.serverTimestamp()});
+    await this._ctx.set(actionRef,{kind,from:this.id,to:String(remoteId),payload:payload==null?null:{__json:JSON.stringify(payload)},createdAt:this._ctx.serverTimestamp()});
   }
   _ensureIncoming(remoteId){let conn=this._connections.get(remoteId);if(conn)return conn;conn=new FirebaseConnection(this,remoteId);this._connections.set(remoteId,conn);conn._markOpen();later(()=>this._emit('connection',conn));return conn}
   async _consume(snap){
     const a=snap.val();if(!a||a.to!==this.id)return;
     try{
       if(a.kind==='connect')this._ensureIncoming(a.from);
-      else if(a.kind==='data'){const conn=this._host?this._ensureIncoming(a.from):this._connections.get(a.from);if(conn){if(!conn.open)conn._markOpen();conn._data(a.payload)}}
+      else if(a.kind==='data'){const conn=this._host?this._ensureIncoming(a.from):this._connections.get(a.from);if(conn){if(!conn.open)conn._markOpen();conn._data(a.payload&&typeof a.payload.__json==='string'?JSON.parse(a.payload.__json):a.payload)}}
       else if(a.kind==='close'){const conn=this._connections.get(a.from);if(conn)conn._remoteClose()}
     }finally{try{await this._ctx.remove(snap.ref)}catch{}}
   }
