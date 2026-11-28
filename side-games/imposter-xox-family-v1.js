@@ -50,12 +50,57 @@
     );
     panel.append(grid);root.append(panel);
   };
+  // Single-phone setup: the shared NEON XI settings sheet (.sgm-panel + .sgm-sheet, sidegame-skin-v2.css), not a
+  // screen of its own. Same state and start function as before.
+  renderLocalSetup=function(root){
+    syncLocalNames();
+    const L=state.local;
+    root.classList.add('nx-imp-setup');
+    const frame=make('div','sgm');
+    frame.innerHTML='<a class="sgm-logo" href="./index.html" aria-label="Yan oyunlara dön"><img src="../assets/ui/logo-neon-xi.svg" alt="NEON XI"><span>YAN OYUNLAR</span></a>'+
+      '<div class="sgm-hero"><h1>FUTBOL<br><span>IMPOSTER</span></h1><p>Bir kişi gerçeği bilmiyor. Aranızdaki imposteri bul.</p></div>'+
+      '<img class="sgm-emblem" src="./assets/imposter-emblem-v2.svg" alt="" aria-hidden="true" decoding="async" draggable="false">';
+    const panel=make('section','sgm-panel');panel.setAttribute('aria-label','Tek telefon');
+    const head=make('h2','sgm-heading','TEK TELEFON');
+    const back=make('button','sgm-back','← GERİ');back.type='button';back.onclick=()=>{state.screen='menu';render()};
+    head.append(back);panel.append(head);
+    const sheet=make('div','sgm-sheet');
+    // player count
+    const cf=make('div','sgm-field nx-imp-count');
+    const cl=make('label','','OYUNCU SAYISI');cl.id='nxImpCountLbl';
+    const row=make('div','nx-imp-stepper');row.setAttribute('role','group');row.setAttribute('aria-labelledby','nxImpCountLbl');
+    const minus=make('button','','−');minus.type='button';minus.setAttribute('aria-label','Bir oyuncu azalt');minus.disabled=L.count<=3;
+    const out=make('output','',String(L.count));out.setAttribute('aria-live','polite');
+    const plus=make('button','','+');plus.type='button';plus.setAttribute('aria-label','Bir oyuncu ekle');plus.disabled=L.count>=12;
+    minus.onclick=()=>{if(L.count>3){L.count--;syncLocalNames();render();}};
+    plus.onclick=()=>{if(L.count<12){L.count++;syncLocalNames();render();}};
+    row.append(minus,out,plus);cf.append(cl,row,make('small','','3 ile 12 kişi arası'));sheet.append(cf);
+    // names (optional), two per row
+    const nf=make('div','sgm-field nx-imp-names');
+    nf.append(make('label','','İSİMLER (İSTEĞE BAĞLI)'));
+    const grid=make('div','nx-imp-name-grid');
+    L.names.forEach((n,i)=>{
+      const w=make('label','nx-imp-name');
+      w.append(make('b','',String(i+1)));
+      const input=make('input');input.type='text';input.maxLength=14;input.autocomplete='off';input.placeholder='Oyuncu '+(i+1);input.value=n;
+      input.setAttribute('aria-label',(i+1)+'. oyuncunun adı');
+      input.oninput=(e)=>{L.names[i]=e.target.value};
+      input.onkeydown=(e)=>{if(e.key==='Enter'){const nx=grid.querySelectorAll('input')[i+1];if(nx)nx.focus();else startLocalGame();}};
+      w.append(input);grid.append(w);
+    });
+    nf.append(grid);sheet.append(nf);
+    const go=make('button','sgm-btn primary','OYUNU BAŞLAT');go.type='button';go.onclick=()=>startLocalGame();
+    sheet.append(go);
+    sheet.append(make('p','sgm-note','Telefon sırayla elden ele geçer: herkes kendi kartına tek başına bakar.'));
+    panel.append(sheet);frame.append(panel);root.append(frame);
+  };
   const coreRender=render;
   render=function(...args){
     const result=coreRender.apply(this,args);
     // A class on body controls styling without changing or duplicating any secret card.
     const screen=String(state.screen||'menu');
     document.body.dataset.nxImpScreen=screen;
+    document.body.classList.toggle('sg-skin',screen==='local-setup');   // the shared menu skin only on the setup sheet
     const root=document.querySelector('#app > .screen');
     if(root&&screen!=='menu')root.classList.add('nx-imp-active');
     return result;
