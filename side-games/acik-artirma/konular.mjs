@@ -75,22 +75,6 @@ const RAW = [
       ['2020-21 Beşiktaş', 'TD Sergen Yalçın · lig ve kupa şampiyonu'],
     ],
   },
-  {
-    id: 'milli-kadrolar', tur: 'kadro', yon: 'iyi', baslik: 'A Millî Takım\'ın en iyi kadroları',
-    maddeler: [
-      ['1954 Dünya Kupası', 'İlk Dünya Kupası katılımı · grupta elendi'],
-      ['Euro 1996', 'İlk Avrupa Şampiyonası · grupta elendi'],
-      ['Euro 2000', 'TD Mustafa Denizli · çeyrek final'],
-      ['2002 Dünya Kupası', 'TD Şenol Güneş · üçüncülük'],
-      ['2003 Konfederasyonlar Kupası', 'TD Şenol Güneş · üçüncülük'],
-      ['2006 Dünya Kupası elemeleri', 'Play-off\'ta İsviçre\'ye elendi'],
-      ['Euro 2008', 'TD Fatih Terim · yarı final'],
-      ['Euro 2012 elemeleri', 'Play-off\'ta Hırvatistan\'a elendi'],
-      ['Euro 2016', 'TD Fatih Terim · grupta elendi'],
-      ['Euro 2020', 'TD Şenol Güneş · grupta elendi'],
-      ['Euro 2024', 'TD Vincenzo Montella · çeyrek final'],
-    ],
-  },
 
   // ───────── Oyuncular ─────────
   {
@@ -209,7 +193,6 @@ const RAW = [
       ['Arda Turan', 'Galatasaray · 2020\'de dönüş', 1],
       ['Kim Min-jae', 'Fenerbahçe · Beijing Guoan\'dan ucuza geldi, Napoli\'ye satıldı'],
       ['Ferdi Kadıoğlu', 'Fenerbahçe · NEC Nijmegen\'den geldi, Brighton\'a satıldı'],
-      ['Kerem Aktürkoğlu', 'Galatasaray · 24 Erzincanspor\'dan geldi, Benfica\'ya satıldı'],
       ['Barış Alper Yılmaz', 'Galatasaray · Ankara Keçiörengücü\'nden', 1],
       ['Bafétimbi Gomis', 'Galatasaray · Swansea\'dan uygun bonservisle', 1],
     ],
@@ -235,7 +218,7 @@ const RAW = [
       ['Mauro Icardi', 'Galatasaray · Arjantin'],
       ['Victor Osimhen', 'Galatasaray · Napoli ile İtalya şampiyonu'],
       ['Ciro Immobile', 'Beşiktaş · İtalya ile Euro 2020 şampiyonu'],
-      ['Mohamed Salah', 'Mısır · Liverpool efsanesi · Süper Lig kulübü kontrol edilecek', 1],
+      ['Mohamed Salah', 'Trabzonspor · Mısır · Liverpool efsanesi'],
     ],
   },
 
